@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1264 848" width="1264" height="848">
+  <defs>
+    <linearGradient id="qd-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FBF7F2"/>
+      <stop offset="100%" stop-color="#F0F4FA"/>
+    </linearGradient>
+  </defs>
+  <rect width="1264" height="848" rx="24" fill="url(#qd-bg)" stroke="#E3E5EA" stroke-width="2"/>
+  
+  <!-- Left Phone (Mia) -->
+  <g transform="translate(240, 100) rotate(-4)">
+    <rect width="360" height="640" rx="36" fill="#17181C"/>
+    <rect x="12" y="12" width="336" height="616" rx="28" fill="#FFF"/>
+    <!-- Phone Content -->
+    <rect x="28" y="40" width="280" height="28" rx="14" fill="#FFE0EA"/>
+    <text x="168" y="60" font-family="system-ui" font-size="14" font-weight="700" fill="#FF7BA3" text-anchor="middle">Mia · answers honestly</text>
+    
+    <text x="36" y="120" font-family="system-ui" font-size="18" font-weight="800" fill="#17181C">What's Mia's go-to</text>
+    <text x="36" y="145" font-family="system-ui" font-size="18" font-weight="800" fill="#17181C">karaoke song? 🎤</text>
+    
+    <rect x="36" y="180" width="264" height="54" rx="12" fill="#FF7BA3"/>
+    <text x="56" y="213" font-family="system-ui" font-size="15" font-weight="700" fill="#FFF">Bohemian Rhapsody 🎸</text>
+    
+    <rect x="36" y="246" width="264" height="54" rx="12" fill="#F8F9FB" stroke="#E3E5EA"/>
+    <text x="56" y="279" font-family="system-ui" font-size="15" font-weight="600" fill="#5B5E68">Something by IU 🎧</text>
+    
+    <rect x="36" y="312" width="264" height="54" rx="12" fill="#F8F9FB" stroke="#E3E5EA"/>
+    <text x="56" y="345" font-family="system-ui" font-size="15" font-weight="600" fill="#5B5E68">Rap god, allegedly 🎤</text>
+    
+    <rect x="36" y="520" width="264" height="50" rx="14" fill="#17181C"/>
+    <text x="168" y="552" font-family="system-ui" font-size="16" font-weight="700" fill="#FFF" text-anchor="middle">Locked in ✓</text>
+  </g>
+
+  <!-- Right Phone (Alex) -->
+  <g transform="translate(660, 120) rotate(3)">
+    <rect width="360" height="640" rx="36" fill="#17181C"/>
+    <rect x="12" y="12" width="336" height="616" rx="28" fill="#FFF"/>
+    <!-- Phone Content -->
+    <rect x="28" y="40" width="280" height="28" rx="14" fill="#DCEBFF"/>
+    <text x="168" y="60" font-family="system-ui" font-size="14" font-weight="700" fill="#5FA0FF" text-anchor="middle">Alex · guesses her answer</text>
+    
+    <text x="36" y="120" font-family="system-ui" font-size="18" font-weight="800" fill="#17181C">What's Mia's go-to</text>
+    <text x="36" y="145" font-family="system-ui" font-size="18" font-weight="800" fill="#17181C">karaoke song? 🎤</text>
+    
+    <rect x="36" y="180" width="264" height="54" rx="12" fill="#5FA0FF"/>
+    <text x="56" y="213" font-family="system-ui" font-size="15" font-weight="700" fill="#FFF">Bohemian Rhapsody 🎸</text>
+    
+    <rect x="36" y="246" width="264" height="54" rx="12" fill="#F8F9FB" stroke="#E3E5EA"/>
+    <text x="56" y="279" font-family="system-ui" font-size="15" font-weight="600" fill="#5B5E68">Something by IU 🎧</text>
+    
+    <rect x="36" y="312" width="264" height="54" rx="12" fill="#F8F9FB" stroke="#E3E5EA"/>
+    <text x="56" y="345" font-family="system-ui" font-size="15" font-weight="600" fill="#5B5E68">Rap god, allegedly 🎤</text>
+    
+    <rect x="36" y="520" width="264" height="50" rx="14" fill="#17181C"/>
+    <text x="168" y="552" font-family="system-ui" font-size="16" font-weight="700" fill="#FFF" text-anchor="middle">Locked in ✓</text>
+  </g>
+
+  <!-- Big Match Banner -->
+  <g transform="translate(632, 430)">
+    <rect x="-140" y="-30" width="280" height="60" rx="30" fill="#107C41"/>
+    <text x="0" y="8" font-family="system-ui" font-size="22" font-weight="800" fill="#FFF" text-anchor="middle">✓ Matched! 💞</text>
+  </g>
+</svg>

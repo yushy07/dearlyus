@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 360" width="360" height="360">
+  <defs>
+    <linearGradient id="jkt-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#DCEBFF"/>
+      <stop offset="100%" stop-color="#ADCFFF"/>
+    </linearGradient>
+  </defs>
+  <rect width="360" height="360" fill="url(#jkt-bg)"/>
+  <!-- Guy avatar -->
+  <circle cx="180" cy="155" r="75" fill="#FFE5D9"/>
+  <!-- Dark wavy hair -->
+  <path d="M105 140 C100 65, 260 65, 255 140 C240 90, 120 90, 105 140 Z" fill="#1C1D24"/>
+  <path d="M120 100 Q160 85 200 95 Q240 85 245 110" fill="#1C1D24"/>
+  <!-- Eyes with warm smile -->
+  <path d="M145 148 Q155 140 165 148" fill="none" stroke="#1C1D24" stroke-width="4" stroke-linecap="round"/>
+  <path d="M195 148 Q205 140 215 148" fill="none" stroke="#1C1D24" stroke-width="4" stroke-linecap="round"/>
+  <path d="M170 172 Q180 184 190 172" fill="none" stroke="#3A66B8" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- Blue glasses -->
+  <rect x="135" y="138" width="35" height="24" rx="6" fill="none" stroke="#5FA0FF" stroke-width="3"/>
+  <rect x="190" y="138" width="35" height="24" rx="6" fill="none" stroke="#5FA0FF" stroke-width="3"/>
+  <line x1="170" y1="150" x2="190" y2="150" stroke="#5FA0FF" stroke-width="3"/>
+  <!-- Shirt -->
+  <path d="M95 360 C95 250, 265 250, 265 360 Z" fill="#1E2838"/>
+  <path d="M180 250 L180 360" stroke="#5FA0FF" stroke-width="2" stroke-dasharray="6 6"/>
+  <!-- Headphone around neck -->
+  <path d="M125 220 C125 270, 235 270, 235 220" fill="none" stroke="#5FA0FF" stroke-width="12" stroke-linecap="round"/>
+</svg>

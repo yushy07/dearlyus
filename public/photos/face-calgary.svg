@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 360" width="360" height="360">
+  <defs>
+    <linearGradient id="calgary-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE0EA"/>
+      <stop offset="100%" stop-color="#FFB3C7"/>
+    </linearGradient>
+  </defs>
+  <rect width="360" height="360" fill="url(#calgary-bg)"/>
+  <!-- Cozy sweater girl avatar -->
+  <circle cx="180" cy="150" r="75" fill="#FFE1D2"/>
+  <!-- Hair -->
+  <path d="M100 160 C90 80, 270 80, 260 160 C240 100, 120 100, 100 160 Z" fill="#4A332D"/>
+  <path d="M95 150 C95 240, 120 270, 120 270 C105 200, 105 160, 110 140 Z" fill="#4A332D"/>
+  <path d="M265 150 C265 240, 240 270, 240 270 C255 200, 255 160, 250 140 Z" fill="#4A332D"/>
+  <path d="M125 125 Q180 145 235 125 Q180 110 125 125" fill="#4A332D"/>
+  <!-- Cute face -->
+  <ellipse cx="155" cy="150" rx="6" ry="7" fill="#2C1D18"/>
+  <ellipse cx="205" cy="150" rx="6" ry="7" fill="#2C1D18"/>
+  <circle cx="157" cy="148" r="2.5" fill="#FFFFFF"/>
+  <circle cx="207" cy="148" r="2.5" fill="#FFFFFF"/>
+  <path d="M172 170 Q180 178 188 170" fill="none" stroke="#D15B76" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- Blushes -->
+  <circle cx="140" cy="165" r="12" fill="#FF8CA9" opacity="0.5"/>
+  <circle cx="220" cy="165" r="12" fill="#FF8CA9" opacity="0.5"/>
+  <!-- Pink Beanie -->
+  <path d="M110 110 C120 50, 240 50, 250 110 Z" fill="#FF7BA3"/>
+  <circle cx="180" cy="50" r="16" fill="#FFFFFF"/>
+  <!-- Cozy sweater -->
+  <path d="M100 360 C100 250, 260 250, 260 360 Z" fill="#FFF0F5" stroke="#FFD1DF" stroke-width="4"/>
+  <path d="M140 260 L180 290 L220 260" fill="none" stroke="#FF7BA3" stroke-width="4"/>
+</svg>

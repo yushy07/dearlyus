@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 930" width="1440" height="930">
+  <defs>
+    <linearGradient id="gate-sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFECD2"/>
+      <stop offset="60%" stop-color="#FCB69F"/>
+      <stop offset="100%" stop-color="#FEE140"/>
+    </linearGradient>
+  </defs>
+  <rect width="1440" height="930" fill="url(#gate-sky)"/>
+  <!-- Castle & garden watercolor aesthetic -->
+  <path d="M0 650 Q360 580 720 620 T1440 640 L1440 930 L0 930 Z" fill="#6A8E7F" opacity="0.8"/>
+  <path d="M0 720 Q480 660 960 700 T1440 710 L1440 930 L0 930 Z" fill="#4B6B5D"/>
+  <!-- Stone arch gate -->
+  <path d="M520 930 L520 450 Q720 300 920 450 L920 930 Z" fill="#EDE4D8" stroke="#D1C4B2" stroke-width="8"/>
+  <path d="M580 930 L580 500 Q720 380 860 500 L860 930 Z" fill="#FFF8EE"/>
+  <!-- Rose vines -->
+  <path d="M500 900 Q480 400 720 320 Q960 400 940 900" fill="none" stroke="#385E42" stroke-width="14"/>
+  <circle cx="560" cy="480" r="18" fill="#FF7BA3"/>
+  <circle cx="640" cy="380" r="22" fill="#E84A74"/>
+  <circle cx="720" cy="340" r="20" fill="#FF7BA3"/>
+  <circle cx="800" cy="380" r="24" fill="#E84A74"/>
+  <circle cx="880" cy="480" r="18" fill="#FF7BA3"/>
+  <!-- Couple walking hand in hand -->
+  <g transform="translate(680, 620)">
+    <circle cx="20" cy="40" r="18" fill="#23242A"/>
+    <path d="M5 60 C5 120, 35 120, 35 200" stroke="#23242A" stroke-width="18" stroke-linecap="round"/>
+    <circle cx="60" cy="46" r="16" fill="#23242A"/>
+    <path d="M45 65 C45 120, 75 120, 75 200" stroke="#23242A" stroke-width="16" stroke-linecap="round"/>
+    <path d="M25 90 L55 95" stroke="#23242A" stroke-width="8" stroke-linecap="round"/>
+  </g>
+</svg>

@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 503 377" width="503" height="377">
+  <defs>
+    <linearGradient id="bg-2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2D1B36"/><stop offset="100%" stop-color="#141E30"/>
+    </linearGradient>
+  </defs>
+  <rect width="503" height="377" fill="url(#bg-2)"/>
+  
+  <!-- Left person (Calgary) -->
+  <g transform="translate(45, 40)">
+    <circle cx="95" cy="120" r="60" fill="#FFE1D2"/>
+    <path d="M35 125 C25 60, 165 60, 155 125 Z" fill="#4A332D"/>
+    <circle cx="75" cy="120" r="5" fill="#2C1D18"/>
+    <circle cx="115" cy="120" r="5" fill="#2C1D18"/>
+    <path d="M88 138 Q95 146 102 138" fill="none" stroke="#D15B76" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="65" cy="132" r="10" fill="#FF8CA9" opacity="0.4"/>
+    <circle cx="125" cy="132" r="10" fill="#FF8CA9" opacity="0.4"/>
+    <path d="M40 337 C40 200, 150 200, 150 337 Z" fill="#FFD4E2"/>
+  </g>
+
+  <!-- Right person (Jakarta) -->
+  <g transform="translate(268, 40)">
+    <circle cx="95" cy="120" r="60" fill="#FFE5D9"/>
+    <path d="M35 110 C30 50, 160 50, 155 110 Z" fill="#1C1D24"/>
+    <path d="M70 118 Q80 110 90 118" fill="none" stroke="#1C1D24" stroke-width="3" stroke-linecap="round"/>
+    <path d="M105 118 Q115 110 125 118" fill="none" stroke="#1C1D24" stroke-width="3" stroke-linecap="round"/>
+    <path d="M88 138 Q95 146 102 138" fill="none" stroke="#3A66B8" stroke-width="3" stroke-linecap="round"/>
+    <path d="M40 337 C40 200, 150 200, 150 337 Z" fill="#25354C"/>
+  </g>
+
+  <!-- Center romantic connection element -->
+  <g transform="translate(251, 190)">
+    <rect x="-24" y="-15" width="48" height="40" rx="6" fill="#E8B042"/><text x="0" y="10" font-size="20" text-anchor="middle">🍿</text>
+  </g>
+
+  <!-- Location Tag Overlay -->
+  <rect x="20" y="327" width="130" height="30" rx="15" fill="rgba(255,255,255,0.85)"/>
+  <text x="85" y="347" font-family="monospace" font-size="11" font-weight="700" fill="#FF7BA3" text-anchor="middle">CALGARY ♡</text>
+
+  <rect x="353" y="327" width="130" height="30" rx="15" fill="rgba(255,255,255,0.85)"/>
+  <text x="418" y="347" font-family="monospace" font-size="11" font-weight="700" fill="#5FA0FF" text-anchor="middle">♡ JAKARTA</text>
+</svg>
