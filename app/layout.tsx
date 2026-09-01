@@ -49,6 +49,7 @@ export const metadata: Metadata = {
 };
 
 import { AudioPlayer } from '@/components/shared/AudioPlayer';
+import { ClickSpark } from '@/components/ui/ClickSpark';
 
 export default function RootLayout({
   children,
@@ -72,6 +73,7 @@ export default function RootLayout({
       <body>
         {children}
         <AudioPlayer />
+        <ClickSpark />
       </body>
     </html>
   );

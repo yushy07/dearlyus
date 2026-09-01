@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { ShinyText, SpotlightCard } from '@/components/ui';
 
 export default function ActivityPage() {
   return (

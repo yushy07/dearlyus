@@ -14,6 +14,7 @@ import { sounds } from '@/lib/sound';
 import { downloadAnimatedStripVideo } from '@/lib/gif-recorder';
 import { Confetti } from '@/components/shared/Confetti';
 import { Ribbon } from '@/components/shared/Ribbon';
+import { TiltedCard, ShinyText } from '@/components/ui';
 
 export default function PhotoboothPage() {
   // Navigation & Scene state: START | ROOM | PROFILE | LAYOUT | THEME | BOOTH | EDIT | FILTER | DECORATE | DOWNLOAD
@@ -942,58 +943,61 @@ export default function PhotoboothPage() {
 
             {/* Right Finished Strip */}
             <div className="strip-preview-holder">
-              <div
-                className="real-strip"
-                style={{
-                  background: selectedStyle.bg,
-                  color: selectedStyle.color,
-                  borderColor: selectedStyle.border,
-                }}
-              >
-                <div className="real-strip-brand">ANGIE · 인생네컷</div>
-                <div className="real-strip-frames">
-                  {capturedShots.map((shot, idx) => (
-                    <div
-                      key={idx}
-                      className="real-strip-cell"
-                      style={{
-                        transform: isMotionMode && motionFrameIdx === idx ? 'scale(1.03)' : 'scale(1)',
-                        transition: 'transform 0.2s ease',
-                      }}
-                    >
-                      <img src={shot} alt="" style={{ filter: selectedColorFilter.filter }} />
-                      <span className="frame-tag">0{idx + 1}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {placedStickers.length > 0 && (
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: '36px',
-                      right: '-10px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '4px',
-                      pointerEvents: 'none',
-                    }}
-                  >
-                    {placedStickers.map((stk, i) => (
-                      <span key={i} style={{ fontSize: '18px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }}>
-                        {stk}
-                      </span>
+              <TiltedCard maxAngle={8} scale={1.02}>
+                <div
+                  className="real-strip"
+                  style={{
+                    background: selectedStyle.bg,
+                    color: selectedStyle.color,
+                    borderColor: selectedStyle.border,
+                  }}
+                >
+                  <div className="real-strip-brand">ANGIE · 인생네컷</div>
+                  <div className="real-strip-frames">
+                    {capturedShots.map((shot, idx) => (
+                      <div
+                        key={idx}
+                        className="real-strip-cell"
+                        style={{
+                          transform: isMotionMode && motionFrameIdx === idx ? 'scale(1.03)' : 'scale(1)',
+                          transition: 'transform 0.2s ease',
+                        }}
+                      >
+                        <img src={shot} alt="" style={{ filter: selectedColorFilter.filter }} />
+                        <span className="frame-tag">0{idx + 1}</span>
+                      </div>
                     ))}
                   </div>
-                )}
 
-                <div className="real-strip-footer">
-                  <div className="real-strip-name">{coupleName}</div>
-                  <div className="real-strip-serial">
-                    ANGIE · <b>{roomCode}</b>
+                  {placedStickers.length > 0 && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '36px',
+                        left: '12px',
+                        right: '12px',
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '6px',
+                        pointerEvents: 'none',
+                      }}
+                    >
+                      {placedStickers.map((stk, i) => (
+                        <span key={i} style={{ fontSize: '18px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }}>
+                          {stk}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="real-strip-footer">
+                    <div className="real-strip-name">{coupleName}</div>
+                    <div className="real-strip-serial">
+                      ANGIE · <b>{roomCode}</b>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </TiltedCard>
 
               <button className="btn btn-grad" onClick={downloadHighResStrip} style={{ width: '250px', justifyContent: 'center' }}>
                 Download PNG 💾

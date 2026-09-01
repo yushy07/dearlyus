@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { Footer } from '@/components/shared/Footer';
+import { ShinyText, AuroraBackground, SpotlightCard, MagnetButton } from '@/components/ui';
 
 export default function HomePage() {
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
@@ -361,7 +362,8 @@ export default function HomePage() {
       </header>
 
       {/* Hero Section */}
-      <section className="hero" id="top">
+      <section className="hero" id="top" style={{ position: 'relative', overflow: 'hidden' }}>
+        <AuroraBackground />
         {/* Animated Presence Cursors */}
         <div className="cursor-layer" id="cursors">
           <div className="cursor blue" ref={blueCursorRef}>
@@ -390,10 +392,10 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="wrap">
+        <div className="wrap" style={{ position: 'relative', zIndex: 2 }}>
           <div className="hero-copy">
             <span className="eyebrow">
-              made for two · <b>17 realtime activities</b>
+              made for two · <ShinyText text="17 realtime activities" />
             </span>
             <h1>
               Fun Dates for

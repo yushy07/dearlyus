@@ -1995,4 +1995,98 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   outline-offset: 2px;
 }
 
+/* ==========================================================================
+   REACT BITS ANIMATION & UI SUITE
+   ========================================================================== */
+
+/* Shiny Text Light-sweep Animation */
+@keyframes shiny-text {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shiny-text {
+  display: inline-block;
+  background: linear-gradient(
+    110deg,
+    var(--ink) 35%,
+    rgba(255, 123, 163, 0.95) 50%,
+    var(--ink) 65%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shiny-text 3.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.shiny-badge {
+  position: relative;
+  overflow: hidden;
+}
+
+.shiny-badge::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.6),
+    transparent
+  );
+  transform: skewX(-20deg);
+  animation: shiny-text 3s infinite;
+}
+
+/* Aurora Ambient Gradient Mesh */
+@keyframes aurora-flow {
+  0% {
+    background-position: 0% 50%;
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    background-position: 100% 50%;
+    transform: rotate(3deg) scale(1.05);
+  }
+  100% {
+    background-position: 0% 50%;
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+.aurora-mesh {
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(circle at 20% 20%, rgba(255, 123, 163, 0.25), transparent 45%),
+              radial-gradient(circle at 80% 30%, rgba(95, 160, 255, 0.25), transparent 45%),
+              radial-gradient(circle at 50% 80%, rgba(255, 214, 138, 0.2), transparent 40%);
+  filter: blur(50px);
+  animation: aurora-flow 16s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Spotlight Card Base */
+.spotlight-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #FFFFFF;
+  border: 1px solid var(--line);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.spotlight-card:hover {
+  border-color: rgba(255, 123, 163, 0.35);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06);
+}
+
+
 
