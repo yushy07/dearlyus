@@ -1,7 +1,7 @@
-# OurSpace ♡ (Angie Recreation)
+# OurSpace ♡ (Angie)
 
-> **Realtime online photobooth studio, multiplayer games, and dates for couples separated by distance.**  
-> A faithful, pixel-perfect recreation of [getangie.com](https://getangie.com/).
+> **The ultimate realtime online photobooth studio, 3D multiplayer games, and date night sanctuary for couples separated by distance.**  
+> A pixel-perfect, feature-expanded recreation and enhancement of [getangie.com](https://getangie.com/).
 
 [![Next.js](https://img.shields.io/badge/Next.js-15%2B-black?style=flat&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=flat&logo=react)](https://react.dev/)
@@ -11,63 +11,91 @@
 
 ---
 
-## ✨ Features & Pages
+## 🌟 What's New & Core Capabilities
 
-### 📸 Online Photobooth Studio (`/photobooth`)
-- **Real Webcam & Simulated Duo Feed**: Switch seamlessly between live camera (`getUserMedia`) and dual-city couple simulation (Calgary & Jakarta).
-- **6 Korean Frame Themes (*인생네컷*)**: Classic Clean White, Sunset Romance, Vintage Sepia Film, Cyber Neon, Soft Lavender, and Midnight Noir.
-- **Synchronized 4-Shot Guided Session**: 3-2-1 countdown, flash animation, and romantic pose prompts.
-- **Sticker Customizer & HD PNG Downloader**: Add stickers (💖, 🌸, 🫰, 👑), couple names, and export high-res photo strips directly to your camera roll.
+### 🧠 1. Ultra-Fast Adaptive Question Engine & Zero-Delay Local Fallback
+- **Sub-Second Dynamic AI**: Powered by Gemini Flash with strict 1.2s timeout race + hand-crafted localized fallback packs. Zero latency, zero user-facing errors.
+- **Background Pre-Fetching**: Invisible latency hiding during reveal animations across **Know Me Quiz** (`/quiz`), **Honest Cards** (`/cards`), and the **Third Wheel Date Host** (`/host`).
 
-### ❓ Know Me Quiz (`/quiz`)
-- **17 Curated Question Packs**: Cute Starter, Deep & Intimate, Spicy & Wild (18+), Long Distance Life, Food & Dates, and more.
-- **Dual Secret Lock-In & Synchronized Reveal**: Private answering interface preventing peeking until both partners click submit.
-- **Compatibility Meter**: Live scoring, match gauge, and celebration confetti.
+### 🧾 2. "Our Date Lore" Printable Vintage Thermal Receipts (`/quiz`, `/host`)
+- **Thermal Canvas Renderer**: Custom dot-matrix monospace typography, jagged tear edges, itemized Q&A breakdown, sync %, `100% LOVE` subtotal, and 1-click high-res PNG download.
 
-### 🎮 Activities Hub (`/activity` & Mini-Games)
-- **Love Match (`/match`)**: 16-dimension personality compatibility test.
-- **Truth or Dare (`/dare`)**: 20 minigames selector with fast-tap duel and penalty cards.
-- **Honest Cards (`/cards`)**: 3D flipping card tiers with private reflection.
-- **Our Future (`/future`)**: Interactive joint vision board creator with custom milestones.
-- **Riddle Night (`/riddle`)**: Co-op brain teasers with hint system.
-- **IQ Duel (`/iq`)**: Head-to-head timed logic and spatial pattern puzzles.
-- **The Lab (`/lab`)**: Study date mode with Pomodoro timer and ambient soundscapes (rain, cafe, lofi).
-- **Draw Together (`/draw`)**: Real-time dual sketchpad with brush and color tools.
-- **Couples Court (`/court`)**: Playful dispute resolver with AI Judge Angie verdicts.
-- **Couples Debate (`/debate`)**: 60-second timed argument rounds with camera on.
-- **Snap Hunt (`/hunt`)**: 60-second home scavenger hunt with camera proof.
-- **Arcade (`/arcade`)**: Retro face mini games (*Heart Jump*, *Asteroid Dodge*, *Berry Catch*).
-- **Digital Scrapbook (`/scrapbook`)**: Washi-taped photo strips and journal notes.
-- **Letters to the Future (`/letter`)**: Sealed time-capsule letters.
-- **Birthday Gift Page (`/birthday`)**: Gift page generator with heart QR code.
+### 📸 3. Photobooth 3.0 Animated Live Strip Exporter (`/photobooth`)
+- **Client-Side GIF & Video Sequencer**: Pure Canvas `captureStream` + `MediaRecorder` engine exporting looping `.webm` animated photostrips with 60ms camera flash transitions and Korean *인생네컷* frames.
 
-### 🎁 Free Digital Keepsakes Studio (`/shop`)
-- **Printable 4×6 DIY Photo Sheets**: 300 DPI layout ready to print at home or local kiosk.
-- **Matching Couple Wallpapers & Lockscreens**: High-res PNG wallpapers for both phones.
-- **DIY Fridge Magnet Templates**: Cutout guides for sticking photostrips onto magnetic sheets.
-- **Digital Anniversary Calendars**: Dual timezone celebration cards.
-- **100% Free Downloads**: Zero subscriptions, zero paywalls, zero payment required.
+### 🌍 4. Interactive 3D Earth Globe & Geodesic Reunion Flight Arc (`/timezone`)
+- **3D Orthographic Projection**: Great-circle distance calculations (`11,420 km`), interactive mouse drag rotation, glowing city pins, and concentric heartbeat waves traveling between Calgary and Jakarta.
 
-### 🎬 Creators, Blog & Campaigns
-- **Creator Program (`/creators`)**: Lifetime creator community for TikTok/Instagram creators.
-- **The Angie Blog (`/blog`)**: Complete editorial articles on long distance date ideas and tutorials.
-- **Girlfriends Day (`/august`)**: Couples Day Date 7-step itinerary campaign (100% Free Date Pass).
-- **Profile & Album (`/profile`)**: Manage partner names, cities, room code `KX7RM`, and saved photostrips album.
-- **Legal (`/privacy`, `/terms`)**: Privacy policy & terms of service.
+### 🎵 5. Multi-Track Ambient Soundscape Mixer 2.0 (`/date`, Global Dock)
+- **5 Procedural Web Audio Synthesizers**: *Rain on Attic*, *Cozy Fireplace*, *Tokyo Midnight Cafe*, *90s Vinyl Needle Crackle*, and *Lo-Fi Piano Chords* with individual volume sliders and atmospheric presets.
+
+### 🪄 6. Fluid Motion & Tactile Physics Suite
+- **View Transitions API**: Seamless cross-page morphing between the Activity Directory and game rooms.
+- **Kinetic Touch SwipeDeck**: Drag-and-swipe physics for card decks with angular tilt (`rotate(${deltaX * 0.08}deg)`).
+- **Web Audio Micro-Haptics**: Real-time synthesized bubble pops, wooden ticks, and chime chords.
+- **3D Wax Seal Envelope**: 3D embossed red wax stamp that fractures and unfolds in 3D perspective to reveal time capsule letters (`/letter`).
+
+### 🌈 7. React Bits & MotionSites.ai Kinetic UI
+- **Animated Border-Mask Badges (`GlowBadge`)**: 1px rotating radial gradient border mask with shimmering text.
+- **Kinetic Bento Cards (`KineticCard`)**: Diagonal shimmer sweep beams (`animate-shimmer`) on hover.
+- **ClickSpark**: 60fps canvas particle sparks on every pointer tap across the site.
+- **SpotlightCard & TiltedCard**: Cursor-following radial glows and 3D parallax mouse tilt.
 
 ---
 
-## 🎨 Design System & Aesthetics
+## 🎮 Complete 35-Route Inventory
 
-- **Color Tokens**:
-  - Paper: `#F8F9FB`
-  - Ink: `#17181C`
-  - Pink: `#FF7BA3`
-  - Blue: `#5FA0FF`
-  - Cream: `#FFFBF6`
-  - Line: `#E7E9EE`
-- **Typography**: Pretendard, Space Mono, and Playfair Display serif fonts.
-- **Animations**: Live floating presence cursors, orthographic world map with pulsing Calgary-Jakarta arcs, progressive photobooth frame development (`lit`), and synchronized 9-second quiz timeline.
+| Route | Feature Description |
+| :--- | :--- |
+| **`/`** | Homepage with Aurora background, live couple cursors, spotlight activities & demo booth. |
+| **`/activity`** | Activity Directory with 17 realtime multiplayer dates. |
+| **`/photobooth`** | Korean Life4Cuts (*인생네컷*) 4-shot synchronized photobooth studio. |
+| **`/timezone`** | Interactive 3D Earth Globe, geodesic flight path, and live couple clock sync. |
+| **`/quiz`** | Know Me Quiz with secret lock-in, match scoring & Printable Thermal Receipt. |
+| **`/host`** | "Third Wheel" Date Host game mode with observational AI commentary. |
+| **`/cards`** | Honest Cards with kinetic swipe deck and 3 intimacy levels. |
+| **`/dare`** | Truth or Dare with 20 mini-games and fast-tap duels. |
+| **`/date`** | Date Night Planner & Ambient Soundscape Mixer. |
+| **`/bucket`** | 100 Dates Scratch-Off Checklist with progress bar and confetti. |
+| **`/scrapbook`** | Digital Memory Corkboard with 3D polaroids, flight stubs & washi tape. |
+| **`/letter`** | Time Capsule Letters with 3D wax seal cracking & unfolding envelope. |
+| **`/birthday`** | Custom Birthday Gift Page generator with heart QR code. |
+| **`/fashion`** | Couple PvP Fashion Runway with outfit voting. |
+| **`/shirts`** | Digital matching outfit designer for date nights. |
+| **`/shop`** | 100% Free DIY Printable Keepsakes (4×6 photo sheets, wallpapers, fridge magnets). |
+| **`/august`** | Curated 7-step Girlfriends Day couples date itinerary. |
+| **`/match`** | 16-dimension romance personality compatibility test. |
+| **`/arcade`** | Face-avatar retro mini-games (*Heart Jump*, *Asteroid Dodge*, *Berry Catch*). |
+| **`/draw`** | Real-time dual shared canvas sketchpad. |
+| **`/court`** | Playful couples dispute courtroom with AI Judge verdicts. |
+| **`/debate`** | 60-second timed debate challenge with video on. |
+| **`/lab`** | Co-op study date mode with Pomodoro timer & soundscapes. |
+| **`/hunt`** | 60-second home scavenger hunt with camera proof. |
+| **`/future`** | 3-year vision board planner with custom milestones. |
+| **`/riddle`** | Co-op brain teasers and riddle night puzzles. |
+| **`/iq`** | Head-to-head timed logic and spatial pattern duel. |
+| **`/profile`** | Couple settings (names, cities, room code `KX7RM`, saved album). |
+| **`/creators`** | Creator program for TikTok / Instagram creators (Free Lifetime Pass). |
+| **`/blog`** | Editorial blog with LDR date guides, ideas, and relationship advice. |
+| **`/blog/:slug`** | Dynamic editorial article reader with scroll progress. |
+| **`/privacy`** | Privacy policy. |
+| **`/terms`** | Terms of service. |
+| **`/api/config`** | Realtime room config & status API endpoint. |
+| **`/api/questions/generate`** | Low-latency adaptive question generation endpoint with 1.2s timeout race. |
+| **`/api/stats`** | Live global stats endpoint. |
+
+---
+
+## 🎨 Design Tokens
+
+- **Paper Background**: `#F8F9FB`
+- **Ink Primary**: `#17181C`
+- **Couple Pink**: `#FF7BA3`
+- **Couple Blue**: `#5FA0FF`
+- **Warm Gold**: `#FFD68A`
+- **Success Mint**: `#4ECCA3`
+- **Cream Tint**: `#FFFBF6`
+- **Line Border**: `#E7E9EE`
 
 ---
 
@@ -80,14 +108,14 @@
 ### Installation
 
 ```bash
-# Clone the repository
+# 1. Clone the repository
 git clone https://github.com/yushy07/ourspace.git
 cd ourspace
 
-# Install dependencies
+# 2. Install dependencies
 npm install
 
-# Start local development server
+# 3. Start local development server
 npm run dev
 ```
 
@@ -101,13 +129,12 @@ npm run build
 
 ---
 
-## 👥 Contributors
+## 🤝 Contributors
 
-- **Ayush** ([@yushy07](https://github.com/yushy07)) — Lead Developer & Creator
-- **Angie Team** — Design & Product Inspiration
+Please see [CONTRIBUTORS.md](CONTRIBUTORS.md) for the list of maintainers and contributors.
 
 ---
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the [MIT License](LICENSE).
