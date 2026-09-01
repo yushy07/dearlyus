@@ -54,6 +54,7 @@ export function Footer() {
               <Link href="/future">Our Future Vision Board</Link>
               <Link href="/letter">Letters to Future (Vault)</Link>
               <Link href="/scrapbook">Digital Scrapbook Corkboard</Link>
+              <Link href="/shop">Free Keepsake Studio (4×6 &amp; Wallpapers)</Link>
               <Link href="/birthday">Birthday Gift Page</Link>
               <Link href="/cards">Honest Cards Deck</Link>
             </nav>

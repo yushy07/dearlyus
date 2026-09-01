@@ -612,7 +612,7 @@ export default function ActivityPage() {
                 </span>
               </h3>
               <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--ink-soft)' }}>
-                design matching tees together, ships to both cities
+                design matching couple outfits &amp; download free mockups
               </p>
             </div>
             <span style={{ marginLeft: 'auto', fontSize: '18px', color: 'var(--ink-soft)' }}>▷</span>

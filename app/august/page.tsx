@@ -93,13 +93,12 @@ export default function AugustPage() {
               Seven things to play together in one shared room, from two cities. It starts easy, gets honest, and ends with the two of you designing matching shirts you both wear.
             </p>
 
-            {/* Price Offer */}
+            {/* Free Offer */}
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '20px' }}>
-              <span style={{ fontFamily: 'var(--font-serif)', fontSize: '48px', fontWeight: 700, color: '#23242A' }}>$7</span>
-              <span style={{ fontSize: '16px', color: '#6B6C76' }}>/ month</span>
-              <span style={{ fontSize: '18px', color: '#B4B0A8', textDecoration: 'line-through' }}>$10</span>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', fontWeight: 700, background: '#23242A', color: '#fff', padding: '4px 10px', borderRadius: '999px' }}>
-                SAVE 30%
+              <span style={{ fontFamily: 'var(--font-serif)', fontSize: '44px', fontWeight: 700, color: '#23242A' }}>FREE</span>
+              <span style={{ fontSize: '16px', color: '#6B6C76' }}>forever</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', fontWeight: 700, background: '#0A7D4D', color: '#fff', padding: '4px 10px', borderRadius: '999px' }}>
+                100% FREE DATE PASS
               </span>
             </div>
 

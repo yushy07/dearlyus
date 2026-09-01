@@ -18,7 +18,7 @@ interface ScrapbookItem {
 export default function ScrapbookPage() {
   const [items, setItems] = useState<ScrapbookItem[]>([
     { id: '1', type: 'polaroid', content: '/photos/frame1.webp', sub: 'Tokyo Station · Aug 2026', x: 40, y: 30, rotation: -4 },
-    { id: '2', type: 'ticket', content: 'FLIGHT AC854 · YVR ➔ CGK', sub: 'Seat 14A · Gate 52', x: 380, y: 50, rotation: 3 },
+    { id: '2', type: 'ticket', content: 'REUNION PASS ♡ TOKYO', sub: 'Countdown to our next visit', x: 380, y: 50, rotation: 3 },
     { id: '3', type: 'note', content: '“The 6-hour time difference feels like nothing when we talk until sunrise.”', sub: 'Alex ♡ Mia', x: 60, y: 320, rotation: 2 },
     { id: '4', type: 'sticker', content: '💖', x: 260, y: 220, rotation: 12 },
     { id: '5', type: 'sticker', content: '✈️', x: 520, y: 200, rotation: -8 },
@@ -207,7 +207,7 @@ export default function ScrapbookPage() {
                   }}
                 >
                   <div style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: '#8A5D3B', textTransform: 'uppercase' }}>
-                    BOARDING PASS · AIR CANADA
+                    REUNION MILESTONE PASS
                   </div>
                   <div style={{ fontWeight: 800, fontSize: '15px', color: '#2B231E', marginTop: '2px' }}>{item.content}</div>
                   <div style={{ fontSize: '12px', color: '#8A5D3B', marginTop: '4px' }}>{item.sub}</div>

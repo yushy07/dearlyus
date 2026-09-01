@@ -41,15 +41,17 @@
 - **Letters to the Future (`/letter`)**: Sealed time-capsule letters.
 - **Birthday Gift Page (`/birthday`)**: Gift page generator with heart QR code.
 
-### 🛍️ Print Shop (`/shop`)
-- **Product Catalog**: Die-cut fridge magnets ($12), framed prints ($34), iPhone cases ($37), matching couple shirts ($42).
-- **Split Dual-Address Shipping**: One order ships twin packs simultaneously to both partner addresses worldwide.
-- **Interactive Checkout Flow**: Working checkout with order confirmation.
+### 🎁 Free Digital Keepsakes Studio (`/shop`)
+- **Printable 4×6 DIY Photo Sheets**: 300 DPI layout ready to print at home or local kiosk.
+- **Matching Couple Wallpapers & Lockscreens**: High-res PNG wallpapers for both phones.
+- **DIY Fridge Magnet Templates**: Cutout guides for sticking photostrips onto magnetic sheets.
+- **Digital Anniversary Calendars**: Dual timezone celebration cards.
+- **100% Free Downloads**: Zero subscriptions, zero paywalls, zero payment required.
 
 ### 🎬 Creators, Blog & Campaigns
-- **Creator Program (`/creators`)**: Lifetime pass submission form for TikTok/Instagram creators.
+- **Creator Program (`/creators`)**: Lifetime creator community for TikTok/Instagram creators.
 - **The Angie Blog (`/blog`)**: Complete editorial articles on long distance date ideas and tutorials.
-- **Girlfriends Day (`/august`)**: Couples Day Date 7-step itinerary campaign.
+- **Girlfriends Day (`/august`)**: Couples Day Date 7-step itinerary campaign (100% Free Date Pass).
 - **Profile & Album (`/profile`)**: Manage partner names, cities, room code `KX7RM`, and saved photostrips album.
 - **Legal (`/privacy`, `/terms`)**: Privacy policy & terms of service.
 

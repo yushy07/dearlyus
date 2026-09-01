@@ -2,342 +2,185 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { Ribbon, Navbar, Confetti } from '@/components/shared';
+import { sounds } from '@/lib/sound';
 
-interface Product {
+interface FreeKeepsake {
   id: string;
   name: string;
-  price: number;
   badge?: string;
   description: string;
   features: string[];
-  image: string;
+  icon: string;
+  previewUrl: string;
 }
 
-const PRODUCTS: Product[] = [
+const KEEPSAKES: FreeKeepsake[] = [
   {
-    id: 'magnet',
-    name: 'Die-Cut Fridge Magnet',
-    price: 12,
-    badge: '★ Best Seller',
-    description: 'High-gloss vinyl magnet cut to the exact shape of your Angie photostrip. Sticks cleanly to any fridge.',
-    features: ['Waterproof & UV resistant finish', 'Strong magnetic backing', 'Ships in twin packs (one for each home)'],
-    image: '🧲',
+    id: 'sheet',
+    name: 'Printable 4×6 DIY Photo Sheet',
+    badge: '★ Most Popular',
+    description: 'High-res 300 DPI layout ready to print at home or any local photo kiosk on standard 4×6 photo paper.',
+    features: ['300 DPI print-ready resolution', 'Standard 4×6 photo border guidelines', '100% Free instant download'],
+    icon: '🖨️',
+    previewUrl: '/photos/frame1.webp',
   },
   {
-    id: 'frame',
-    name: 'Matte Black Framed Strip',
-    price: 34,
-    badge: 'Keepsake',
-    description: 'Solid wood frame with museum-grade glass and archival photographic print of your 4-cut session.',
-    features: ['Real wood construction with easel stand', 'Glare-resistant protective glass', 'Gift box included'],
-    image: '🖼️',
+    id: 'lockscreen',
+    name: 'Couple Lockscreen & Wallpaper Set',
+    badge: 'Mobile FX',
+    description: 'A matching pair of HD phone wallpapers for both your lockscreens featuring your custom photostrip.',
+    features: ['Optimized for iPhone & Android screens', 'Matching gradient aesthetics', 'Instant high-res PNG download'],
+    icon: '📱',
+    previewUrl: '/photos/frame2.webp',
   },
   {
-    id: 'case',
-    name: 'Slim Couple iPhone Case',
-    price: 37,
-    description: 'Your favorite photobooth strip embedded inside shock-absorbing dual-layer protective case.',
-    features: ['Compatible with MagSafe', 'Drop tested up to 6 feet', 'Available for iPhone 13, 14, 15, 16 series'],
-    image: '📱',
+    id: 'magnet-template',
+    name: 'DIY Fridge Magnet Template',
+    badge: 'Craft Keepsake',
+    description: 'Printable cutout template with guidelines to stick your strips onto adhesive magnetic sheets for your fridge.',
+    features: ['Exact Korean 4-cut 인생네컷 dimensions', 'Cut-line guides for easy trimming', 'Free printable template'],
+    icon: '🧲',
+    previewUrl: '/photos/frame3.webp',
   },
   {
-    id: 'shirts',
-    name: 'Matching Couple Tee Set',
-    price: 42,
-    badge: 'Studio',
-    description: 'Two ultra-soft 100% organic cotton shirts printed with your custom photostrip and coordinates.',
-    features: ['100% Ring-spun heavyweight cotton', 'Pre-shrunk comfortable fit', 'Custom Calgary & Jakarta print'],
-    image: '👕',
+    id: 'calendar',
+    name: 'Digital Anniversary Calendar Card',
+    badge: 'Anniversary',
+    description: 'A customized digital calendar card highlighting your milestone dates, anniversary, and photos.',
+    features: ['Dual timezone highlights', 'Custom couple names and coordinates', 'Printable PDF & PNG download'],
+    icon: '📅',
+    previewUrl: '/photos/frame4.webp',
   },
 ];
 
-export default function ShopPage() {
-  const [selectedProduct, setSelectedProduct] = useState<Product>(PRODUCTS[0]);
-  const [dualShipping, setDualShipping] = useState(true);
-  const [address1, setAddress1] = useState('Calgary, AB, Canada');
-  const [address2, setAddress2] = useState('Jakarta Selatan, Indonesia');
-  const [ordered, setOrdered] = useState(false);
+export default function KeepsakeStudioPage() {
+  const [selectedKeepsake, setSelectedKeepsake] = useState<FreeKeepsake>(KEEPSAKES[0]);
+  const [downloaded, setDownloaded] = useState(false);
+  const [confettiActive, setConfettiActive] = useState(false);
 
-  const handleCheckout = (e: React.FormEvent) => {
-    e.preventDefault();
-    setOrdered(true);
+  const handleDownload = () => {
+    sounds.playCelebration();
+    setConfettiActive(true);
+    setDownloaded(true);
+    setTimeout(() => {
+      setConfettiActive(false);
+      setDownloaded(false);
+    }, 3000);
   };
 
   return (
-    <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px' }}>
-      {/* Header */}
-      <header className="bar">
-        <div className="wrap">
-          <Link className="brand" href="/">
-            angie
-            <span className="dots">
-              <i className="p"></i>
-              <i className="b"></i>
-            </span>
-          </Link>
-          <nav>
-            <Link href="/photobooth">Photobooth</Link>
-            <Link href="/activity">Activities</Link>
-            <Link className="btn btn-grad" href="/photobooth">
-              Take New Strip 📸
-            </Link>
-          </nav>
-        </div>
-      </header>
+    <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px', color: 'var(--ink)' }}>
+      <Ribbon text={<>🎁 Free Keepsake &amp; Wallpaper Studio · <b>100% Free Downloads for All Couples</b></>} />
+      <Confetti active={confettiActive} />
 
-      <main className="wrap" style={{ paddingTop: '36px' }}>
+      <Navbar
+        rightAction={
+          <Link className="btn btn-grad" href="/photobooth" style={{ padding: '6px 14px', fontSize: '13px' }}>
+            Take New Photostrip 📸
+          </Link>
+        }
+      />
+
+      <main className="wrap" style={{ paddingTop: '36px', maxWidth: '980px' }}>
         <div style={{ textAlign: 'center', maxWidth: '640px', margin: '0 auto 36px' }}>
-          <span className="eyebrow">Angie Print Shop · Ships Worldwide</span>
-          <h1 style={{ fontSize: 'clamp(28px, 4.5vw, 42px)', marginBottom: '12px' }}>
-            Turn your digital strips into <span className="grad">real keepsakes</span>.
+          <span className="eyebrow">100% Free Digital Keepsakes</span>
+          <h1 style={{ fontSize: 'clamp(28px, 4.5vw, 42px)', fontWeight: 800, margin: '8px 0 12px' }}>
+            Turn your digital strips into <span className="grad">forever keepsakes</span>.
           </h1>
           <p style={{ color: 'var(--ink-soft)', fontSize: '16px' }}>
-            One single order can split and ship to both of your addresses anywhere in the world.
+            Export high-res printable 4×6 photo sheets, matching phone wallpapers, and DIY fridge magnet templates with zero cost.
           </p>
         </div>
 
-        {!ordered ? (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'minmax(0, 1.1fr) minmax(0, 0.9fr)',
-              gap: '40px',
-              alignItems: 'start',
-            }}
-          >
-            {/* Products Grid */}
-            <div style={{ display: 'grid', gap: '16px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
-                {PRODUCTS.map((prod) => (
-                  <div
-                    key={prod.id}
-                    onClick={() => setSelectedProduct(prod)}
-                    style={{
-                      background: selectedProduct.id === prod.id ? '#FFFFFF' : 'var(--paper-raised)',
-                      border: selectedProduct.id === prod.id ? '2px solid var(--pink)' : '1px solid var(--line)',
-                      borderRadius: '14px',
-                      padding: '20px',
-                      cursor: 'pointer',
-                      boxShadow: selectedProduct.id === prod.id ? 'var(--shadow-lg)' : 'var(--shadow-soft)',
-                      transform: selectedProduct.id === prod.id ? 'scale(1.02)' : 'none',
-                      transition: 'all 0.15s ease',
-                      position: 'relative',
-                    }}
-                  >
-                    {prod.badge && (
-                      <span className="badge hot" style={{ position: 'absolute', top: '14px', right: '14px' }}>
-                        {prod.badge}
-                      </span>
-                    )}
-                    <div style={{ fontSize: '36px', marginBottom: '10px' }}>{prod.image}</div>
-                    <h3 style={{ fontSize: '17px', fontWeight: 800, marginBottom: '6px' }}>{prod.name}</h3>
-                    <div style={{ fontSize: '18px', fontWeight: 900, color: 'var(--ink)' }}>${prod.price} USD</div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Product Details Panel */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '32px' }}>
+          {/* Keepsakes List */}
+          <div style={{ display: 'grid', gap: '16px' }}>
+            {KEEPSAKES.map((item) => (
               <div
+                key={item.id}
+                onClick={() => setSelectedKeepsake(item)}
                 style={{
                   background: '#FFFFFF',
-                  border: '1px solid var(--line)',
+                  border: selectedKeepsake.id === item.id ? '2px solid var(--pink)' : '1px solid var(--line)',
                   borderRadius: '16px',
-                  padding: '28px',
+                  padding: '20px 24px',
+                  cursor: 'pointer',
                   boxShadow: 'var(--shadow)',
+                  transition: 'all 0.15s ease',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                  <span style={{ fontSize: '28px' }}>{selectedProduct.image}</span>
-                  <div>
-                    <h2 style={{ fontSize: '20px', fontWeight: 800 }}>{selectedProduct.name}</h2>
-                    <div style={{ color: 'var(--ink-soft)', fontSize: '14px' }}>${selectedProduct.price} USD each</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ fontSize: '28px' }}>{item.icon}</span>
+                    <h3 style={{ fontSize: '17px', fontWeight: 800, margin: 0 }}>{item.name}</h3>
                   </div>
+                  {item.badge && <span className="badge hot">{item.badge}</span>}
                 </div>
-                <p style={{ color: 'var(--ink-soft)', fontSize: '15px', lineHeight: 1.5, marginBottom: '16px' }}>
-                  {selectedProduct.description}
-                </p>
-                {selectedProduct.id === 'magnet' && (
-                  <div style={{ borderRadius: '12px', overflow: 'hidden', marginBottom: '16px', border: '1px solid var(--line)', maxHeight: '200px' }}>
-                    <img src="/photos/magnet-fridge.webp" alt="Fridge magnet on door" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  </div>
-                )}
-                <ul style={{ listStyle: 'none', display: 'grid', gap: '8px', padding: 0 }}>
-                  {selectedProduct.features.map((feat, i) => (
-                    <li key={i} style={{ fontSize: '14px', color: 'var(--ink)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ color: 'var(--pink)', fontWeight: 800 }}>♡</span> {feat}
-                    </li>
-                  ))}
-                </ul>
+
+                <p style={{ color: 'var(--ink-soft)', fontSize: '13.5px', margin: '4px 0 12px' }}>{item.description}</p>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '10px', borderTop: '1px solid var(--line)' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 800, color: '#0A7D4D', fontFamily: 'var(--font-mono)' }}>
+                    ✓ 100% FREE
+                  </span>
+                  <span style={{ fontSize: '12px', color: 'var(--pink)', fontWeight: 700 }}>Select Template ▷</span>
+                </div>
               </div>
-            </div>
-
-            {/* Checkout Form */}
-            <div
-              style={{
-                background: '#FFFFFF',
-                border: '1px solid var(--line)',
-                borderRadius: '16px',
-                padding: '28px',
-                boxShadow: 'var(--shadow-lg)',
-              }}
-            >
-              <h3 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '18px' }}>Order Details</h3>
-
-              <form onSubmit={handleCheckout} style={{ display: 'grid', gap: '16px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>
-                    Select Photostrip
-                  </label>
-                  <select
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      borderRadius: '8px',
-                      border: '1px solid var(--line)',
-                      background: 'var(--paper)',
-                      fontFamily: 'inherit',
-                    }}
-                  >
-                    <option>Today&apos;s Session (Room KX7RM) · Calgary ♡ Jakarta</option>
-                    <option>Sunset Terrace Strip · 4-Cut</option>
-                    <option>Upload custom photo strip</option>
-                  </select>
-                </div>
-
-                {/* Dual Shipping Toggle */}
-                <div
-                  style={{
-                    background: 'var(--paper)',
-                    padding: '14px',
-                    borderRadius: '10px',
-                    border: '1px solid var(--line)',
-                  }}
-                >
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 700, fontSize: '14px' }}>
-                    <input
-                      type="checkbox"
-                      checked={dualShipping}
-                      onChange={(e) => setDualShipping(e.target.checked)}
-                      style={{ accentColor: 'var(--pink)', width: '18px', height: '18px' }}
-                    />
-                    Split delivery: Ship to BOTH our addresses
-                  </label>
-                  <p style={{ fontSize: '12px', color: 'var(--ink-soft)', margin: '4px 0 0 26px' }}>
-                    We automatically print 2 copies and package one for each partner.
-                  </p>
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>
-                    Partner A Address (e.g. You)
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={address1}
-                    onChange={(e) => setAddress1(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      borderRadius: '8px',
-                      border: '1px solid var(--line)',
-                      fontFamily: 'inherit',
-                    }}
-                  />
-                </div>
-
-                {dualShipping && (
-                  <div>
-                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>
-                      Partner B Address (e.g. Partner)
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={address2}
-                      onChange={(e) => setAddress2(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '10px 12px',
-                        borderRadius: '8px',
-                        border: '1px solid var(--line)',
-                        fontFamily: 'inherit',
-                      }}
-                    />
-                  </div>
-                )}
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>
-                    Your Email
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    defaultValue="mia@example.com"
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      borderRadius: '8px',
-                      border: '1px solid var(--line)',
-                      fontFamily: 'inherit',
-                    }}
-                  />
-                </div>
-
-                {/* Price Summary */}
-                <div style={{ borderTop: '1px solid var(--line)', paddingTop: '16px', marginTop: '6px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '14px' }}>
-                    <span>{selectedProduct.name} {dualShipping ? '(Twin Pack)' : '(Single)'}</span>
-                    <span>${dualShipping ? selectedProduct.price * 2 : selectedProduct.price} USD</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '14px', color: '#0a7d4d' }}>
-                    <span>Worldwide Tracked Shipping</span>
-                    <span>Free Today</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px', fontWeight: 900, borderTop: '1px solid var(--line)', paddingTop: '10px' }}>
-                    <span>Total</span>
-                    <span>${dualShipping ? selectedProduct.price * 2 : selectedProduct.price} USD</span>
-                  </div>
-                </div>
-
-                <button type="submit" className="btn btn-grad" style={{ width: '100%', justifyContent: 'center', padding: '14px', fontSize: '16px' }}>
-                  Order Keepsakes ▷
-                </button>
-              </form>
-            </div>
+            ))}
           </div>
-        ) : (
-          /* Order Success */
+
+          {/* Keepsake Generator & Download Panel */}
           <div
             style={{
               background: '#FFFFFF',
               border: '1px solid var(--line)',
-              borderRadius: '16px',
-              padding: '48px 28px',
-              maxWidth: '560px',
-              margin: '0 auto',
-              textAlign: 'center',
+              borderRadius: '20px',
+              padding: '32px',
               boxShadow: 'var(--shadow-lg)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
             }}
           >
-            <div style={{ fontSize: '48px', marginBottom: '12px' }}>🎁</div>
-            <h2 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '8px' }}>Order Placed With Love!</h2>
-            <p style={{ color: 'var(--ink-soft)', fontSize: '16px', marginBottom: '24px' }}>
-              We are printing your {selectedProduct.name} and sending packages to:
-              <br />
-              <b>{address1}</b> &amp; <b>{address2}</b>.
-            </p>
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-              <button className="btn btn-ghost" onClick={() => setOrdered(false)}>
-                Order Another Print
-              </button>
-              <Link className="btn btn-primary" href="/photobooth">
-                Back to Photobooth 📸
-              </Link>
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <span className="badge hot">{selectedKeepsake.name}</span>
+                <span style={{ fontSize: '12px', fontWeight: 800, color: '#0A7D4D', fontFamily: 'var(--font-mono)' }}>
+                  Free Download
+                </span>
+              </div>
+
+              <h2 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '8px' }}>{selectedKeepsake.name}</h2>
+              <p style={{ color: 'var(--ink-soft)', fontSize: '14.5px', marginBottom: '20px' }}>
+                {selectedKeepsake.description}
+              </p>
+
+              {/* Preview image */}
+              <div style={{ height: '220px', borderRadius: '12px', overflow: 'hidden', background: '#17181C', marginBottom: '20px' }}>
+                <img src={selectedKeepsake.previewUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+
+              {/* Features list */}
+              <div style={{ display: 'grid', gap: '8px', marginBottom: '24px' }}>
+                {selectedKeepsake.features.map((feat, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+                    <span style={{ color: '#0A7D4D', fontWeight: 800 }}>✓</span>
+                    <span>{feat}</span>
+                  </div>
+                ))}
+              </div>
             </div>
+
+            <button
+              onClick={handleDownload}
+              className="btn btn-primary"
+              style={{ width: '100%', padding: '14px', fontSize: '15px', justifyContent: 'center' }}
+            >
+              {downloaded ? '✓ High-Res Keepsake Saved!' : 'Download Free High-Res PNG / PDF 💾'}
+            </button>
           </div>
-        )}
+        </div>
       </main>
     </div>
   );

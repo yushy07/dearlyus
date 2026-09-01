@@ -647,13 +647,12 @@ export default function HomePage() {
               </p>
 
               <span className="august-price">
-                <span className="ap-now">$7</span>
-                <span className="ap-per">/ month</span>
-                <span className="ap-was">$10</span>
-                <span className="ap-save">save 30%</span>
+                <span className="ap-now">FREE</span>
+                <span className="ap-per">forever</span>
+                <span className="ap-save">100% free for all couples</span>
               </span>
               <span className="august-incl">
-                Unlimited fun dates · 999+ HD photobooth sessions · 15 games · every question pack · your shared Journal
+                Unlimited fun dates · 999+ HD photobooth sessions · 15 games · every question pack · zero paywalls
               </span>
 
               <ul className="august-run">
@@ -1469,7 +1468,7 @@ export default function HomePage() {
                   Open Full Studio ▷
                 </Link>
                 <Link className="btn btn-ghost" href="/shop" style={{ justifyContent: 'center', fontSize: '13px' }}>
-                  Order Magnet Print ($12) 🧲
+                  Save Free Keepsakes 🎁
                 </Link>
               </div>
             </div>
@@ -1539,24 +1538,23 @@ export default function HomePage() {
         <div className="wrap">
           <div className="pb-grid">
             <div className="pb-copy">
-              <div className="kicker">Keepsakes · ships worldwide</div>
+              <div className="kicker">100% Free Digital Keepsakes</div>
               <h2>
-                Preserve your LDR memories by <span className="grad">printing your photobooth strips</span>.
+                Preserve your memories with <span className="grad">free printable DIY keepsakes</span>.
               </h2>
               <p>
-                Turn today&apos;s session into something you can actually hold. We print your strip as a die-cut fridge
-                magnet and ship it worldwide — send one to each of you, so the same memory lives on both your fridges.
+                Turn today&apos;s session into printable 4×6 photo sheets, couple lockscreen wallpapers, and DIY fridge magnet cutouts — 100% free with zero fees.
               </p>
               <ul className="pb-feats">
-                <li>Die-cut vinyl magnets from your real HD strip</li>
-                <li>One order can ship to both your addresses</li>
-                <li>20% off when you print 3 or more</li>
+                <li>300 DPI high-res printable photo sheets for standard 4×6 paper</li>
+                <li>Matching couple lockscreen &amp; desktop wallpaper pairs</li>
+                <li>Instant PNG &amp; PDF downloads for both of you</li>
               </ul>
               <div className="pb-cta-row">
                 <Link className="btn btn-grad" href="/shop">
-                  Print your strips — $12 <span className="arr">▷</span>
+                  Download Free Keepsakes <span className="arr">▷</span>
                 </Link>
-                <span className="pb-ships">🌍 Magnets worldwide · keychains &amp; HD prints across Indonesia</span>
+                <span className="pb-ships">✨ 100% free forever · no subscriptions or credit card needed</span>
               </div>
             </div>
             <div className="pb-art">
@@ -1579,7 +1577,7 @@ export default function HomePage() {
                   </div>
                 </div>
                 <span className="pb-tag">
-                  $12<small>each</small>
+                  FREE<small>forever</small>
                 </span>
               </div>
             </div>
