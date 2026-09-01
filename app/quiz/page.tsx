@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { QUIZ_PACKS } from '@/data';
-import { QuizPack } from '@/types';
-import { Ribbon, Navbar } from '@/components/shared';
+import { QuizPack, QuizQuestion } from '@/types';
+import { Ribbon, Navbar, Confetti } from '@/components/shared';
+import { sounds } from '@/lib/sound';
 
 export default function QuizPage() {
+  const [allPacks, setAllPacks] = useState<QuizPack[]>(QUIZ_PACKS);
   const [selectedPack, setSelectedPack] = useState<QuizPack>(QUIZ_PACKS[0]);
   const [currentQIndex, setCurrentQIndex] = useState(0);
   const [miaPick, setMiaPick] = useState<number | null>(null);
@@ -14,6 +16,35 @@ export default function QuizPage() {
   const [revealed, setRevealed] = useState(false);
   const [matches, setMatches] = useState<number>(0);
   const [finished, setFinished] = useState(false);
+  const [confettiActive, setConfettiActive] = useState(false);
+
+  // Custom Lore Quiz Creator Modal State
+  const [creatorOpen, setCreatorOpen] = useState(false);
+  const [newPackTitle, setNewPackTitle] = useState('Our Japan Trip Secrets ⛩️');
+  const [newPackDesc, setNewPackDesc] = useState('Inside jokes, missed trains, and favorite meals from our vacation.');
+  const [customQuestions, setCustomQuestions] = useState<QuizQuestion[]>([
+    {
+      q: 'What was the funniest thing that happened on our first night?',
+      options: ['We got completely lost in Shinjuku 🚶', 'We ordered 40 dumplings by accident 🥟', 'The hotel room was the size of a closet 🚪', 'We slept for 16 straight hours 😴'],
+      honestAnswerIndex: 1,
+    },
+    {
+      q: 'Which snack did we buy at 7-Eleven every single day?',
+      options: ['Egg salad sandwich 🥪', 'Matcha ice cream cone 🍦', 'Pork katsu onigiri 🍙', 'Hot can of milk tea 🧋'],
+      honestAnswerIndex: 0,
+    },
+  ]);
+
+  // Load any saved custom packs from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('angie_custom_quiz_packs');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setAllPacks([...QUIZ_PACKS, ...parsed]);
+      }
+    } catch {}
+  }, []);
 
   const currentQ = selectedPack.questions[currentQIndex];
 
@@ -25,6 +56,9 @@ export default function QuizPage() {
       setRevealed(false);
     } else {
       setFinished(true);
+      sounds.playCelebration();
+      setConfettiActive(true);
+      setTimeout(() => setConfettiActive(false), 4000);
     }
   };
 
@@ -33,10 +67,13 @@ export default function QuizPage() {
     setRevealed(true);
     if (miaPick === alexPick) {
       setMatches((prev) => prev + 1);
+      sounds.playCelebration();
+    } else {
+      sounds.playCountdownBeep(true);
     }
   };
 
-  const restartQuiz = (pack: Pack) => {
+  const restartQuiz = (pack: QuizPack) => {
     setSelectedPack(pack);
     setCurrentQIndex(0);
     setMiaPick(null);
@@ -46,44 +83,73 @@ export default function QuizPage() {
     setFinished(false);
   };
 
+  // Add question to custom builder
+  const addQuestionDraft = () => {
+    setCustomQuestions([
+      ...customQuestions,
+      {
+        q: 'New Question: What was our favorite memory from this trip?',
+        options: ['Walking by the river at dusk 🌅', 'Singing karaoke until 3am 🎤', 'The cozy coffee shop we found ☕', 'Just talking in the hotel room 💌'],
+        honestAnswerIndex: 0,
+      },
+    ]);
+  };
+
+  // Save custom quiz pack
+  const saveCustomPack = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPackTitle.trim() || customQuestions.length === 0) return;
+
+    const newPack: QuizPack = {
+      id: `custom-${Date.now()}`,
+      name: newPackTitle,
+      badge: '★ Custom Lore',
+      description: newPackDesc,
+      questions: customQuestions,
+    };
+
+    const updated = [...allPacks, newPack];
+    setAllPacks(updated);
+    setSelectedPack(newPack);
+    restartQuiz(newPack);
+    setCreatorOpen(false);
+
+    try {
+      const existingCustom = JSON.parse(localStorage.getItem('angie_custom_quiz_packs') || '[]');
+      localStorage.setItem('angie_custom_quiz_packs', JSON.stringify([...existingCustom, newPack]));
+    } catch {}
+  };
+
   const matchPercent = Math.round((matches / selectedPack.questions.length) * 100);
 
   return (
     <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px' }}>
-      <Ribbon text={<>❓ Know Me Quiz · <b>How Well Do You Know Each Other?</b> · 17 Packs Free on Angie</>} />
+      <Ribbon text={<>❓ Know Me Quiz · <b>How Well Do You Know Each Other?</b> · Double-Blind Reveal</>} />
+      <Confetti active={confettiActive} />
 
       <Navbar
         rightAction={
-          <span
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '12px',
-              background: 'var(--paper-raised)',
-              padding: '5px 10px',
-              borderRadius: '6px',
-              border: '1px solid var(--line)',
-            }}
-          >
-            Pack: <b>{selectedPack.name}</b>
-          </span>
+          <button onClick={() => setCreatorOpen(true)} className="btn btn-primary" style={{ padding: '6px 14px', fontSize: '13px' }}>
+            + Create &ldquo;Our Lore&rdquo; Quiz
+          </button>
         }
       />
 
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '860px' }}>
         {/* Title */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <span className="eyebrow">Know Me Quiz · How Well Do You Know Me?</span>
+          <span className="eyebrow">Know Me Quiz · Private Double-Blind Lock-in</span>
           <h1 style={{ fontSize: 'clamp(28px, 4.5vw, 42px)', marginBottom: '10px' }}>
             Lock in privately, <span className="grad">reveal together</span>.
           </h1>
           <p style={{ color: 'var(--ink-soft)', fontSize: '16px' }}>
-            Mia answers honestly, Alex guesses what she chose. Then flip to see if you match!
+            Partner A answers honestly, Partner B guesses what they chose. Answers stay secret until both lock in!
           </p>
         </div>
 
         {/* Pack Selector Chips */}
         <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '28px' }}>
-          {QUIZ_PACKS.map((pack) => (
+          {allPacks.map((pack) => (
             <button
               key={pack.id}
               onClick={() => restartQuiz(pack)}
@@ -109,187 +175,278 @@ export default function QuizPage() {
             style={{
               background: '#FFFFFF',
               border: '1px solid var(--line)',
-              borderRadius: '16px',
-              padding: '32px 28px',
+              borderRadius: '20px',
+              padding: '36px 32px',
               boxShadow: 'var(--shadow-lg)',
             }}
           >
-            {/* Progress Bar */}
+            {/* Header / Progress */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--ink-soft)', textTransform: 'uppercase' }}>
+              <span className="badge" style={{ background: '#F4F5F7', color: 'var(--ink-soft)', fontWeight: 800 }}>
                 Question {currentQIndex + 1} of {selectedPack.questions.length}
               </span>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: '#0a7d4d', fontWeight: 700 }}>
-                Score: {matches} Matches
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--pink)', fontWeight: 800 }}>
+                Matches: {matches} 💖
               </span>
             </div>
 
             {/* Question Text */}
-            <h2 style={{ fontSize: '22px', fontWeight: 800, textAlign: 'center', marginBottom: '28px', color: '#17181C' }}>
+            <h2 style={{ fontSize: 'clamp(20px, 3vw, 26px)', fontWeight: 800, marginBottom: '24px', textAlign: 'center' }}>
               {currentQ.q}
             </h2>
 
-            {/* Dual Screen Answer Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-              {/* Left Phone: Mia */}
-              <div
-                style={{
-                  background: '#FFF8FA',
-                  border: '2px solid var(--pink-tint)',
-                  borderTop: '4px solid var(--pink)',
-                  borderRadius: '14px',
-                  padding: '20px 16px',
-                }}
-              >
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', fontWeight: 700, color: 'var(--pink)', textTransform: 'uppercase', marginBottom: '12px' }}>
-                  Mia · Answers Honestly
+            {/* Double-Blind Dual Player Pick Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '28px' }}>
+              {/* Partner A (Mia) */}
+              <div style={{ background: '#FFF5F8', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,123,163,0.3)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <span style={{ fontWeight: 800, fontSize: '14px', color: 'var(--pink)' }}>🌸 Partner A (Mia)</span>
+                  <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--ink-soft)' }}>
+                    {miaPick !== null ? '🔒 Locked in' : 'Thinking...'}
+                  </span>
                 </div>
                 <div style={{ display: 'grid', gap: '8px' }}>
-                  {currentQ.options.map((opt, i) => (
+                  {currentQ.options.map((opt, idx) => (
                     <button
-                      key={i}
-                      onClick={() => !revealed && setMiaPick(i)}
+                      key={idx}
+                      onClick={() => !revealed && setMiaPick(idx)}
                       disabled={revealed}
                       style={{
-                        padding: '10px 12px',
-                        borderRadius: '8px',
-                        border: miaPick === i ? '2px solid var(--pink)' : '1px solid var(--line)',
-                        background: miaPick === i ? 'var(--pink)' : '#fff',
-                        color: miaPick === i ? '#fff' : '#17181C',
-                        fontWeight: 600,
-                        fontSize: '13px',
                         textAlign: 'left',
+                        padding: '10px 14px',
+                        borderRadius: '8px',
+                        border: miaPick === idx ? '2px solid var(--pink)' : '1px solid #FFD6E8',
+                        background: miaPick === idx ? '#FFF' : 'rgba(255,255,255,0.6)',
+                        color: 'var(--ink)',
+                        fontSize: '13.5px',
+                        fontWeight: miaPick === idx ? 700 : 500,
                         cursor: revealed ? 'default' : 'pointer',
-                        transition: 'all 0.15s ease',
                       }}
                     >
                       {opt}
                     </button>
                   ))}
-                </div>
-                <div style={{ marginTop: '12px', fontSize: '11px', fontWeight: 700, color: miaPick !== null ? '#0a7d4d' : '#8B8E98' }}>
-                  {miaPick !== null ? '✓ Locked in privately' : 'Waiting for answer...'}
                 </div>
               </div>
 
-              {/* Right Phone: Alex */}
-              <div
-                style={{
-                  background: '#F6FAFF',
-                  border: '2px solid var(--blue-tint)',
-                  borderTop: '4px solid var(--blue)',
-                  borderRadius: '14px',
-                  padding: '20px 16px',
-                }}
-              >
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', fontWeight: 700, color: 'var(--blue)', textTransform: 'uppercase', marginBottom: '12px' }}>
-                  Alex · Guesses Her Answer
+              {/* Partner B (Alex) */}
+              <div style={{ background: '#F0F7FF', padding: '20px', borderRadius: '16px', border: '1px solid rgba(95,160,255,0.3)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <span style={{ fontWeight: 800, fontSize: '14px', color: 'var(--blue)' }}>💙 Partner B (Alex)</span>
+                  <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--ink-soft)' }}>
+                    {alexPick !== null ? '🔒 Locked in' : 'Thinking...'}
+                  </span>
                 </div>
                 <div style={{ display: 'grid', gap: '8px' }}>
-                  {currentQ.options.map((opt, i) => (
+                  {currentQ.options.map((opt, idx) => (
                     <button
-                      key={i}
-                      onClick={() => !revealed && setAlexPick(i)}
+                      key={idx}
+                      onClick={() => !revealed && setAlexPick(idx)}
                       disabled={revealed}
                       style={{
-                        padding: '10px 12px',
-                        borderRadius: '8px',
-                        border: alexPick === i ? '2px solid var(--blue)' : '1px solid var(--line)',
-                        background: alexPick === i ? 'var(--blue)' : '#fff',
-                        color: alexPick === i ? '#fff' : '#17181C',
-                        fontWeight: 600,
-                        fontSize: '13px',
                         textAlign: 'left',
+                        padding: '10px 14px',
+                        borderRadius: '8px',
+                        border: alexPick === idx ? '2px solid var(--blue)' : '1px solid #D6E8FF',
+                        background: alexPick === idx ? '#FFF' : 'rgba(255,255,255,0.6)',
+                        color: 'var(--ink)',
+                        fontSize: '13.5px',
+                        fontWeight: alexPick === idx ? 700 : 500,
                         cursor: revealed ? 'default' : 'pointer',
-                        transition: 'all 0.15s ease',
                       }}
                     >
                       {opt}
                     </button>
                   ))}
-                </div>
-                <div style={{ marginTop: '12px', fontSize: '11px', fontWeight: 700, color: alexPick !== null ? '#0a7d4d' : '#8B8E98' }}>
-                  {alexPick !== null ? '✓ Locked in privately' : 'Waiting for guess...'}
                 </div>
               </div>
             </div>
 
-            {/* Reveal / Match Result */}
-            {revealed && (
-              <div
-                style={{
-                  marginTop: '24px',
-                  padding: '16px',
-                  borderRadius: '12px',
-                  background: miaPick === alexPick ? '#eafaf1' : '#FFF0F5',
-                  border: `1px solid ${miaPick === alexPick ? '#bfe6d2' : '#FFD1DF'}`,
-                  textAlign: 'center',
-                }}
-              >
-                <div style={{ fontSize: '20px', fontWeight: 800, color: miaPick === alexPick ? '#0a7d4d' : '#D15B76' }}>
-                  {miaPick === alexPick ? '🎉 Match! You know each other so well!' : '😅 Missed this one! Good thing to learn today!'}
-                </div>
-              </div>
-            )}
-
-            {/* Action Buttons */}
-            <div style={{ marginTop: '28px', display: 'flex', justifyContent: 'center', gap: '14px' }}>
+            {/* Action Bar */}
+            <div style={{ textAlign: 'center', paddingTop: '12px' }}>
               {!revealed ? (
                 <button
-                  className="btn btn-grad"
-                  disabled={miaPick === null || alexPick === null}
                   onClick={handleReveal}
-                  style={{ padding: '12px 32px', fontSize: '16px' }}
+                  disabled={miaPick === null || alexPick === null}
+                  className="btn btn-primary"
+                  style={{ padding: '12px 36px', fontSize: '15px', opacity: miaPick !== null && alexPick !== null ? 1 : 0.5 }}
                 >
-                  Reveal Answers Together ▷
+                  Flip &amp; Reveal Answers 🔍
                 </button>
               ) : (
-                <button className="btn btn-primary" onClick={handleNext} style={{ padding: '12px 32px', fontSize: '16px' }}>
-                  {currentQIndex + 1 < selectedPack.questions.length ? 'Next Question ▷' : 'See Final Score 🏆'}
-                </button>
+                <div style={{ animation: 'gl-rise 0.25s ease' }}>
+                  <div
+                    style={{
+                      padding: '14px 20px',
+                      borderRadius: '12px',
+                      marginBottom: '16px',
+                      background: miaPick === alexPick ? '#E6F9F0' : '#FFF0F0',
+                      color: miaPick === alexPick ? '#0A7D4D' : '#D93838',
+                      fontWeight: 800,
+                      fontSize: '16px',
+                    }}
+                  >
+                    {miaPick === alexPick
+                      ? '✨ PERFECT MATCH! You both picked the exact same thing!'
+                      : `💔 Clashing picks! Mia chose "${currentQ.options[miaPick!]}" while Alex guessed "${currentQ.options[alexPick!]}".`}
+                  </div>
+                  <button onClick={handleNext} className="btn btn-grad" style={{ padding: '12px 36px', fontSize: '15px' }}>
+                    {currentQIndex + 1 < selectedPack.questions.length ? 'Next Question ▷' : 'View Final Results 🏆'}
+                  </button>
+                </div>
               )}
             </div>
           </div>
         ) : (
-          /* Final Scorecard */
+          /* Final Match Scorecard */
           <div
             style={{
               background: '#FFFFFF',
               border: '1px solid var(--line)',
-              borderRadius: '16px',
-              padding: '40px 28px',
+              borderRadius: '20px',
+              padding: '48px 36px',
               textAlign: 'center',
               boxShadow: 'var(--shadow-lg)',
             }}
           >
-            <span style={{ fontSize: '48px' }}>💞</span>
-            <h2 style={{ fontSize: '32px', fontWeight: 800, margin: '14px 0 8px' }}>
-              {matchPercent >= 80 ? 'Soulmate Connection!' : matchPercent >= 50 ? 'Strong LDR Bond!' : 'Lots of Fun Discoveries!'}
+            <span style={{ fontSize: '54px', display: 'block', marginBottom: '12px' }}>
+              {matchPercent >= 80 ? '💖' : matchPercent >= 50 ? '🥰' : '😜'}
+            </span>
+            <span className="eyebrow">{selectedPack.name} Complete</span>
+            <h2 style={{ fontSize: '38px', fontWeight: 800, margin: '8px 0 16px' }}>
+              Compatibility Score: <span className="grad">{matchPercent}%</span>
             </h2>
-            <div
-              style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: '56px',
-                fontWeight: 900,
-                background: 'linear-gradient(100deg, var(--pink), var(--blue))',
-                WebkitBackgroundClip: 'text',
-                color: 'transparent',
-                margin: '10px 0',
-              }}
-            >
-              {matchPercent}% Compatibility
-            </div>
-            <p style={{ color: 'var(--ink-soft)', fontSize: '16px', maxWidth: '44ch', margin: '0 auto 28px' }}>
-              You got {matches} out of {selectedPack.questions.length} answers matched! Every date brings you two closer together across the miles.
+            <p style={{ color: 'var(--ink-soft)', fontSize: '16px', maxWidth: '48ch', margin: '0 auto 28px' }}>
+              You matched on <b>{matches}</b> out of <b>{selectedPack.questions.length}</b> questions!
             </p>
 
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-              <button className="btn btn-grad" onClick={() => restartQuiz(selectedPack)}>
-                Play Again ↺
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button onClick={() => restartQuiz(selectedPack)} className="btn btn-primary" style={{ padding: '12px 28px' }}>
+                Play Again 🔄
               </button>
-              <Link className="btn btn-ghost" href="/photobooth">
-                Take a Photobooth Picture 📸
+              <button onClick={() => setCreatorOpen(true)} className="btn btn-ghost" style={{ padding: '12px 28px' }}>
+                + Build Your Own Lore Pack
+              </button>
+              <Link href="/photobooth" className="btn btn-grad" style={{ padding: '12px 28px' }}>
+                Celebrate in Photobooth 📸
               </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Custom Lore Quiz Creator Modal */}
+        {creatorOpen && (
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 100,
+              background: 'rgba(23,24,28,0.5)',
+              backdropFilter: 'blur(6px)',
+              display: 'grid',
+              placeItems: 'center',
+              padding: '20px',
+            }}
+            onClick={() => setCreatorOpen(false)}
+          >
+            <div
+              style={{
+                width: 'min(640px, 100%)',
+                maxHeight: '90vh',
+                overflowY: 'auto',
+                background: '#fff',
+                borderRadius: '20px',
+                padding: '32px',
+                boxShadow: 'var(--shadow-lg)',
+                border: '1px solid var(--line)',
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <div>
+                  <span className="badge hot">Private Question Builder</span>
+                  <h3 style={{ fontSize: '22px', fontWeight: 800, marginTop: '4px' }}>Create &ldquo;Our Lore&rdquo; Quiz</h3>
+                </div>
+                <button
+                  onClick={() => setCreatorOpen(false)}
+                  style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <form onSubmit={saveCustomPack} style={{ display: 'grid', gap: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>
+                    Quiz Pack Title:
+                  </label>
+                  <input
+                    type="text"
+                    value={newPackTitle}
+                    onChange={(e) => setNewPackTitle(e.target.value)}
+                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--line)', fontSize: '14px' }}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>
+                    Description / Lore Summary:
+                  </label>
+                  <input
+                    type="text"
+                    value={newPackDesc}
+                    onChange={(e) => setNewPackDesc(e.target.value)}
+                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--line)', fontSize: '14px' }}
+                  />
+                </div>
+
+                {/* Questions List */}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 800 }}>Custom Questions ({customQuestions.length})</span>
+                    <button type="button" onClick={addQuestionDraft} className="btn btn-ghost" style={{ padding: '4px 10px', fontSize: '12px' }}>
+                      + Add Question
+                    </button>
+                  </div>
+
+                  <div style={{ display: 'grid', gap: '12px' }}>
+                    {customQuestions.map((q, qIdx) => (
+                      <div key={qIdx} style={{ background: 'var(--paper)', padding: '14px', borderRadius: '10px', border: '1px solid var(--line)' }}>
+                        <input
+                          type="text"
+                          value={q.q}
+                          onChange={(e) => {
+                            const updated = [...customQuestions];
+                            updated[qIdx].q = e.target.value;
+                            setCustomQuestions(updated);
+                          }}
+                          style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--line)', marginBottom: '8px', fontWeight: 700, fontSize: '13px' }}
+                        />
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                          {q.options.map((opt, optIdx) => (
+                            <input
+                              key={optIdx}
+                              type="text"
+                              value={opt}
+                              onChange={(e) => {
+                                const updated = [...customQuestions];
+                                updated[qIdx].options[optIdx] = e.target.value;
+                                setCustomQuestions(updated);
+                              }}
+                              style={{ padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--line)', fontSize: '12px' }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <button type="submit" className="btn btn-primary" style={{ padding: '12px', fontSize: '14px', marginTop: '10px' }}>
+                  Save &amp; Play Custom Pack ▷
+                </button>
+              </form>
             </div>
           </div>
         )}

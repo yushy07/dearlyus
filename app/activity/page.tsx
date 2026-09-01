@@ -619,6 +619,104 @@ export default function ActivityPage() {
           </Link>
 
           <Link
+            href="/timezone"
+            className="act"
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: '16px',
+              padding: '18px 20px',
+              borderRadius: '14px',
+            }}
+          >
+            <div
+              style={{
+                width: '42px',
+                height: '42px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '12px',
+                background: 'var(--paper)',
+                fontSize: '24px',
+                flex: 'none',
+              }}
+            >
+              🌍
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: 800, margin: 0 }}>
+                Timezone &amp; Reunion Hub{' '}
+                <span
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '9px',
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    color: '#fff',
+                    background: 'linear-gradient(100deg, var(--pink), var(--blue))',
+                  }}
+                >
+                  New
+                </span>
+              </h3>
+              <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--ink-soft)' }}>
+                daylight horizon, golden overlap hours &amp; airport countdown
+              </p>
+            </div>
+            <span style={{ marginLeft: 'auto', fontSize: '18px', color: 'var(--ink-soft)' }}>▷</span>
+          </Link>
+
+          <Link
+            href="/bucket"
+            className="act"
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: '16px',
+              padding: '18px 20px',
+              borderRadius: '14px',
+            }}
+          >
+            <div
+              style={{
+                width: '42px',
+                height: '42px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '12px',
+                background: 'var(--paper)',
+                fontSize: '24px',
+                flex: 'none',
+              }}
+            >
+              🎯
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: 800, margin: 0 }}>
+                100 Dates Bucket List{' '}
+                <span
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '9px',
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    color: '#fff',
+                    background: 'linear-gradient(100deg, var(--pink), var(--blue))',
+                  }}
+                >
+                  New
+                </span>
+              </h3>
+              <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--ink-soft)' }}>
+                scratch off milestones from virtual dates to airport hugs
+              </p>
+            </div>
+            <span style={{ marginLeft: 'auto', fontSize: '18px', color: 'var(--ink-soft)' }}>▷</span>
+          </Link>
+
+          <Link
             href="/date"
             className="act"
             style={{
@@ -661,7 +759,7 @@ export default function ActivityPage() {
                 </span>
               </h3>
               <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--ink-soft)' }}>
-                custom multi-game schedules based on mood &amp; time
+                custom multi-game schedules, ambient soundscapes &amp; cooking
               </p>
             </div>
             <span style={{ marginLeft: 'auto', fontSize: '18px', color: 'var(--ink-soft)' }}>▷</span>

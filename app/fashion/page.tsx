@@ -4,10 +4,11 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { FASHION_ROUNDS as ROUNDS, FASHION_ITEMS as ITEMS } from '@/data';
 import { Ribbon, Navbar, Confetti } from '@/components/shared';
+import { sounds } from '@/lib/sound';
 
 export default function FashionShowPage() {
   const [currentRoundIdx, setCurrentRoundIdx] = useState(0);
-  const [stage, setStage] = useState<'STYLE' | 'RUNWAY' | 'VERDICT'>('STYLE');
+  const [stage, setStage] = useState<'STYLE' | 'RUNWAY' | 'JUDGE' | 'VERDICT'>('STYLE');
 
   // Player Outfits
   const [myTop, setMyTop] = useState(ITEMS.tops[0]);
@@ -22,40 +23,47 @@ export default function FashionShowPage() {
   const [partnerShoes, setPartnerShoes] = useState(ITEMS.shoes[1]);
   const [partnerAccessory, setPartnerAccessory] = useState(ITEMS.accessories[1]);
 
+  // Human Peer-to-Peer Ratings
+  const [ratingCreativity, setRatingCreativity] = useState(9);
+  const [ratingTheme, setRatingTheme] = useState(10);
+  const [ratingDrama, setRatingDrama] = useState(9);
+
   // Scores
-  const [myScore, setMyScore] = useState(0);
-  const [partnerScore, setPartnerScore] = useState(0);
-  const [judgeComment, setJudgeComment] = useState('');
+  const [myScore, setMyScore] = useState(28);
+  const [partnerScore, setPartnerScore] = useState(27);
   const [totalRoundsWon, setTotalRoundsWon] = useState({ me: 0, partner: 0 });
+  const [confettiActive, setConfettiActive] = useState(false);
 
   const currentRound = ROUNDS[currentRoundIdx];
 
   const submitLook = () => {
     setStage('RUNWAY');
+    sounds.playShutter();
 
-    // Simulate AI Fashion Judge Scoring
+    // Catwalk spotlight animation
     setTimeout(() => {
-      const p1 = Math.floor(Math.random() * 2) + 8.5; // 8.5 .. 9.5
-      const p2 = Math.floor(Math.random() * 2) + 8.2; // 8.2 .. 9.2
+      setStage('JUDGE');
+    }, 2400);
+  };
 
-      setMyScore(Number(p1.toFixed(1)));
-      setPartnerScore(Number(p2.toFixed(1)));
+  const submitPeerRating = (e: React.FormEvent) => {
+    e.preventDefault();
+    const partnerTotal = ratingCreativity + ratingTheme + ratingDrama;
+    const myTotal = 28; // Simulated reciprocal rating from partner
 
-      const comments = [
-        `"Mia's choice of ${myTop} with ${myAccessory} was visionary. The silhouette captures the brief with breathtaking charisma. Alex countered brilliantly with ${partnerTop}."`,
-        `"Incredible synergy! Both looks commanded the runway. The gold accents in Mia's outfit tipped the crown by a razor-thin margin."`,
-        `"A masterclass in proportions and texture layering. Fashion icons in the making!"`,
-      ];
-      setJudgeComment(comments[currentRoundIdx % comments.length]);
+    setMyScore(myTotal);
+    setPartnerScore(partnerTotal);
 
-      if (p1 >= p2) {
-        setTotalRoundsWon((prev) => ({ ...prev, me: prev.me + 1 }));
-      } else {
-        setTotalRoundsWon((prev) => ({ ...prev, partner: prev.partner + 1 }));
-      }
+    if (myTotal >= partnerTotal) {
+      setTotalRoundsWon((prev) => ({ ...prev, me: prev.me + 1 }));
+    } else {
+      setTotalRoundsWon((prev) => ({ ...prev, partner: prev.partner + 1 }));
+    }
 
-      setStage('VERDICT');
-    }, 2800);
+    setStage('VERDICT');
+    sounds.playCelebration();
+    setConfettiActive(true);
+    setTimeout(() => setConfettiActive(false), 3000);
   };
 
   const nextRound = () => {
@@ -67,10 +75,9 @@ export default function FashionShowPage() {
 
   return (
     <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px', color: 'var(--ink)' }}>
-      {/* Ribbon */}
-      <Ribbon text={<>👗 Fashion Show · <b>A Realtime Styling Game for Two</b> · Free on Angie</>} />
+      <Ribbon text={<>👗 Fashion Show · <b>Player-vs-Player Styling Game for Two</b> · 100% Free on Angie</>} />
+      <Confetti active={confettiActive} />
 
-      {/* Top Navbar */}
       <Navbar
         rightAction={
           <span
@@ -91,12 +98,12 @@ export default function FashionShowPage() {
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '980px' }}>
         {/* Stage Header */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <span className="eyebrow">The Runway Showdown</span>
+          <span className="eyebrow">The Runway Showdown · Two-Player Game</span>
           <h1 style={{ fontSize: 'clamp(28px, 5vw, 44px)', fontWeight: 800, margin: '8px 0' }}>
             Fashion Show for <span className="grad">Two</span>
           </h1>
           <p style={{ color: 'var(--ink-soft)', fontSize: '16px', maxWidth: '54ch', margin: '0 auto' }}>
-            Get the same styling brief and secret twist. Design your outfit, hit the runway, and let AI Stylist Judge Angie crown the best dressed look.
+            Get the same styling brief. Curate your look secretly, walk the runway, and rate each other&apos;s outfit!
           </p>
         </div>
 
@@ -122,200 +129,220 @@ export default function FashionShowPage() {
             <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
               <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', opacity: 0.7 }}>Palette:</span>
               {currentRound.colorPalette.map((col, i) => (
-                <span key={i} style={{ width: '18px', height: '18px', borderRadius: '50%', background: col, border: '1.5px solid #fff' }} />
+                <span key={i} style={{ width: '16px', height: '16px', borderRadius: '50%', background: col, border: '1px solid rgba(255,255,255,0.3)' }} />
               ))}
             </div>
           </div>
-
-          <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.15)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
-            <div>
-              <b style={{ color: '#FFD166', fontSize: '13px' }}>⚡ Secret Twist: </b>
-              <span style={{ fontSize: '13.5px', opacity: 0.9 }}>{currentRound.twist}</span>
-            </div>
-            <div>
-              <b style={{ color: '#06D6A0', fontSize: '13px' }}>💡 Inspiration: </b>
-              <span style={{ fontSize: '13.5px', opacity: 0.9 }}>{currentRound.inspiration}</span>
-            </div>
+          <div style={{ marginTop: '12px', padding: '10px 14px', background: 'rgba(255,255,255,0.06)', borderRadius: '8px', fontSize: '13.5px' }}>
+            ⚡ <b>Twist:</b> {currentRound.twist}
           </div>
         </div>
 
-        {/* STAGE 1: DRESSING ROOM (STYLE) */}
+        {/* STAGE 1: STYLE CURATION */}
         {stage === 'STYLE' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
-            {/* My Styling Studio */}
-            <div className="booth-box" style={{ borderTop: '4px solid var(--pink)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <h3 style={{ fontSize: '18px', fontWeight: 800 }}>Mia&apos;s Atelier (Calgary)</h3>
-                <span className="badge hot">Styling Look</span>
+          <div className="booth-showcase-grid">
+            {/* Wardrobe Controls */}
+            <div className="booth-box">
+              <span className="eyebrow">Secret Fitting Room</span>
+              <h3 style={{ fontSize: '20px', fontWeight: 800, margin: '6px 0 18px' }}>Build Your Runway Look</h3>
+
+              <div style={{ display: 'grid', gap: '14px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>
+                    1. Top / Outerwear:
+                  </label>
+                  <select
+                    value={myTop}
+                    onChange={(e) => setMyTop(e.target.value)}
+                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--line)', background: '#fff', fontSize: '13.5px' }}
+                  >
+                    {ITEMS.tops.map((item) => (
+                      <option key={item} value={item}>
+                        {item}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>
+                    2. Bottom / Skirt / Trousers:
+                  </label>
+                  <select
+                    value={myBottom}
+                    onChange={(e) => setMyBottom(e.target.value)}
+                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--line)', background: '#fff', fontSize: '13.5px' }}
+                  >
+                    {ITEMS.bottoms.map((item) => (
+                      <option key={item} value={item}>
+                        {item}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>
+                    3. Footwear:
+                  </label>
+                  <select
+                    value={myShoes}
+                    onChange={(e) => setMyShoes(e.target.value)}
+                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--line)', background: '#fff', fontSize: '13.5px' }}
+                  >
+                    {ITEMS.shoes.map((item) => (
+                      <option key={item} value={item}>
+                        {item}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>
+                    4. Statement Accessory:
+                  </label>
+                  <select
+                    value={myAccessory}
+                    onChange={(e) => setMyAccessory(e.target.value)}
+                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--line)', background: '#fff', fontSize: '13.5px' }}
+                  >
+                    {ITEMS.accessories.map((item) => (
+                      <option key={item} value={item}>
+                        {item}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>
+                    Designer Runway Pitch:
+                  </label>
+                  <input
+                    type="text"
+                    value={myNote}
+                    onChange={(e) => setMyNote(e.target.value)}
+                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--line)', fontSize: '13px' }}
+                  />
+                </div>
               </div>
 
-              {/* Tops */}
-              <div style={{ marginBottom: '14px' }}>
-                <label style={{ display: 'block', fontSize: '11.5px', fontFamily: 'var(--font-mono)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px', color: 'var(--ink-soft)' }}>
-                  Top Piece:
-                </label>
-                <select
-                  value={myTop}
-                  onChange={(e) => setMyTop(e.target.value)}
-                  style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--line)', fontFamily: 'inherit', fontWeight: 600 }}
-                >
-                  {ITEMS.tops.map((t, i) => (
-                    <option key={i} value={t}>{t}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Bottoms */}
-              <div style={{ marginBottom: '14px' }}>
-                <label style={{ display: 'block', fontSize: '11.5px', fontFamily: 'var(--font-mono)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px', color: 'var(--ink-soft)' }}>
-                  Bottom Piece:
-                </label>
-                <select
-                  value={myBottom}
-                  onChange={(e) => setMyBottom(e.target.value)}
-                  style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--line)', fontFamily: 'inherit', fontWeight: 600 }}
-                >
-                  {ITEMS.bottoms.map((b, i) => (
-                    <option key={i} value={b}>{b}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Shoes */}
-              <div style={{ marginBottom: '14px' }}>
-                <label style={{ display: 'block', fontSize: '11.5px', fontFamily: 'var(--font-mono)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px', color: 'var(--ink-soft)' }}>
-                  Footwear:
-                </label>
-                <select
-                  value={myShoes}
-                  onChange={(e) => setMyShoes(e.target.value)}
-                  style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--line)', fontFamily: 'inherit', fontWeight: 600 }}
-                >
-                  {ITEMS.shoes.map((s, i) => (
-                    <option key={i} value={s}>{s}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Accessories */}
-              <div style={{ marginBottom: '14px' }}>
-                <label style={{ display: 'block', fontSize: '11.5px', fontFamily: 'var(--font-mono)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px', color: 'var(--ink-soft)' }}>
-                  Signature Accessory:
-                </label>
-                <select
-                  value={myAccessory}
-                  onChange={(e) => setMyAccessory(e.target.value)}
-                  style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--line)', fontFamily: 'inherit', fontWeight: 600 }}
-                >
-                  {ITEMS.accessories.map((a, i) => (
-                    <option key={i} value={a}>{a}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Styling Concept Note */}
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontSize: '11.5px', fontFamily: 'var(--font-mono)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px', color: 'var(--ink-soft)' }}>
-                  Stylist Concept &amp; Story:
-                </label>
-                <textarea
-                  value={myNote}
-                  onChange={(e) => setMyNote(e.target.value)}
-                  rows={2}
-                  style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--line)', fontFamily: 'inherit', fontSize: '13px' }}
-                />
-              </div>
-
-              <button className="btn btn-grad" onClick={submitLook} style={{ width: '100%', justifyContent: 'center', padding: '12px' }}>
-                Lock In Outfit &amp; Walk the Runway ▷
+              <button className="btn btn-primary" onClick={submitLook} style={{ width: '100%', marginTop: '20px', padding: '12px', fontSize: '15px' }}>
+                Walk the Runway 🚶‍♀️▷
               </button>
             </div>
 
-            {/* Partner's Dressing Room Preview */}
-            <div className="booth-box" style={{ borderTop: '4px solid var(--blue)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <h3 style={{ fontSize: '18px', fontWeight: 800 }}>Alex&apos;s Atelier (Jakarta)</h3>
-                <span className="badge on">Partner Ready</span>
-              </div>
-
-              <div style={{ display: 'grid', gap: '12px', background: 'var(--paper)', padding: '16px', borderRadius: '10px', border: '1px solid var(--line)', marginBottom: '20px' }}>
-                <div>
-                  <small style={{ color: 'var(--ink-soft)', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700 }}>Top:</small>
-                  <div style={{ fontWeight: 700, fontSize: '14px' }}>{partnerTop}</div>
-                </div>
-                <div>
-                  <small style={{ color: 'var(--ink-soft)', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700 }}>Bottom:</small>
-                  <div style={{ fontWeight: 700, fontSize: '14px' }}>{partnerBottom}</div>
-                </div>
-                <div>
-                  <small style={{ color: 'var(--ink-soft)', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700 }}>Footwear:</small>
-                  <div style={{ fontWeight: 700, fontSize: '14px' }}>{partnerShoes}</div>
-                </div>
-                <div>
-                  <small style={{ color: 'var(--ink-soft)', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700 }}>Accessory:</small>
-                  <div style={{ fontWeight: 700, fontSize: '14px' }}>{partnerAccessory}</div>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--ink-soft)', fontSize: '13px' }}>
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#0a7d4d' }}></span>
-                <span>Both styling choices will be presented simultaneously to the AI Fashion Judge.</span>
+            {/* Mannequin Preview */}
+            <div className="booth-box" style={{ background: '#FFFFFF', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '32px' }}>
+              <span style={{ fontSize: '56px', marginBottom: '16px' }}>👗</span>
+              <span className="badge hot" style={{ marginBottom: '8px' }}>Your Curated Ensemble</span>
+              <h4 style={{ fontSize: '18px', fontWeight: 800, margin: '4px 0' }}>{myTop}</h4>
+              <div style={{ fontSize: '14px', color: 'var(--ink-soft)' }}>paired with {myBottom}</div>
+              <div style={{ fontSize: '13px', color: 'var(--ink-soft)', marginTop: '4px' }}>Shoes: {myShoes} · Acc: {myAccessory}</div>
+              <div style={{ marginTop: '20px', padding: '12px', background: 'var(--paper)', borderRadius: '8px', fontSize: '12.5px', fontStyle: 'italic' }}>
+                &ldquo;{myNote}&rdquo;
               </div>
             </div>
           </div>
         )}
 
-        {/* STAGE 2: RUNWAY WALK (ANIMATION) */}
+        {/* STAGE 2: CATWALK SPOTLIGHT */}
         {stage === 'RUNWAY' && (
-          <div style={{ textAlign: 'center', padding: '60px 20px', background: '#17181C', color: '#fff', borderRadius: '16px', boxShadow: 'var(--shadow-lg)' }}>
-            <div style={{ fontSize: '48px', animation: 'numPop 0.8s infinite' }}>✨ 👠 ✨</div>
-            <h2 style={{ fontSize: '28px', fontWeight: 800, margin: '16px 0 8px' }}>The Models Are Walking the Runway...</h2>
-            <p style={{ opacity: 0.8, fontSize: '16px' }}>AI Stylist Judge Angie is evaluating color harmony, silhouette proportions, and twist execution.</p>
+          <div className="booth-box" style={{ padding: '60px 32px', textAlign: 'center', background: '#17181C', color: '#fff' }}>
+            <span style={{ fontSize: '64px', animation: 'gl-pulse 0.6s infinite alternate', display: 'inline-block' }}>👠</span>
+            <h2 style={{ fontSize: '32px', fontWeight: 800, margin: '16px 0 8px' }}>Walking the Spotlight Runway...</h2>
+            <p style={{ opacity: 0.8, fontSize: '16px' }}>Both players taking the catwalk with flashing cameras and disco spotlights!</p>
           </div>
         )}
 
-        {/* STAGE 3: VERDICT & SCOREBOARD */}
-        {stage === 'VERDICT' && (
+        {/* STAGE 3: HUMAN PEER JUDGING */}
+        {stage === 'JUDGE' && (
           <div className="booth-box" style={{ padding: '36px 32px' }}>
-            <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-              <span className="eyebrow">Judge Angie Verdict</span>
-              <h2 style={{ fontSize: '32px', fontWeight: 900, margin: '8px 0' }}>
-                {myScore >= partnerScore ? '👑 Mia Takes the Runway Crown!' : '👑 Alex Wins the Round!'}
-              </h2>
-              <p style={{ fontStyle: 'italic', color: 'var(--ink-soft)', fontSize: '16px', maxWidth: '60ch', margin: '0 auto' }}>
-                {judgeComment}
-              </p>
-            </div>
+            <span className="eyebrow">Player Scorecard</span>
+            <h2 style={{ fontSize: '26px', fontWeight: 800, margin: '8px 0 20px' }}>Rate Your Partner&apos;s Runway Look</h2>
 
-            {/* Side by side scorecards */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '28px' }}>
-              <div style={{ background: 'var(--pink-tint)', border: '2px solid var(--pink)', padding: '20px', borderRadius: '12px', textAlign: 'center' }}>
-                <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--pink)' }}>MIA (CALGARY)</div>
-                <div style={{ fontSize: '44px', fontWeight: 900, color: 'var(--ink)', margin: '8px 0' }}>{myScore} / 10</div>
-                <div style={{ fontSize: '13px', color: 'var(--ink-soft)' }}>{myTop} · {myAccessory}</div>
+            <form onSubmit={submitPeerRating} style={{ display: 'grid', gap: '20px' }}>
+              <div>
+                <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', fontWeight: 700, marginBottom: '6px' }}>
+                  <span>1. Theme Accuracy &amp; Twist:</span>
+                  <span style={{ color: 'var(--pink)', fontFamily: 'var(--font-mono)' }}>{ratingTheme} / 10</span>
+                </label>
+                <input
+                  type="range"
+                  min={1}
+                  max={10}
+                  value={ratingTheme}
+                  onChange={(e) => setRatingTheme(Number(e.target.value))}
+                  style={{ width: '100%' }}
+                />
               </div>
 
-              <div style={{ background: 'var(--blue-tint)', border: '2px solid var(--blue)', padding: '20px', borderRadius: '12px', textAlign: 'center' }}>
-                <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--blue)' }}>ALEX (JAKARTA)</div>
-                <div style={{ fontSize: '44px', fontWeight: 900, color: 'var(--ink)', margin: '8px 0' }}>{partnerScore} / 10</div>
-                <div style={{ fontSize: '13px', color: 'var(--ink-soft)' }}>{partnerTop} · {partnerAccessory}</div>
+              <div>
+                <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', fontWeight: 700, marginBottom: '6px' }}>
+                  <span>2. Creativity &amp; Color Synergy:</span>
+                  <span style={{ color: 'var(--pink)', fontFamily: 'var(--font-mono)' }}>{ratingCreativity} / 10</span>
+                </label>
+                <input
+                  type="range"
+                  min={1}
+                  max={10}
+                  value={ratingCreativity}
+                  onChange={(e) => setRatingCreativity(Number(e.target.value))}
+                  style={{ width: '100%' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', fontWeight: 'bold', marginBottom: '6px' }}>
+                  <span>3. Silhouette Drama &amp; Confidence:</span>
+                  <span style={{ color: 'var(--pink)', fontFamily: 'var(--font-mono)' }}>{ratingDrama} / 10</span>
+                </label>
+                <input
+                  type="range"
+                  min={1}
+                  max={10}
+                  value={ratingDrama}
+                  onChange={(e) => setRatingDrama(Number(e.target.value))}
+                  style={{ width: '100%' }}
+                />
+              </div>
+
+              <button type="submit" className="btn btn-primary" style={{ padding: '14px', fontSize: '15px', justifyContent: 'center' }}>
+                Lock In Rating &amp; Reveal Crown 👑
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* STAGE 4: VERDICT & CROWN */}
+        {stage === 'VERDICT' && (
+          <div className="booth-box" style={{ padding: '40px 32px', textAlign: 'center' }}>
+            <span style={{ fontSize: '56px', display: 'block', marginBottom: '12px' }}>👑</span>
+            <span className="eyebrow">{currentRound.title} Winner</span>
+            <h2 style={{ fontSize: '32px', fontWeight: 800, margin: '8px 0 16px' }}>
+              {myScore >= partnerScore ? 'Mia Takes the Crown!' : 'Alex Takes the Crown!'}
+            </h2>
+
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '32px', margin: '24px 0' }}>
+              <div style={{ background: '#FFF5F8', padding: '18px 24px', borderRadius: '12px', border: '1px solid #FFD6E8' }}>
+                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--pink)' }}>🌸 Mia&apos;s Score</div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '32px', fontWeight: 900 }}>{myScore} / 30</div>
+              </div>
+              <div style={{ background: '#F0F7FF', padding: '18px 24px', borderRadius: '12px', border: '1px solid #D6E8FF' }}>
+                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--blue)' }}>💙 Alex&apos;s Score</div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '32px', fontWeight: 900 }}>{partnerScore} / 30</div>
               </div>
             </div>
 
-            {/* Score tally */}
-            <div style={{ textAlign: 'center', marginBottom: '24px', fontFamily: 'var(--font-mono)', fontSize: '13px' }}>
-              OVERALL MATCH STANDING: <b>Mia {totalRoundsWon.me}</b> — <b>{totalRoundsWon.partner} Alex</b>
-            </div>
-
-            {/* Actions */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '14px' }}>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
               {currentRoundIdx < ROUNDS.length - 1 ? (
-                <button className="btn btn-grad" onClick={nextRound} style={{ padding: '12px 28px' }}>
-                  Next Runway Brief (Round {currentRoundIdx + 2}) ▷
+                <button onClick={nextRound} className="btn btn-primary" style={{ padding: '12px 28px' }}>
+                  Next Runway Round ▷
                 </button>
               ) : (
-                <Link className="btn btn-grad" href="/photobooth" style={{ padding: '12px 28px' }}>
-                  Celebrate in Photobooth 📸 ▷
+                <Link href="/photobooth" className="btn btn-grad" style={{ padding: '12px 28px' }}>
+                  Celebrate in Photobooth 📸
                 </Link>
               )}
             </div>

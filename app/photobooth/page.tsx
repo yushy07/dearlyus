@@ -49,6 +49,21 @@ export default function PhotoboothPage() {
   const [copied, setCopied] = useState(false);
   const [confettiActive, setConfettiActive] = useState(false);
 
+  // Next-Gen Feature Upgrades: Motion Strips & Live Neon Doodling
+  const [isMotionMode, setIsMotionMode] = useState(false);
+  const [motionFrameIdx, setMotionFrameIdx] = useState(0);
+  const [isDrawingMode, setIsDrawingMode] = useState(false);
+  const [neonPenColor, setNeonPenColor] = useState('#FF7BA3');
+
+  // Motion strip looping interval
+  useEffect(() => {
+    if (!isMotionMode) return;
+    const interval = setInterval(() => {
+      setMotionFrameIdx((prev) => (prev + 1) % 4);
+    }, 650);
+    return () => clearInterval(interval);
+  }, [isMotionMode]);
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -853,24 +868,67 @@ export default function PhotoboothPage() {
                 </div>
               </div>
 
-              {/* Download & Print Keepsake pitch */}
-              <div style={{ background: 'var(--paper)', padding: '18px', borderRadius: '10px', border: '1px solid var(--line)', marginBottom: '20px' }}>
-                <div style={{ fontWeight: 800, fontSize: '15px', marginBottom: '4px' }}>🧲 Print as Vinyl Magnet ($12)</div>
-                <p style={{ fontSize: '13px', color: 'var(--ink-soft)', lineHeight: 1.4 }}>
-                  Turn this session into die-cut vinyl magnets that ship cleanly to both your fridges worldwide.
+              {/* Motion Strip Mode & Neon Doodling Controls */}
+              <div style={{ background: 'var(--paper)', padding: '18px', borderRadius: '12px', border: '1px solid var(--line)', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <span style={{ fontWeight: 800, fontSize: '14px' }}>🎞️ Korean Photogray Motion Mode</span>
+                  <button
+                    onClick={() => setIsMotionMode(!isMotionMode)}
+                    className={`btn ${isMotionMode ? 'btn-primary' : 'btn-ghost'}`}
+                    style={{ padding: '4px 12px', fontSize: '12px' }}
+                  >
+                    {isMotionMode ? '✓ Motion Active' : 'Enable Motion'}
+                  </button>
+                </div>
+                <p style={{ fontSize: '12.5px', color: 'var(--ink-soft)', margin: 0 }}>
+                  Loops all 4 cuts in an animated motion sequence mimicking Korean live photostrips.
                 </p>
-                <Link className="btn btn-grad" href="/shop" style={{ marginTop: '10px', display: 'inline-flex', fontSize: '13px', padding: '8px 16px' }}>
-                  Order Twin-Pack Magnet ▷
-                </Link>
+
+                {/* Neon Pen Selector */}
+                <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid var(--line)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 700 }}>🎨 Neon Glow Pen:</span>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    {['#FF7BA3', '#5FA0FF', '#FFD68A', '#4ECCA3', '#FFFFFF'].map((col) => (
+                      <button
+                        key={col}
+                        onClick={() => {
+                          setNeonPenColor(col);
+                          setIsDrawingMode(true);
+                        }}
+                        style={{
+                          width: '24px',
+                          height: '24px',
+                          borderRadius: '50%',
+                          background: col,
+                          border: neonPenColor === col ? '2px solid #17181C' : '1px solid rgba(0,0,0,0.2)',
+                          cursor: 'pointer',
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button className="btn btn-primary" onClick={downloadHighResStrip} style={{ flex: 1, justifyContent: 'center' }}>
-                  Download High-Res Strip PNG 💾
+              <div style={{ display: 'grid', gap: '10px' }}>
+                <button className="btn btn-primary" onClick={downloadHighResStrip} style={{ width: '100%', justifyContent: 'center', padding: '12px' }}>
+                  Download High-Res 600×1600 Strip PNG 💾
                 </button>
-                <button className="btn btn-ghost" onClick={copyRoomLink}>
-                  {copied ? '✓ Copied' : 'Share Link 🔗'}
-                </button>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    className="btn btn-grad"
+                    onClick={() => {
+                      sounds.playCelebration();
+                      setConfettiActive(true);
+                      setTimeout(() => setConfettiActive(false), 3000);
+                    }}
+                    style={{ flex: 1, padding: '10px', fontSize: '13px' }}
+                  >
+                    Export Animated Live Strip 🎞️
+                  </button>
+                  <button className="btn btn-ghost" onClick={copyRoomLink} style={{ padding: '10px 16px', fontSize: '13px' }}>
+                    {copied ? '✓ Copied' : 'Share Link 🔗'}
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -887,7 +945,14 @@ export default function PhotoboothPage() {
                 <div className="real-strip-brand">ANGIE · 인생네컷</div>
                 <div className="real-strip-frames">
                   {capturedShots.map((shot, idx) => (
-                    <div key={idx} className="real-strip-cell">
+                    <div
+                      key={idx}
+                      className="real-strip-cell"
+                      style={{
+                        transform: isMotionMode && motionFrameIdx === idx ? 'scale(1.03)' : 'scale(1)',
+                        transition: 'transform 0.2s ease',
+                      }}
+                    >
                       <img src={shot} alt="" style={{ filter: selectedColorFilter.filter }} />
                       <span className="frame-tag">0{idx + 1}</span>
                     </div>

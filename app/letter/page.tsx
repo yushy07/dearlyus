@@ -1,103 +1,185 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
+import { Ribbon, Navbar, Confetti } from '@/components/shared';
+import { sounds } from '@/lib/sound';
+
+interface SealedCapsule {
+  id: string;
+  title: string;
+  author: string;
+  unlockDate: string;
+  content: string;
+  stamp: string;
+}
 
 export default function LetterPage() {
   const [unlockDate, setUnlockDate] = useState('2027-08-01');
-  const [letterContent, setLetterContent] = useState('');
-  const [sealed, setSealed] = useState(false);
+  const [letterTitle, setLetterTitle] = useState('To Us on Our 2-Year Anniversary 💌');
+  const [letterContent, setLetterContent] = useState(
+    'If you are reading this, we have officially closed the distance. Remember the late night video calls, the airport goodbyes, and how we promised each other this day would come? I love you more than ever.'
+  );
+  const [stamp, setStamp] = useState('🌸');
+  const [confettiActive, setConfettiActive] = useState(false);
+
+  // Vault state
+  const [vault, setVault] = useState<SealedCapsule[]>([
+    {
+      id: '1',
+      title: 'Our 1st Anniversary Time Capsule',
+      author: 'Mia ♡ Alex',
+      unlockDate: '2026-10-15',
+      content: 'Locked in the digital vault. Only accessible when the countdown timer hits zero.',
+      stamp: '💖',
+    },
+    {
+      id: '2',
+      title: 'The Day We Close the Distance',
+      author: 'Alex',
+      unlockDate: '2027-05-20',
+      content: 'A secret letter written on a late night flight home.',
+      stamp: '✈️',
+    },
+  ]);
+
+  const [sealedSuccessfully, setSealedSuccessfully] = useState(false);
 
   const handleSeal = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!letterContent.trim()) return;
-    setSealed(true);
+    if (!letterContent.trim() || !letterTitle.trim()) return;
+
+    const newCapsule: SealedCapsule = {
+      id: Date.now().toString(),
+      title: letterTitle,
+      author: 'Mia & Alex',
+      unlockDate,
+      content: letterContent,
+      stamp,
+    };
+
+    setVault([...vault, newCapsule]);
+    setSealedSuccessfully(true);
+    sounds.playCelebration();
+    setConfettiActive(true);
+    setTimeout(() => setConfettiActive(false), 3000);
   };
 
   return (
-    <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px' }}>
-      <header className="bar">
-        <div className="wrap">
-          <Link className="brand" href="/">
-            angie
-            <span className="dots">
-              <i className="p"></i>
-              <i className="b"></i>
-            </span>
-          </Link>
-          <Link className="btn btn-ghost" href="/activity">
-            Activities ▷
-          </Link>
-        </div>
-      </header>
+    <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px', color: 'var(--ink)' }}>
+      <Ribbon text={<>💌 Letters to the Future · <b>Multi-Year Time Capsule Vault with Timestamp Locks</b></>} />
+      <Confetti active={confettiActive} />
 
-      <main className="wrap" style={{ paddingTop: '36px', maxWidth: '720px' }}>
+      <Navbar
+        rightAction={
+          <span
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '12px',
+              background: 'var(--paper-raised)',
+              padding: '5px 10px',
+              borderRadius: '6px',
+              border: '1px solid var(--line)',
+            }}
+          >
+            Vault: <b>{vault.length} Sealed Letters</b>
+          </span>
+        }
+      />
+
+      <main className="wrap" style={{ paddingTop: '36px', maxWidth: '840px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <span className="eyebrow">Letters to the Future · Time Capsule</span>
           <h1 style={{ fontSize: 'clamp(28px, 4vw, 42px)', marginBottom: '10px' }}>
             Write now, <span className="grad">open years from now</span>.
           </h1>
           <p style={{ color: 'var(--ink-soft)', fontSize: '16px' }}>
-            A sealed time-capsule letter delivered to both of your inboxes on your chosen reunion anniversary.
+            A sealed time-capsule letter locked cryptographically until your chosen reunion date or anniversary.
           </p>
         </div>
 
-        {!sealed ? (
+        {!sealedSuccessfully ? (
           <form
             onSubmit={handleSeal}
             style={{
               background: '#FFFFFF',
               border: '1px solid var(--line)',
-              borderRadius: '16px',
+              borderRadius: '20px',
               padding: '36px 32px',
               boxShadow: 'var(--shadow-lg)',
               display: 'grid',
               gap: '20px',
+              marginBottom: '40px',
             }}
           >
             <div>
               <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
-                Delivery Unlock Date:
+                Letter Envelope Title:
               </label>
               <input
-                type="date"
-                value={unlockDate}
-                onChange={(e) => setUnlockDate(e.target.value)}
-                style={{
-                  padding: '10px 14px',
-                  borderRadius: '8px',
-                  border: '1.5px solid var(--line)',
-                  fontFamily: 'inherit',
-                  fontSize: '15px',
-                }}
+                type="text"
+                value={letterTitle}
+                onChange={(e) => setLetterTitle(e.target.value)}
+                style={{ width: '100%', padding: '12px 14px', borderRadius: '8px', border: '1px solid var(--line)', fontSize: '15px', fontWeight: 700 }}
+                required
               />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
+                  Unlock Milestone Date:
+                </label>
+                <input
+                  type="date"
+                  value={unlockDate}
+                  onChange={(e) => setUnlockDate(e.target.value)}
+                  style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--line)', fontSize: '14px' }}
+                  required
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
+                  Wax Stamp Seal:
+                </label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {['🌸', '💖', '💍', '🕊️', '✈️', '💌'].map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setStamp(s)}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        border: stamp === s ? '2px solid var(--pink)' : '1px solid var(--line)',
+                        background: stamp === s ? 'var(--pink-tint)' : '#fff',
+                        fontSize: '18px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             <div>
               <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
-                Dear Future Us (Letter Content):
+                Dear Future Us (Letter Body):
               </label>
               <textarea
-                rows={8}
+                rows={6}
                 value={letterContent}
                 onChange={(e) => setLetterContent(e.target.value)}
+                placeholder="Write your heartfelt thoughts, dreams, and promises to read years from now..."
+                style={{ width: '100%', padding: '14px', borderRadius: '10px', border: '1px solid var(--line)', fontSize: '15px', lineHeight: 1.6 }}
                 required
-                placeholder="Write what you love about your partner right now, your hopes for when the distance ends, and memories of this exact season of your lives..."
-                style={{
-                  width: '100%',
-                  padding: '14px',
-                  borderRadius: '10px',
-                  border: '1.5px solid var(--line)',
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '16px',
-                  lineHeight: 1.6,
-                  resize: 'none',
-                }}
               />
             </div>
 
-            <button type="submit" className="btn btn-grad" style={{ justifyContent: 'center', padding: '14px', fontSize: '16px' }}>
-              Seal Capsule with Wax Stamp 💌
+            <button type="submit" className="btn btn-primary" style={{ padding: '14px', fontSize: '15px', justifyContent: 'center' }}>
+              🔒 Seal Envelope into Time Capsule Vault
             </button>
           </form>
         ) : (
@@ -105,29 +187,52 @@ export default function LetterPage() {
             style={{
               background: '#FFFFFF',
               border: '1px solid var(--line)',
-              borderRadius: '16px',
-              padding: '48px 32px',
+              borderRadius: '20px',
+              padding: '40px 32px',
               textAlign: 'center',
               boxShadow: 'var(--shadow-lg)',
+              marginBottom: '40px',
             }}
           >
-            <div style={{ fontSize: '56px', marginBottom: '12px' }}>🔒💌</div>
-            <h2 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '8px' }}>
-              Sealed Until {new Date(unlockDate).toLocaleDateString()}
-            </h2>
-            <p style={{ color: 'var(--ink-soft)', fontSize: '16px', maxWidth: '44ch', margin: '0 auto 24px' }}>
-              Your time-capsule letter has been encrypted and locked. We will send an email reminder to both of you when the time arrives!
+            <span style={{ fontSize: '48px', display: 'block', marginBottom: '12px' }}>🔒 {stamp}</span>
+            <h2 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '8px' }}>Envelope Sealed in Vault!</h2>
+            <p style={{ color: 'var(--ink-soft)', fontSize: '16px', maxWidth: '46ch', margin: '0 auto 24px' }}>
+              Your time capsule letter <b>&ldquo;{letterTitle}&rdquo;</b> has been securely locked until <b>{unlockDate}</b>.
             </p>
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-              <button className="btn btn-ghost" onClick={() => setSealed(false)}>
-                Write Another Letter
-              </button>
-              <Link className="btn btn-primary" href="/activity">
-                Explore More Dates
-              </Link>
-            </div>
+            <button onClick={() => setSealedSuccessfully(false)} className="btn btn-ghost">
+              + Write Another Letter
+            </button>
           </div>
         )}
+
+        {/* The Sealed Time Capsule Vault */}
+        <div>
+          <h3 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '16px' }}>Sealed Vault Envelopes ({vault.length})</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
+            {vault.map((capsule) => (
+              <div
+                key={capsule.id}
+                style={{
+                  background: '#FFFFFF',
+                  border: '1px solid var(--line)',
+                  borderRadius: '14px',
+                  padding: '20px',
+                  boxShadow: 'var(--shadow)',
+                  position: 'relative',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '24px' }}>{capsule.stamp}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--pink)', fontWeight: 800 }}>
+                    🔒 Locked until {capsule.unlockDate}
+                  </span>
+                </div>
+                <h4 style={{ fontSize: '16px', fontWeight: 800, margin: '4px 0' }}>{capsule.title}</h4>
+                <div style={{ fontSize: '12px', color: 'var(--ink-soft)' }}>Written by: {capsule.author}</div>
+              </div>
+            ))}
+          </div>
+        </div>
       </main>
     </div>
   );
