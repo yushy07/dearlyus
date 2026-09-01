@@ -1122,30 +1122,55 @@ export default function HomePage() {
             <Link className="act" href="/cards">
               <span className="seamline"></span>
               <div className="ic">
-                <svg viewBox="0 0 34 34" fill="none">
-                  <rect
-                    x="7"
-                    y="8"
-                    width="14"
-                    height="19"
-                    rx="2"
-                    transform="rotate(-8 7 8)"
-                    stroke="#5FA0FF"
-                    strokeWidth="2"
-                  />
-                  <rect x="13" y="7" width="14" height="19" rx="2" fill="#fff" stroke="#17181C" strokeWidth="2" />
-                  <path
-                    d="M20 19s-4-2.4-4-5a2 2 0 013.4-1.3A2 2 0 0124 14c0 2.6-4 5-4 5z"
-                    stroke="#FF7BA3"
-                    strokeWidth="2"
-                    strokeLinejoin="round"
-                  />
-                </svg>
+                <span style={{ fontSize: '26px' }}>💌</span>
               </div>
               <h3>
                 Honest Cards <span className="badge new">New</span>
               </h3>
               <p>A deck of honest questions — you both answer privately, it opens at once.</p>
+            </Link>
+            <Link className="act" href="/timezone">
+              <span className="seamline"></span>
+              <div className="ic">
+                <span style={{ fontSize: '26px' }}>🌍</span>
+              </div>
+              <h3>
+                Timezone Hub <span className="badge hot">★ Essential</span>
+              </h3>
+              <p>Visual 24h sun/moon horizon, golden overlap hours, and a millisecond airport reunion countdown.</p>
+            </Link>
+
+            <Link className="act" href="/bucket">
+              <span className="seamline"></span>
+              <div className="ic">
+                <span style={{ fontSize: '26px' }}>🎯</span>
+              </div>
+              <h3>
+                100 Dates Bucket List <span className="badge new">New</span>
+              </h3>
+              <p>Scratch off milestone cards from late-night video call dates to airport hugs and grocery runs.</p>
+            </Link>
+
+            <Link className="act" href="/scrapbook">
+              <span className="seamline"></span>
+              <div className="ic">
+                <span style={{ fontSize: '26px' }}>📖</span>
+              </div>
+              <h3>
+                Digital Scrapbook <span className="badge new">New</span>
+              </h3>
+              <p>Tape down photostrips, boarding passes, washi tape, and sticky notes on a shared memory corkboard.</p>
+            </Link>
+
+            <Link className="act" href="/letter">
+              <span className="seamline"></span>
+              <div className="ic">
+                <span style={{ fontSize: '26px' }}>💌</span>
+              </div>
+              <h3>
+                Time Capsule Letters <span className="badge new">New</span>
+              </h3>
+              <p>Write letters to future you, sealed in a vault until your chosen reunion anniversary.</p>
             </Link>
           </div>
         </div>
