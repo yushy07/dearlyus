@@ -11,6 +11,7 @@ import {
   STICKER_PALETTE,
 } from '@/lib/constants';
 import { sounds } from '@/lib/sound';
+import { downloadAnimatedStripVideo } from '@/lib/gif-recorder';
 import { Confetti } from '@/components/shared/Confetti';
 import { Ribbon } from '@/components/shared/Ribbon';
 
@@ -916,10 +917,17 @@ export default function PhotoboothPage() {
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <button
                     className="btn btn-grad"
-                    onClick={() => {
+                    onClick={async () => {
                       sounds.playCelebration();
                       setConfettiActive(true);
                       setTimeout(() => setConfettiActive(false), 3000);
+                      try {
+                        await downloadAnimatedStripVideo(capturedShots, `angie-live-strip-${roomCode}.webm`, {
+                          includeFlash: true,
+                          fps: 2,
+                          frameBorderColor: selectedStyle.bg,
+                        });
+                      } catch {}
                     }}
                     style={{ flex: 1, padding: '10px', fontSize: '13px' }}
                   >

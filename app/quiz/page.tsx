@@ -6,6 +6,7 @@ import { QUIZ_PACKS } from '@/data';
 import { QuizPack, QuizQuestion } from '@/types';
 import { Ribbon, Navbar, Confetti } from '@/components/shared';
 import { sounds } from '@/lib/sound';
+import { downloadReceiptPNG } from '@/lib/receipt-canvas';
 
 export default function QuizPage() {
   const [allPacks, setAllPacks] = useState<QuizPack[]>(QUIZ_PACKS);
@@ -385,13 +386,37 @@ export default function QuizPage() {
             </p>
 
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <button onClick={() => restartQuiz(selectedPack)} className="btn btn-primary" style={{ padding: '12px 28px' }}>
+              <button
+                onClick={() => {
+                  downloadReceiptPNG({
+                    roomCode: 'KX7RM',
+                    date: new Date().toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }),
+                    partnerA: 'Mia',
+                    partnerB: 'Alex',
+                    items: selectedPack.questions.map((q, i) => ({
+                      number: `0${i + 1}`,
+                      topic: q.q,
+                      answerA: q.options[0],
+                      answerB: q.options[1] || q.options[0],
+                      syncPercent: i < matches ? 100 : 50,
+                    })),
+                    overallSync: matchPercent,
+                    hostVerdict: matchPercent >= 80 ? 'Exceptional soulmate-level alignment!' : 'Playful chemistry with great inside jokes.',
+                  });
+                  sounds.playCelebration();
+                }}
+                className="btn btn-primary"
+                style={{ padding: '12px 28px' }}
+              >
+                Print Date Lore Receipt 🧾
+              </button>
+              <button onClick={() => restartQuiz(selectedPack)} className="btn btn-ghost" style={{ padding: '12px 24px' }}>
                 Play Again 🔄
               </button>
-              <button onClick={() => setCreatorOpen(true)} className="btn btn-ghost" style={{ padding: '12px 28px' }}>
-                + Build Your Own Lore Pack
+              <button onClick={() => setCreatorOpen(true)} className="btn btn-ghost" style={{ padding: '12px 24px' }}>
+                + Build Lore Pack
               </button>
-              <Link href="/photobooth" className="btn btn-grad" style={{ padding: '12px 28px' }}>
+              <Link href="/photobooth" className="btn btn-grad" style={{ padding: '12px 24px' }}>
                 Celebrate in Photobooth 📸
               </Link>
             </div>

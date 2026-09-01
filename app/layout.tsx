@@ -48,6 +48,8 @@ export const metadata: Metadata = {
   },
 };
 
+import { AudioPlayer } from '@/components/shared/AudioPlayer';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -67,7 +69,10 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <AudioPlayer />
+      </body>
     </html>
   );
 }

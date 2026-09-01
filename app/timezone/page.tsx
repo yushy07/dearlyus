@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Ribbon, Navbar } from '@/components/shared';
 import { sounds } from '@/lib/sound';
+import { InteractiveGlobe, calculateGreatCircleDistance } from '@/lib/globe';
 
 interface PackingItem {
   id: string;
@@ -19,6 +20,25 @@ export default function TimezoneHubPage() {
   const [reunionDate, setReunionDate] = useState('2026-11-20T18:00');
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [heartbeatSent, setHeartbeatSent] = useState(false);
+
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const globeInstanceRef = useRef<InteractiveGlobe | null>(null);
+
+  // Calgary: 51.0447° N, 114.0719° W (-114.07)
+  // Jakarta: 6.2088° S (-6.2088), 106.8456° E (106.8456)
+  const distanceKm = calculateGreatCircleDistance(51.0447, -114.0719, -6.2088, 106.8456);
+
+  useEffect(() => {
+    if (!canvasRef.current) return;
+    const globe = new InteractiveGlobe(
+      canvasRef.current,
+      { name: 'Calgary', lat: 51.0447, lng: -114.0719, color: '#5FA0FF' },
+      { name: 'Jakarta', lat: -6.2088, lng: 106.8456, color: '#FF7BA3' }
+    );
+    globe.start();
+    globeInstanceRef.current = globe;
+    return () => globe.stop();
+  }, []);
 
   // Suitcase Packing Checklist
   const [packingList, setPackingList] = useState<PackingItem[]>([
@@ -75,6 +95,7 @@ export default function TimezoneHubPage() {
   const sendHeartbeat = () => {
     sounds.playHeartbeat();
     setHeartbeatSent(true);
+    globeInstanceRef.current?.triggerHeartbeatPulse();
     setTimeout(() => setHeartbeatSent(false), 2500);
   };
 
@@ -107,6 +128,59 @@ export default function TimezoneHubPage() {
           <p style={{ color: 'var(--ink-soft)', fontSize: '16px', maxWidth: '54ch', margin: '0 auto' }}>
             Track daylight overlap, calculate golden call hours, count down to your airport reunion, and organize your joint travel suitcase.
           </p>
+        </div>
+
+        {/* 3D Earth Globe Hero */}
+        <div
+          style={{
+            background: 'linear-gradient(180deg, #151822 0%, #0F1118 100%)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '24px',
+            padding: '24px 20px',
+            marginBottom: '32px',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
+          <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 12px 16px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+            <div>
+              <span className="badge hot" style={{ fontSize: '11px' }}>3D Orbit &amp; Flight Arc</span>
+              <div style={{ color: '#FFFFFF', fontSize: '15px', fontWeight: 800, marginTop: '4px' }}>
+                Calgary ✈️ Jakarta
+              </div>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ color: '#FFD68A', fontFamily: 'var(--font-mono)', fontSize: '18px', fontWeight: 800 }}>
+                {distanceKm.toLocaleString()} km
+              </div>
+              <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontFamily: 'var(--font-mono)' }}>
+                Great-Circle Distance
+              </div>
+            </div>
+          </div>
+
+          <canvas
+            ref={canvasRef}
+            width={600}
+            height={320}
+            style={{ maxWidth: '100%', height: 'auto', cursor: 'grab' }}
+          />
+
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginTop: '12px', fontSize: '12px', color: 'rgba(255,255,255,0.6)' }}>
+            <span>🖱️ Drag to rotate globe</span>
+            <span>·</span>
+            <button
+              onClick={sendHeartbeat}
+              className="btn btn-grad"
+              style={{ padding: '6px 14px', fontSize: '12px' }}
+            >
+              Send Live Heartbeat Wave 💖
+            </button>
+          </div>
         </div>
 
         {/* Dual Live Clocks */}

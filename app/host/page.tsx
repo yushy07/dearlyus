@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Ribbon, Navbar, Confetti } from '@/components/shared';
 import { sounds } from '@/lib/sound';
+import { downloadReceiptPNG } from '@/lib/receipt-canvas';
 
 interface HostScenario {
   id: number;
@@ -289,9 +290,33 @@ export default function DateHostPage() {
                 )}
                 <br />
 
-                <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-                  <button onClick={handleNext} className="btn btn-grad" style={{ padding: '12px 32px', fontSize: '15px' }}>
+                <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <button onClick={handleNext} className="btn btn-grad" style={{ padding: '12px 28px', fontSize: '15px' }}>
                     Next Adaptive Dilemma ▷
+                  </button>
+                  <button
+                    onClick={() => {
+                      downloadReceiptPNG({
+                        roomCode: 'KX7RM',
+                        date: new Date().toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }),
+                        partnerA: 'Mia',
+                        partnerB: 'Alex',
+                        items: scenarios.slice(0, currentIdx + 1).map((sc, i) => ({
+                          number: `0${i + 1}`,
+                          topic: sc.question.slice(0, 26),
+                          answerA: sc.options[partnerAPick || 0],
+                          answerB: sc.options[partnerBPick || 0],
+                          syncPercent: partnerAPick === partnerBPick ? 100 : 60,
+                        })),
+                        overallSync: partnerAPick === partnerBPick ? 95 : 75,
+                        hostVerdict: hostCommentary || 'Observing spontaneous couple travel instincts!',
+                      });
+                      sounds.playCelebration();
+                    }}
+                    className="btn btn-primary"
+                    style={{ padding: '12px 24px', fontSize: '14px' }}
+                  >
+                    Print Date Receipt 🧾
                   </button>
                   <Link href="/photobooth" className="btn btn-ghost" style={{ padding: '12px 20px', fontSize: '14px' }}>
                     Snap Milestone 📸
