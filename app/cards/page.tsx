@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Ribbon, Navbar } from '@/components/shared';
 import { sounds } from '@/lib/sound';
+import { SwipeDeck, GlowBadge, ScrollProgress, ScrollReveal } from '@/components/ui';
 
 interface Card {
   tier: string;
@@ -112,57 +113,57 @@ export default function CardsPage() {
           </p>
         </div>
 
-        {/* Card Stage */}
-        <div style={{ perspective: '1000px', margin: '0 auto 28px', maxWidth: '520px' }}>
-          <div
-            onClick={() => setFlipped(!flipped)}
-            style={{
-              background: 'linear-gradient(135deg, #FFFDFB, #F6F1EA)',
-              border: '2px solid var(--line)',
-              borderRadius: '20px',
-              padding: '48px 36px',
-              minHeight: '280px',
-              boxShadow: 'var(--shadow-lg)',
-              cursor: 'pointer',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              textAlign: 'center',
-              position: 'relative',
-              transition: 'transform 0.3s ease',
-              transform: flipped ? 'scale(1.02)' : 'none',
-            }}
+        {/* Swipeable Card Stage */}
+        <div style={{ perspective: '1200px', margin: '0 auto 28px', maxWidth: '520px' }}>
+          <SwipeDeck
+            onSwipeRight={handleNext}
+            onSwipeLeft={handleNext}
           >
-            <div>
-              <span
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  color: 'var(--pink)',
-                  letterSpacing: '.12em',
-                }}
-              >
-                {card.tier} · {card.category}
-              </span>
-              <h2
-                style={{
-                  fontSize: '22px',
-                  fontWeight: 700,
-                  lineHeight: 1.4,
-                  marginTop: '16px',
-                  color: 'var(--ink)',
-                }}
-              >
-                &ldquo;{card.prompt}&rdquo;
-              </h2>
-            </div>
+            <div
+              onClick={() => {
+                setFlipped(!flipped);
+                sounds.playTick();
+              }}
+              className="card-3d"
+              style={{
+                background: 'linear-gradient(135deg, #FFFDFB, #F6F1EA)',
+                border: '2px solid var(--line)',
+                borderRadius: '20px',
+                padding: '48px 36px',
+                minHeight: '290px',
+                boxShadow: '0 20px 40px rgba(0,0,0,0.08), 0 4px 12px rgba(255,123,163,0.06)',
+                cursor: 'grab',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                textAlign: 'center',
+                position: 'relative',
+                transition: 'transform 0.3s ease',
+              }}
+            >
+              <div>
+                <div style={{ display: 'inline-flex', justifyContent: 'center', marginBottom: '8px' }}>
+                  <GlowBadge text={`${card.tier} · ${card.category}`} size="sm" />
+                </div>
+                <h2
+                  style={{
+                    fontSize: '22px',
+                    fontWeight: 700,
+                    lineHeight: 1.4,
+                    marginTop: '16px',
+                    color: 'var(--ink)',
+                  }}
+                >
+                  &ldquo;{card.prompt}&rdquo;
+                </h2>
+              </div>
 
-            <div style={{ fontSize: '12px', color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}>
-              {revealed ? '✓ Answers Revealed' : 'Click to flip card · Answer below'}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', fontSize: '12px', color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}>
+                <span>👆 Swipe left/right for next card</span>
+                <span>{revealed ? '✓ Revealed' : 'Tap to flip'}</span>
+              </div>
             </div>
-          </div>
+          </SwipeDeck>
         </div>
 
         {/* Inputs */}

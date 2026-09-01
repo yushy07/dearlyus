@@ -9,3 +9,6 @@ export * from './ScrollReveal';
 export * from './Floating3D';
 export * from './GlowBadge';
 export * from './KineticCard';
+export * from './ViewTransitionLink';
+export * from './SwipeDeck';
+export * from './WaxSealEnvelope';
