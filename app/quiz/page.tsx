@@ -112,6 +112,98 @@ const PACKS: Pack[] = [
       },
     ],
   },
+  {
+    id: 'travel',
+    name: 'Travel & Adventures ✈️',
+    badge: 'Popular',
+    description: 'Dream getaways, packing quirks, and airport reunion plans.',
+    questions: [
+      {
+        q: 'Who panics more at the airport security line? 🛂',
+        options: ['Mia checking passport 14 times', 'Alex thinking they forgot something', 'Both completely calm', 'Neither, too excited to see each other'],
+        honestAnswerIndex: 0,
+      },
+      {
+        q: 'Window seat or aisle seat? 💺',
+        options: ['Window for views & sleep', 'Aisle for legroom', 'Middle as long as we are together', 'Window for Mia, Aisle for Alex'],
+        honestAnswerIndex: 3,
+      },
+      {
+        q: 'Our ideal vacation style: 🏖️',
+        options: ['All-inclusive beach resort & cocktails', 'Hiking mountains & exploring trails', 'Walking 25,000 steps a day in Europe/Asia', 'Cozy cabin rental with private hot tub'],
+        honestAnswerIndex: 2,
+      },
+    ],
+  },
+  {
+    id: 'nostalgia',
+    name: 'Childhood & Nostalgia 🧸',
+    description: 'Old memories, childhood crushes, and teenage obsessions.',
+    questions: [
+      {
+        q: 'What was your favorite childhood cartoon/anime? 📺',
+        options: ['Pokémon / Sailor Moon ⚡', 'SpongeBob / Cartoon Network 🍍', 'Avatar: The Last Airbender 🌪️', 'Studio Ghibli films 🍃'],
+        honestAnswerIndex: 0,
+      },
+      {
+        q: 'Were you the teacher’s pet or the class clown? 🎒',
+        options: ['Straight-A teacher’s pet 📚', 'Sneaky class clown 🤡', 'Quiet kid reading in the back 📖', 'Social butterfly talking all class 🦋'],
+        honestAnswerIndex: 3,
+      },
+    ],
+  },
+  {
+    id: 'food',
+    name: 'Food & Late Night Cravings 🍜',
+    description: 'Tastebuds, secret snacks, and arguing over where to eat.',
+    questions: [
+      {
+        q: 'If we could only eat one cuisine forever: 🌮',
+        options: ['Authentic Italian Pasta & Pizza 🍝', 'Japanese Sushi & Ramen 🍣', 'Indonesian Spicy Street Food 🌶️', 'Korean BBQ & Fried Chicken 🍗'],
+        honestAnswerIndex: 1,
+      },
+      {
+        q: 'Sweet tooth or savory crunch? 🍰',
+        options: ['Ice cream, boba & pastries 🧁', 'Chips, fries & cheesy dips 🍟', 'Both at the exact same time 🍫', 'Fresh fruit & smoothies 🍓'],
+        honestAnswerIndex: 0,
+      },
+    ],
+  },
+  {
+    id: 'future-home',
+    name: 'Money & Future Home 🏡',
+    description: 'Interior aesthetics, pet names, and dream living rooms.',
+    questions: [
+      {
+        q: 'What pet are we getting first when we close the distance? 🐾',
+        options: ['Golden Retriever / Corgi puppy 🐶', 'Fluffy ginger cat 🐱', 'Two rescue kittens 🐾', 'Plants first, pets later 🌿'],
+        honestAnswerIndex: 0,
+      },
+      {
+        q: 'Our future home aesthetic: 🛋️',
+        options: ['Sunlit Japandi minimalist with wood & plants', 'Cozy warm vintage brick & bookshelves', 'Modern high-rise condo with city views', 'Country cottage with big flower garden'],
+        honestAnswerIndex: 0,
+      },
+    ],
+  },
+  {
+    id: 'closing-distance',
+    name: 'Closing the Distance ⏳',
+    badge: 'Special',
+    description: 'Visas, packing bags, and the final countdown to forever.',
+    questions: [
+      {
+        q: 'What are you most excited to do on our first regular Tuesday together? 🍳',
+        options: ['Grocery shopping together holding hands 🛒', 'Making breakfast in our kitchen in pajamas 🥞', 'Coming home and hugging without saying goodbye 🚪', 'Falling asleep and waking up in the same bed 🛌'],
+        honestAnswerIndex: 2,
+      },
+      {
+        q: 'Who will cry harder at the final one-way flight airport gate? 😭',
+        options: ['Mia (happy tears floodgate)', 'Alex (pretending not to cry)', 'Both ugly crying in public', 'Our families seeing us finally together'],
+        honestAnswerIndex: 2,
+      },
+    ],
+  },
 ];
 
 export default function QuizPage() {

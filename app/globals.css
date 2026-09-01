@@ -1676,3 +1676,267 @@ footer .foot-links a:hover { color: var(--ink); text-decoration: underline; }
   #quiz-demo .qd-badge { transform: translateX(-50%) scale(1); }
   #quiz-demo .qd-cursor { display: none; }
 }
+
+/* =====================================================================
+   PHOTOBOOTH SECTION & STUDIO DESIGN (Angie 인생네컷)
+   ===================================================================== */
+#photobooth-demo {
+  background: var(--paper);
+  position: relative;
+  overflow: hidden;
+}
+
+.booth-showcase-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 48px;
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .booth-showcase-grid {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+}
+
+.booth-box {
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+}
+
+.booth-cam-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/10;
+  background: #111215;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+}
+
+.booth-duo-view {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.booth-duo-view.solo {
+  grid-template-columns: 1fr;
+}
+
+.booth-feed-panel {
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+}
+
+.booth-feed-panel:first-child {
+  border-right: 2px solid rgba(255, 255, 255, 0.15);
+}
+
+.booth-feed-panel img,
+.booth-feed-panel video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.feed-city-badge {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  z-index: 5;
+  background: rgba(23, 24, 28, 0.75);
+  backdrop-filter: blur(4px);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.feed-city-badge.pink { border-left: 3px solid var(--pink); }
+.feed-city-badge.blue { border-left: 3px solid var(--blue); }
+
+.feed-city-badge .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #0a7d4d;
+}
+
+/* Big 3..2..1 Countdown overlay */
+.booth-flash-num {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(23, 24, 28, 0.35);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: clamp(64px, 12vw, 110px);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  text-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  animation: numPop 0.6s cubic-bezier(0.2, 1.4, 0.4, 1) infinite;
+}
+
+@keyframes numPop {
+  0% { transform: scale(0.6); opacity: 0; }
+  50% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* White screen flash */
+.booth-camera-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  background: #ffffff;
+  pointer-events: none;
+  animation: cameraFlash 0.38s ease-out forwards;
+}
+
+@keyframes cameraFlash {
+  0% { opacity: 0.95; }
+  100% { opacity: 0; }
+}
+
+/* Pose Prompt Overlay Card */
+.pose-prompt-card {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 8;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  padding: 6px 14px;
+  border-radius: 999px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+}
+
+/* Strip Real Preview Container */
+.strip-preview-holder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.real-strip {
+  width: 250px;
+  background: #FFFFFF;
+  color: #17181C;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-lg);
+  padding: 14px 12px 18px;
+  border-radius: 4px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+}
+
+.real-strip:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 45px rgba(23,24,28,0.14);
+}
+
+.real-strip-brand {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .2em;
+  text-align: center;
+  font-weight: 700;
+  padding-bottom: 8px;
+  color: inherit;
+  opacity: 0.85;
+}
+
+.real-strip-frames {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.real-strip-cell {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4/3;
+  background: var(--paper);
+  overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+.real-strip-cell img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.real-strip-cell .frame-tag {
+  position: absolute;
+  top: 4px;
+  left: 5px;
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  background: rgba(255, 255, 255, 0.75);
+  color: #17181C;
+  padding: 1px 4px;
+  border-radius: 2px;
+  font-weight: 700;
+}
+
+.real-strip-footer {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.real-strip-name {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 13px;
+  color: inherit;
+}
+
+.real-strip-serial {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: .18em;
+  opacity: 0.7;
+  margin-top: 3px;
+}
+
+/* Vintage Automat Velvet Curtains Effect */
+.vintage-automat {
+  background: #201715 !important;
+  border-color: #543E38 !important;
+  color: #F8EFEA !important;
+}
+
+.vintage-automat .booth-cam-stage {
+  border: 3px solid #754E38;
+}
+

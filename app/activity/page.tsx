@@ -519,6 +519,153 @@ export default function ActivityPage() {
             </div>
             <span style={{ marginLeft: 'auto', fontSize: '18px', color: 'var(--ink-soft)' }}>▷</span>
           </Link>
+
+          <Link
+            href="/fashion"
+            className="act"
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: '16px',
+              padding: '18px 20px',
+              borderRadius: '14px',
+            }}
+          >
+            <div
+              style={{
+                width: '42px',
+                height: '42px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '12px',
+                background: 'var(--paper)',
+                fontSize: '24px',
+                flex: 'none',
+              }}
+            >
+              👗
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: 800, margin: 0 }}>
+                Fashion Show{' '}
+                <span
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '9px',
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    color: '#fff',
+                    background: 'linear-gradient(100deg, var(--pink), var(--blue))',
+                  }}
+                >
+                  New
+                </span>
+              </h3>
+              <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--ink-soft)' }}>
+                same brief &amp; twist, AI stylist scores the runway
+              </p>
+            </div>
+            <span style={{ marginLeft: 'auto', fontSize: '18px', color: 'var(--ink-soft)' }}>▷</span>
+          </Link>
+
+          <Link
+            href="/shirts"
+            className="act"
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: '16px',
+              padding: '18px 20px',
+              borderRadius: '14px',
+            }}
+          >
+            <div
+              style={{
+                width: '42px',
+                height: '42px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '12px',
+                background: 'var(--paper)',
+                fontSize: '24px',
+                flex: 'none',
+              }}
+            >
+              👕
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: 800, margin: 0 }}>
+                Matching Shirts{' '}
+                <span
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '9px',
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    color: '#fff',
+                    background: 'linear-gradient(100deg, var(--pink), var(--blue))',
+                  }}
+                >
+                  New
+                </span>
+              </h3>
+              <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--ink-soft)' }}>
+                design matching tees together, ships to both cities
+              </p>
+            </div>
+            <span style={{ marginLeft: 'auto', fontSize: '18px', color: 'var(--ink-soft)' }}>▷</span>
+          </Link>
+
+          <Link
+            href="/date"
+            className="act"
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: '16px',
+              padding: '18px 20px',
+              borderRadius: '14px',
+            }}
+          >
+            <div
+              style={{
+                width: '42px',
+                height: '42px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '12px',
+                background: 'var(--paper)',
+                fontSize: '24px',
+                flex: 'none',
+              }}
+            >
+              🌙
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: 800, margin: 0 }}>
+                Date Night Planner{' '}
+                <span
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '9px',
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    color: '#fff',
+                    background: 'linear-gradient(100deg, var(--pink), var(--blue))',
+                  }}
+                >
+                  New
+                </span>
+              </h3>
+              <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--ink-soft)' }}>
+                custom multi-game schedules based on mood &amp; time
+              </p>
+            </div>
+            <span style={{ marginLeft: 'auto', fontSize: '18px', color: 'var(--ink-soft)' }}>▷</span>
+          </Link>
         </div>
 
         {/* Footer info */}

@@ -3,50 +3,111 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 
-const POSE_PROMPTS = [
-  'Shot 1 of 4: Big warm smile! 📸',
-  'Shot 2 of 4: Make a silly face / cheeky wink 😉',
-  'Shot 3 of 4: Half-finger heart to the center 🫰',
-  'Shot 4 of 4: Blow a kiss or cozy candle pose 🕯️',
+// Room Experience Styles from Angie
+const ROOM_STYLES = [
+  { id: 'classic', label: 'Classic White', sub: '인생네컷 clean photo-paper border', bg: '#FFFFFF', color: '#17181C', border: '#E3E5EA', accent: '#FF7BA3' },
+  { id: 'vintage', label: '1930s Automat', sub: 'Velvet curtains & automat marquee', bg: '#201715', color: '#F6EDE6', border: '#543E38', accent: '#FFD68A' },
+  { id: 'sunset', label: 'Sunset Romance', sub: 'Golden hour terrace over Seoul', bg: 'linear-gradient(180deg, #FFE4D6, #FFD6E8)', color: '#23242A', border: '#FFB3C7', accent: '#FF7BA3' },
+  { id: 'cyber', label: 'Cyber Blue', sub: 'Neon city lights & futuristic grid', bg: '#101726', color: '#DCEBFF', border: '#5FA0FF', accent: '#5FA0FF' },
+  { id: 'laundry', label: 'Retro Laundromat', sub: 'Cozy 90s indie date aesthetic', bg: '#F2EDE4', color: '#3A322D', border: '#D6C8B8', accent: '#E07A5F' },
+  { id: 'karaoke', label: 'Tokyo Karaoke', sub: 'Neon disco stage & singing mic', bg: '#1E122C', color: '#F3EEFC', border: '#9D6EE8', accent: '#FF7BA3' },
+  { id: 'noir', label: 'Midnight Noir', sub: 'Monochrome contrast studio film', bg: '#17181C', color: '#F8F9FB', border: '#33353D', accent: '#FFFFFF' },
+  { id: 'meme', label: 'Meme Recreation', sub: 'Recreate iconic couple internet memes', bg: '#FFFBF0', color: '#2C2216', border: '#EADBB6', accent: '#F4A261' },
 ];
 
-const THEMES = [
-  { id: 'classic', name: 'Classic White (인생네컷)', bg: '#FFFFFF', text: '#17181C', border: '#E3E5EA' },
-  { id: 'sunset', name: 'Sunset Romance', bg: 'linear-gradient(180deg, #FFE4D6, #FFD6E8)', text: '#23242A', border: '#FFB3C7' },
-  { id: 'vintage', name: 'Vintage Sepia Film', bg: '#F6EDE6', text: '#4A332D', border: '#D1C4B2' },
-  { id: 'cyber', name: 'Cyber Blue', bg: '#101726', text: '#DCEBFF', border: '#5FA0FF' },
-  { id: 'pastel', name: 'Soft Lavender', bg: '#F3EEFC', text: '#4D3678', border: '#D8C9F2' },
-  { id: 'dark', name: 'Midnight Noir', bg: '#17181C', text: '#F8F9FB', border: '#33353D' },
+const LAYOUTS = [
+  { id: 'vertical', name: '4-Cut Vertical Strip (인생네컷)', cuts: 4, aspect: '1/3.4', desc: 'Classic 1x4 Korean booth strip' },
+  { id: 'grid', name: '2×2 Quad Grid', cuts: 4, aspect: '1/1.2', desc: 'Compact square 4-box layout' },
+  { id: 'story', name: '6-Cut Film Story', cuts: 6, aspect: '1/4.2', desc: 'Extended 6-frame cinematic strip' },
+  { id: 'polaroid', name: '1-Shot Polaroid Keepsake', cuts: 1, aspect: '1/1.4', desc: 'Single hero frame with signature margin' },
 ];
+
+const POSE_PROMPTS = [
+  { id: 1, text: 'Shot 1 of 4: Big warm smile at each other! 📸', icon: '😊' },
+  { id: 2, text: 'Shot 2 of 4: Silly cheek pucker or cheeky wink 😉', icon: '😜' },
+  { id: 3, text: 'Shot 3 of 4: Half-finger heart meeting in the center 🫰', icon: '🫰' },
+  { id: 4, text: 'Shot 4 of 4: Blow a kiss across the ocean or candle pose 🕯️', icon: '💋' },
+  { id: 5, text: 'Meme Pose: The dramatic gasp & hand on cheek 😱', icon: '🎭' },
+  { id: 6, text: 'Meme Pose: Double finger guns pew pew 🔫', icon: '😎' },
+];
+
+const AR_FILTERS = [
+  { id: 'none', label: 'Natural / No AR', emoji: '✨' },
+  { id: 'sparkles', label: 'Soft Glow & Sparkles', emoji: '🌟' },
+  { id: 'hearts', label: 'Floating Heart Blush', emoji: '💖' },
+  { id: 'cat', label: 'Cute Cat Ears & Nose', emoji: '🐱' },
+  { id: 'bunny', label: 'Fluffy Bunny Ears', emoji: '🐰' },
+  { id: 'halo', label: 'Angel Halo & Wings', emoji: '😇' },
+  { id: 'shades', label: 'Retro Heart Sunglasses', emoji: '🕶️' },
+];
+
+const VIRTUAL_BGS = [
+  { id: 'none', name: 'Real Camera Background' },
+  { id: 'seoul', name: '🌆 Sunset Seoul Terrace' },
+  { id: 'paris', name: '☕ Paris Golden Hour Cafe' },
+  { id: 'tokyo', name: '🌃 Tokyo Night Skyline' },
+  { id: 'cozy', name: '🛏️ Cozy Warm Bedroom' },
+  { id: 'diner', name: '🥤 Retro American Diner' },
+];
+
+const COLOR_FILTERS = [
+  { id: 'natural', name: 'Natural', filter: 'none' },
+  { id: 'warm35', name: 'Warm 35mm', filter: 'sepia(0.2) saturate(1.2) contrast(1.05)' },
+  { id: 'tokyo', name: 'Tokyo Pastel', filter: 'brightness(1.08) saturate(1.15) hue-rotate(-5deg)' },
+  { id: 'bw', name: 'B&W Film Grain', filter: 'grayscale(1) contrast(1.2) brightness(0.95)' },
+  { id: 'cyber', name: 'Cyber Glow', filter: 'hue-rotate(15deg) saturate(1.3) contrast(1.1)' },
+  { id: 'vintage80', name: 'Vintage 1980', filter: 'sepia(0.35) brightness(0.95) contrast(1.1)' },
+  { id: 'golden', name: 'Golden Hour', filter: 'saturate(1.4) sepia(0.15) brightness(1.05)' },
+  { id: 'emerald', name: 'Emerald Soft', filter: 'hue-rotate(-12deg) saturate(0.95) brightness(1.05)' },
+];
+
+const STICKER_PALETTE = ['💖', '✨', '🫰', '🌸', '👑', '💌', '🎀', '🧸', '🌟', '💋', '🍓', '🍒', '🕊️', '💐', '💍', '🎬'];
 
 export default function PhotoboothPage() {
-  const [roomCode] = useState('KX7RM');
-  const [mode, setMode] = useState<'simulated' | 'webcam'>('simulated');
-  const [selectedTheme, setSelectedTheme] = useState(THEMES[0]);
-  const [currentShot, setCurrentShot] = useState<number>(0);
+  // Navigation & Scene state: START | ROOM | PROFILE | LAYOUT | THEME | BOOTH | EDIT | FILTER | DECORATE | DOWNLOAD
+  const [scene, setScene] = useState<
+    'START' | 'ROOM' | 'PROFILE' | 'LAYOUT' | 'THEME' | 'BOOTH' | 'EDIT' | 'FILTER' | 'DECORATE' | 'DOWNLOAD'
+  >('BOOTH');
+
+  // Room config
+  const [roomCode, setRoomCode] = useState('KX7RM');
+  const [selectedStyle, setSelectedStyle] = useState(ROOM_STYLES[0]);
+  const [selectedLayout, setSelectedLayout] = useState(LAYOUTS[0]);
+  const [isGroupMode, setIsGroupMode] = useState(false);
+  const [isSoloMode, setIsSoloMode] = useState(false);
+  const [nickname, setNickname] = useState('Mia');
+  const [partnerName, setPartnerName] = useState('Alex');
+  const [coupleName, setCoupleName] = useState('Mia ♡ Alex');
+  const [micMuted, setMicMuted] = useState(false);
+
+  // Booth camera & feed state
+  const [feedMode, setFeedMode] = useState<'simulated' | 'webcam'>('simulated');
+  const [currentShotIdx, setCurrentShotIdx] = useState(0);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [flashing, setFlashing] = useState(false);
+  const [isShooting, setIsShooting] = useState(false);
   const [capturedShots, setCapturedShots] = useState<string[]>([
     '/photos/frame1.webp',
     '/photos/frame2.webp',
     '/photos/frame3.webp',
     '/photos/frame4.webp',
   ]);
-  const [isShooting, setIsShooting] = useState(false);
-  const [completed, setCompleted] = useState(true);
-  const [stickers, setStickers] = useState<string[]>([]);
-  const [coupleName, setCoupleName] = useState('Mia ♡ Alex');
+  const [selectedArFilter, setSelectedArFilter] = useState(AR_FILTERS[0]);
+  const [selectedBg, setSelectedBg] = useState(VIRTUAL_BGS[0]);
+  const [selectedColorFilter, setSelectedColorFilter] = useState(COLOR_FILTERS[0]);
+  const [placedStickers, setPlacedStickers] = useState<string[]>(['💖', '✨', '🫰']);
   const [copied, setCopied] = useState(false);
+  const [confettiActive, setConfettiActive] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Initialize webcam if selected
+  // Live Webcam hook
   useEffect(() => {
     let stream: MediaStream | null = null;
-    if (mode === 'webcam') {
+    if (feedMode === 'webcam') {
       navigator.mediaDevices
-        ?.getUserMedia({ video: { width: 640, height: 480 } })
+        ?.getUserMedia({ video: { width: 1280, height: 720 }, audio: true })
         .then((s) => {
           stream = s;
           if (videoRef.current) {
@@ -54,42 +115,38 @@ export default function PhotoboothPage() {
             videoRef.current.play();
           }
         })
-        .catch(() => {
-          setMode('simulated');
-        });
+        .catch(() => setFeedMode('simulated'));
     }
-
     return () => {
-      if (stream) {
-        stream.getTracks().forEach((t) => t.stop());
-      }
+      if (stream) stream.getTracks().forEach((t) => t.stop());
     };
-  }, [mode]);
+  }, [feedMode]);
 
-  const startPhotoSession = () => {
+  // Capture sequence
+  const startCaptureSequence = () => {
+    if (isShooting) return;
     setIsShooting(true);
-    setCompleted(false);
-    setCurrentShot(0);
+    setCurrentShotIdx(0);
     const newShots: string[] = [];
 
-    const takeShot = (index: number) => {
-      if (index >= 4) {
+    const shootStep = (idx: number) => {
+      if (idx >= selectedLayout.cuts) {
         setIsShooting(false);
-        setCompleted(true);
+        setScene('EDIT');
         return;
       }
 
-      setCurrentShot(index);
+      setCurrentShotIdx(idx);
       setCountdown(3);
 
-      setTimeout(() => setCountdown(2), 1000);
-      setTimeout(() => setCountdown(1), 2000);
+      setTimeout(() => setCountdown(2), 900);
+      setTimeout(() => setCountdown(1), 1800);
       setTimeout(() => {
         setCountdown(null);
         setFlashing(true);
-        setTimeout(() => setFlashing(false), 300);
+        setTimeout(() => setFlashing(false), 320);
 
-        if (mode === 'webcam' && videoRef.current && canvasRef.current) {
+        if (feedMode === 'webcam' && videoRef.current && canvasRef.current) {
           const c = canvasRef.current;
           const ctx = c.getContext('2d');
           if (ctx) {
@@ -100,31 +157,31 @@ export default function PhotoboothPage() {
             setCapturedShots([...newShots]);
           }
         } else {
-          newShots.push(`/photos/frame${index + 1}.webp`);
+          newShots.push(`/photos/frame${idx + 1}.webp`);
           setCapturedShots([...newShots]);
         }
 
-        setTimeout(() => takeShot(index + 1), 1200);
-      }, 3000);
+        setTimeout(() => shootStep(idx + 1), 1000);
+      }, 2700);
     };
 
-    takeShot(0);
+    shootStep(0);
   };
 
-  const addSticker = (sticker: string) => {
-    if (stickers.length < 8) {
-      setStickers([...stickers, sticker]);
+  const addSticker = (stk: string) => {
+    if (placedStickers.length < 8) {
+      setPlacedStickers([...placedStickers, stk]);
     }
   };
 
-  const copyShareLink = () => {
-    navigator.clipboard.writeText(window.location.href);
+  const copyRoomLink = () => {
+    navigator.clipboard.writeText(typeof window !== 'undefined' ? window.location.href : '');
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const downloadStrip = () => {
-    // Generate image on canvas and trigger download
+  // High-Resolution 600x1600 Canvas Strip Exporter
+  const downloadHighResStrip = () => {
     const canvas = document.createElement('canvas');
     canvas.width = 600;
     canvas.height = 1600;
@@ -132,53 +189,86 @@ export default function PhotoboothPage() {
     if (!ctx) return;
 
     // Background
-    ctx.fillStyle = selectedTheme.bg.startsWith('linear') ? '#FFFFFF' : selectedTheme.bg;
+    ctx.fillStyle = selectedStyle.bg.startsWith('linear') ? '#FFFFFF' : selectedStyle.bg;
     ctx.fillRect(0, 0, 600, 1600);
 
     // Border
-    ctx.strokeStyle = '#E3E5EA';
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = selectedStyle.border;
+    ctx.lineWidth = 2.5;
     ctx.strokeRect(16, 16, 568, 1568);
 
     // Title
-    ctx.fillStyle = selectedTheme.text;
+    ctx.fillStyle = selectedStyle.color;
     ctx.font = 'bold 24px Pretendard, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('angie · 인생네컷', 300, 60);
+    ctx.fillText('ANGIE · 인생네컷', 300, 62);
 
-    // Draw 4 frame boxes
+    // 4 Photo Frames
     for (let i = 0; i < 4; i++) {
-      const y = 80 + i * 350;
+      const y = 85 + i * 348;
       ctx.fillStyle = '#F8F9FB';
-      ctx.fillRect(40, y, 520, 320);
-      ctx.strokeStyle = '#E3E5EA';
-      ctx.strokeRect(40, y, 520, 320);
+      ctx.fillRect(42, y, 516, 320);
+      ctx.strokeStyle = selectedStyle.border;
+      ctx.strokeRect(42, y, 516, 320);
 
-      // Frame text
+      // Frame number tag
       ctx.fillStyle = '#8B8E98';
-      ctx.font = '14px monospace';
-      ctx.fillText(`0${i + 1} · CALGARY ♡ JAKARTA`, 300, y + 165);
+      ctx.font = 'bold 13px monospace';
+      ctx.fillText(`0${i + 1} · ${nickname.toUpperCase()} ♡ ${partnerName.toUpperCase()}`, 300, y + 165);
     }
 
-    // Bottom details
-    ctx.fillStyle = selectedTheme.text;
-    ctx.font = 'bold 20px Pretendard, sans-serif';
-    ctx.fillText(coupleName, 300, 1510);
-    ctx.font = '14px monospace';
+    // Couple Name & Footer
+    ctx.fillStyle = selectedStyle.color;
+    ctx.font = 'bold 22px Pretendard, sans-serif';
+    ctx.fillText(coupleName, 300, 1515);
+
+    ctx.font = '13px monospace';
     ctx.fillStyle = '#5B5E68';
-    ctx.fillText(`ROOM: ${roomCode} · ${new Date().toLocaleDateString()}`, 300, 1540);
+    ctx.fillText(`ROOM: ${roomCode} · ${new Date().toLocaleDateString()}`, 300, 1545);
 
     const a = document.createElement('a');
     a.download = `angie-photostrip-${roomCode}.png`;
     a.href = canvas.toDataURL('image/png');
     a.click();
+
+    // Trigger celebration
+    setConfettiActive(true);
+    setTimeout(() => setConfettiActive(false), 4000);
   };
 
   return (
-    <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px' }}>
+    <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px', color: 'var(--ink)' }}>
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 
-      {/* Header */}
+      {/* Confetti celebration overlay */}
+      {confettiActive && (
+        <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 1000, overflow: 'hidden' }}>
+          {Array.from({ length: 40 }).map((_, i) => (
+            <span
+              key={i}
+              style={{
+                position: 'absolute',
+                top: '-20px',
+                left: `${Math.random() * 100}%`,
+                fontSize: `${16 + Math.random() * 20}px`,
+                animation: `gl-pulse ${1.5 + Math.random() * 2}s linear infinite`,
+                transform: `translateY(${Math.random() * 800}px)`,
+              }}
+            >
+              {['🌸', '💖', '✨', '🎉', '🎊', '🫰', '🌟'][i % 7]}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Tagline Ribbon */}
+      <div className="ribbon">
+        <span className="ribbon-in">
+          ♡ Online Photobooth for Long Distance Couples · <b>인생네컷 Free Studio</b>
+        </span>
+      </div>
+
+      {/* Top Navbar */}
       <header className="bar">
         <div className="wrap">
           <Link className="brand" href="/">
@@ -188,7 +278,9 @@ export default function PhotoboothPage() {
               <i className="b"></i>
             </span>
           </Link>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+
+          {/* Scene Step breadcrumb pills */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span
               style={{
                 fontFamily: 'var(--font-mono)',
@@ -205,390 +297,698 @@ export default function PhotoboothPage() {
               <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#0a7d4d', display: 'inline-block' }}></span>
               ROOM: <b>{roomCode}</b>
             </span>
-            <Link className="btn btn-ghost" href="/activity">
-              All Activities ▷
+
+            <Link className="btn btn-ghost" href="/activity" style={{ fontSize: '13px', padding: '6px 12px' }}>
+              Activities ▷
             </Link>
           </div>
         </div>
       </header>
 
-      <main className="wrap" style={{ paddingTop: '36px' }}>
-        <div style={{ textAlign: 'center', maxWidth: '640px', margin: '0 auto 32px' }}>
-          <span className="eyebrow">Online Photobooth · 인생네컷</span>
-          <h1 style={{ fontSize: 'clamp(28px, 4.5vw, 42px)', marginBottom: '12px' }}>
-            Capture both of you in <span className="grad">one frame</span>.
-          </h1>
-          <p style={{ color: 'var(--ink-soft)', fontSize: '16px' }}>
-            A shared countdown fires the shot on both screens at once — arrange into a 4-cut photostrip you can download
-            or print as fridge magnets.
-          </p>
-        </div>
-
-        {/* Main Studio Grid */}
+      <main className="wrap" style={{ paddingTop: '32px' }}>
+        {/* Studio Scene Stage Selector Bar */}
         <div
           style={{
-            display: 'grid',
-            gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 0.8fr)',
-            gap: '36px',
-            alignItems: 'start',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            background: 'var(--paper-raised)',
+            border: '1px solid var(--line)',
+            borderRadius: '12px',
+            padding: '8px 14px',
+            marginBottom: '28px',
+            overflowX: 'auto',
+            gap: '8px',
           }}
         >
-          {/* Left: Interactive Studio Screen */}
-          <div
-            style={{
-              background: 'var(--paper-raised)',
-              border: '1px solid var(--line)',
-              borderRadius: '16px',
-              padding: '24px',
-              boxShadow: 'var(--shadow)',
-              position: 'relative',
-              overflow: 'hidden',
-            }}
-          >
-            {/* Mode Toggle */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button
-                  className={`btn ${mode === 'simulated' ? 'btn-primary' : 'btn-ghost'}`}
-                  style={{ padding: '6px 14px', fontSize: '13px' }}
-                  onClick={() => setMode('simulated')}
-                >
-                  👫 Couple Demo Mode
-                </button>
-                <button
-                  className={`btn ${mode === 'webcam' ? 'btn-primary' : 'btn-ghost'}`}
-                  style={{ padding: '6px 14px', fontSize: '13px' }}
-                  onClick={() => setMode('webcam')}
-                >
-                  📷 Live Webcam
-                </button>
-              </div>
-
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--ink-soft)' }}>
-                {isShooting ? POSE_PROMPTS[currentShot] : 'Ready to shoot!'}
-              </div>
-            </div>
-
-            {/* Live Camera Viewport / Simulated Dual Window */}
-            <div
-              style={{
-                position: 'relative',
-                width: '100%',
-                aspectRatio: '16/10',
-                background: '#17181C',
-                borderRadius: '12px',
-                overflow: 'hidden',
-                display: 'grid',
-                placeItems: 'center',
-              }}
-            >
-              {mode === 'webcam' ? (
-                <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', height: '100%' }}>
-                  <div style={{ position: 'relative', borderRight: '2px solid rgba(255,255,255,0.2)' }}>
-                    <img
-                      src="/photos/face-calgary.webp"
-                      alt="Calgary camera"
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                    <span
-                      style={{
-                        position: 'absolute',
-                        left: '12px',
-                        bottom: '12px',
-                        background: 'rgba(23,24,28,0.7)',
-                        color: '#fff',
-                        fontSize: '11px',
-                        padding: '3px 8px',
-                        borderRadius: '4px',
-                        fontFamily: 'var(--font-mono)',
-                      }}
-                    >
-                      Calgary (Mia)
-                    </span>
-                  </div>
-                  <div style={{ position: 'relative' }}>
-                    <img
-                      src="/photos/face-jakarta.webp"
-                      alt="Jakarta camera"
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                    <span
-                      style={{
-                        position: 'absolute',
-                        left: '12px',
-                        bottom: '12px',
-                        background: 'rgba(23,24,28,0.7)',
-                        color: '#fff',
-                        fontSize: '11px',
-                        padding: '3px 8px',
-                        borderRadius: '4px',
-                        fontFamily: 'var(--font-mono)',
-                      }}
-                    >
-                      Jakarta (Alex)
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {/* Countdown Overlay */}
-              {countdown !== null && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    zIndex: 10,
-                    background: 'rgba(23,24,28,0.3)',
-                    display: 'grid',
-                    placeItems: 'center',
-                    color: '#fff',
-                    fontFamily: 'var(--font-display)',
-                    fontSize: '120px',
-                    fontWeight: 900,
-                  }}
-                >
-                  {countdown}
-                </div>
-              )}
-
-              {/* Camera Flash */}
-              {flashing && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    zIndex: 20,
-                    background: '#FFFFFF',
-                    opacity: 0.95,
-                    pointerEvents: 'none',
-                  }}
-                />
-              )}
-            </div>
-
-            {/* Pose Helper & Controls */}
-            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
-              <div>
-                <span style={{ fontSize: '13px', color: 'var(--ink-soft)', fontWeight: 600 }}>Pose Suggestion: </span>
-                <span style={{ fontSize: '13px', fontWeight: 700 }}>
-                  {isShooting ? POSE_PROMPTS[currentShot] : 'Pick your favorite theme and smile together!'}
-                </span>
-              </div>
-
+          <div style={{ display: 'flex', gap: '6px' }}>
+            {[
+              { id: 'START', label: '1. Style & Room' },
+              { id: 'ROOM', label: '2. Lobby' },
+              { id: 'BOOTH', label: '3. Live Booth 📸' },
+              { id: 'EDIT', label: '4. Edit & Cuts' },
+              { id: 'FILTER', label: '5. Filters' },
+              { id: 'DECORATE', label: '6. Stickers' },
+              { id: 'DOWNLOAD', label: '7. Download & Print 🧲' },
+            ].map((s) => (
               <button
-                className="btn btn-grad"
-                onClick={startPhotoSession}
-                disabled={isShooting}
-                style={{ padding: '12px 28px', fontSize: '16px' }}
+                key={s.id}
+                onClick={() => setScene(s.id as any)}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  border: scene === s.id ? '1.5px solid var(--pink)' : '1px solid transparent',
+                  background: scene === s.id ? 'var(--pink-tint)' : 'transparent',
+                  color: scene === s.id ? 'var(--ink)' : 'var(--ink-soft)',
+                  fontWeight: 700,
+                  fontSize: '12.5px',
+                  whiteSpace: 'nowrap',
+                }}
               >
-                {isShooting ? 'Capturing 4 Shots...' : 'Take 4 Photos 📸'}
+                {s.label}
+              </button>
+            ))}
+          </div>
+
+          <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--pink)', fontWeight: 700, whiteSpace: 'nowrap' }}>
+            {selectedStyle.label} · {selectedLayout.name.split(' ')[0]}
+          </span>
+        </div>
+
+        {/* =========================================================================
+            SCENE 1: START (Create Room, Style Picker, Solo / Group Toggle)
+            ========================================================================= */}
+        {scene === 'START' && (
+          <div style={{ maxWidth: '780px', margin: '0 auto' }}>
+            <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+              <span className="eyebrow">Pick Your Experience Room Style</span>
+              <h1 style={{ fontSize: '36px', fontWeight: 800, marginTop: '8px' }}>
+                Create a <span className="grad">Photobooth Room</span>
+              </h1>
+              <p style={{ color: 'var(--ink-soft)', fontSize: '15px', marginTop: '6px' }}>
+                Pick an aesthetic room skin — classic 인생네컷, 1930s automat, neon karaoke, or meme recreation.
+              </p>
+            </div>
+
+            {/* Mode toggles */}
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '14px', marginBottom: '26px', flexWrap: 'wrap' }}>
+              <button
+                className={`btn ${!isSoloMode && !isGroupMode ? 'btn-primary' : 'btn-ghost'}`}
+                onClick={() => {
+                  setIsSoloMode(false);
+                  setIsGroupMode(false);
+                }}
+              >
+                👫 Couple Room (Duo)
+              </button>
+              <button
+                className={`btn ${isGroupMode ? 'btn-primary' : 'btn-ghost'}`}
+                onClick={() => {
+                  setIsGroupMode(true);
+                  setIsSoloMode(false);
+                }}
+              >
+                👥 Group Photobooth (4 People · 2×2)
+              </button>
+              <button
+                className={`btn ${isSoloMode ? 'btn-primary' : 'btn-ghost'}`}
+                onClick={() => {
+                  setIsSoloMode(true);
+                  setIsGroupMode(false);
+                }}
+              >
+                👤 Solo Session
               </button>
             </div>
 
-            {/* Filter / Frame Themes */}
-            <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid var(--line)' }}>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '10px' }}>
-                Select Photo Strip Theme:
-              </label>
-              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                {THEMES.map((theme) => (
-                  <button
-                    key={theme.id}
-                    onClick={() => setSelectedTheme(theme)}
+            {/* Room Style Cards Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '14px' }}>
+              {ROOM_STYLES.map((style) => (
+                <div
+                  key={style.id}
+                  onClick={() => {
+                    setSelectedStyle(style);
+                    setScene('ROOM');
+                  }}
+                  style={{
+                    background: style.bg,
+                    color: style.color,
+                    border: selectedStyle.id === style.id ? '2px solid var(--pink)' : `1px solid ${style.border}`,
+                    borderRadius: '12px',
+                    padding: '18px 16px',
+                    boxShadow: 'var(--shadow)',
+                    cursor: 'pointer',
+                    transform: selectedStyle.id === style.id ? 'scale(1.02)' : 'none',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <strong style={{ fontSize: '16px' }}>{style.label}</strong>
+                    <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: style.accent }}></span>
+                  </div>
+                  <p style={{ fontSize: '12.5px', opacity: 0.8, lineHeight: 1.4 }}>{style.sub}</p>
+                  <span style={{ display: 'inline-block', marginTop: '12px', fontSize: '12px', fontWeight: 700, color: style.accent }}>
+                    Select Room ▷
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* =========================================================================
+            SCENE 2: ROOM (Lobby, Code Sharing & QR, Partner Status)
+            ========================================================================= */}
+        {scene === 'ROOM' && (
+          <div style={{ maxWidth: '580px', margin: '0 auto', textAlign: 'center' }}>
+            <div className="booth-box" style={{ padding: '36px 28px' }}>
+              <span className="eyebrow">Room Lobby · 5-Letter Code</span>
+              <h2 style={{ fontSize: '28px', fontWeight: 800, margin: '10px 0' }}>Share code with your partner</h2>
+              <p style={{ color: 'var(--ink-soft)', fontSize: '15px', marginBottom: '24px' }}>
+                Send this 5-letter code to your partner so both screens connect into the same photobooth frame.
+              </p>
+
+              {/* Big Room Code Cells */}
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '20px' }}>
+                {roomCode.split('').map((char, i) => (
+                  <span
+                    key={i}
                     style={{
-                      padding: '8px 14px',
+                      width: '46px',
+                      height: '56px',
+                      display: 'grid',
+                      placeItems: 'center',
+                      background: 'var(--paper)',
+                      border: '2px solid var(--line)',
                       borderRadius: '8px',
-                      border: selectedTheme.id === theme.id ? '2px solid var(--pink)' : '1px solid var(--line)',
-                      background: theme.bg,
-                      color: theme.text,
-                      fontWeight: 700,
-                      fontSize: '12px',
-                      cursor: 'pointer',
-                      boxShadow: selectedTheme.id === theme.id ? 'var(--shadow)' : 'none',
-                      transform: selectedTheme.id === theme.id ? 'scale(1.04)' : 'none',
-                      transition: 'all 0.15s ease',
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '24px',
+                      fontWeight: 800,
+                      color: 'var(--ink)',
                     }}
                   >
-                    {theme.name}
-                  </button>
+                    {char}
+                  </span>
                 ))}
               </div>
-            </div>
 
-            {/* Sticker Accessories */}
-            <div style={{ marginTop: '18px' }}>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '10px' }}>
-                Add Cute Stickers:
-              </label>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                {['💖', '✨', '🫰', '🌸', '👑', '🕊️', '💌', '🎀', '🧸', '🌟'].map((emoji, i) => (
-                  <button
-                    key={i}
-                    onClick={() => addSticker(emoji)}
-                    style={{
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: '8px',
-                      border: '1px solid var(--line)',
-                      background: 'var(--paper)',
-                      fontSize: '18px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {emoji}
-                  </button>
-                ))}
-                {stickers.length > 0 && (
-                  <button
-                    onClick={() => setStickers([])}
-                    style={{
-                      padding: '0 10px',
-                      borderRadius: '8px',
-                      border: '1px solid var(--line)',
-                      background: 'var(--paper)',
-                      fontSize: '12px',
-                      color: 'var(--ink-soft)',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Clear Stickers
-                  </button>
-                )}
+              {/* Partner Status Indicators */}
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  gap: '24px',
+                  background: 'var(--paper)',
+                  padding: '14px 20px',
+                  borderRadius: '10px',
+                  marginBottom: '26px',
+                  border: '1px solid var(--line)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#0a7d4d' }}></span>
+                  <span style={{ fontSize: '13px', fontWeight: 700 }}>{nickname} (Calgary) — Ready</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#0a7d4d' }}></span>
+                  <span style={{ fontSize: '13px', fontWeight: 700 }}>{partnerName} (Jakarta) — Connected</span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                <button className="btn btn-ghost" onClick={copyRoomLink}>
+                  {copied ? '✓ Link Copied!' : 'Copy Room Link 🔗'}
+                </button>
+                <button className="btn btn-grad" onClick={() => setScene('BOOTH')} style={{ padding: '12px 28px' }}>
+                  Enter Photobooth ▷
+                </button>
               </div>
             </div>
           </div>
+        )}
 
-          {/* Right: Finished 4-Cut Photostrip Preview */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
-            <div
-              style={{
-                width: '260px',
-                background: selectedTheme.bg,
-                color: selectedTheme.text,
-                border: `1px solid ${selectedTheme.border}`,
-                borderRadius: '8px',
-                padding: '16px 14px 20px',
-                boxShadow: 'var(--shadow-lg)',
-                position: 'relative',
-              }}
-            >
-              {/* Header on Strip */}
-              <div
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '11px',
-                  letterSpacing: '.18em',
-                  textAlign: 'center',
-                  paddingBottom: '10px',
-                  fontWeight: 700,
-                }}
-              >
-                ANGIE · 인생네컷
+        {/* =========================================================================
+            SCENE 3: BOOTH (The Live Studio Stage with Duo Video, AR, Countdown & Flash)
+            ========================================================================= */}
+        {scene === 'BOOTH' && (
+          <div className="booth-showcase-grid">
+            {/* Left: Studio Stage */}
+            <div className={`booth-box ${selectedStyle.id === 'vintage' ? 'vintage-automat' : ''}`}>
+              {/* Studio Bar Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <button
+                    className={`btn ${feedMode === 'simulated' ? 'btn-primary' : 'btn-ghost'}`}
+                    style={{ padding: '5px 12px', fontSize: '12px' }}
+                    onClick={() => setFeedMode('simulated')}
+                  >
+                    👫 Demo Duo Feed
+                  </button>
+                  <button
+                    className={`btn ${feedMode === 'webcam' ? 'btn-primary' : 'btn-ghost'}`}
+                    style={{ padding: '5px 12px', fontSize: '12px' }}
+                    onClick={() => setFeedMode('webcam')}
+                  >
+                    📷 Live Webcam
+                  </button>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <button
+                    className="btn btn-ghost"
+                    onClick={() => setMicMuted(!micMuted)}
+                    style={{ padding: '5px 10px', fontSize: '12px' }}
+                  >
+                    {micMuted ? '🔇 Mic Muted' : '🎙️ Mic Live'}
+                  </button>
+                </div>
               </div>
 
-              {/* 4 Photo Frames */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {capturedShots.map((shot, idx) => (
-                  <div
-                    key={idx}
-                    style={{
-                      position: 'relative',
-                      width: '100%',
-                      aspectRatio: '4/3',
-                      background: 'var(--paper)',
-                      borderRadius: '4px',
-                      overflow: 'hidden',
-                      border: '1px solid rgba(0,0,0,0.08)',
-                    }}
-                  >
-                    <img src={shot} alt={`Strip frame ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    <span
+              {/* Camera Screen Stage */}
+              <div className="booth-cam-stage">
+                {/* Pose Prompt Top Banner */}
+                <div className="pose-prompt-card">
+                  <span>{POSE_PROMPTS[currentShotIdx % POSE_PROMPTS.length].icon}</span>
+                  <span>{POSE_PROMPTS[currentShotIdx % POSE_PROMPTS.length].text}</span>
+                </div>
+
+                {feedMode === 'webcam' ? (
+                  <div className="booth-duo-view solo">
+                    <div className="booth-feed-panel">
+                      <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <div className="feed-city-badge pink">
+                        <span className="dot"></span> {nickname} (You)
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="booth-duo-view">
+                    <div className="booth-feed-panel">
+                      <img src="/photos/face-calgary.webp" alt="Calgary feed" />
+                      <div className="feed-city-badge pink">
+                        <span className="dot"></span> {nickname} (Calgary)
+                      </div>
+                    </div>
+                    <div className="booth-feed-panel">
+                      <img src="/photos/face-jakarta.webp" alt="Jakarta feed" />
+                      <div className="feed-city-badge blue">
+                        <span className="dot"></span> {partnerName} (Jakarta)
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 3..2..1 Countdown Flash */}
+                {countdown !== null && <div className="booth-flash-num">{countdown}</div>}
+
+                {/* Camera Flash Screen Effect */}
+                {flashing && <div className="booth-camera-flash" />}
+
+                {/* AR Filter Overlays */}
+                {selectedArFilter.id === 'sparkles' && (
+                  <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', display: 'flex', justifyContent: 'space-around', alignItems: 'center', fontSize: '32px', zIndex: 6 }}>
+                    <span style={{ animation: 'gl-tw 1.5s infinite' }}>✨</span>
+                    <span style={{ animation: 'gl-tw 2s infinite' }}>🌟</span>
+                    <span style={{ animation: 'gl-tw 1.8s infinite' }}>✨</span>
+                  </div>
+                )}
+                {selectedArFilter.id === 'hearts' && (
+                  <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', display: 'flex', justifyContent: 'space-around', alignItems: 'center', fontSize: '28px', zIndex: 6 }}>
+                    <span style={{ animation: 'gl-pulse 1.6s infinite' }}>💖</span>
+                    <span style={{ animation: 'gl-pulse 2.2s infinite' }}>💕</span>
+                    <span style={{ animation: 'gl-pulse 1.9s infinite' }}>💗</span>
+                  </div>
+                )}
+                {selectedArFilter.id === 'cat' && (
+                  <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', display: 'flex', justifyContent: 'space-between', padding: '16px 40px', fontSize: '28px', zIndex: 6 }}>
+                    <span>🐱</span>
+                    <span>🐾</span>
+                  </div>
+                )}
+                {selectedArFilter.id === 'halo' && (
+                  <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', display: 'flex', justifyContent: 'space-around', padding: '10px', fontSize: '28px', zIndex: 6 }}>
+                    <span>😇</span>
+                    <span>😇</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Shutter Button & AR Filter Bar */}
+              <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '11.5px', fontFamily: 'var(--font-mono)', color: 'var(--ink-soft)' }}>AR FX:</span>
+                  {AR_FILTERS.slice(0, 4).map((f) => (
+                    <button
+                      key={f.id}
+                      onClick={() => setSelectedArFilter(f)}
                       style={{
-                        position: 'absolute',
-                        top: '4px',
-                        left: '6px',
-                        fontSize: '9px',
-                        fontFamily: 'var(--font-mono)',
-                        background: 'rgba(255,255,255,0.7)',
-                        padding: '1px 4px',
-                        borderRadius: '2px',
-                        color: '#17181C',
+                        padding: '4px 8px',
+                        borderRadius: '6px',
+                        border: selectedArFilter.id === f.id ? '1.5px solid var(--pink)' : '1px solid var(--line)',
+                        background: selectedArFilter.id === f.id ? 'var(--pink-tint)' : 'var(--paper)',
+                        fontSize: '11px',
+                        fontWeight: 700,
                       }}
                     >
-                      0{idx + 1}
-                    </span>
+                      {f.emoji} {f.label.split(' ')[0]}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  className="btn btn-grad"
+                  onClick={startCaptureSequence}
+                  disabled={isShooting}
+                  style={{ padding: '12px 28px', fontSize: '16px' }}
+                >
+                  {isShooting ? 'Taking 4-Cut Photos 📸...' : 'Take 4-Cut Photos 📸'}
+                </button>
+              </div>
+
+              {/* Live Thumbnail Strip Progress */}
+              <div style={{ marginTop: '20px', paddingTop: '14px', borderTop: '1px solid var(--line)' }}>
+                <span style={{ fontSize: '11.5px', fontFamily: 'var(--font-mono)', color: 'var(--ink-soft)', textTransform: 'uppercase' }}>
+                  Live Capture Shots ({capturedShots.length} / 4):
+                </span>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginTop: '8px' }}>
+                  {capturedShots.map((shot, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        aspectRatio: '4/3',
+                        background: '#17181C',
+                        borderRadius: '6px',
+                        overflow: 'hidden',
+                        position: 'relative',
+                        border: currentShotIdx === i && isShooting ? '2px solid var(--pink)' : '1px solid var(--line)',
+                      }}
+                    >
+                      <img src={shot} alt={`Shot ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <span style={{ position: 'absolute', top: '2px', left: '4px', fontSize: '8px', color: '#fff', background: 'rgba(0,0,0,0.6)', padding: '1px 3px', borderRadius: '2px' }}>
+                        0{i + 1}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Live Photostrip Output */}
+            <div className="strip-preview-holder">
+              <div
+                className="real-strip"
+                style={{
+                  background: selectedStyle.bg,
+                  color: selectedStyle.color,
+                  borderColor: selectedStyle.border,
+                }}
+              >
+                <div className="real-strip-brand">ANGIE · 인생네컷</div>
+
+                <div className="real-strip-frames">
+                  {capturedShots.map((shot, idx) => (
+                    <div key={idx} className="real-strip-cell">
+                      <img
+                        src={shot}
+                        alt={`Cut ${idx + 1}`}
+                        style={{ filter: selectedColorFilter.filter }}
+                      />
+                      <span className="frame-tag">0{idx + 1}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Stickers */}
+                {placedStickers.length > 0 && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '36px',
+                      right: '-10px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '4px',
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    {placedStickers.map((stk, i) => (
+                      <span key={i} style={{ fontSize: '18px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }}>
+                        {stk}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                <div className="real-strip-footer">
+                  <input
+                    type="text"
+                    value={coupleName}
+                    onChange={(e) => setCoupleName(e.target.value)}
+                    className="real-strip-name"
+                    style={{ width: '100%', textAlign: 'center', border: 'none', background: 'transparent', outline: 'none' }}
+                  />
+                  <div className="real-strip-serial">
+                    ANGIE · <b>{roomCode}</b>
+                  </div>
+                </div>
+              </div>
+
+              {/* Strip Next Scene CTAs */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '250px' }}>
+                <button className="btn btn-grad" onClick={() => setScene('EDIT')} style={{ justifyContent: 'center' }}>
+                  Next: Edit &amp; Color Filters ▷
+                </button>
+                <button className="btn btn-primary" onClick={downloadHighResStrip} style={{ justifyContent: 'center' }}>
+                  Download Photo Strip 💾
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* =========================================================================
+            SCENE 4: EDIT & COLOR FILTER (Review Shots, Swap Partners, Color Filters)
+            ========================================================================= */}
+        {(scene === 'EDIT' || scene === 'FILTER') && (
+          <div className="booth-showcase-grid">
+            <div className="booth-box">
+              <span className="eyebrow">Step 4 &amp; 5 · Review &amp; Color Grading</span>
+              <h2 style={{ fontSize: '24px', fontWeight: 800, margin: '8px 0 16px' }}>Choose your photo color grade</h2>
+
+              {/* Color Filter presets */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '10px', marginBottom: '24px' }}>
+                {COLOR_FILTERS.map((cf) => (
+                  <div
+                    key={cf.id}
+                    onClick={() => setSelectedColorFilter(cf)}
+                    style={{
+                      border: selectedColorFilter.id === cf.id ? '2px solid var(--pink)' : '1px solid var(--line)',
+                      borderRadius: '8px',
+                      padding: '8px',
+                      cursor: 'pointer',
+                      background: 'var(--paper)',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <div style={{ width: '100%', aspectRatio: '4/3', overflow: 'hidden', borderRadius: '4px', marginBottom: '6px' }}>
+                      <img src="/photos/frame1.webp" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', filter: cf.filter }} />
+                    </div>
+                    <span style={{ fontSize: '11px', fontWeight: 700 }}>{cf.name}</span>
                   </div>
                 ))}
               </div>
 
-              {/* Placed Stickers */}
-              {stickers.length > 0 && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '40px',
-                    right: '-10px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '4px',
-                  }}
-                >
-                  {stickers.map((s, i) => (
-                    <span key={i} style={{ fontSize: '20px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }}>
-                      {s}
-                    </span>
+              {/* Layout Switcher */}
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>
+                  Strip Format:
+                </label>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {LAYOUTS.map((layout) => (
+                    <button
+                      key={layout.id}
+                      onClick={() => setSelectedLayout(layout)}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        border: selectedLayout.id === layout.id ? '1.5px solid var(--pink)' : '1px solid var(--line)',
+                        background: selectedLayout.id === layout.id ? 'var(--pink-tint)' : 'var(--paper)',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                      }}
+                    >
+                      {layout.name}
+                    </button>
                   ))}
                 </div>
-              )}
+              </div>
 
-              {/* Strip Footer & Serial */}
-              <div style={{ marginTop: '14px', textAlign: 'center' }}>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button className="btn btn-ghost" onClick={() => setScene('BOOTH')}>
+                  ← Retake Photos
+                </button>
+                <button className="btn btn-grad" onClick={() => setScene('DECORATE')}>
+                  Next: Add Stickers ▷
+                </button>
+              </div>
+            </div>
+
+            {/* Right Strip */}
+            <div className="strip-preview-holder">
+              <div
+                className="real-strip"
+                style={{
+                  background: selectedStyle.bg,
+                  color: selectedStyle.color,
+                  borderColor: selectedStyle.border,
+                }}
+              >
+                <div className="real-strip-brand">ANGIE · 인생네컷</div>
+                <div className="real-strip-frames">
+                  {capturedShots.map((shot, idx) => (
+                    <div key={idx} className="real-strip-cell">
+                      <img src={shot} alt="" style={{ filter: selectedColorFilter.filter }} />
+                      <span className="frame-tag">0{idx + 1}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="real-strip-footer">
+                  <div className="real-strip-name">{coupleName}</div>
+                  <div className="real-strip-serial">
+                    ANGIE · <b>{roomCode}</b>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* =========================================================================
+            SCENE 5: DECORATE & DOWNLOAD (Stickers, Couple Signatures, Canvas Download)
+            ========================================================================= */}
+        {(scene === 'DECORATE' || scene === 'DOWNLOAD') && (
+          <div className="booth-showcase-grid">
+            <div className="booth-box">
+              <span className="eyebrow">Step 6 &amp; 7 · Decorate &amp; Download</span>
+              <h2 style={{ fontSize: '24px', fontWeight: 800, margin: '8px 0 16px' }}>Customize your keepsake</h2>
+
+              {/* Couple Name */}
+              <div style={{ marginBottom: '18px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
+                  Couple Names on Strip:
+                </label>
                 <input
                   type="text"
                   value={coupleName}
                   onChange={(e) => setCoupleName(e.target.value)}
                   style={{
                     width: '100%',
-                    textAlign: 'center',
-                    border: 'none',
-                    background: 'transparent',
+                    padding: '10px 14px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--line)',
                     fontFamily: 'var(--font-display)',
-                    fontWeight: 800,
-                    fontSize: '14px',
-                    color: 'inherit',
-                    outline: 'none',
+                    fontSize: '16px',
+                    fontWeight: 700,
                   }}
                 />
-                <div
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '9.5px',
-                    letterSpacing: '.2em',
-                    opacity: 0.7,
-                    marginTop: '4px',
-                  }}
-                >
-                  ANGIE · <b>{roomCode}</b>
+              </div>
+
+              {/* Sticker Selector */}
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>
+                  Tap Stickers to Decorate:
+                </label>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {STICKER_PALETTE.map((stk, i) => (
+                    <button
+                      key={i}
+                      onClick={() => addSticker(stk)}
+                      style={{
+                        width: '38px',
+                        height: '38px',
+                        borderRadius: '8px',
+                        border: '1px solid var(--line)',
+                        background: 'var(--paper)',
+                        fontSize: '18px',
+                      }}
+                    >
+                      {stk}
+                    </button>
+                  ))}
+                  {placedStickers.length > 0 && (
+                    <button
+                      onClick={() => setPlacedStickers([])}
+                      style={{
+                        padding: '0 12px',
+                        borderRadius: '8px',
+                        border: '1px solid var(--line)',
+                        background: 'none',
+                        fontSize: '12px',
+                        color: 'var(--ink-soft)',
+                      }}
+                    >
+                      Clear Stickers
+                    </button>
+                  )}
                 </div>
+              </div>
+
+              {/* Download & Print Keepsake pitch */}
+              <div style={{ background: 'var(--paper)', padding: '18px', borderRadius: '10px', border: '1px solid var(--line)', marginBottom: '20px' }}>
+                <div style={{ fontWeight: 800, fontSize: '15px', marginBottom: '4px' }}>🧲 Print as Vinyl Magnet ($12)</div>
+                <p style={{ fontSize: '13px', color: 'var(--ink-soft)', lineHeight: 1.4 }}>
+                  Turn this session into die-cut vinyl magnets that ship cleanly to both your fridges worldwide.
+                </p>
+                <Link className="btn btn-grad" href="/shop" style={{ marginTop: '10px', display: 'inline-flex', fontSize: '13px', padding: '8px 16px' }}>
+                  Order Twin-Pack Magnet ▷
+                </Link>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button className="btn btn-primary" onClick={downloadHighResStrip} style={{ flex: 1, justifyContent: 'center' }}>
+                  Download High-Res Strip PNG 💾
+                </button>
+                <button className="btn btn-ghost" onClick={copyRoomLink}>
+                  {copied ? '✓ Copied' : 'Share Link 🔗'}
+                </button>
               </div>
             </div>
 
-            {/* Actions for strip */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '260px' }}>
-              <button className="btn btn-primary" onClick={downloadStrip} style={{ justifyContent: 'center' }}>
-                Download Photo Strip 💾
+            {/* Right Finished Strip */}
+            <div className="strip-preview-holder">
+              <div
+                className="real-strip"
+                style={{
+                  background: selectedStyle.bg,
+                  color: selectedStyle.color,
+                  borderColor: selectedStyle.border,
+                }}
+              >
+                <div className="real-strip-brand">ANGIE · 인생네컷</div>
+                <div className="real-strip-frames">
+                  {capturedShots.map((shot, idx) => (
+                    <div key={idx} className="real-strip-cell">
+                      <img src={shot} alt="" style={{ filter: selectedColorFilter.filter }} />
+                      <span className="frame-tag">0{idx + 1}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {placedStickers.length > 0 && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '36px',
+                      right: '-10px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '4px',
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    {placedStickers.map((stk, i) => (
+                      <span key={i} style={{ fontSize: '18px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }}>
+                        {stk}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                <div className="real-strip-footer">
+                  <div className="real-strip-name">{coupleName}</div>
+                  <div className="real-strip-serial">
+                    ANGIE · <b>{roomCode}</b>
+                  </div>
+                </div>
+              </div>
+
+              <button className="btn btn-grad" onClick={downloadHighResStrip} style={{ width: '250px', justifyContent: 'center' }}>
+                Download PNG 💾
               </button>
-              <button className="btn btn-ghost" onClick={copyShareLink} style={{ justifyContent: 'center' }}>
-                {copied ? '✓ Link Copied!' : 'Share with Partner 🔗'}
-              </button>
-              <Link className="btn btn-grad" href="/shop" style={{ justifyContent: 'center' }}>
-                Print as Magnet ($12) 🧲
-              </Link>
             </div>
           </div>
-        </div>
+        )}
       </main>
     </div>
   );
