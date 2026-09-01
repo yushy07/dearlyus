@@ -5,24 +5,14 @@ import Link from 'next/link';
 
 export default function HomePage() {
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
-  const [roomCode, setRoomCode] = useState(['K', 'X', '7', 'R', 'M']);
+  const [roomCode] = useState(['K', 'X', '7', 'R', 'M']);
   const [profileOpen, setProfileOpen] = useState(false);
   const [nickname, setNickname] = useState('Mia');
   const [partnerName, setPartnerName] = useState('Alex');
-  const [copied, setCopied] = useState(false);
-  const [datesCount, setDatesCount] = useState(0);
-  const [sessionsCount, setSessionsCount] = useState(0);
-  const [stripsCount, setStripsCount] = useState(0);
 
   // Presence cursors state
   const blueCursorRef = useRef<HTMLDivElement>(null);
   const pinkCursorRef = useRef<HTMLDivElement>(null);
-
-  // Hero photobooth development cycle
-  const [shotStep, setShotStep] = useState(0); // 0..4
-  const [countNum, setCountNum] = useState<string>('');
-  const [flashing, setFlashing] = useState(false);
-  const [litFrames, setLitFrames] = useState<boolean[]>([false, false, false, false]);
 
   // Demo Section Photobooth State
   const DEMO_THEMES = [

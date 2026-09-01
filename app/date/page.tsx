@@ -50,7 +50,6 @@ const PREMADE_PLANS: Record<string, DatePlan> = {
 
 export default function DateNightPlannerPage() {
   const [selectedMood, setSelectedMood] = useState<'romantic' | 'playful' | 'chill'>('romantic');
-  const [customMinutes, setCustomMinutes] = useState(60);
   const plan = PREMADE_PLANS[selectedMood];
 
   return (

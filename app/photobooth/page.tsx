@@ -41,15 +41,6 @@ const AR_FILTERS = [
   { id: 'shades', label: 'Retro Heart Sunglasses', emoji: '🕶️' },
 ];
 
-const VIRTUAL_BGS = [
-  { id: 'none', name: 'Real Camera Background' },
-  { id: 'seoul', name: '🌆 Sunset Seoul Terrace' },
-  { id: 'paris', name: '☕ Paris Golden Hour Cafe' },
-  { id: 'tokyo', name: '🌃 Tokyo Night Skyline' },
-  { id: 'cozy', name: '🛏️ Cozy Warm Bedroom' },
-  { id: 'diner', name: '🥤 Retro American Diner' },
-];
-
 const COLOR_FILTERS = [
   { id: 'natural', name: 'Natural', filter: 'none' },
   { id: 'warm35', name: 'Warm 35mm', filter: 'sepia(0.2) saturate(1.2) contrast(1.05)' },
@@ -93,7 +84,6 @@ export default function PhotoboothPage() {
     '/photos/frame4.webp',
   ]);
   const [selectedArFilter, setSelectedArFilter] = useState(AR_FILTERS[0]);
-  const [selectedBg, setSelectedBg] = useState(VIRTUAL_BGS[0]);
   const [selectedColorFilter, setSelectedColorFilter] = useState(COLOR_FILTERS[0]);
   const [placedStickers, setPlacedStickers] = useState<string[]>(['💖', '✨', '🫰']);
   const [copied, setCopied] = useState(false);
