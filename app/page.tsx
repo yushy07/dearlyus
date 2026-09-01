@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { Footer } from '@/components/shared/Footer';
-import { ShinyText, AuroraBackground, SpotlightCard, MagnetButton, ScrollProgress, ScrollReveal } from '@/components/ui';
+import { ShinyText, AuroraBackground, SpotlightCard, MagnetButton, ScrollProgress, ScrollReveal, Floating3D } from '@/components/ui';
 
 export default function HomePage() {
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
@@ -368,28 +368,32 @@ export default function HomePage() {
         {/* Animated Presence Cursors */}
         <div className="cursor-layer" id="cursors">
           <div className="cursor blue" ref={blueCursorRef}>
-            <svg width="30" height="34" viewBox="0 0 30 34">
-              <path
-                d="M3 2 L3 28 L10 21 L15 31 L19 29 L14 19 L24 19 Z"
-                fill="#5FA0FF"
-                stroke="#fff"
-                strokeWidth="2.2"
-                strokeLinejoin="round"
-              />
-            </svg>
-            <span className="tag">{partnerName} (Jakarta)</span>
+            <Floating3D duration={5}>
+              <svg width="30" height="34" viewBox="0 0 30 34">
+                <path
+                  d="M3 2 L3 28 L10 21 L15 31 L19 29 L14 19 L24 19 Z"
+                  fill="#5FA0FF"
+                  stroke="#fff"
+                  strokeWidth="2.2"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span className="tag">{partnerName} (Jakarta)</span>
+            </Floating3D>
           </div>
           <div className="cursor pink" ref={pinkCursorRef}>
-            <svg width="30" height="34" viewBox="0 0 30 34">
-              <path
-                d="M3 2 L3 28 L10 21 L15 31 L19 29 L14 19 L24 19 Z"
-                fill="#FF7BA3"
-                stroke="#fff"
-                strokeWidth="2.2"
-                strokeLinejoin="round"
-              />
-            </svg>
-            <span className="tag">{nickname} (Calgary)</span>
+            <Floating3D duration={6}>
+              <svg width="30" height="34" viewBox="0 0 30 34">
+                <path
+                  d="M3 2 L3 28 L10 21 L15 31 L19 29 L14 19 L24 19 Z"
+                  fill="#FF7BA3"
+                  stroke="#fff"
+                  strokeWidth="2.2"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span className="tag">{nickname} (Calgary)</span>
+            </Floating3D>
           </div>
         </div>
 
@@ -410,10 +414,10 @@ export default function HomePage() {
               that kept us together through the distance this past 2 years. I hope you&apos;ll enjoy them too!
             </p>
             <div className="cta-row">
-              <Link className="btn btn-grad" href="/activity">
+              <Link className="btn btn-grad btn-3d" href="/activity">
                 Pick an activity <span className="arr">▷</span>
               </Link>
-              <Link className="btn btn-ghost" href="/photobooth">
+              <Link className="btn btn-ghost btn-3d" href="/photobooth">
                 Open the photobooth
               </Link>
             </div>
@@ -775,10 +779,10 @@ export default function HomePage() {
 
           {/* New spotlight cards */}
           <ScrollReveal animation="fade-up" delay={0.1}>
-            <div className="spot">
+            <div className="spot perspective-container">
               <span className="spot-label">New · the ones we can&apos;t stop playing</span>
-            <Link className="act" href="/letter">
-              <div className="ic">
+            <Link className="act card-3d" href="/letter">
+              <div className="ic layer-z2">
                 <svg viewBox="0 0 34 34" fill="none">
                   <rect x="4" y="8" width="26" height="18" rx="2.5" stroke="#FF7BA3" strokeWidth="2" />
                   <path
@@ -798,20 +802,20 @@ export default function HomePage() {
                   />
                 </svg>
               </div>
-              <h3>
-                Letters to the Future <span className="badge new">New</span>
+              <h3 className="layer-z1">
+                Letters to the Future <span className="badge new layer-z3">New</span>
               </h3>
               <p>
                 Write to the two of you years from now. Pick a date up to twelve years out — we hold the letter sealed until
                 that morning, then send it to you, to them, or to both.
               </p>
-              <span className="go">
+              <span className="go layer-z2">
                 Write a letter <span className="arr">▷</span>
               </span>
             </Link>
 
-            <Link className="act" href="/scrapbook">
-              <div className="ic">
+            <Link className="act card-3d" href="/scrapbook">
+              <div className="ic layer-z2">
                 <svg viewBox="0 0 34 34" fill="none">
                   <rect x="5" y="5" width="24" height="24" rx="2.5" stroke="#5FA0FF" strokeWidth="2" />
                   <path d="M10 5v24" stroke="#5FA0FF" strokeWidth="2" />
@@ -819,20 +823,20 @@ export default function HomePage() {
                   <path d="M14 23h11" stroke="#FF7BA3" strokeWidth="2" strokeLinecap="round" />
                 </svg>
               </div>
-              <h3>
-                Digital Scrapbook <span className="badge new">New</span>
+              <h3 className="layer-z1">
+                Digital Scrapbook <span className="badge new layer-z3">New</span>
               </h3>
               <p>
                 The one thing here you come back to. Tape your real photostrips onto paper pages, draw on them, write
                 captions in your own hand — both of you on the same page at once.
               </p>
-              <span className="go">
+              <span className="go layer-z2">
                 Open the book <span className="arr">▷</span>
               </span>
             </Link>
 
-            <Link className="act" href="/birthday">
-              <div className="ic">
+            <Link className="act card-3d" href="/birthday">
+              <div className="ic layer-z2">
                 <svg viewBox="0 0 34 34" fill="none">
                   <rect x="5" y="14" width="24" height="15" rx="2" stroke="#5FA0FF" strokeWidth="2" />
                   <path d="M5 19h24M17 14v15" stroke="#5FA0FF" strokeWidth="2" />
@@ -844,14 +848,14 @@ export default function HomePage() {
                   />
                 </svg>
               </div>
-              <h3>
-                Birthday Gift Page <span className="badge new">New</span>
+              <h3 className="layer-z1">
+                Birthday Gift Page <span className="badge new layer-z3">New</span>
               </h3>
               <p>
                 Build them a birthday page — a letter that types itself out, your photos, a live count of days together —
                 then hand it over as a heart-shaped QR code they can scan.
               </p>
-              <span className="go">
+              <span className="go layer-z2">
                 Make their page <span className="arr">▷</span>
               </span>
             </Link>

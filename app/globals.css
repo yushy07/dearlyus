@@ -917,7 +917,9 @@ h2 {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  transition: transform .14s ease, box-shadow .14s ease;
+  transform-style: preserve-3d;
+  transition: transform .25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow .25s ease, border-color .2s ease;
+  will-change: transform;
 }
 
 .act .seamline {
@@ -932,8 +934,9 @@ h2 {
 }
 
 a.act:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow);
+  transform: perspective(1000px) rotateX(3deg) rotateY(-2deg) translateY(-6px) translateZ(12px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(255, 123, 163, 0.08);
+  border-color: rgba(255, 123, 163, 0.3);
 }
 
 a.act:hover .seamline {
@@ -943,6 +946,11 @@ a.act:hover .seamline {
 .act .ic {
   width: 32px;
   height: 32px;
+  transition: transform .25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+a.act:hover .ic {
+  transform: translateZ(18px) scale(1.08);
 }
 
 .act .ic svg {
@@ -959,6 +967,19 @@ a.act:hover .seamline {
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  transition: transform .25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+a.act:hover h3 {
+  transform: translateZ(12px);
+}
+
+.act .badge {
+  transition: transform .25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+a.act:hover .badge {
+  transform: translateZ(24px);
 }
 
 .act p {
@@ -2171,6 +2192,107 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
     }
   }
 }
+
+/* ==========================================================================
+   3D PERSPECTIVE & SPATIAL DEPTH SUITE
+   ========================================================================== */
+
+/* 3D Continuous Floating Animation */
+@keyframes float-3d {
+  0% {
+    transform: perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px) translateZ(0px);
+  }
+  25% {
+    transform: perspective(1000px) rotateX(4deg) rotateY(-4deg) translateY(-6px) translateZ(12px);
+  }
+  50% {
+    transform: perspective(1000px) rotateX(-3deg) rotateY(3deg) translateY(-10px) translateZ(20px);
+  }
+  75% {
+    transform: perspective(1000px) rotateX(3deg) rotateY(-2deg) translateY(-4px) translateZ(10px);
+  }
+  100% {
+    transform: perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px) translateZ(0px);
+  }
+}
+
+.floating-3d {
+  animation: float-3d 6s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* 3D Perspective Card Wrapper */
+.perspective-container {
+  perspective: 1200px;
+}
+
+.card-3d {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s ease, border-color 0.25s ease;
+  will-change: transform;
+}
+
+.card-3d:hover {
+  transform: perspective(1200px) rotateX(4deg) rotateY(-3deg) translateY(-8px) translateZ(16px);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.09), 0 8px 16px rgba(255, 123, 163, 0.08);
+}
+
+/* Z-Axis Popping Child Layers */
+.layer-z1 {
+  transform: translateZ(12px);
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.layer-z2 {
+  transform: translateZ(24px);
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.layer-z3 {
+  transform: translateZ(36px);
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.card-3d:hover .layer-z1 {
+  transform: translateZ(20px);
+}
+
+.card-3d:hover .layer-z2 {
+  transform: translateZ(36px);
+}
+
+.card-3d:hover .layer-z3 {
+  transform: translateZ(48px);
+}
+
+/* Tactile 3D Isometric Buttons */
+.btn-3d {
+  position: relative;
+  transform: translateY(0);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.18), 0 8px 16px rgba(0, 0, 0, 0.06);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.btn-3d:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.18), 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+.btn-3d:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.18), 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* 3D Glass Layer with Specular Gradient */
+.glass-3d {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.06), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+}
+
 
 
 

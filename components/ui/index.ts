@@ -6,3 +6,4 @@ export * from './AuroraBackground';
 export * from './MagnetButton';
 export * from './ScrollProgress';
 export * from './ScrollReveal';
+export * from './Floating3D';

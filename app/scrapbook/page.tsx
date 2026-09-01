@@ -153,26 +153,45 @@ export default function ScrapbookPage() {
             borderRadius: '20px',
             minHeight: '560px',
             position: 'relative',
-            boxShadow: 'inset 0 0 20px rgba(0,0,0,0.1), var(--shadow-lg)',
+            boxShadow: 'inset 0 0 20px rgba(0,0,0,0.1), 0 20px 40px rgba(0,0,0,0.12)',
             overflow: 'hidden',
             backgroundImage: 'radial-gradient(#D6C2A5 1px, transparent 1px)',
             backgroundSize: '24px 24px',
+            perspective: '1200px',
+            transformStyle: 'preserve-3d',
           }}
         >
           {items.map((item) => (
             <div
               key={item.id}
               onClick={() => setActiveItem(item.id)}
+              className="card-3d"
               style={{
                 position: 'absolute',
                 top: `${item.y}px`,
                 left: `${item.x}px`,
-                transform: `rotate(${item.rotation}deg)`,
+                transform: `rotate(${item.rotation}deg) translateZ(${activeItem === item.id ? 24 : 8}px)`,
                 cursor: 'move',
                 zIndex: activeItem === item.id ? 10 : 2,
-                transition: 'box-shadow 0.15s ease',
+                transition: 'all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)',
               }}
             >
+              {/* Pushpin at top */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '-10px',
+                  left: '50%',
+                  transform: 'translateX(-50%) translateZ(30px)',
+                  width: '16px',
+                  height: '16px',
+                  borderRadius: '50%',
+                  background: 'radial-gradient(circle at 35% 35%, #FF7BA3, #C93B6B)',
+                  boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+                  zIndex: 20,
+                }}
+              />
+
               {/* Polaroid Frame Item */}
               {item.type === 'polaroid' && (
                 <div
@@ -180,9 +199,10 @@ export default function ScrapbookPage() {
                     background: '#FFFFFF',
                     padding: '12px 12px 28px 12px',
                     borderRadius: '4px',
-                    boxShadow: '0 8px 18px rgba(0,0,0,0.15)',
+                    boxShadow: activeItem === item.id ? '0 16px 32px rgba(0,0,0,0.25)' : '0 8px 18px rgba(0,0,0,0.15)',
                     border: activeItem === item.id ? '2px solid var(--pink)' : '1px solid #E0D8CC',
                     width: '210px',
+                    transform: 'translateZ(10px)',
                   }}
                 >
                   <div style={{ width: '100%', height: '150px', background: '#2B231E', borderRadius: '2px', overflow: 'hidden', marginBottom: '8px' }}>
@@ -202,8 +222,9 @@ export default function ScrapbookPage() {
                     border: '1.5px dashed #B88E56',
                     borderRadius: '8px',
                     padding: '14px 20px',
-                    boxShadow: '0 6px 14px rgba(0,0,0,0.1)',
+                    boxShadow: activeItem === item.id ? '0 14px 28px rgba(0,0,0,0.2)' : '0 6px 14px rgba(0,0,0,0.1)',
                     width: '260px',
+                    transform: 'translateZ(10px)',
                   }}
                 >
                   <div style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: '#8A5D3B', textTransform: 'uppercase' }}>
@@ -218,27 +239,29 @@ export default function ScrapbookPage() {
               {item.type === 'note' && (
                 <div
                   style={{
-                    background: '#FFF275',
-                    padding: '16px',
+                    background: '#FFF8B6',
+                    border: '1px solid #E8DE94',
                     borderRadius: '2px',
-                    boxShadow: '0 6px 14px rgba(0,0,0,0.12)',
+                    padding: '16px 18px',
+                    boxShadow: activeItem === item.id ? '0 14px 28px rgba(0,0,0,0.2)' : '0 6px 14px rgba(0,0,0,0.1)',
                     width: '220px',
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '14.5px',
-                    lineHeight: 1.4,
-                    color: '#2B231E',
+                    transform: 'translateZ(10px)',
                   }}
                 >
-                  {item.content}
-                  <div style={{ fontSize: '11px', marginTop: '10px', textAlign: 'right', opacity: 0.7 }}>{item.sub}</div>
+                  <div style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: '14px', color: '#4A4028', lineHeight: 1.45 }}>
+                    {item.content}
+                  </div>
+                  <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: '#7A6E48', marginTop: '8px', textAlign: 'right' }}>
+                    {item.sub}
+                  </div>
                 </div>
               )}
 
-              {/* Sticker Item */}
+              {/* Cute Sticker */}
               {item.type === 'sticker' && (
-                <span style={{ fontSize: '42px', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.15))' }}>
+                <div style={{ fontSize: '44px', filter: 'drop-shadow(0 6px 10px rgba(0,0,0,0.2))', transform: 'translateZ(16px)' }}>
                   {item.content}
-                </span>
+                </div>
               )}
             </div>
           ))}
