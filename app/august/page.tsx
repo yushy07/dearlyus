@@ -93,17 +93,8 @@ export default function AugustPage() {
               Seven things to play together in one shared room, from two cities. It starts easy, gets honest, and ends with the two of you designing matching shirts you both wear.
             </p>
 
-            {/* Free Offer */}
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '20px' }}>
-              <span style={{ fontFamily: 'var(--font-serif)', fontSize: '44px', fontWeight: 700, color: '#23242A' }}>FREE</span>
-              <span style={{ fontSize: '16px', color: '#6B6C76' }}>forever</span>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', fontWeight: 700, background: '#0A7D4D', color: '#fff', padding: '4px 10px', borderRadius: '999px' }}>
-                100% FREE DATE PASS
-              </span>
-            </div>
-
             {/* 7 Itinerary Steps */}
-            <div style={{ marginTop: '28px', borderTop: '1px solid #E7E1D8', paddingTop: '24px' }}>
+            <div style={{ marginTop: '20px', borderTop: '1px solid #E7E1D8', paddingTop: '24px' }}>
               <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '16px' }}>Your 7-Step Date Itinerary:</h3>
               <div style={{ display: 'grid', gap: '10px' }}>
                 {[

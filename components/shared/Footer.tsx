@@ -13,7 +13,7 @@ export function Footer() {
               <i className="b"></i>
             </span>
           </span>
-          <span className="meta">인생네컷 · 100% free fun dates for long distance couples across the world</span>
+          <span className="meta">인생네컷 · fun dates for long distance couples across the world</span>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '20px', paddingTop: '16px', borderTop: '1px solid var(--line)' }}>
@@ -26,9 +26,9 @@ export function Footer() {
               <Link href="/timezone">Timezone &amp; Reunion Hub 🌍</Link>
               <Link href="/bucket">100 Dates Bucket List 🎯</Link>
               <Link href="/fashion">Fashion Show (PvP Runway)</Link>
-              <Link href="/shirts">Matching Shirts Studio</Link>
+              <Link href="/shirts">Matching Outfits Studio</Link>
               <Link href="/date">Date Night Planner &amp; Sounds</Link>
-              <Link href="/activity">All 24 Activities</Link>
+              <Link href="/activity">All Activities</Link>
             </nav>
           </div>
 
@@ -54,7 +54,7 @@ export function Footer() {
               <Link href="/future">Our Future Vision Board</Link>
               <Link href="/letter">Letters to Future (Vault)</Link>
               <Link href="/scrapbook">Digital Scrapbook Corkboard</Link>
-              <Link href="/shop">Free Keepsake Studio (4×6 &amp; Wallpapers)</Link>
+              <Link href="/shop">Keepsakes Studio (4×6 &amp; Wallpapers)</Link>
               <Link href="/birthday">Birthday Gift Page</Link>
               <Link href="/cards">Honest Cards Deck</Link>
             </nav>
@@ -65,7 +65,7 @@ export function Footer() {
               Community &amp; Legal
             </div>
             <nav style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '13px' }}>
-              <Link href="/creators">Creator Program (Free Life)</Link>
+              <Link href="/creators">Creator Community</Link>
               <Link href="/blog">Angie Blog &amp; Guides</Link>
               <Link href="/privacy">Privacy Policy</Link>
               <Link href="/terms">Terms &amp; Conditions</Link>
@@ -75,7 +75,7 @@ export function Footer() {
         </div>
 
         <div style={{ textAlign: 'center', fontSize: '12px', color: 'var(--ink-soft)', paddingTop: '12px', borderTop: '1px solid var(--line)' }}>
-          © {new Date().getFullYear()} Angie (getangie.com). 100% Free &amp; made with love for couples in long distance relationships.
+          © {new Date().getFullYear()} Angie (getangie.com) · Made with love for couples in long distance relationships.
         </div>
       </div>
     </footer>

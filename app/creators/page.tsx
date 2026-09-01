@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { Ribbon, Navbar } from '@/components/shared';
 
 export default function CreatorsPage() {
   const [videoSubmitted, setVideoSubmitted] = useState(false);
@@ -27,24 +28,16 @@ export default function CreatorsPage() {
   };
 
   return (
-    <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px' }}>
-      {/* Top Navbar */}
-      <header className="bar">
-        <div className="wrap">
-          <Link className="brand" href="/">
-            angie
-            <span className="dots">
-              <i className="p"></i>
-              <i className="b"></i>
-            </span>
+    <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px', color: 'var(--ink)' }}>
+      <Ribbon text={<>🎬 Angie Creator Community · <b>Share Your Date Nights &amp; Get Featured Worldwide</b></>} />
+
+      <Navbar
+        rightAction={
+          <Link className="btn btn-ghost" href="/photobooth" style={{ padding: '6px 12px', fontSize: '13px' }}>
+            Open Booth ▷
           </Link>
-          <nav>
-            <Link href="/photobooth">Photobooth</Link>
-            <Link href="/activity">Activities</Link>
-            <Link href="/shop">Print Shop</Link>
-          </nav>
-        </div>
-      </header>
+        }
+      />
 
       {/* Hero */}
       <div
@@ -68,21 +61,20 @@ export default function CreatorsPage() {
             marginBottom: '14px',
           }}
         >
-          🎬 Creators wanted
+          🎬 Creator Community
         </span>
         <h1 style={{ fontSize: 'clamp(28px, 4.5vw, 42px)', margin: '0 0 14px', fontWeight: 800 }}>
-          Post one video.
+          Create Content.
           <br />
-          Get Angie free for life.
+          Inspire Couples Worldwide.
         </h1>
         <p style={{ fontSize: '16px', maxWidth: '560px', margin: '0 auto', opacity: 0.9, lineHeight: 1.6 }}>
-          We&apos;re Angie — the online photobooth &amp; date-night games for long distance couples. Make a video about us
-          and we&apos;ll pay you in the best thing we have: <b>a Lifetime Pass</b>.
+          We&apos;re Angie — the online photobooth &amp; date-night games platform for long distance couples. Share your sessions on TikTok or Instagram, and get featured on our global showcase!
         </p>
       </div>
 
       <div className="wrap" style={{ maxWidth: '680px', marginTop: '-36px' }}>
-        {/* Card 1: Lifetime Pass Fast Track */}
+        {/* Card 1: Submit Video */}
         <div
           style={{
             background: '#fff',
@@ -94,7 +86,7 @@ export default function CreatorsPage() {
           }}
         >
           <h2 style={{ fontSize: '22px', fontWeight: 800, marginTop: 0, marginBottom: '12px' }}>
-            🎟️ Get a Lifetime Pass
+            📹 Submit Your Published Video
           </h2>
           <div
             style={{
@@ -107,195 +99,240 @@ export default function CreatorsPage() {
               lineHeight: 1.5,
             }}
           >
-            If your video is approved, you get <b>Angie Premium — free, for life</b>. Every game, every HD strip
-            download, forever.
+            Submit your video URL below. Once approved by our team, you&apos;ll be featured on the Angie homepage and official Instagram / TikTok!
           </div>
 
-          <ol style={{ paddingLeft: '20px', display: 'grid', gap: '10px', fontSize: '14.5px', marginBottom: '22px' }}>
-            <li>
-              Play the photobooth with your partner at <Link href="/photobooth" style={{ color: 'var(--pink)', fontWeight: 700 }}>getangie.com/photobooth</Link>. Screen-record it or film your reactions.
-            </li>
-            <li>Post the video on <b>TikTok or Instagram</b>.</li>
-            <li>Drop the link and your email below — we review every single submission!</li>
-          </ol>
-
           {!videoSubmitted ? (
-            <form onSubmit={handleVideoSubmit} style={{ display: 'grid', gap: '14px' }}>
+            <form onSubmit={handleVideoSubmit} style={{ display: 'grid', gap: '16px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>
-                  Link to your TikTok / Instagram post
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '6px' }}>
+                  Video URL (TikTok / Instagram Reel / YouTube Shorts)
                 </label>
                 <input
                   type="url"
                   required
-                  placeholder="https://www.tiktok.com/@you/video/..."
+                  placeholder="https://tiktok.com/@you/video/..."
                   value={videoLink}
                   onChange={(e) => setVideoLink(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '12px 14px',
-                    border: '1.5px solid var(--line)',
-                    borderRadius: '10px',
-                    fontFamily: 'inherit',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--line)',
+                    fontSize: '14px',
                   }}
                 />
               </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>
-                  Your email <span style={{ color: 'var(--ink-soft)', fontWeight: 400 }}>— where we send your lifetime pass</span>
-                </label>
-                <input
-                  type="email"
-                  required
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '12px 14px',
-                    border: '1.5px solid var(--line)',
-                    borderRadius: '10px',
-                    fontFamily: 'inherit',
-                  }}
-                />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '6px' }}>
+                    Your Email
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="you@gmail.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      borderRadius: '8px',
+                      border: '1px solid var(--line)',
+                      fontSize: '14px',
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '6px' }}>
+                    Creator Handle
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="@yourhandle"
+                    value={handle}
+                    onChange={(e) => setHandle(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      borderRadius: '8px',
+                      border: '1px solid var(--line)',
+                      fontSize: '14px',
+                    }}
+                  />
+                </div>
               </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>
-                  Instagram / TikTok handle <span style={{ color: 'var(--ink-soft)', fontWeight: 400 }}>(optional)</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="@yourhandle"
-                  value={handle}
-                  onChange={(e) => setHandle(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '12px 14px',
-                    border: '1.5px solid var(--line)',
-                    borderRadius: '10px',
-                    fontFamily: 'inherit',
-                  }}
-                />
-              </div>
-
-              <button type="submit" className="btn btn-grad" style={{ width: '100%', justifyContent: 'center', padding: '14px' }}>
-                Submit my video 🎬
+              <button
+                type="submit"
+                className="btn btn-grad"
+                style={{ padding: '14px', fontSize: '15px', fontWeight: 700, marginTop: '8px' }}
+              >
+                Submit Video for Feature ▷
               </button>
             </form>
           ) : (
-            <div style={{ textAlign: 'center', padding: '24px 10px' }}>
-              <div style={{ fontSize: '42px', marginBottom: '8px' }}>🎉</div>
-              <h3 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '6px' }}>Got it — we&apos;re watching it!</h3>
-              <p style={{ color: 'var(--ink-soft)', fontSize: '14px' }}>
-                If it&apos;s approved you&apos;ll get your Lifetime Pass by email. Keep an eye on your inbox!
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '24px',
+                background: '#EBF8EE',
+                borderRadius: '12px',
+                border: '1px solid #A3E6B4',
+              }}
+            >
+              <div style={{ fontSize: '32px', marginBottom: '8px' }}>🎉</div>
+              <h3 style={{ margin: '0 0 6px', color: '#166534', fontWeight: 800 }}>Submission Received!</h3>
+              <p style={{ margin: 0, fontSize: '14px', color: '#15803D' }}>
+                We will review your video within 24 hours and feature your session on our official feeds.
               </p>
             </div>
           )}
         </div>
 
-        {/* Card 2: Creator Registration */}
+        {/* Card 2: Creator Program Application */}
         <div
           style={{
             background: '#fff',
             borderRadius: '20px',
-            boxShadow: 'var(--shadow)',
+            boxShadow: 'var(--shadow-lg)',
             padding: '32px',
             border: '1px solid var(--line)',
           }}
         >
-          <h2 style={{ fontSize: '22px', fontWeight: 800, marginTop: 0, marginBottom: '6px' }}>
-            ✍️ Register as a creator
+          <h2 style={{ fontSize: '22px', fontWeight: 800, marginTop: 0, marginBottom: '12px' }}>
+            🤝 Join the Ambassador Network
           </h2>
-          <p style={{ color: 'var(--ink-soft)', fontSize: '14px', marginBottom: '18px' }}>
-            Want to make content with us regularly? Tell us who you are — we&apos;ll reach out on WhatsApp.
+          <p style={{ color: 'var(--ink-soft)', fontSize: '14.5px', marginTop: 0, marginBottom: '20px', lineHeight: 1.5 }}>
+            Are you a content creator focused on relationships, long-distance love, or aesthetic vlogs? Join our official community!
           </p>
 
           {!registered ? (
-            <form onSubmit={handleRegisterSubmit} style={{ display: 'grid', gap: '14px' }}>
+            <form onSubmit={handleRegisterSubmit} style={{ display: 'grid', gap: '16px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>Name</label>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '6px' }}>
+                  Full Name
+                </label>
                 <input
                   type="text"
                   required
-                  placeholder="Your name"
+                  placeholder="Mia Smith"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '12px 14px',
-                    border: '1.5px solid var(--line)',
-                    borderRadius: '10px',
-                    fontFamily: 'inherit',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--line)',
+                    fontSize: '14px',
                   }}
                 />
               </div>
 
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '6px' }}>
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="mia@example.com"
+                    value={regEmail}
+                    onChange={(e) => setRegEmail(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      borderRadius: '8px',
+                      border: '1px solid var(--line)',
+                      fontSize: '14px',
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '6px' }}>
+                    WhatsApp / Telegram
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="+1 (555) 000-0000"
+                    value={whatsapp}
+                    onChange={(e) => setWhatsapp(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      borderRadius: '8px',
+                      border: '1px solid var(--line)',
+                      fontSize: '14px',
+                    }}
+                  />
+                </div>
+              </div>
+
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>Email</label>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '6px' }}>
+                  Primary Social Handle
+                </label>
                 <input
-                  type="email"
+                  type="text"
                   required
-                  placeholder="you@example.com"
-                  value={regEmail}
-                  onChange={(e) => setRegEmail(e.target.value)}
+                  placeholder="@miainthecity on TikTok / IG"
+                  value={regHandle}
+                  onChange={(e) => setRegHandle(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '12px 14px',
-                    border: '1.5px solid var(--line)',
-                    borderRadius: '10px',
-                    fontFamily: 'inherit',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--line)',
+                    fontSize: '14px',
                   }}
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>WhatsApp number</label>
-                <input
-                  type="tel"
-                  required
-                  placeholder="+1 (403) 555-0199"
-                  value={whatsapp}
-                  onChange={(e) => setWhatsapp(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '12px 14px',
-                    border: '1.5px solid var(--line)',
-                    borderRadius: '10px',
-                    fontFamily: 'inherit',
-                  }}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>Portfolio link</label>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '6px' }}>
+                  Link to Profile / Media Kit
+                </label>
                 <input
                   type="url"
-                  required
-                  placeholder="https://tiktok.com/@..."
+                  placeholder="https://instagram.com/yourhandle"
                   value={portfolio}
                   onChange={(e) => setPortfolio(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '12px 14px',
-                    border: '1.5px solid var(--line)',
-                    borderRadius: '10px',
-                    fontFamily: 'inherit',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--line)',
+                    fontSize: '14px',
                   }}
                 />
               </div>
 
-              <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '14px' }}>
-                Apply to be a Creator ♡
+              <button
+                type="submit"
+                className="btn btn-primary"
+                style={{ padding: '14px', fontSize: '15px', fontWeight: 700, marginTop: '8px' }}
+              >
+                Apply as Creator Ambassador ▷
               </button>
             </form>
           ) : (
-            <div style={{ textAlign: 'center', padding: '24px 10px' }}>
-              <div style={{ fontSize: '42px', marginBottom: '8px' }}>💌</div>
-              <h3 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '6px' }}>Application Sent!</h3>
-              <p style={{ color: 'var(--ink-soft)', fontSize: '14px' }}>
-                We read every application — if it&apos;s a fit, we will message you on WhatsApp or email.
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '24px',
+                background: '#EBF8EE',
+                borderRadius: '12px',
+                border: '1px solid #A3E6B4',
+              }}
+            >
+              <div style={{ fontSize: '32px', marginBottom: '8px' }}>💌</div>
+              <h3 style={{ margin: '0 0 6px', color: '#166534', fontWeight: 800 }}>Application Submitted!</h3>
+              <p style={{ margin: 0, fontSize: '14px', color: '#15803D' }}>
+                Thank you for applying. We will reach out to you via WhatsApp or Email within 48 hours!
               </p>
             </div>
           )}

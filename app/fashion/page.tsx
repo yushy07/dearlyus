@@ -75,7 +75,7 @@ export default function FashionShowPage() {
 
   return (
     <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px', color: 'var(--ink)' }}>
-      <Ribbon text={<>👗 Fashion Show · <b>Player-vs-Player Styling Game for Two</b> · 100% Free on Angie</>} />
+      <Ribbon text={<>👗 Fashion Show · <b>Player-vs-Player Styling Game for Two</b></>} />
       <Confetti active={confettiActive} />
 
       <Navbar

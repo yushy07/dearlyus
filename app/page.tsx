@@ -643,30 +643,21 @@ export default function HomePage() {
               </h2>
               <p>
                 Seven things to play together in one shared room, from two cities. It starts easy,
-                gets honest, and ends with the two of you designing one shirt you both wear.
+                gets honest, and ends with the two of you designing matching outfits you both wear.
               </p>
 
-              <span className="august-price">
-                <span className="ap-now">FREE</span>
-                <span className="ap-per">forever</span>
-                <span className="ap-save">100% free for all couples</span>
-              </span>
-              <span className="august-incl">
-                Unlimited fun dates · 999+ HD photobooth sessions · 15 games · every question pack · zero paywalls
-              </span>
-
-              <ul className="august-run">
+              <ul className="august-run" style={{ marginTop: '20px' }}>
                 <li><b>01</b> Photobooth</li>
                 <li><b>02</b> Love Match</li>
                 <li><b>03</b> Riddles</li>
                 <li><b>04</b> Know-me quiz</li>
                 <li><b>05</b> Debate</li>
                 <li><b>06</b> Honest Cards</li>
-                <li className="last"><b>07</b> Design the shirt</li>
+                <li><b>07</b> Design the outfits</li>
               </ul>
               <span className="august-cta">
                 <span className="btn">
-                  Start Girlfriends Day <span className="arr">▷</span>
+                  Start Date Night Plan <span className="arr">▷</span>
                 </span>
                 <span className="when">two hours · she needs no account</span>
               </span>
@@ -1538,12 +1529,12 @@ export default function HomePage() {
         <div className="wrap">
           <div className="pb-grid">
             <div className="pb-copy">
-              <div className="kicker">100% Free Digital Keepsakes</div>
+              <div className="kicker">Digital Keepsakes &amp; Print Sheets</div>
               <h2>
-                Preserve your memories with <span className="grad">free printable DIY keepsakes</span>.
+                Preserve your memories with <span className="grad">printable DIY keepsakes</span>.
               </h2>
               <p>
-                Turn today&apos;s session into printable 4×6 photo sheets, couple lockscreen wallpapers, and DIY fridge magnet cutouts — 100% free with zero fees.
+                Turn today&apos;s session into printable 4×6 photo sheets, couple lockscreen wallpapers, and DIY fridge magnet templates.
               </p>
               <ul className="pb-feats">
                 <li>300 DPI high-res printable photo sheets for standard 4×6 paper</li>
@@ -1552,9 +1543,9 @@ export default function HomePage() {
               </ul>
               <div className="pb-cta-row">
                 <Link className="btn btn-grad" href="/shop">
-                  Download Free Keepsakes <span className="arr">▷</span>
+                  Open Keepsakes Studio <span className="arr">▷</span>
                 </Link>
-                <span className="pb-ships">✨ 100% free forever · no subscriptions or credit card needed</span>
+                <span className="pb-ships">✨ 300 DPI high-res layouts · Print at home or any local photo kiosk</span>
               </div>
             </div>
             <div className="pb-art">
@@ -1577,7 +1568,7 @@ export default function HomePage() {
                   </div>
                 </div>
                 <span className="pb-tag">
-                  FREE<small>forever</small>
+                  DIY<small>Print</small>
                 </span>
               </div>
             </div>

@@ -10,7 +10,7 @@ export function Ribbon({ text }: RibbonProps) {
       <span className="ribbon-in">
         {text ?? (
           <>
-            ♡ Online Photobooth &amp; Realtime Date Nights · <b>Free for Couples on Angie</b>
+            ♡ Realtime Date Night &amp; Synced Photobooth for Long Distance Couples
           </>
         )}
       </span>

@@ -47,7 +47,7 @@ export default function ShirtsStudioPage() {
 
   return (
     <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px', color: 'var(--ink)' }}>
-      <Ribbon text={<>👕 Couple Matching Outfits · <b>Interactive Digital Fashion Studio</b> · 100% Free</>} />
+      <Ribbon text={<>👕 Couple Matching Outfits · <b>Interactive Outfit Designer for Two</b></>} />
       <Confetti active={confettiActive} />
 
       <Navbar
@@ -60,7 +60,7 @@ export default function ShirtsStudioPage() {
 
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '980px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <span className="eyebrow">Digital Outfit Studio for Two</span>
+          <span className="eyebrow">Digital Outfit Studio</span>
           <h1 style={{ fontSize: 'clamp(28px, 5vw, 44px)', fontWeight: 800, margin: '8px 0' }}>
             Design Matching <span className="grad">Couple Outfits</span>
           </h1>
@@ -182,7 +182,7 @@ export default function ShirtsStudioPage() {
 
           {/* Customizer Panel */}
           <div className="booth-box">
-            <span className="eyebrow">Design Controls · 100% Free</span>
+            <span className="eyebrow">Design Controls</span>
             <h3 style={{ fontSize: '20px', fontWeight: 800, margin: '6px 0 16px' }}>Customize Twin Look</h3>
 
             {/* Palette */}
