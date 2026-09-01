@@ -2,11 +2,12 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ShinyText, SpotlightCard } from '@/components/ui';
+import { ShinyText, SpotlightCard, GlowBadge, ScrollProgress, ScrollReveal } from '@/components/ui';
 
 export default function ActivityPage() {
   return (
     <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '60px' }}>
+      <ScrollProgress />
       <main
         style={{
           display: 'flex',
@@ -72,23 +73,28 @@ export default function ActivityPage() {
         </header>
 
         {/* Heading */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '0 4px' }}>
-          <h1
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontWeight: 800,
-              fontSize: 'clamp(26px, 7vw, 34px)',
-              letterSpacing: '-.03em',
-              lineHeight: 1.1,
-            }}
-          >
-            Pick an <span style={{ color: 'var(--pink)' }}>activity</span> to do{' '}
-            <span style={{ color: 'var(--blue)' }}>together</span>.
-          </h1>
-          <p style={{ color: 'var(--ink-soft)', fontSize: '15px' }}>
-            Realtime games &amp; dates for two screens in two places — played in one shared room, at the same second.
-          </p>
-        </div>
+        <ScrollReveal animation="fade-up">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '0 4px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <GlowBadge text="17 Realtime Dates Live" size="sm" />
+            </div>
+            <h1
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontWeight: 800,
+                fontSize: 'clamp(26px, 7vw, 34px)',
+                letterSpacing: '-.03em',
+                lineHeight: 1.1,
+              }}
+            >
+              Pick an <span style={{ color: 'var(--pink)' }}>activity</span> to do{' '}
+              <span style={{ color: 'var(--blue)' }}>together</span>.
+            </h1>
+            <p style={{ color: 'var(--ink-soft)', fontSize: '15px' }}>
+              Realtime games &amp; dates for two screens in two places — played in one shared room, at the same second.
+            </p>
+          </div>
+        </ScrollReveal>
 
         {/* Featured Photobooth Banner */}
         <Link

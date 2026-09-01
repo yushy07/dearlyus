@@ -2293,6 +2293,102 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   box-shadow: 0 16px 32px rgba(0, 0, 0, 0.06), inset 0 1px 1px rgba(255, 255, 255, 0.8);
 }
 
+/* ==========================================================================
+   MOTIONSITES.AI MOTION & KINETIC DESIGN SUITE
+   ========================================================================== */
+
+/* Shimmer Sweep Animation */
+@keyframes shimmer-slide {
+  0% {
+    transform: translateX(-150%) skewX(-20deg);
+  }
+  100% {
+    transform: translateX(200%) skewX(-20deg);
+  }
+}
+
+.shimmer-sweep {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.25) 50%,
+    transparent 100%
+  );
+  transform: translateX(-150%) skewX(-20deg);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.kinetic-card:hover .shimmer-sweep {
+  animation: shimmer-slide 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Border Gradient Rotating Mask */
+@keyframes border-gradient-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.border-glow-mask {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  isolation: isolate;
+}
+
+.border-glow-mask::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  padding: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 123, 163, 0.9),
+    rgba(95, 160, 255, 0.9),
+    rgba(255, 214, 138, 0.9),
+    rgba(255, 123, 163, 0.9)
+  );
+  background-size: 300% 300%;
+  animation: border-gradient-flow 4s linear infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Kinetic Media Hover Zoom */
+.kinetic-img {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.kinetic-card:hover .kinetic-img {
+  transform: scale(1.05);
+}
+
+/* Noise Texture Overlay */
+.noise-overlay {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+  background-size: 8px 8px;
+  pointer-events: none;
+  opacity: 0.6;
+  z-index: 1;
+}
+
+
 
 
 

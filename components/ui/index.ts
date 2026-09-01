@@ -7,3 +7,5 @@ export * from './MagnetButton';
 export * from './ScrollProgress';
 export * from './ScrollReveal';
 export * from './Floating3D';
+export * from './GlowBadge';
+export * from './KineticCard';

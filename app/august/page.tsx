@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ScrollProgress, ScrollReveal } from '@/components/ui';
+import { ScrollProgress, ScrollReveal, GlowBadge } from '@/components/ui';
 
 export default function AugustPage() {
   return (
@@ -47,25 +47,9 @@ export default function AugustPage() {
           >
             <div style={{ position: 'relative', width: '100%', height: '360px', background: '#F6F1EA' }}>
               <img src="/august/gate.webp" alt="Girlfriends day romantic garden gate" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              <span
-                style={{
-                  position: 'absolute',
-                  top: '20px',
-                  left: '20px',
-                  padding: '6px 14px',
-                  borderRadius: '999px',
-                  background: 'rgba(255,255,255,0.95)',
-                  color: '#7A3552',
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  letterSpacing: '.12em',
-                  textTransform: 'uppercase',
-                  boxShadow: 'var(--shadow)',
-                }}
-              >
-                August 1 · Girlfriends Day
-              </span>
+              <div style={{ position: 'absolute', top: '20px', left: '20px' }}>
+                <GlowBadge text="August 1 · Girlfriends Day" glowColor="rgba(201, 130, 156, 0.5)" />
+              </div>
             </div>
 
             <div style={{ padding: '36px 32px' }}>

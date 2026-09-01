@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { Footer } from '@/components/shared/Footer';
-import { ShinyText, AuroraBackground, SpotlightCard, MagnetButton, ScrollProgress, ScrollReveal, Floating3D } from '@/components/ui';
+import { ShinyText, AuroraBackground, SpotlightCard, MagnetButton, ScrollProgress, ScrollReveal, Floating3D, GlowBadge } from '@/components/ui';
 
 export default function HomePage() {
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
@@ -399,9 +399,12 @@ export default function HomePage() {
 
         <div className="wrap" style={{ position: 'relative', zIndex: 2 }}>
           <div className="hero-copy">
-            <span className="eyebrow">
-              made for two · <ShinyText text="17 realtime activities" />
-            </span>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+              <GlowBadge text="Fresh Dates Everyday" size="sm" />
+              <span className="eyebrow" style={{ margin: 0 }}>
+                made for two · <ShinyText text="17 realtime activities" />
+              </span>
+            </div>
             <h1>
               Fun Dates for
               <br />
