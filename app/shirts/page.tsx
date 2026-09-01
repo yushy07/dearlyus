@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { Ribbon, Navbar } from '@/components/shared';
 
 const SHIRT_COLORS = [
   { id: 'vintage-white', name: 'Vintage Off-White', hex: '#F7F5F0', textHex: '#1E1E24' },
@@ -41,29 +42,16 @@ export default function ShirtsStudioPage() {
   return (
     <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px', color: 'var(--ink)' }}>
       {/* Ribbon */}
-      <div className="ribbon">
-        <span className="ribbon-in">
-          👕 Couple Matching Shirts · <b>Design Together &amp; Ship to Both Cities</b> · $38 Twin-Pack
-        </span>
-      </div>
+      <Ribbon text={<>👕 Couple Matching Shirts · <b>Design Together &amp; Ship to Both Cities</b> · $38 Twin-Pack</>} />
 
       {/* Top Navbar */}
-      <header className="bar">
-        <div className="wrap">
-          <Link className="brand" href="/">
-            angie
-            <span className="dots">
-              <i className="p"></i>
-              <i className="b"></i>
-            </span>
+      <Navbar
+        rightAction={
+          <Link className="btn btn-ghost" href="/shop" style={{ padding: '6px 12px', fontSize: '13px' }}>
+            Keepsakes Shop ▷
           </Link>
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            <Link className="btn btn-ghost" href="/shop" style={{ padding: '6px 12px', fontSize: '13px' }}>
-              Keepsakes Shop ▷
-            </Link>
-          </div>
-        </div>
-      </header>
+        }
+      />
 
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '980px' }}>
         {/* Header */}

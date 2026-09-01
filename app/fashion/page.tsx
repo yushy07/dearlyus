@@ -2,49 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-
-interface FashionRound {
-  id: number;
-  title: string;
-  theme: string;
-  twist: string;
-  colorPalette: string[];
-  inspiration: string;
-}
-
-const ROUNDS: FashionRound[] = [
-  {
-    id: 1,
-    title: 'Round 1 of 3: Red Carpet Met Gala',
-    theme: 'High drama, avant-garde elegance',
-    twist: 'Must incorporate an unexpected metallic or bioluminescent element',
-    colorPalette: ['#1A1A24', '#E6C687', '#9D4EDD', '#F72585'],
-    inspiration: 'Voluminous trains, sculptural shoulders, jewel-encrusted capes',
-  },
-  {
-    id: 2,
-    title: 'Round 2 of 3: Paris Cafe Rainy Afternoon',
-    theme: 'Effortless French chic & cozy layered textures',
-    twist: 'Must style around a vintage thrifted trenchcoat and beret',
-    colorPalette: ['#C5B39A', '#3D342F', '#5E6472', '#FAF0CA'],
-    inspiration: 'Chunky knit scarves, oversized wool tailoring, espresso leather boots',
-  },
-  {
-    id: 3,
-    title: 'Round 3 of 3: Neo-Tokyo Cyber Date 2099',
-    theme: 'Cyberpunk streetwear & holographic accessories',
-    twist: 'Your partner’s signature color must be the glowing neon centerpiece',
-    colorPalette: ['#05050A', '#00F5D4', '#7B2CBF', '#FF0054'],
-    inspiration: 'Translucent vinyl jackets, circuit-board jewelry, platform combat boots',
-  },
-];
-
-const ITEMS = {
-  tops: ['Silk Corset Top', 'Oversized Wool Blazer', 'Sheer Mesh Turtleneck', 'Structured Tailored Vest', 'Holographic Crop Bomber', 'Cashmere Drape Sweater', 'Embroidered Kimono Jacket'],
-  bottoms: ['High-Waist Wide Pleat Trousers', 'Layered Tulle Maxi Skirt', 'Distressed Japanese Denim', 'Patent Leather Flare Pants', 'Metallic Pleated Midi Skirt', 'Tailored Silk Shorts'],
-  shoes: ['Pointed Stiletto Pumps', 'Chunky Platform Combat Boots', 'Vintage Oxford Brogues', 'Strappy Metallic Heels', 'Futuristic Cyber Runners', 'Square-Toe Knee Boots'],
-  accessories: ['Statement Pearl Choker', 'Cat-Eye Tinted Sunglasses', 'Silk Headscarf', 'Sculptural Gold Ear Cuffs', 'Micro Mini Leather Handbag', 'Holographic Shoulder Harness', 'Vintage Velvet Beret'],
-};
+import { FASHION_ROUNDS as ROUNDS, FASHION_ITEMS as ITEMS } from '@/data';
+import { Ribbon, Navbar, Confetti } from '@/components/shared';
 
 export default function FashionShowPage() {
   const [currentRoundIdx, setCurrentRoundIdx] = useState(0);
@@ -109,41 +68,25 @@ export default function FashionShowPage() {
   return (
     <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px', color: 'var(--ink)' }}>
       {/* Ribbon */}
-      <div className="ribbon">
-        <span className="ribbon-in">
-          👗 Fashion Show · <b>A Realtime Styling Game for Two</b> · Free on Angie
-        </span>
-      </div>
+      <Ribbon text={<>👗 Fashion Show · <b>A Realtime Styling Game for Two</b> · Free on Angie</>} />
 
       {/* Top Navbar */}
-      <header className="bar">
-        <div className="wrap">
-          <Link className="brand" href="/">
-            angie
-            <span className="dots">
-              <i className="p"></i>
-              <i className="b"></i>
-            </span>
-          </Link>
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            <span
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: '12px',
-                background: 'var(--paper-raised)',
-                padding: '4px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--line)',
-              }}
-            >
-              RUNWAY: <b>ROUND {currentRoundIdx + 1} / 3</b>
-            </span>
-            <Link className="btn btn-ghost" href="/activity" style={{ padding: '6px 12px', fontSize: '13px' }}>
-              All Activities ▷
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Navbar
+        rightAction={
+          <span
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '12px',
+              background: 'var(--paper-raised)',
+              padding: '4px 10px',
+              borderRadius: '6px',
+              border: '1px solid var(--line)',
+            }}
+          >
+            RUNWAY: <b>ROUND {currentRoundIdx + 1} / 3</b>
+          </span>
+        }
+      />
 
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '980px' }}>
         {/* Stage Header */}
