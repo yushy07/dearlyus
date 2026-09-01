@@ -901,6 +901,17 @@ export default function HomePage() {
               <p>Lock in privately, reveal together, score your compatibility — 17 packs from cute to spicy.</p>
             </Link>
 
+            <Link className="act" href="/host">
+              <span className="seamline"></span>
+              <div className="ic">
+                <span style={{ fontSize: '26px' }}>🎙️</span>
+              </div>
+              <h3>
+                Date Host <span className="badge new">New</span>
+              </h3>
+              <p>An observant host reacts to your answers and crafts dynamic follow-up dilemmas in real time.</p>
+            </Link>
+
             <Link className="act" href="/match">
               <span className="seamline"></span>
               <div className="ic">

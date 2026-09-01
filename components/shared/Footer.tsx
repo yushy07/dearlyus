@@ -38,6 +38,7 @@ export function Footer() {
             </div>
             <nav style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '13px' }}>
               <Link href="/quiz">Know Me Quiz (17 + Lore)</Link>
+              <Link href="/host">Date Host (Dynamic Scenarios)</Link>
               <Link href="/match">Love Match Test</Link>
               <Link href="/arcade">Face Avatar Arcade</Link>
               <Link href="/iq">IQ Duel Head-to-Head</Link>

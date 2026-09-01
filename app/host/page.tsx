@@ -1,0 +1,307 @@
+'use client';
+
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { Ribbon, Navbar, Confetti } from '@/components/shared';
+import { sounds } from '@/lib/sound';
+
+interface HostScenario {
+  id: number;
+  question: string;
+  options: string[];
+  commentary?: string;
+}
+
+const INITIAL_SCENARIOS: HostScenario[] = [
+  {
+    id: 1,
+    question: "Scenario: We just landed in a dream city for our 2-week reunion trip, but our luggage was delayed by 24 hours. What is our game plan for day one?",
+    options: [
+      "Check into the hotel, order room service & sleep off jetlag",
+      "Buy cheap thrift outfits and start exploring immediately",
+      "Go to a 24-hour convenience store and feast on snacks",
+      "Hunt down the best local ramen / street food stall on foot",
+    ],
+    commentary: "Observing your couple spontaneous travel instincts!",
+  },
+  {
+    id: 2,
+    question: "Scenario: We enter a couple karaoke tournament at 2 AM in Tokyo. Which duet are we singing to guarantee first place?",
+    options: [
+      "A dramatic 90s ballad with full arm gestures",
+      "An energetic K-Pop song with synchronized hand choreography",
+      "A classic Disney duet we secretly both know all the words to",
+      "An upbeat rock anthem where we scream the chorus together",
+    ],
+    commentary: "Assessing karaoke stage chemistry and song repertoire!",
+  },
+];
+
+export default function DateHostPage() {
+  const [scenarios, setScenarios] = useState<HostScenario[]>(INITIAL_SCENARIOS);
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [partnerAPick, setPartnerAPick] = useState<number | null>(null);
+  const [partnerBPick, setPartnerBPick] = useState<number | null>(null);
+  const [revealed, setRevealed] = useState(false);
+  const [hostCommentary, setHostCommentary] = useState<string | null>(null);
+  const [confettiActive, setConfettiActive] = useState(false);
+  const [totalRounds, setTotalRounds] = useState(1);
+
+  const scenario = scenarios[currentIdx] || scenarios[0];
+
+  const handleReveal = () => {
+    if (partnerAPick === null || partnerBPick === null) return;
+    setRevealed(true);
+
+    if (partnerAPick === partnerBPick) {
+      sounds.playCelebration();
+      setConfettiActive(true);
+      setTimeout(() => setConfettiActive(false), 2500);
+    } else {
+      sounds.playCountdownBeep(true);
+    }
+
+    // Background pre-fetch next tailored dilemma based on both choices
+    fetch('/api/questions/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        partnerA: { name: 'Mia', answer: scenario.options[partnerAPick] },
+        partnerB: { name: 'Alex', answer: scenario.options[partnerBPick] },
+        mode: 'host',
+        mood: 'playful',
+        history: [{ question: scenario.question, answerA: scenario.options[partnerAPick], answerB: scenario.options[partnerBPick] }],
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.question && Array.isArray(data.options)) {
+          const nextScenario: HostScenario = {
+            id: Date.now(),
+            question: data.question,
+            options: data.options,
+            commentary: data.commentary || 'Observing your couple dynamics!',
+          };
+          const nextList = [...scenarios];
+          nextList.splice(currentIdx + 1, 0, nextScenario);
+          setScenarios(nextList);
+          if (data.commentary) {
+            setHostCommentary(data.commentary);
+          }
+        }
+      })
+      .catch(() => {});
+  };
+
+  const handleNext = () => {
+    if (currentIdx + 1 < scenarios.length) {
+      setCurrentIdx(currentIdx + 1);
+      setPartnerAPick(null);
+      setPartnerBPick(null);
+      setRevealed(false);
+      setHostCommentary(null);
+      setTotalRounds((r) => r + 1);
+    }
+  };
+
+  return (
+    <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px', color: 'var(--ink)' }}>
+      <Ribbon text={<>🎙️ Third Wheel Date Host · <b>Dynamic Scenarios &amp; Observational Commentary</b></>} />
+      <Confetti active={confettiActive} />
+
+      <Navbar
+        rightAction={
+          <span
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '12px',
+              background: 'var(--paper-raised)',
+              padding: '4px 10px',
+              borderRadius: '6px',
+              border: '1px solid var(--line)',
+            }}
+          >
+            Scenario <b>#{totalRounds}</b>
+          </span>
+        }
+      />
+
+      <main className="wrap" style={{ paddingTop: '36px', maxWidth: '880px' }}>
+        {/* Title */}
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <span className="eyebrow">Interactive Date Host</span>
+          <h1 style={{ fontSize: 'clamp(28px, 4.5vw, 42px)', fontWeight: 800, margin: '8px 0 10px' }}>
+            The <span className="grad">&ldquo;Third Wheel&rdquo;</span> Host
+          </h1>
+          <p style={{ color: 'var(--ink-soft)', fontSize: '16px', maxWidth: '52ch', margin: '0 auto' }}>
+            Angie acts as your observant date host, giving commentary on your choices and adapting future scenarios to how you answer.
+          </p>
+        </div>
+
+        {/* Scenario Card */}
+        <div
+          style={{
+            background: '#FFFFFF',
+            border: '1px solid var(--line)',
+            borderRadius: '20px',
+            padding: '36px 32px',
+            boxShadow: 'var(--shadow-lg)',
+            marginBottom: '32px',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <span className="badge hot">Scenario #{totalRounds}</span>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--ink-soft)' }}>
+              Double-Blind Lock-In
+            </span>
+          </div>
+
+          <h2 style={{ fontSize: '22px', fontWeight: 800, lineHeight: 1.4, marginBottom: '24px' }}>
+            {scenario.question}
+          </h2>
+
+          {/* Two-Player Lock-in Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '28px' }}>
+            {/* Player A (Mia) */}
+            <div
+              style={{
+                background: '#FFF5F8',
+                border: '1.5px solid #FFD6E8',
+                borderRadius: '16px',
+                padding: '20px',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <span style={{ fontWeight: 800, fontSize: '14px', color: 'var(--pink)' }}>🌸 Mia&apos;s Strategy</span>
+                <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: partnerAPick !== null ? '#0A7D4D' : 'var(--ink-soft)', fontWeight: 700 }}>
+                  {partnerAPick !== null ? '✓ Locked In' : 'Pick one...'}
+                </span>
+              </div>
+
+              <div style={{ display: 'grid', gap: '8px' }}>
+                {scenario.options.map((opt, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => !revealed && setPartnerAPick(idx)}
+                    disabled={revealed}
+                    style={{
+                      textAlign: 'left',
+                      padding: '10px 14px',
+                      borderRadius: '8px',
+                      border: partnerAPick === idx ? '2px solid var(--pink)' : '1px solid #FFD6E8',
+                      background: partnerAPick === idx ? '#FFF' : 'rgba(255,255,255,0.6)',
+                      fontSize: '13.5px',
+                      fontWeight: partnerAPick === idx ? 700 : 500,
+                      cursor: revealed ? 'default' : 'pointer',
+                    }}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Player B (Alex) */}
+            <div
+              style={{
+                background: '#F0F7FF',
+                border: '1.5px solid #D6E8FF',
+                borderRadius: '16px',
+                padding: '20px',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <span style={{ fontWeight: 800, fontSize: '14px', color: 'var(--blue)' }}>💙 Alex&apos;s Strategy</span>
+                <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: partnerBPick !== null ? '#0A7D4D' : 'var(--ink-soft)', fontWeight: 700 }}>
+                  {partnerBPick !== null ? '✓ Locked In' : 'Pick one...'}
+                </span>
+              </div>
+
+              <div style={{ display: 'grid', gap: '8px' }}>
+                {scenario.options.map((opt, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => !revealed && setPartnerBPick(idx)}
+                    disabled={revealed}
+                    style={{
+                      textAlign: 'left',
+                      padding: '10px 14px',
+                      borderRadius: '8px',
+                      border: partnerBPick === idx ? '2px solid var(--blue)' : '1px solid #D6E8FF',
+                      background: partnerBPick === idx ? '#FFF' : 'rgba(255,255,255,0.6)',
+                      fontSize: '13.5px',
+                      fontWeight: partnerBPick === idx ? 700 : 500,
+                      cursor: revealed ? 'default' : 'pointer',
+                    }}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Reveal / Next Actions */}
+          <div style={{ textAlign: 'center' }}>
+            {!revealed ? (
+              <button
+                onClick={handleReveal}
+                disabled={partnerAPick === null || partnerBPick === null}
+                className="btn btn-primary"
+                style={{ padding: '12px 36px', fontSize: '15px', opacity: partnerAPick !== null && partnerBPick !== null ? 1 : 0.5 }}
+              >
+                Reveal Both Strategies 🔍
+              </button>
+            ) : (
+              <div style={{ animation: 'gl-rise 0.25s ease' }}>
+                <div
+                  style={{
+                    padding: '16px 20px',
+                    borderRadius: '12px',
+                    marginBottom: '16px',
+                    background: partnerAPick === partnerBPick ? '#E6F9F0' : '#FFF0F5',
+                    color: partnerAPick === partnerBPick ? '#0A7D4D' : 'var(--pink)',
+                    fontWeight: 800,
+                    fontSize: '16px',
+                  }}
+                >
+                  {partnerAPick === partnerBPick
+                    ? '✨ Unanimous Plan! You both chose the exact same adventure!'
+                    : `⚡ Different approaches! Mia voted for "${scenario.options[partnerAPick!]}" while Alex chose "${scenario.options[partnerBPick!]}".`}
+                </div>
+
+                {hostCommentary && (
+                  <div
+                    style={{
+                      padding: '12px 18px',
+                      borderRadius: '10px',
+                      background: 'var(--paper)',
+                      border: '1px solid var(--line)',
+                      fontSize: '14px',
+                      fontStyle: 'italic',
+                      color: 'var(--ink)',
+                      marginBottom: '20px',
+                      display: 'inline-block',
+                    }}
+                  >
+                    🎙️ Host Commentary: &ldquo;{hostCommentary}&rdquo;
+                  </div>
+                )}
+                <br />
+
+                <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                  <button onClick={handleNext} className="btn btn-grad" style={{ padding: '12px 32px', fontSize: '15px' }}>
+                    Next Adaptive Dilemma ▷
+                  </button>
+                  <Link href="/photobooth" className="btn btn-ghost" style={{ padding: '12px 20px', fontSize: '14px' }}>
+                    Snap Milestone 📸
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}

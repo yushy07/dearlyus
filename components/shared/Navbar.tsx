@@ -30,6 +30,9 @@ export function Navbar({ roomCode, rightAction }: NavbarProps) {
             <Link href="/quiz" style={{ color: 'var(--ink-soft)' }}>
               ❓ Quizzes
             </Link>
+            <Link href="/host" style={{ color: 'var(--ink-soft)' }}>
+              🎙️ Date Host
+            </Link>
             <Link href="/bucket" style={{ color: 'var(--ink-soft)' }}>
               🎯 100 Dates
             </Link>

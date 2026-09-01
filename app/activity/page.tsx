@@ -168,6 +168,17 @@ export default function ActivityPage() {
               ),
             },
             {
+              href: '/host',
+              title: 'Date Host',
+              badge: '★ Live',
+              desc: 'third-wheel host reacts & adapts questions',
+              icon: (
+                <span style={{ fontSize: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  🎙️
+                </span>
+              ),
+            },
+            {
               href: '/dare',
               title: 'Truth or Dare',
               badge: 'New',

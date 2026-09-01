@@ -48,12 +48,27 @@ export default function QuizPage() {
 
   const currentQ = selectedPack.questions[currentQIndex];
 
+  const [adaptiveQueue, setAdaptiveQueue] = useState<QuizQuestion[]>([]);
+  const [hostCommentary, setHostCommentary] = useState<string | null>(null);
+
   const handleNext = () => {
-    if (currentQIndex + 1 < selectedPack.questions.length) {
+    if (adaptiveQueue.length > 0) {
+      const nextAdaptive = adaptiveQueue[0];
+      setAdaptiveQueue(adaptiveQueue.slice(1));
+      const updatedQuestions = [...selectedPack.questions];
+      updatedQuestions.splice(currentQIndex + 1, 0, nextAdaptive);
+      setSelectedPack({ ...selectedPack, questions: updatedQuestions });
       setCurrentQIndex(currentQIndex + 1);
       setMiaPick(null);
       setAlexPick(null);
       setRevealed(false);
+      setHostCommentary(null);
+    } else if (currentQIndex + 1 < selectedPack.questions.length) {
+      setCurrentQIndex(currentQIndex + 1);
+      setMiaPick(null);
+      setAlexPick(null);
+      setRevealed(false);
+      setHostCommentary(null);
     } else {
       setFinished(true);
       sounds.playCelebration();
@@ -71,6 +86,35 @@ export default function QuizPage() {
     } else {
       sounds.playCountdownBeep(true);
     }
+
+    // Parallel background pre-fetch for next adaptive question
+    const currentQ = selectedPack.questions[currentQIndex];
+    fetch('/api/questions/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        partnerA: { name: 'Mia', answer: currentQ.options[miaPick] },
+        partnerB: { name: 'Alex', answer: currentQ.options[alexPick] },
+        mode: 'quiz',
+        history: [{ question: currentQ.q, answerA: currentQ.options[miaPick], answerB: currentQ.options[alexPick] }],
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.question && Array.isArray(data.options)) {
+          setAdaptiveQueue([
+            {
+              q: data.question,
+              options: data.options,
+              honestAnswerIndex: 0,
+            },
+          ]);
+          if (data.commentary) {
+            setHostCommentary(data.commentary);
+          }
+        }
+      })
+      .catch(() => {});
   };
 
   const restartQuiz = (pack: QuizPack) => {
@@ -81,6 +125,8 @@ export default function QuizPage() {
     setRevealed(false);
     setMatches(0);
     setFinished(false);
+    setAdaptiveQueue([]);
+    setHostCommentary(null);
   };
 
   // Add question to custom builder
@@ -290,6 +336,24 @@ export default function QuizPage() {
                       ? '✨ PERFECT MATCH! You both picked the exact same thing!'
                       : `💔 Clashing picks! Mia chose "${currentQ.options[miaPick!]}" while Alex guessed "${currentQ.options[alexPick!]}".`}
                   </div>
+                  {hostCommentary && (
+                    <div
+                      style={{
+                        padding: '10px 16px',
+                        borderRadius: '8px',
+                        background: 'var(--paper)',
+                        border: '1px solid var(--line)',
+                        fontSize: '13px',
+                        fontStyle: 'italic',
+                        color: 'var(--ink-soft)',
+                        marginBottom: '16px',
+                        display: 'inline-block',
+                      }}
+                    >
+                      💬 &ldquo;{hostCommentary}&rdquo;
+                    </div>
+                  )}
+                  <br />
                   <button onClick={handleNext} className="btn btn-grad" style={{ padding: '12px 36px', fontSize: '15px' }}>
                     {currentQIndex + 1 < selectedPack.questions.length ? 'Next Question ▷' : 'View Final Results 🏆'}
                   </button>

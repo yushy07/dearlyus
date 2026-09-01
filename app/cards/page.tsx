@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { Ribbon, Navbar } from '@/components/shared';
+import { sounds } from '@/lib/sound';
 
 interface Card {
   tier: string;
@@ -9,7 +11,7 @@ interface Card {
   category: string;
 }
 
-const DECK: Card[] = [
+const INITIAL_DECK: Card[] = [
   { tier: 'Level 1 · Warm Up', category: 'Playful', prompt: 'What is a small detail about me that you noticed recently and never said aloud?' },
   { tier: 'Level 1 · Warm Up', category: 'Habits', prompt: 'What is our funniest inside joke that nobody else in our lives would ever understand?' },
   { tier: 'Level 2 · Deep Water', category: 'Feelings', prompt: 'When is a moment during the distance when you felt closest to me, even miles apart?' },
@@ -19,56 +21,94 @@ const DECK: Card[] = [
 ];
 
 export default function CardsPage() {
+  const [deck, setDeck] = useState<Card[]>(INITIAL_DECK);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [myAnswer, setMyAnswer] = useState('');
   const [partnerAnswer, setPartnerAnswer] = useState('');
   const [revealed, setRevealed] = useState(false);
+  const [hostNote, setHostNote] = useState<string | null>(null);
 
-  const card = DECK[currentIdx];
+  const card = deck[currentIdx] || deck[0];
 
   const handleNext = () => {
-    setCurrentIdx((prev) => (prev + 1) % DECK.length);
+    setCurrentIdx((prev) => (prev + 1) % deck.length);
     setFlipped(false);
     setMyAnswer('');
     setPartnerAnswer('');
     setRevealed(false);
+    setHostNote(null);
   };
 
   const handleReveal = () => {
     setRevealed(true);
+    sounds.playCelebration();
     setPartnerAnswer(
       myAnswer
         ? 'I feel the exact same way. That one evening on call changed everything for me too.'
         : 'You bring so much light into my days.'
     );
+
+    // Fetch dynamic adaptive follow-up card
+    fetch('/api/questions/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        partnerA: { name: 'Mia', answer: myAnswer || 'Loving our late night talks' },
+        partnerB: { name: 'Alex', answer: 'Feeling closest when we plan our future' },
+        mode: 'cards',
+        mood: 'deep',
+        history: [{ question: card.prompt, answerA: myAnswer, answerB: 'Deep reflection' }],
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.question) {
+          const newCard: Card = {
+            tier: 'Level 4 · Deep Lore',
+            category: 'Adaptive',
+            prompt: data.question,
+          };
+          const nextDeck = [...deck];
+          nextDeck.splice(currentIdx + 1, 0, newCard);
+          setDeck(nextDeck);
+          if (data.commentary) {
+            setHostNote(data.commentary);
+          }
+        }
+      })
+      .catch(() => {});
   };
 
   return (
-    <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px' }}>
-      <header className="bar">
-        <div className="wrap">
-          <Link className="brand" href="/">
-            angie
-            <span className="dots">
-              <i className="p"></i>
-              <i className="b"></i>
-            </span>
-          </Link>
-          <Link className="btn btn-ghost" href="/activity">
-            Activities ▷
-          </Link>
-        </div>
-      </header>
+    <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px', color: 'var(--ink)' }}>
+      <Ribbon text={<>🎴 Honest Cards · <b>Vulnerable Conversations for Two Screens</b></>} />
+
+      <Navbar
+        rightAction={
+          <span
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '12px',
+              background: 'var(--paper-raised)',
+              padding: '4px 10px',
+              borderRadius: '6px',
+              border: '1px solid var(--line)',
+            }}
+          >
+            Card <b>{currentIdx + 1} / {deck.length}</b>
+          </span>
+        }
+      />
 
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '720px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <span className="eyebrow">Honest Cards · A Deck of Questions for Two</span>
+          <span className="eyebrow">Honest Cards · Realtime Connection</span>
           <h1 style={{ fontSize: 'clamp(28px, 4vw, 42px)', marginBottom: '10px' }}>
             The questions you <span className="grad">keep avoiding</span>.
           </h1>
           <p style={{ color: 'var(--ink-soft)', fontSize: '16px' }}>
-            You both answer privately on your screens — then the card opens at once.
+            You both answer privately on your screens — then the card flips open at once.
           </p>
         </div>
 
@@ -100,94 +140,76 @@ export default function CardsPage() {
                   fontSize: '11px',
                   fontWeight: 700,
                   textTransform: 'uppercase',
-                  color: '#C9829C',
-                  background: '#FFF',
-                  padding: '4px 12px',
-                  borderRadius: '999px',
-                  border: '1px solid #E7E1D8',
+                  color: 'var(--pink)',
+                  letterSpacing: '.12em',
                 }}
               >
-                {card.tier}
+                {card.tier} · {card.category}
               </span>
+              <h2
+                style={{
+                  fontSize: '22px',
+                  fontWeight: 700,
+                  lineHeight: 1.4,
+                  marginTop: '16px',
+                  color: 'var(--ink)',
+                }}
+              >
+                &ldquo;{card.prompt}&rdquo;
+              </h2>
             </div>
 
-            <h2 style={{ fontSize: '22px', fontWeight: 800, margin: '24px 0', lineHeight: 1.4, color: '#23242A' }}>
-              {card.prompt}
-            </h2>
-
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--ink-soft)' }}>
-              Card {currentIdx + 1} of {DECK.length} · Tap to reflect
+            <div style={{ fontSize: '12px', color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}>
+              {revealed ? '✓ Answers Revealed' : 'Click to flip card · Answer below'}
             </div>
           </div>
         </div>
 
-        {/* Private Answer Boxes */}
-        <div
-          style={{
-            background: '#fff',
-            border: '1px solid var(--line)',
-            borderRadius: '16px',
-            padding: '24px',
-            boxShadow: 'var(--shadow)',
-          }}
-        >
-          <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '6px' }}>
-              Your Private Answer (Mia):
-            </label>
-            <textarea
-              rows={3}
-              value={myAnswer}
-              onChange={(e) => setMyAnswer(e.target.value)}
-              placeholder="Type your honest answer here... partner cannot see until you both reveal!"
-              style={{
-                width: '100%',
-                padding: '12px 14px',
-                borderRadius: '10px',
-                border: '1.5px solid var(--line)',
-                fontFamily: 'inherit',
-                fontSize: '14.5px',
-                resize: 'none',
-              }}
-            />
-          </div>
-
+        {/* Inputs */}
+        <div style={{ background: '#FFFFFF', border: '1px solid var(--line)', borderRadius: '16px', padding: '24px', boxShadow: 'var(--shadow)', marginBottom: '24px' }}>
           {!revealed ? (
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+            <div style={{ display: 'grid', gap: '16px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
+                  Your Private Answer (Mia):
+                </label>
+                <textarea
+                  rows={3}
+                  value={myAnswer}
+                  onChange={(e) => setMyAnswer(e.target.value)}
+                  placeholder="Type your honest thoughts... Alex cannot see until both lock in."
+                  style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--line)', fontSize: '14.5px' }}
+                />
+              </div>
               <button
-                className="btn btn-grad"
                 onClick={handleReveal}
                 disabled={!myAnswer.trim()}
-                style={{ padding: '12px 28px', fontSize: '15px' }}
+                className="btn btn-primary"
+                style={{ padding: '12px', fontSize: '15px', justifyContent: 'center' }}
               >
-                Reveal Together ▷
-              </button>
-              <button className="btn btn-ghost" onClick={handleNext}>
-                Skip to Next Card
+                Lock In &amp; Reveal Answers 🔍
               </button>
             </div>
           ) : (
-            <div>
-              <div
-                style={{
-                  background: 'var(--paper)',
-                  padding: '16px',
-                  borderRadius: '10px',
-                  border: '1px solid var(--line)',
-                  marginBottom: '20px',
-                }}
-              >
-                <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--blue)', marginBottom: '4px' }}>
-                  Alex&apos;s Answer:
-                </div>
-                <p style={{ fontSize: '15px', color: '#17181C', margin: 0 }}>{partnerAnswer}</p>
+            <div style={{ display: 'grid', gap: '16px' }}>
+              <div style={{ background: 'var(--paper)', padding: '16px', borderRadius: '10px', border: '1px solid var(--line)' }}>
+                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--pink)' }}>🌸 Mia&apos;s Answer:</div>
+                <p style={{ margin: '6px 0 0', fontSize: '15px', lineHeight: 1.5 }}>{myAnswer}</p>
+              </div>
+              <div style={{ background: 'var(--paper)', padding: '16px', borderRadius: '10px', border: '1px solid var(--line)' }}>
+                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--blue)' }}>💙 Alex&apos;s Answer:</div>
+                <p style={{ margin: '6px 0 0', fontSize: '15px', lineHeight: 1.5 }}>{partnerAnswer}</p>
               </div>
 
-              <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-                <button className="btn btn-primary" onClick={handleNext} style={{ padding: '12px 28px' }}>
-                  Next Honest Card ▷
-                </button>
-              </div>
+              {hostNote && (
+                <div style={{ padding: '10px 16px', borderRadius: '8px', background: '#FFF9F0', border: '1px solid #FFE4C4', fontSize: '13px', fontStyle: 'italic', color: '#8A5D3B' }}>
+                  💬 &ldquo;{hostNote}&rdquo;
+                </div>
+              )}
+
+              <button onClick={handleNext} className="btn btn-grad" style={{ padding: '12px', fontSize: '15px', justifyContent: 'center' }}>
+                Next Honest Card ▷
+              </button>
             </div>
           )}
         </div>
