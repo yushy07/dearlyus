@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { Footer } from '@/components/shared/Footer';
-import { ShinyText, AuroraBackground, SpotlightCard, MagnetButton } from '@/components/ui';
+import { ShinyText, AuroraBackground, SpotlightCard, MagnetButton, ScrollProgress, ScrollReveal } from '@/components/ui';
 
 export default function HomePage() {
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
@@ -299,7 +299,8 @@ export default function HomePage() {
   };
 
   return (
-    <>
+    <div style={{ background: 'var(--paper)', minHeight: '100vh' }}>
+      <ScrollProgress />
       {/* Tagline Ribbon */}
       <div className="ribbon">
         <span className="ribbon-in">
@@ -758,21 +759,24 @@ export default function HomePage() {
       {/* Activities Hub Directory */}
       <section className="section" id="activities">
         <div className="wrap">
-          <div className="section-head">
-            <div className="kicker">Activities to do together, apart</div>
-            <h2 className="label-h">
-              Pick tonight&apos;s <span className="grad">activity</span>.
-            </h2>
-            <p style={{ marginTop: '18px' }}>
-              <Link className="btn btn-grad" href="/activity">
-                Browse all activities <span className="arr">▷</span>
-              </Link>
-            </p>
-          </div>
+          <ScrollReveal animation="fade-up">
+            <div className="section-head">
+              <div className="kicker">Activities to do together, apart</div>
+              <h2 className="label-h">
+                Pick tonight&apos;s <span className="grad">activity</span>.
+              </h2>
+              <p style={{ marginTop: '18px' }}>
+                <Link className="btn btn-grad" href="/activity">
+                  Browse all activities <span className="arr">▷</span>
+                </Link>
+              </p>
+            </div>
+          </ScrollReveal>
 
           {/* New spotlight cards */}
-          <div className="spot">
-            <span className="spot-label">New · the ones we can&apos;t stop playing</span>
+          <ScrollReveal animation="fade-up" delay={0.1}>
+            <div className="spot">
+              <span className="spot-label">New · the ones we can&apos;t stop playing</span>
             <Link className="act" href="/letter">
               <div className="ic">
                 <svg viewBox="0 0 34 34" fill="none">
@@ -852,7 +856,9 @@ export default function HomePage() {
               </span>
             </Link>
           </div>
+        </ScrollReveal>
 
+        <ScrollReveal animation="fade-up" delay={0.15}>
           <div className="grid-label">All games &amp; activities</div>
           <div className="acts">
             {/* Featured Wide Photobooth Tile */}
@@ -1176,6 +1182,7 @@ export default function HomePage() {
               <p>Write letters to future you, sealed in a vault until your chosen reunion anniversary.</p>
             </Link>
           </div>
+        </ScrollReveal>
         </div>
       </section>
 
@@ -1183,20 +1190,23 @@ export default function HomePage() {
       <section className="section" id="photobooth-demo">
         <canvas ref={demoCanvasRef} style={{ display: 'none' }} />
         <div className="wrap">
-          <div className="section-head">
-            <div className="kicker">Online Photobooth · 인생네컷</div>
-            <h2>
-              Capture both of you in <span className="grad">one frame</span> — at the exact same second.
-            </h2>
-            <p>
-              A shared countdown fires the shot on both screens at once — arrange into a 4-cut photostrip you can download
-              or print as fridge magnets. Try a live interactive test right here.
-            </p>
-          </div>
+          <ScrollReveal animation="fade-up">
+            <div className="section-head">
+              <div className="kicker">Online Photobooth · 인생네컷</div>
+              <h2>
+                Capture both of you in <span className="grad">one frame</span> — at the exact same second.
+              </h2>
+              <p>
+                A shared countdown fires the shot on both screens at once — arrange into a 4-cut photostrip you can download
+                or print as fridge magnets. Try a live interactive test right here.
+              </p>
+            </div>
+          </ScrollReveal>
 
-          <div className="booth-showcase-grid">
-            {/* Left: Interactive Studio Booth Stage */}
-            <div className={`booth-box ${demoTheme.id === 'vintage' ? 'vintage-automat' : ''}`}>
+          <ScrollReveal animation="scale" delay={0.1}>
+            <div className="booth-showcase-grid">
+              {/* Left: Interactive Studio Booth Stage */}
+              <div className={`booth-box ${demoTheme.id === 'vintage' ? 'vintage-automat' : ''}`}>
               {/* Studio Controls Header */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
                 <div style={{ display: 'flex', gap: '8px' }}>
@@ -1477,16 +1487,18 @@ export default function HomePage() {
               </div>
             </div>
           </div>
+        </ScrollReveal>
         </div>
       </section>
 
       {/* Quiz Live Demo Showcase */}
       <section className="section" id="quiz-demo">
         <div className="wrap">
-          <div className="qd-grid">
-            <div className="section-head" style={{ margin: 0 }}>
-              <div className="kicker">See it in action</div>
-              <h2>Watch a round of our most-played game.</h2>
+          <ScrollReveal animation="fade-up">
+            <div className="qd-grid">
+              <div className="section-head" style={{ margin: 0 }}>
+                <div className="kicker">See it in action</div>
+                <h2>Watch a round of our most-played game.</h2>
               <img
                 className="qd-art"
                 src="/photos/quiz-duo.webp"
@@ -1534,18 +1546,20 @@ export default function HomePage() {
               <div className="qd-badge">✓ Matched! 💞</div>
             </div>
           </div>
+        </ScrollReveal>
         </div>
       </section>
 
       {/* Keepsake Print Band */}
       <section className="section print-band" id="print">
         <div className="wrap">
-          <div className="pb-grid">
-            <div className="pb-copy">
-              <div className="kicker">Digital Keepsakes &amp; Print Sheets</div>
-              <h2>
-                Preserve your memories with <span className="grad">printable DIY keepsakes</span>.
-              </h2>
+          <ScrollReveal animation="fade-up">
+            <div className="pb-grid">
+              <div className="pb-copy">
+                <div className="kicker">Digital Keepsakes &amp; Print Sheets</div>
+                <h2>
+                  Preserve your memories with <span className="grad">printable DIY keepsakes</span>.
+                </h2>
               <p>
                 Turn today&apos;s session into printable 4×6 photo sheets, couple lockscreen wallpapers, and DIY fridge magnet templates.
               </p>
@@ -1586,41 +1600,45 @@ export default function HomePage() {
               </div>
             </div>
           </div>
+        </ScrollReveal>
         </div>
       </section>
 
       {/* Creator Program Card */}
       <section className="section creator-band" id="creators">
         <div className="wrap">
-          <div className="cb-card">
-            <div>
-              <div className="kicker">Creator program</div>
-              <h2>
-                Post one video, <span className="grad">get Angie free for life</span>.
-              </h2>
-              <p>
-                Film a photobooth session with your partner or best friend, post it on TikTok or Instagram, and send us
-                the link. If it&apos;s approved, you get a <b>Lifetime Pass</b> — every game, every HD download, forever.
-              </p>
+          <ScrollReveal animation="fade-up">
+            <div className="cb-card">
+              <div>
+                <div className="kicker">Creator program</div>
+                <h2>
+                  Post one video, <span className="grad">get Angie free for life</span>.
+                </h2>
+                <p>
+                  Film a photobooth session with your partner or best friend, post it on TikTok or Instagram, and send us
+                  the link. If it&apos;s approved, you get a <b>Lifetime Pass</b> — every game, every HD download, forever.
+                </p>
+              </div>
+              <div className="cb-cta">
+                <Link className="btn btn-grad" href="/creators">
+                  Become a creator <span className="arr">▷</span>
+                </Link>
+                <span className="cb-sub">🎬 Takes 2 minutes to apply</span>
+              </div>
             </div>
-            <div className="cb-cta">
-              <Link className="btn btn-grad" href="/creators">
-                Become a creator <span className="arr">▷</span>
-              </Link>
-              <span className="cb-sub">🎬 Takes 2 minutes to apply</span>
-            </div>
-          </div>
+          </ScrollReveal>
         </div>
       </section>
 
       {/* FAQ Accordion */}
       <section className="section" id="faq">
         <div className="wrap">
-          <div className="section-head">
-            <div className="kicker">Good to know</div>
-            <h2>Questions long distance couples ask.</h2>
-          </div>
-          <div className="faq">
+          <ScrollReveal animation="fade-up">
+            <div className="section-head">
+              <div className="kicker">Good to know</div>
+              <h2>Questions long distance couples ask.</h2>
+            </div>
+            <div className="faq">
             {[
               {
                 q: 'What games can we play on Angie?',
@@ -1658,6 +1676,7 @@ export default function HomePage() {
               </details>
             ))}
           </div>
+        </ScrollReveal>
         </div>
       </section>
 
@@ -1779,6 +1798,6 @@ export default function HomePage() {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

@@ -4,3 +4,5 @@ export * from './ShinyText';
 export * from './TiltedCard';
 export * from './AuroraBackground';
 export * from './MagnetButton';
+export * from './ScrollProgress';
+export * from './ScrollReveal';

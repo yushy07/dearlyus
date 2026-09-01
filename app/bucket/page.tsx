@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Ribbon, Navbar, Confetti } from '@/components/shared';
 import { sounds } from '@/lib/sound';
+import { ScrollProgress, ScrollReveal } from '@/components/ui';
 
 interface BucketDate {
   id: number;
@@ -59,7 +60,8 @@ export default function BucketListPage() {
 
   return (
     <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px', color: 'var(--ink)' }}>
-      <Ribbon text={<>🎯 100 Dates Bucket List &amp; Scratch-Off Map · <b>Milestones for LDR &amp; Beyond</b></>} />
+      <ScrollProgress />
+      <Ribbon text={<>🎯 100 Dates Bucket List · <b>Scratch Off Virtual &amp; In-Person Milestones</b></>} />
       <Confetti active={confettiActive} />
 
       <Navbar
@@ -69,26 +71,28 @@ export default function BucketListPage() {
               fontFamily: 'var(--font-mono)',
               fontSize: '12px',
               background: 'var(--paper-raised)',
-              padding: '5px 10px',
+              padding: '4px 10px',
               borderRadius: '6px',
               border: '1px solid var(--line)',
             }}
           >
-            Completed: <b>{completedCount} / {dates.length}</b> ({progressPercent}%)
+            Completed: <b>{completedCount} / {dates.length}</b>
           </span>
         }
       />
 
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '960px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <span className="eyebrow">Our Shared Journey</span>
-          <h1 style={{ fontSize: 'clamp(28px, 4.5vw, 42px)', fontWeight: 800, margin: '8px 0' }}>
-            100 Dates <span className="grad">Scratch-Off Checklist</span>
-          </h1>
-          <p style={{ color: 'var(--ink-soft)', fontSize: '16px', maxWidth: '52ch', margin: '0 auto' }}>
-            From late-night video dates across the ocean to the first grocery run together after closing the distance.
-          </p>
-        </div>
+        <ScrollReveal animation="fade-up">
+          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+            <span className="eyebrow">Our Shared Journey</span>
+            <h1 style={{ fontSize: 'clamp(28px, 4.5vw, 42px)', fontWeight: 800, margin: '8px 0' }}>
+              100 Dates <span className="grad">Scratch-Off Checklist</span>
+            </h1>
+            <p style={{ color: 'var(--ink-soft)', fontSize: '16px', maxWidth: '52ch', margin: '0 auto' }}>
+              From late-night video dates across the ocean to the first grocery run together after closing the distance.
+            </p>
+          </div>
+        </ScrollReveal>
 
         {/* Progress Bar Card */}
         <div className="booth-box" style={{ padding: '24px 28px', marginBottom: '28px' }}>
@@ -126,52 +130,54 @@ export default function BucketListPage() {
         </div>
 
         {/* Dates Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
-          {filtered.map((d) => (
-            <div
-              key={d.id}
-              onClick={() => toggleDate(d.id)}
-              style={{
-                background: d.completed ? '#FFF5F8' : '#FFFFFF',
-                border: d.completed ? '2px solid var(--pink)' : '1px solid var(--line)',
-                borderRadius: '16px',
-                padding: '20px',
-                cursor: 'pointer',
-                boxShadow: 'var(--shadow)',
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '14px',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              <span style={{ fontSize: '32px', flexShrink: 0 }}>{d.icon}</span>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <span className="badge" style={{ fontSize: '10px', background: 'var(--paper)', color: 'var(--ink-soft)' }}>
-                    {d.category}
-                  </span>
-                  {d.completed && (
-                    <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--pink)', fontWeight: 800 }}>
-                      ✓ {d.completedDate}
+        <ScrollReveal stagger animation="fade-up">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+            {filtered.map((d) => (
+              <div
+                key={d.id}
+                onClick={() => toggleDate(d.id)}
+                style={{
+                  background: d.completed ? '#FFF5F8' : '#FFFFFF',
+                  border: d.completed ? '2px solid var(--pink)' : '1px solid var(--line)',
+                  borderRadius: '16px',
+                  padding: '20px',
+                  cursor: 'pointer',
+                  boxShadow: 'var(--shadow)',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '14px',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                <span style={{ fontSize: '32px', flexShrink: 0 }}>{d.icon}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                    <span className="badge" style={{ fontSize: '10px', background: 'var(--paper)', color: 'var(--ink-soft)' }}>
+                      {d.category}
                     </span>
-                  )}
+                    {d.completed && (
+                      <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--pink)', fontWeight: 800 }}>
+                        ✓ {d.completedDate}
+                      </span>
+                    )}
+                  </div>
+                  <h4
+                    style={{
+                      fontSize: '15px',
+                      fontWeight: 700,
+                      margin: '6px 0 0',
+                      lineHeight: 1.35,
+                      textDecoration: d.completed ? 'line-through' : 'none',
+                      color: d.completed ? 'var(--pink)' : 'var(--ink)',
+                    }}
+                  >
+                    {d.title}
+                  </h4>
                 </div>
-                <h4
-                  style={{
-                    fontSize: '15px',
-                    fontWeight: 700,
-                    margin: '6px 0 0',
-                    lineHeight: 1.35,
-                    textDecoration: d.completed ? 'line-through' : 'none',
-                    color: d.completed ? 'var(--pink)' : 'var(--ink)',
-                  }}
-                >
-                  {d.title}
-                </h4>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </ScrollReveal>
       </main>
     </div>
   );

@@ -2088,5 +2088,90 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06);
 }
 
+/* ==========================================================================
+   SCROLL TRIGGER & SCROLL LINKED ANIMATIONS
+   ========================================================================== */
+
+/* Fade-Up Scroll Reveal */
+.reveal-fade-up {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-fade-up.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Scale Scroll Reveal */
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.94);
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-scale.in-view {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Slide Left / Right Reveals */
+.reveal-slide-left {
+  opacity: 0;
+  transform: translateX(-32px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-slide-left.in-view {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.reveal-slide-right {
+  opacity: 0;
+  transform: translateX(32px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-slide-right.in-view {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Stagger Item Delays */
+.reveal-stagger > *:nth-child(1) { transition-delay: 0.04s; }
+.reveal-stagger > *:nth-child(2) { transition-delay: 0.08s; }
+.reveal-stagger > *:nth-child(3) { transition-delay: 0.12s; }
+.reveal-stagger > *:nth-child(4) { transition-delay: 0.16s; }
+.reveal-stagger > *:nth-child(5) { transition-delay: 0.20s; }
+.reveal-stagger > *:nth-child(6) { transition-delay: 0.24s; }
+.reveal-stagger > *:nth-child(7) { transition-delay: 0.28s; }
+.reveal-stagger > *:nth-child(8) { transition-delay: 0.32s; }
+.reveal-stagger > *:nth-child(n+9) { transition-delay: 0.36s; }
+
+/* Scroll-driven Keyframe where supported */
+@supports (animation-timeline: view()) {
+  .scroll-parallax-view {
+    animation: scroll-float ease-out both;
+    animation-timeline: view();
+    animation-range: entry 10% cover 40%;
+  }
+
+  @keyframes scroll-float {
+    from {
+      opacity: 0;
+      transform: translateY(40px) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+}
+
+
 
 
