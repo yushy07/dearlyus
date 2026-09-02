@@ -12,6 +12,12 @@ export default function HomePage() {
   const [nickname, setNickname] = useState('Mia');
   const [partnerName, setPartnerName] = useState('Alex');
 
+  // Hero photobooth machine state
+  const [litFrames, setLitFrames] = useState<boolean[]>([false, false, false, false]);
+  const [shotStep, setShotStep] = useState<number>(0);
+  const [countNum, setCountNum] = useState<string>('');
+  const [flashing, setFlashing] = useState<boolean>(false);
+
   // Presence cursors state
   const blueCursorRef = useRef<HTMLDivElement>(null);
   const pinkCursorRef = useRef<HTMLDivElement>(null);
