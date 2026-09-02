@@ -387,13 +387,13 @@ class SoundManager {
     this.stopPiano();
   }
 
-  private lofiAudio: HTMLAudioElement | null = null;
+  private jazzAudio: HTMLAudioElement | null = null;
 
-  // 4. Lo-Fi Chords Audio Track (lofi.mp3 with procedural fallback)
-  public startLofiChords(volume = 0.3) {
+  // 4. Tokyo Cafe Jazz Track (jazz.mp3)
+  public startTokyoCafe(volume = 0.3) {
     if (this.isLofiPlaying) {
-      if (this.lofiAudio) {
-        this.lofiAudio.volume = Math.min(Math.max(volume, 0), 1);
+      if (this.jazzAudio) {
+        this.jazzAudio.volume = Math.min(Math.max(volume, 0), 1);
       }
       return;
     }
@@ -401,12 +401,12 @@ class SoundManager {
 
     if (typeof window !== 'undefined') {
       try {
-        if (!this.lofiAudio) {
-          this.lofiAudio = new Audio('/audio/lofi.mp3');
-          this.lofiAudio.loop = true;
+        if (!this.jazzAudio) {
+          this.jazzAudio = new Audio('/audio/jazz.mp3');
+          this.jazzAudio.loop = true;
         }
-        this.lofiAudio.volume = Math.min(Math.max(volume, 0), 1);
-        const playPromise = this.lofiAudio.play();
+        this.jazzAudio.volume = Math.min(Math.max(volume, 0), 1);
+        const playPromise = this.jazzAudio.play();
         if (playPromise) {
           playPromise.catch(() => {
             this.startProceduralLofi(volume);
@@ -421,18 +421,35 @@ class SoundManager {
     this.startProceduralLofi(volume);
   }
 
-  public stopLofiChords() {
+  public stopTokyoCafe() {
     this.isLofiPlaying = false;
-    if (this.lofiAudio) {
+    if (this.jazzAudio) {
       try {
-        this.lofiAudio.pause();
-        this.lofiAudio.currentTime = 0;
+        this.jazzAudio.pause();
+        this.jazzAudio.currentTime = 0;
       } catch {}
     }
     if (this.lofiTimer) {
       clearTimeout(this.lofiTimer);
       this.lofiTimer = null;
     }
+  }
+
+  // Aliases for backward compatibility
+  public startLofiChords(volume = 0.3) {
+    this.startTokyoCafe(volume);
+  }
+
+  public stopLofiChords() {
+    this.stopTokyoCafe();
+  }
+
+  public startJazz(volume = 0.3) {
+    this.startTokyoCafe(volume);
+  }
+
+  public stopJazz() {
+    this.stopTokyoCafe();
   }
 
   // Fallback procedural lo-fi chords synthesizer

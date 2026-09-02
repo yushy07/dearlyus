@@ -19,7 +19,7 @@ export function AudioPlayer() {
       sounds.startWarm(warmVol);
       sounds.startRomantic(romanticVol);
       sounds.startPiano(pianoVol);
-      sounds.startLofiChords(lofiVol);
+      sounds.startTokyoCafe(lofiVol);
       setIsPlaying(true);
     }
   };
@@ -34,7 +34,7 @@ export function AudioPlayer() {
         sounds.startWarm(0.6);
         sounds.startRomantic(0.2);
         sounds.startPiano(0.35);
-        sounds.startLofiChords(0.2);
+        sounds.startTokyoCafe(0.2);
       }
     } else if (preset === 'romantic') {
       setWarmVol(0.2);
@@ -45,7 +45,7 @@ export function AudioPlayer() {
         sounds.startWarm(0.2);
         sounds.startRomantic(0.6);
         sounds.startPiano(0.4);
-        sounds.startLofiChords(0.3);
+        sounds.startTokyoCafe(0.3);
       }
     } else if (preset === 'lofi') {
       setWarmVol(0.3);
@@ -56,7 +56,7 @@ export function AudioPlayer() {
         sounds.startWarm(0.3);
         sounds.startRomantic(0.2);
         sounds.startPiano(0.35);
-        sounds.startLofiChords(0.6);
+        sounds.startTokyoCafe(0.6);
       }
     }
   };
@@ -147,7 +147,7 @@ export function AudioPlayer() {
                 fontWeight: 600,
               }}
             >
-              🎧 Tokyo Lo-Fi
+              ☕ Tokyo Cafe
             </button>
           </div>
 
@@ -215,7 +215,7 @@ export function AudioPlayer() {
 
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                <span>🎧 Lofi Chords</span>
+                <span>☕ Tokyo Cafe</span>
                 <span>{Math.round(lofiVol * 100)}%</span>
               </div>
               <input
@@ -227,7 +227,7 @@ export function AudioPlayer() {
                 onChange={(e) => {
                   const val = parseFloat(e.target.value);
                   setLofiVol(val);
-                  if (isPlaying) sounds.startLofiChords(val);
+                  if (isPlaying) sounds.startTokyoCafe(val);
                 }}
                 style={{ width: '100%', accentColor: '#9D8DF1' }}
               />
