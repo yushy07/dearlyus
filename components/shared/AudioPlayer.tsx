@@ -8,7 +8,7 @@ export function AudioPlayer() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [rainVol, setRainVol] = useState(0.4);
   const [fireVol, setFireVol] = useState(0.3);
-  const [vinylVol, setVinylVol] = useState(0.2);
+  const [pianoVol, setPianoVol] = useState(0.35);
   const [lofiVol, setLofiVol] = useState(0.3);
 
   const toggleMaster = () => {
@@ -18,7 +18,7 @@ export function AudioPlayer() {
     } else {
       sounds.startRain(rainVol);
       sounds.startFireplace(fireVol);
-      sounds.startVinyl(vinylVol);
+      sounds.startPiano(pianoVol);
       sounds.startLofiChords(lofiVol);
       setIsPlaying(true);
     }
@@ -28,34 +28,34 @@ export function AudioPlayer() {
     if (preset === 'rain') {
       setRainVol(0.6);
       setFireVol(0.1);
-      setVinylVol(0.3);
+      setPianoVol(0.35);
       setLofiVol(0.2);
       if (isPlaying) {
         sounds.startRain(0.6);
         sounds.startFireplace(0.1);
-        sounds.startVinyl(0.3);
+        sounds.startPiano(0.35);
         sounds.startLofiChords(0.2);
       }
     } else if (preset === 'cozy') {
       setRainVol(0.2);
       setFireVol(0.6);
-      setVinylVol(0.2);
+      setPianoVol(0.4);
       setLofiVol(0.3);
       if (isPlaying) {
         sounds.startRain(0.2);
         sounds.startFireplace(0.6);
-        sounds.startVinyl(0.2);
+        sounds.startPiano(0.4);
         sounds.startLofiChords(0.3);
       }
     } else if (preset === 'lofi') {
       setRainVol(0.3);
       setFireVol(0.2);
-      setVinylVol(0.4);
+      setPianoVol(0.35);
       setLofiVol(0.6);
       if (isPlaying) {
         sounds.startRain(0.3);
         sounds.startFireplace(0.2);
-        sounds.startVinyl(0.4);
+        sounds.startPiano(0.35);
         sounds.startLofiChords(0.6);
       }
     }
@@ -195,19 +195,19 @@ export function AudioPlayer() {
 
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                <span>📼 90s Vinyl</span>
-                <span>{Math.round(vinylVol * 100)}%</span>
+                <span>🎹 Piano Melody</span>
+                <span>{Math.round(pianoVol * 100)}%</span>
               </div>
               <input
                 type="range"
                 min="0"
                 max="1"
                 step="0.05"
-                value={vinylVol}
+                value={pianoVol}
                 onChange={(e) => {
                   const val = parseFloat(e.target.value);
-                  setVinylVol(val);
-                  if (isPlaying) sounds.startVinyl(val);
+                  setPianoVol(val);
+                  if (isPlaying) sounds.startPiano(val);
                 }}
                 style={{ width: '100%', accentColor: '#DDAA77' }}
               />
@@ -215,7 +215,7 @@ export function AudioPlayer() {
 
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                <span>🎹 Lofi Chords</span>
+                <span>🎧 Lofi Chords</span>
                 <span>{Math.round(lofiVol * 100)}%</span>
               </div>
               <input

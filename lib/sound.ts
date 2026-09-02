@@ -382,44 +382,42 @@ class SoundManager {
     }
   }
 
-  // 3. 90s Vinyl Needle Crackle Synthesizer
-  public startVinyl(volume = 0.25) {
-    if (this.ambientNodes['vinyl']) {
-      this.ambientNodes['vinyl'].gain.gain.setValueAtTime(volume, this.getContext()?.currentTime || 0);
-      return;
+  private pianoAudio: HTMLAudioElement | null = null;
+
+  // 3. Cozy Piano Track (piano.mp3)
+  public startPiano(volume = 0.35) {
+    if (typeof window !== 'undefined') {
+      try {
+        if (!this.pianoAudio) {
+          this.pianoAudio = new Audio('/audio/piano.mp3');
+          this.pianoAudio.loop = true;
+        }
+        this.pianoAudio.volume = Math.min(Math.max(volume, 0), 1);
+        const playPromise = this.pianoAudio.play();
+        if (playPromise) {
+          playPromise.catch(() => {});
+        }
+        return;
+      } catch {}
     }
-    const ctx = this.getContext();
-    if (!ctx) return;
+  }
 
-    const buffer = this.createNoiseBuffer(2);
-    if (!buffer) return;
+  public stopPiano() {
+    if (this.pianoAudio) {
+      try {
+        this.pianoAudio.pause();
+        this.pianoAudio.currentTime = 0;
+      } catch {}
+    }
+  }
 
-    const noise = ctx.createBufferSource();
-    noise.buffer = buffer;
-    noise.loop = true;
-
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'highpass';
-    filter.frequency.setValueAtTime(3500, ctx.currentTime);
-
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(volume * 0.6, ctx.currentTime);
-
-    noise.connect(filter);
-    filter.connect(gain);
-    gain.connect(ctx.destination);
-
-    noise.start();
-    this.ambientNodes['vinyl'] = { source: noise, gain };
+  // Alias for backward compatibility
+  public startVinyl(volume = 0.35) {
+    this.startPiano(volume);
   }
 
   public stopVinyl() {
-    if (this.ambientNodes['vinyl']) {
-      try {
-        (this.ambientNodes['vinyl'].source as AudioScheduledSourceNode).stop();
-      } catch {}
-      delete this.ambientNodes['vinyl'];
-    }
+    this.stopPiano();
   }
 
   private lofiAudio: HTMLAudioElement | null = null;
@@ -515,6 +513,7 @@ class SoundManager {
   public stopAllAmbience() {
     this.stopRain();
     this.stopFireplace();
+    this.stopPiano();
     this.stopVinyl();
     this.stopLofiChords();
   }
