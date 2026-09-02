@@ -260,3 +260,249 @@ export function getPokedCupidotDilemma(nameA = 'Mia', nameB = 'Alex'): CupidotDi
 
   return dilemmas[Math.floor(Math.random() * dilemmas.length)];
 }
+
+// ---------------------------------------------------------------------------
+// 🏛️ JUDGE CUPIDOT — Couple Courtroom AI Engine
+// ---------------------------------------------------------------------------
+
+export interface CourtVerdict {
+  verdictTitle: string;
+  guiltyParty: 'Mia' | 'Alex' | 'Both' | 'Mutual Chaos';
+  reasoning: string;
+  sentence: string;
+}
+
+export function judgeCourtCase(title: string, claimA: string, claimB: string): CourtVerdict {
+  const combined = `${title} ${claimA} ${claimB}`.toLowerCase();
+
+  if (/sleep|couch|nap|tired|bed|snooze|alarm/.test(combined)) {
+    return {
+      verdictTitle: 'Guilty of Unlawful Couch-Coma & Notification Neglect ⚖️',
+      guiltyParty: 'Alex',
+      reasoning: 'The court finds Defendant Alex guilty under Statute 14: falling asleep without properly clocking out on FaceTime constitutes gross negligence of couple snuggling protocols.',
+      sentence: 'Alex must send 3 sleepy morning voice notes tomorrow and buy Mia her favorite boba milk tea or iced matcha.',
+    };
+  }
+
+  if (/playlist|music|song|skip|aux|sound|artist/.test(combined)) {
+    return {
+      verdictTitle: 'Guilty of Egregious Bluetooth Monopoly 📻',
+      guiltyParty: 'Mia',
+      reasoning: 'Plaintiff Mia demonstrated blatant disregard for constitutional AUX rights by skipping tracks 18 seconds in before the beat even dropped.',
+      sentence: 'Alex is granted unilateral control of the Bluetooth speaker for 45 uninterrupted minutes without eye-rolling.',
+    };
+  }
+
+  if (/hoodie|jacket|clothes|shirt|stole|wear/.test(combined)) {
+    return {
+      verdictTitle: 'Legitimate Asset Seizure Recognized by International Law 🧥',
+      guiltyParty: 'Neither',
+      reasoning: 'Under the Long-Distance Maritime Convention of 2024, once an oversized hoodie enters a girlfriend’s suitcase, legal ownership permanently transfers.',
+      sentence: 'Alex must accept the loss with stoic grace and spray his cologne on the next backup hoodie.',
+    };
+  }
+
+  if (/read|reply|text|ignore|seen|hours|ghost/.test(combined)) {
+    return {
+      verdictTitle: 'Criminal Neglect of the Notification Tray 📱',
+      guiltyParty: 'Alex',
+      reasoning: 'Leaving someone on "Seen" for over 42 minutes while active on Instagram Stories is a Class 1 romantic misdemeanor.',
+      sentence: 'Alex must record a 60-second acoustic love ballad or provide 15 consecutive complimentary text messages.',
+    };
+  }
+
+  if (/food|fries|bite|eat|dinner|hungry|share/.test(combined)) {
+    return {
+      verdictTitle: 'The "I\'m Not Hungry" Fry Theft Felony 🍟',
+      guiltyParty: 'Mia',
+      reasoning: 'Saying "I just want one bite" and subsequently consuming 40% of the entrée constitutes romantic grand larceny.',
+      sentence: 'Mia must treat Alex to midnight ramen or hand-feed him the first 3 bites of dessert on date night.',
+    };
+  }
+
+  // Dynamic Heuristic for Custom Cases
+  const lengthA = claimA.length;
+  const lengthB = claimB.length;
+  const exclamationsA = (claimA.match(/!/g) || []).length;
+  const exclamationsB = (claimB.match(/!/g) || []).length;
+
+  if (exclamationsA > exclamationsB + 1) {
+    return {
+      verdictTitle: `Passionate Drama Verdict on "${title.slice(0, 32)}" ⚖️`,
+      guiltyParty: 'Both',
+      reasoning: `Judge Cupidot notes Mia argued with intense theatrical passion (${exclamationsA} exclamation marks!), while Alex attempted stoic avoidance. Both parties are hopelessly obsessed with each other.`,
+      sentence: 'Both parties are sentenced to a mandatory 20-minute silent forehead-touch cuddle upon your next airport reunion.',
+    };
+  }
+
+  return {
+    verdictTitle: `Compromise Decreed on "${title.slice(0, 32)}" 🏛️`,
+    guiltyParty: 'Mutual Chaos',
+    reasoning: `After forensic evaluation of the relationship evidence, Judge Cupidot rules that petty arguments are simply poorly disguised requests for extra attention.`,
+    sentence: 'The accused must immediately send a silly face selfie, and the accuser must reply with an audio recording saying "I still adore you."',
+  };
+}
+
+// ---------------------------------------------------------------------------
+// 🎙️ CUPIDOT AI DEBATE ARBITER
+// ---------------------------------------------------------------------------
+
+export interface DebateVerdict {
+  winner: 'Mia' | 'Alex' | 'Dead Heat Draw';
+  scoreA: number;
+  scoreB: number;
+  analysis: string;
+  penalty: string;
+}
+
+export function judgeDebate(topic: string, argA: string, argB: string): DebateVerdict {
+  const lenA = argA.trim().length;
+  const lenB = argB.trim().length;
+
+  let scoreA = Math.min(96, Math.max(68, 75 + Math.floor((lenA % 15))));
+  let scoreB = Math.min(96, Math.max(68, 73 + Math.floor((lenB % 17))));
+
+  if (lenA > lenB + 40) scoreA += 5;
+  if (lenB > lenA + 40) scoreB += 5;
+
+  let winner: 'Mia' | 'Alex' | 'Dead Heat Draw' = 'Dead Heat Draw';
+  if (scoreA > scoreB) winner = 'Mia';
+  else if (scoreB > scoreA) winner = 'Alex';
+
+  const penalties = [
+    "Loser must make breakfast in bed and serve it wearing a makeshift chef's hat on Day 1 of reunion.",
+    "Loser must record a 30-second dramatic Shakespearean monologue declaring the winner's brilliance.",
+    "Loser must let the winner pick the movie tonight with ZERO veto power allowed.",
+    "Loser owes the winner a 15-minute shoulder massage while listening to the winner's favorite album.",
+  ];
+
+  const penalty = penalties[Math.floor(Math.random() * penalties.length)];
+
+  const analysis = winner === 'Mia'
+    ? `Mia clinched victory through ruthless emotional conviction and superior rhetorical flair. Alex made a valiant effort, but folded under the weight of Mia's undeniable couple authority.`
+    : winner === 'Alex'
+    ? `Alex carried the round with calm, calculated logic and devastating counter-points. Mia's passionate defense was admirable, but Alex's argument was bulletproof.`
+    : `A spectacular ideological deadlock! Both argued with such unhinged chemistry that neither deserved to lose.`;
+
+  return {
+    winner,
+    scoreA,
+    scoreB,
+    analysis,
+    penalty,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// 🗺️ CUPIDOT AI DATE ARCHITECT — Bucket List Ideation
+// ---------------------------------------------------------------------------
+
+export interface GeneratedBucketIdea {
+  title: string;
+  category: 'Virtual' | 'Reunion' | 'Adventure' | 'Food';
+  icon: string;
+  whyCupidotLovesIt: string;
+}
+
+export function generateBucketDate(existingTitles: string[] = []): GeneratedBucketIdea {
+  const pool: GeneratedBucketIdea[] = [
+    {
+      title: 'Midnight 24-Hour Convenience Store Feast in Tokyo/Seoul',
+      category: 'Food',
+      icon: '🍙',
+      whyCupidotLovesIt: 'Pure romantic chaos: holding hands in fluorescent aisles trying every weird snack at 2:30 AM.',
+    },
+    {
+      title: 'Synchronized Candlelit FaceTime Steak Dinner Across Timezones',
+      category: 'Virtual',
+      icon: '🕯️',
+      whyCupidotLovesIt: 'Dressing up in formal attire in your own bedroom just to eat with the person on your screen.',
+    },
+    {
+      title: 'Sunrise Blanket Hug on a Misty Mountain Overlook',
+      category: 'Adventure',
+      icon: '🌄',
+      whyCupidotLovesIt: 'Waking up before dawn wrapped in a shared quilt watching the world wake up together.',
+    },
+    {
+      title: 'Secret Code Thrift-Store Outfit Swap Challenge',
+      category: 'Reunion',
+      icon: '🧥',
+      whyCupidotLovesIt: 'You have 15 minutes and $25 to assemble an outfit for the other person that they MUST wear to dinner.',
+    },
+    {
+      title: 'Audio-Only Stargazing Call with Zero Video',
+      category: 'Virtual',
+      icon: '✨',
+      whyCupidotLovesIt: 'No cameras, no self-consciousness, just staring at the same stars listening to each other breathe.',
+    },
+    {
+      title: 'Unannounced Airport Gate Surprise Hug of a Lifetime',
+      category: 'Reunion',
+      icon: '✈️',
+      whyCupidotLovesIt: 'The ultimate bucket list milestone: that first second where distance is reduced to zero.',
+    },
+  ];
+
+  const filtered = pool.filter((p) => !existingTitles.some((t) => t.toLowerCase().includes(p.title.toLowerCase().slice(0, 15))));
+  return filtered.length > 0 ? filtered[Math.floor(Math.random() * filtered.length)] : pool[0];
+}
+
+// ---------------------------------------------------------------------------
+// 📸 CUPIDOT PHOTOBOOTH POSE COACH & CAPTIONER
+// ---------------------------------------------------------------------------
+
+export interface PoseIdea {
+  title: string;
+  instructions: string;
+  vibe: string;
+  emoji: string;
+}
+
+export const PHOTOBOOTH_POSES: PoseIdea[] = [
+  {
+    title: 'The Steamed Dumpling Cheek Squish',
+    instructions: 'Both press your cheeks together into the camera lens with exaggerated cute pouts!',
+    vibe: 'Maximum Cuteness',
+    emoji: '🥟',
+  },
+  {
+    title: 'The Finger Gun & Drama Queen Shock',
+    instructions: 'One makes finger guns at the camera, the other acts like they just got shot in the heart!',
+    vibe: 'Playful Chaos',
+    emoji: '🔫',
+  },
+  {
+    title: 'The Mirrored Cheek Heart',
+    instructions: 'Each person makes half a heart on their cheek pointing toward the other screen.',
+    vibe: 'Korean Life4Cuts Classic',
+    emoji: '🫶',
+  },
+  {
+    title: 'The Secret Agent Back-to-Back',
+    instructions: 'Turn away from each other, look over your shoulders with serious spy expressions.',
+    vibe: '007 Rom-Com',
+    emoji: '🕶️',
+  },
+  {
+    title: 'The Forehead Boop & Giggle',
+    instructions: 'Lean in as close to the camera as possible with closed eyes and uncontrollable smiles.',
+    vibe: 'Pure Romantic Vulnerability',
+    emoji: '💖',
+  },
+];
+
+export function getCupidotPoseIdea(): PoseIdea {
+  return PHOTOBOOTH_POSES[Math.floor(Math.random() * PHOTOBOOTH_POSES.length)];
+}
+
+export function generateCupidotCaption(nameA = 'Mia', nameB = 'Alex'): string {
+  const captions = [
+    `11,420 km apart, but our chemistry still broke the camera lens ✨`,
+    `Proof that distance is just geography, not a match for us 📸💘`,
+    `Two screens, one shared heartbeat. Forever & always.`,
+    `Counting down every sunrise until these photos are in the same frame.`,
+    `In a world of 8 billion people, I'd still wait across timezones for you.`,
+  ];
+  return captions[Math.floor(Math.random() * captions.length)];
+}

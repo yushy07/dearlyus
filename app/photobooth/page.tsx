@@ -16,6 +16,7 @@ import { Confetti } from '@/components/shared/Confetti';
 import { Ribbon } from '@/components/shared/Ribbon';
 import { TiltedCard, ShinyText } from '@/components/ui';
 import { RoomInviteModal } from '@/components/shared/RoomInviteModal';
+import { getCupidotPoseIdea, generateCupidotCaption, PoseIdea } from '@/lib/cupidot';
 
 export interface PlacedSticker {
   id: string;
@@ -120,6 +121,7 @@ export default function PhotoboothPage() {
   const [isDrawingMode, setIsDrawingMode] = useState(false);
   const [neonPenColor, setNeonPenColor] = useState('#FF7BA3');
   const [isVintageCamMode, setIsVintageCamMode] = useState(false);
+  const [cupidotPose, setCupidotPose] = useState<PoseIdea | null>(null);
 
   // Motion strip looping interval
   useEffect(() => {
@@ -732,10 +734,65 @@ export default function PhotoboothPage() {
               {/* Camera Screen Stage */}
               <div className="booth-cam-stage">
                 {/* Pose Prompt Top Banner */}
-                <div className="pose-prompt-card">
-                  <span>{POSE_PROMPTS[currentShotIdx % POSE_PROMPTS.length].icon}</span>
-                  <span>{POSE_PROMPTS[currentShotIdx % POSE_PROMPTS.length].text}</span>
+                <div className="pose-prompt-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>{POSE_PROMPTS[currentShotIdx % POSE_PROMPTS.length].icon}</span>
+                    <span>{POSE_PROMPTS[currentShotIdx % POSE_PROMPTS.length].text}</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      sounds.playPop();
+                      setCupidotPose(getCupidotPoseIdea());
+                    }}
+                    className="btn"
+                    style={{
+                      padding: '3px 8px',
+                      fontSize: '11px',
+                      background: 'rgba(255, 77, 128, 0.15)',
+                      color: '#FF4D80',
+                      border: '1px solid rgba(255, 77, 128, 0.3)',
+                      borderRadius: '999px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    ʚ🤖💘ɞ Pose Coach
+                  </button>
                 </div>
+
+                {cupidotPose && (
+                  <div
+                    style={{
+                      margin: '6px 0 10px',
+                      padding: '10px 14px',
+                      borderRadius: '12px',
+                      background: 'linear-gradient(135deg, #FFF0F5 0%, #FFFFFF 100%)',
+                      border: '1.5px solid rgba(255, 77, 128, 0.35)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      boxShadow: '0 4px 12px rgba(255, 77, 128, 0.12)',
+                      animation: 'gl-rise 0.25s ease',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '22px' }}>{cupidotPose.emoji}</span>
+                      <div>
+                        <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 800, color: '#FF4D80', textTransform: 'uppercase' }}>
+                          CUPIDOT POSE: {cupidotPose.title}
+                        </div>
+                        <div style={{ fontSize: '12.5px', color: '#17181C', fontWeight: 600 }}>
+                          {cupidotPose.instructions}
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setCupidotPose(null)}
+                      style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '14px', color: 'var(--ink-soft)' }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
 
                 {feedMode === 'webcam' ? (
                   <div className="booth-duo-view solo">
@@ -913,6 +970,25 @@ export default function PhotoboothPage() {
                     className="real-strip-name"
                     style={{ width: '100%', textAlign: 'center', border: 'none', background: 'transparent', outline: 'none' }}
                   />
+                  <button
+                    onClick={() => {
+                      sounds.playPop();
+                      setCoupleName(generateCupidotCaption(nickname, partnerName));
+                    }}
+                    style={{
+                      border: 'none',
+                      background: 'transparent',
+                      cursor: 'pointer',
+                      fontSize: '10px',
+                      fontFamily: 'var(--font-mono)',
+                      color: 'var(--pink)',
+                      fontWeight: 800,
+                      marginTop: '4px',
+                    }}
+                    title="Click for Cupidot AI Keepsake Caption"
+                  >
+                    ✨ Cupidot AI Caption
+                  </button>
                   <div className="real-strip-serial">
                     ANGIE · <b>{roomCode}</b>
                   </div>
