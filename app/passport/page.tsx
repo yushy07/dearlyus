@@ -3,14 +3,17 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Footer } from '@/components/shared/Footer';
-import { PASSPORT_STAMPS, PassportStamp, getUnlockedStamps, unlockPassportStamp } from '@/lib/passport';
+import { PASSPORT_STAMPS, PassportStamp, getUnlockedStamps, unlockPassportStamp, getStampNotes, saveStampNote } from '@/lib/passport';
 import { sounds } from '@/lib/sound';
-import { ShinyText, ScrollReveal } from '@/components/ui';
+import { ScrollReveal } from '@/components/ui';
 
 export default function PassportPage() {
   const [unlockedIds, setUnlockedIds] = useState<string[]>([]);
+  const [stampNotes, setStampNotes] = useState<Record<string, string>>({});
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [selectedStamp, setSelectedStamp] = useState<PassportStamp | null>(null);
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [tempNoteText, setTempNoteText] = useState<string>('');
   const [animatingStampId, setAnimatingStampId] = useState<string | null>(null);
   const [coupleNames, setCoupleNames] = useState({ partner1: 'Mia', partner2: 'Alex' });
   const [roomCode, setRoomCode] = useState('KX7RM');
@@ -18,6 +21,7 @@ export default function PassportPage() {
 
   useEffect(() => {
     setUnlockedIds(getUnlockedStamps());
+    setStampNotes(getStampNotes());
 
     if (typeof window !== 'undefined') {
       try {
@@ -32,17 +36,24 @@ export default function PassportPage() {
 
   const handleStampClick = (stamp: PassportStamp, isUnlocked: boolean) => {
     sounds.playStampThud();
+    setAnimatingStampId(stamp.id);
+    setTimeout(() => setAnimatingStampId(null), 600);
+
     if (isUnlocked) {
-      setAnimatingStampId(stamp.id);
-      setTimeout(() => setAnimatingStampId(null), 600);
       setSelectedStamp(stamp);
+      setTempNoteText(stampNotes[stamp.id] || stamp.defaultMemory);
     } else {
-      // Prompt quick unlock demonstration
       unlockPassportStamp(stamp.id);
       setUnlockedIds(getUnlockedStamps());
-      setAnimatingStampId(stamp.id);
-      setTimeout(() => setAnimatingStampId(null), 600);
+      sounds.playSparkleReaction('💖');
     }
+  };
+
+  const handleSaveNote = (stampId: string) => {
+    sounds.playPop();
+    saveStampNote(stampId, tempNoteText);
+    setStampNotes((prev) => ({ ...prev, [stampId]: tempNoteText }));
+    setEditingNoteId(null);
   };
 
   const categories = ['All', 'Photobooth', 'Games & Duels', 'Keepsakes', 'Milestones'];
@@ -57,12 +68,14 @@ export default function PassportPage() {
 
   const rankTier =
     unlockedCount >= 10
-      ? '👑 Legendary Soulmate Explorers'
+      ? '👑 Level 5: Eternal Soulmates 💖'
       : unlockedCount >= 6
-      ? '✈️ Global Date Masters'
-      : unlockedCount >= 3
-      ? '🌸 Adventurous Duo'
-      : '🌱 Date Night Novices';
+      ? '✈️ Level 4: Global Date Masters 🌍'
+      : unlockedCount >= 4
+      ? '🌸 Level 3: Sweetheart Duo 💌'
+      : unlockedCount >= 2
+      ? '✨ Level 2: Cozy Date Explorers ☕'
+      : '🌱 Level 1: First Date Dreamers';
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--paper)', display: 'flex', flexDirection: 'column' }}>
@@ -70,7 +83,7 @@ export default function PassportPage() {
       <header
         style={{
           borderBottom: '1px solid var(--line)',
-          background: 'rgba(255, 255, 255, 0.85)',
+          background: 'rgba(255, 255, 255, 0.88)',
           backdropFilter: 'blur(16px)',
           position: 'sticky',
           top: 0,
@@ -108,7 +121,7 @@ export default function PassportPage() {
                 padding: '6px 12px',
               }}
             >
-              All Activities ▷
+              Browse 35 Dates ▷
             </Link>
             <Link
               href="/photobooth"
@@ -139,30 +152,98 @@ export default function PassportPage() {
                   alignItems: 'center',
                   gap: '6px',
                   background: 'var(--pink-tint)',
-                  border: '1px solid rgba(255, 123, 163, 0.4)',
-                  padding: '4px 14px',
+                  border: '1px solid rgba(255, 123, 163, 0.45)',
+                  padding: '5px 16px',
                   borderRadius: '20px',
                   fontSize: '11.5px',
                   fontFamily: 'var(--font-mono)',
                   color: 'var(--pink)',
-                  fontWeight: 700,
+                  fontWeight: 800,
+                  boxShadow: '0 2px 10px rgba(255, 123, 163, 0.2)',
                 }}
               >
-                <span>💮</span>
-                <span>대한민국 · OFFICIAL COUPLE SOUVENIR PASSPORT</span>
+                <span>🌸</span>
+                <span>대한민국 · OFFICIAL SOUVENIR LOVE PASSPORT</span>
               </div>
-              <h1 style={{ fontSize: 'clamp(28px, 4vw, 42px)', fontWeight: 900, letterSpacing: '-0.5px' }}>
-                Couple Date Passport &amp; Stamps
+              <h1 style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 900, letterSpacing: '-0.5px' }}>
+                Couple Date Passport &amp; Love Stamps
               </h1>
-              <p style={{ color: 'var(--ink-soft)', fontSize: '16px', maxWidth: '560px', lineHeight: 1.6 }}>
-                Collect authentic Korean rubber ink stamps for every date you complete across timezones. Tap any stamp to stamp your book!
+              <p style={{ color: 'var(--ink-soft)', fontSize: '16px', maxWidth: '580px', lineHeight: 1.6 }}>
+                Every date night leaves a permanent stamp in your story. Collect authentic Korean ink seals and preserve your sweetest date memories across miles! 💌
               </p>
             </div>
           </ScrollReveal>
 
-          {/* Passport Booklet Card */}
+          {/* Romantic First Class Boarding Pass Ticket Stub */}
           <ScrollReveal animation="fade-up">
-            <div className="passport-leather-cover" style={{ padding: '32px 28px', color: '#FFFFFF' }}>
+            <div className="passport-boarding-pass" style={{ padding: '24px 28px', color: 'var(--ink)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', borderBottom: '1px dashed var(--line)', paddingBottom: '16px', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '20px' }}>✈️</span>
+                  <div>
+                    <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--pink)', fontWeight: 800, letterSpacing: '1px' }}>
+                      ANGIE LOVE AIRLINES · FIRST CLASS TICKET
+                    </div>
+                    <div style={{ fontSize: '18px', fontWeight: 900 }}>
+                      Flight to Each Other’s Arms
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '20px', alignItems: 'center', fontFamily: 'var(--font-mono)' }}>
+                  <div>
+                    <div style={{ fontSize: '9px', color: 'var(--ink-soft)', textTransform: 'uppercase' }}>Passenger</div>
+                    <div style={{ fontSize: '13px', fontWeight: 800 }}>{coupleNames.partner1} &amp; {coupleNames.partner2}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '9px', color: 'var(--ink-soft)', textTransform: 'uppercase' }}>Seat</div>
+                    <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--pink)' }}>1A (Beside You)</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '9px', color: 'var(--ink-soft)', textTransform: 'uppercase' }}>Room</div>
+                    <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--blue)' }}>{roomCode}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Route Departure / Arrival Hub */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ textAlign: 'left' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}>ORIGIN</div>
+                    <div style={{ fontSize: '16px', fontWeight: 900 }}>Where You Are 🌍</div>
+                  </div>
+                  <div style={{ fontSize: '20px', color: 'var(--pink)', padding: '0 8px' }}>✈️ ➔ 💖</div>
+                  <div style={{ textAlign: 'left' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}>DESTINATION</div>
+                    <div style={{ fontSize: '16px', fontWeight: 900 }}>Reunion Date Night ✨</div>
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    background: 'var(--paper)',
+                    border: '1px dashed var(--line)',
+                    borderRadius: '10px',
+                    padding: '6px 14px',
+                    fontSize: '11px',
+                    fontFamily: 'var(--font-mono)',
+                    color: 'var(--ink-soft)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  <span>💮 STATUS:</span>
+                  <b style={{ color: '#059669' }}>LIFETIME BOARDING PASS VALID</b>
+                </div>
+              </div>
+            </div>
+          </ScrollReveal>
+
+          {/* Romantic Velvet & Gold Passport Booklet Cover */}
+          <ScrollReveal animation="fade-up">
+            <div className="passport-blush-cover" style={{ padding: '36px 30px', color: '#FFFFFF' }}>
               {/* Gold Crest & Passport Title */}
               <div
                 style={{
@@ -172,68 +253,78 @@ export default function PassportPage() {
                   flexWrap: 'wrap',
                   gap: '20px',
                   paddingBottom: '24px',
-                  borderBottom: '1px solid rgba(212, 175, 55, 0.3)',
+                  borderBottom: '1px solid rgba(253, 230, 138, 0.3)',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
                   <div
                     style={{
-                      width: '56px',
-                      height: '56px',
+                      width: '64px',
+                      height: '64px',
                       borderRadius: '50%',
-                      background: 'radial-gradient(circle, rgba(253, 230, 138, 0.3) 0%, rgba(212, 175, 55, 0.1) 100%)',
-                      border: '2px solid #D4AF37',
+                      background: 'radial-gradient(circle, rgba(253, 230, 138, 0.35) 0%, rgba(212, 175, 55, 0.1) 100%)',
+                      border: '2px solid #FDE68A',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      fontSize: '26px',
-                      boxShadow: '0 0 20px rgba(212, 175, 55, 0.3)',
+                      fontSize: '30px',
+                      boxShadow: '0 0 25px rgba(253, 230, 138, 0.4)',
                     }}
                   >
                     🌸
                   </div>
                   <div>
-                    <div className="passport-gold-text" style={{ fontSize: '13px', fontFamily: 'var(--font-mono)', letterSpacing: '2px', fontWeight: 800 }}>
-                      ANGIE REPUBLIC OF LOVE
+                    <div className="passport-gold-text" style={{ fontSize: '13px', fontFamily: 'var(--font-mono)', letterSpacing: '2.5px', fontWeight: 800 }}>
+                      대한민국 연인 여권 · REPUBLIC OF LOVE
                     </div>
-                    <div style={{ fontSize: '22px', fontWeight: 900, letterSpacing: '-0.2px' }}>
+                    <div style={{ fontSize: '24px', fontWeight: 900, letterSpacing: '-0.2px', marginTop: '2px' }}>
                       {coupleNames.partner1} &amp; {coupleNames.partner2}
                     </div>
                   </div>
                 </div>
 
-                {/* Passport Serial & Room Code */}
+                {/* Passport Serial & Rank Badge */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-                  <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'rgba(255, 255, 255, 0.6)' }}>
-                    PASSPORT NO.
+                  <div style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'rgba(255, 255, 255, 0.65)' }}>
+                    PASSPORT ID
                   </div>
-                  <div style={{ fontSize: '16px', fontFamily: 'var(--font-mono)', fontWeight: 800, color: '#FDE68A', letterSpacing: '1px' }}>
+                  <div style={{ fontSize: '17px', fontFamily: 'var(--font-mono)', fontWeight: 800, color: '#FDE68A', letterSpacing: '1.5px' }}>
                     ANG-{roomCode}-2026
                   </div>
-                  <div style={{ fontSize: '11px', color: '#4ADE80', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span>●</span>
-                    <span>{rankTier}</span>
+                  <div
+                    style={{
+                      fontSize: '11.5px',
+                      background: 'rgba(255, 255, 255, 0.12)',
+                      padding: '3px 10px',
+                      borderRadius: '12px',
+                      color: '#FDE68A',
+                      fontWeight: 700,
+                      marginTop: '2px',
+                    }}
+                  >
+                    {rankTier}
                   </div>
                 </div>
               </div>
 
               {/* Passport Progress Bar */}
-              <div style={{ marginTop: '20px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.5px', marginBottom: '8px' }}>
-                  <span style={{ color: 'rgba(255,255,255,0.8)' }}>
-                    Souvenir Stamp Progress ({unlockedCount}/{totalCount} Completed)
+              <div style={{ marginTop: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '8px' }}>
+                  <span style={{ color: 'rgba(255,255,255,0.85)' }}>
+                    Souvenir Date Stamps Unlocked ({unlockedCount}/{totalCount} Completed)
                   </span>
-                  <span style={{ color: '#FDE68A', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
+                  <span style={{ color: '#FDE68A', fontWeight: 800, fontFamily: 'var(--font-mono)' }}>
                     {progressPercent}% Complete
                   </span>
                 </div>
-                <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+                <div style={{ width: '100%', height: '10px', background: 'rgba(255,255,255,0.12)', borderRadius: '6px', overflow: 'hidden' }}>
                   <div
                     style={{
                       height: '100%',
                       width: `${progressPercent}%`,
                       background: 'linear-gradient(90deg, #FF7BA3, #FFA07A, #FDE68A)',
-                      borderRadius: '4px',
+                      borderRadius: '6px',
+                      boxShadow: '0 0 12px rgba(255, 123, 163, 0.6)',
                       transition: 'width 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
                     }}
                   />
@@ -252,10 +343,10 @@ export default function PassportPage() {
                   setActiveCategory(cat);
                 }}
                 style={{
-                  padding: '8px 16px',
+                  padding: '8px 18px',
                   borderRadius: '20px',
                   border: activeCategory === cat ? '1px solid var(--pink)' : '1px solid var(--line)',
-                  background: activeCategory === cat ? 'var(--pink)' : '#FFFFFF',
+                  background: activeCategory === cat ? 'linear-gradient(135deg, var(--pink), #FF9E64)' : '#FFFFFF',
                   color: activeCategory === cat ? '#FFFFFF' : 'var(--ink)',
                   fontSize: '13px',
                   fontWeight: 700,
@@ -269,17 +360,18 @@ export default function PassportPage() {
             ))}
           </div>
 
-          {/* Stamps Grid (12 Collectibles) */}
+          {/* Stamps Grid with Washi Tape & Memory Notes */}
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-              gap: '20px',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))',
+              gap: '24px',
             }}
           >
             {filteredStamps.map((stamp) => {
               const isUnlocked = unlockedIds.includes(stamp.id);
               const isAnimating = animatingStampId === stamp.id;
+              const userNote = stampNotes[stamp.id] || stamp.defaultMemory;
 
               return (
                 <div
@@ -287,17 +379,20 @@ export default function PassportPage() {
                   className={`passport-page-cream passport-stamp-badge ${isAnimating ? 'stamp-ink-effect' : ''}`}
                   onClick={() => handleStampClick(stamp, isUnlocked)}
                   style={{
-                    padding: '24px 20px',
+                    padding: '28px 22px 20px',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
-                    minHeight: '210px',
-                    position: 'relative',
-                    cursor: 'pointer',
+                    minHeight: '260px',
+                    background: stamp.pastelBg,
+                    border: isUnlocked ? `1.5px solid ${stamp.inkColor}33` : '1.5px dashed var(--line)',
                   }}
                 >
+                  {/* Cute Washi Tape Graphic */}
+                  <div className="passport-washi-tape" style={{ background: `${stamp.inkColor}25` }} />
+
                   {/* Top Category Badge */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                     <span
                       style={{
                         fontSize: '10.5px',
@@ -305,24 +400,25 @@ export default function PassportPage() {
                         textTransform: 'uppercase',
                         color: 'var(--ink-soft)',
                         fontWeight: 700,
-                        letterSpacing: '0.5px',
                       }}
                     >
                       {stamp.category}
                     </span>
+
                     {isUnlocked ? (
                       <span
                         style={{
                           fontSize: '10px',
-                          background: 'rgba(16, 185, 129, 0.1)',
-                          border: '1px solid rgba(16, 185, 129, 0.3)',
-                          color: '#059669',
+                          background: `${stamp.inkColor}15`,
+                          border: `1px solid ${stamp.inkColor}44`,
+                          color: stamp.inkColor,
                           padding: '2px 8px',
                           borderRadius: '10px',
                           fontWeight: 800,
+                          fontFamily: 'var(--font-mono)',
                         }}
                       >
-                        ✓ STAMPED
+                        ✓ STAMPED ON DATE
                       </span>
                     ) : (
                       <span
@@ -335,36 +431,37 @@ export default function PassportPage() {
                           fontWeight: 700,
                         }}
                       >
-                        🔒 TAP TO UNLOCK
+                        🔒 TAP TO STAMP
                       </span>
                     )}
                   </div>
 
-                  {/* Stamp Center: Stamp Ink Seal Emblem */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', margin: '14px 0' }}>
+                  {/* Stamp Center Emblem */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', margin: '8px 0' }}>
                     <div
                       style={{
-                        width: '64px',
-                        height: '64px',
-                        borderRadius: stamp.sealShape === 'circle' ? '50%' : stamp.sealShape === 'square' ? '12px' : '16px',
-                        border: isUnlocked ? `3px dashed ${stamp.inkColor}` : '2px dashed #CBD5E1',
-                        background: isUnlocked ? `${stamp.inkColor}12` : 'rgba(0,0,0,0.02)',
+                        width: '70px',
+                        height: '70px',
+                        borderRadius: stamp.sealShape === 'circle' || stamp.sealShape === 'heart' ? '50%' : '16px',
+                        border: isUnlocked ? `3.5px dashed ${stamp.inkColor}` : '2px dashed #CBD5E1',
+                        background: isUnlocked ? '#FFFFFF' : 'rgba(0,0,0,0.02)',
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'center',
                         flexShrink: 0,
-                        transform: isUnlocked ? 'rotate(-6deg)' : 'none',
-                        transition: 'transform 0.2s ease',
+                        transform: isUnlocked ? `rotate(${stamp.stampAngle}deg)` : 'none',
+                        boxShadow: isUnlocked ? `0 4px 16px ${stamp.inkColor}22` : 'none',
+                        transition: 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
                       }}
                     >
-                      <span style={{ fontSize: '24px', opacity: isUnlocked ? 1 : 0.4 }}>
+                      <span style={{ fontSize: '26px', opacity: isUnlocked ? 1 : 0.4 }}>
                         {stamp.icon}
                       </span>
                       {isUnlocked && (
                         <span
                           style={{
-                            fontSize: '8px',
+                            fontSize: '7.5px',
                             fontWeight: 900,
                             color: stamp.inkColor,
                             fontFamily: 'var(--font-mono)',
@@ -389,41 +486,64 @@ export default function PassportPage() {
                       </div>
                       <div
                         style={{
-                          fontSize: '12px',
+                          fontSize: '11.5px',
                           fontFamily: 'var(--font-mono)',
                           color: isUnlocked ? stamp.inkColor : 'var(--ink-soft)',
                           fontWeight: 700,
-                          opacity: 0.8,
+                          opacity: 0.85,
                           marginBottom: '4px',
                         }}
                       >
                         {stamp.koreanTitle}
                       </div>
-                      <div style={{ fontSize: '12.5px', color: 'var(--ink-soft)', lineHeight: 1.4 }}>
+                      <div style={{ fontSize: '12px', color: 'var(--ink-soft)', lineHeight: 1.4 }}>
                         {stamp.description}
                       </div>
                     </div>
                   </div>
 
-                  {/* Bottom Action Link */}
+                  {/* Romantic Couple Memory Sticky Snippet */}
+                  {isUnlocked && (
+                    <div
+                      style={{
+                        background: '#FFFFFF',
+                        border: '1px solid rgba(0,0,0,0.06)',
+                        borderRadius: '10px',
+                        padding: '8px 10px',
+                        fontSize: '11.5px',
+                        color: 'var(--ink)',
+                        fontStyle: 'italic',
+                        lineHeight: 1.4,
+                        margin: '6px 0 10px',
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '6px',
+                      }}
+                    >
+                      <span>💬</span>
+                      <span>{userNote}</span>
+                    </div>
+                  )}
+
+                  {/* Bottom Action Bar */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '10px', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
                     <span style={{ fontSize: '11px', color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}>
-                      {isUnlocked ? '💮 Verified in Room' : '▷ Unplayed Date'}
+                      {isUnlocked ? '💮 Tap to view memory' : '▷ Unplayed Date'}
                     </span>
                     <Link
                       href={stamp.route}
                       onClick={(e) => e.stopPropagation()}
                       style={{
-                        fontSize: '11.5px',
-                        fontWeight: 700,
-                        color: 'var(--pink)',
+                        fontSize: '12px',
+                        fontWeight: 800,
+                        color: stamp.inkColor,
                         textDecoration: 'none',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '4px',
                       }}
                     >
-                      <span>Play Now</span>
+                      <span>Start Date</span>
                       <span>→</span>
                     </Link>
                   </div>
@@ -432,27 +552,27 @@ export default function PassportPage() {
             })}
           </div>
 
-          {/* Quick Share / Export Banner */}
+          {/* Quick Share Banner */}
           <div
             style={{
               background: '#FFFFFF',
               border: '1px solid var(--line)',
-              borderRadius: '20px',
-              padding: '24px 28px',
+              borderRadius: '24px',
+              padding: '28px',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
               flexWrap: 'wrap',
               gap: '16px',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
+              boxShadow: '0 8px 30px rgba(0,0,0,0.03)',
             }}
           >
             <div>
-              <div style={{ fontSize: '16px', fontWeight: 800, marginBottom: '4px' }}>
-                Share Your Couple Passport 💌
+              <div style={{ fontSize: '18px', fontWeight: 900, marginBottom: '4px' }}>
+                Share Your Couple Passport with Partner 💌
               </div>
-              <p style={{ fontSize: '13.5px', color: 'var(--ink-soft)' }}>
-                Send your date collection strip to your partner or friends to show your milestone progress.
+              <p style={{ fontSize: '14px', color: 'var(--ink-soft)' }}>
+                Send your date collection strip to your partner so you both celebrate every milestone together.
               </p>
             </div>
 
@@ -468,28 +588,28 @@ export default function PassportPage() {
                 }}
                 className="btn btn-grad"
                 style={{
-                  padding: '10px 20px',
-                  fontSize: '13px',
-                  fontWeight: 700,
-                  borderRadius: '20px',
+                  padding: '12px 24px',
+                  fontSize: '13.5px',
+                  fontWeight: 800,
+                  borderRadius: '24px',
                 }}
               >
-                {copiedLink ? '✓ Link Copied!' : 'Copy Passport Link 📋'}
+                {copiedLink ? '✓ Link Copied to Clipboard!' : 'Copy Passport Link 📋'}
               </button>
             </div>
           </div>
         </div>
       </main>
 
-      {/* Stamp Detail Modal */}
+      {/* Romantic Polaroid Stamp Memory Modal */}
       {selectedStamp && (
         <div
           style={{
             position: 'fixed',
             inset: 0,
             zIndex: 100,
-            background: 'rgba(23, 24, 28, 0.6)',
-            backdropFilter: 'blur(8px)',
+            background: 'rgba(23, 24, 28, 0.65)',
+            backdropFilter: 'blur(10px)',
             display: 'grid',
             placeItems: 'center',
             padding: '20px',
@@ -498,62 +618,135 @@ export default function PassportPage() {
         >
           <div
             style={{
-              width: 'min(440px, 100%)',
+              width: 'min(480px, 100%)',
               background: '#FCFBF7',
-              borderRadius: '20px',
-              padding: '32px 28px',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-              border: '2px solid rgba(212, 175, 55, 0.4)',
+              borderRadius: '24px',
+              padding: '36px 30px',
+              boxShadow: '0 24px 60px rgba(0,0,0,0.3)',
+              border: '2px solid rgba(253, 230, 138, 0.5)',
               position: 'relative',
               textAlign: 'center',
             }}
             onClick={(e) => e.stopPropagation()}
           >
+            {/* Washi Tape Header */}
+            <div className="passport-washi-tape" style={{ background: `${selectedStamp.inkColor}30`, top: '-9px' }} />
+
             {/* Ink Stamp Seal */}
             <div
               style={{
-                width: '88px',
-                height: '88px',
-                borderRadius: selectedStamp.sealShape === 'circle' ? '50%' : '20px',
+                width: '90px',
+                height: '90px',
+                borderRadius: '50%',
                 border: `4px dashed ${selectedStamp.inkColor}`,
                 background: `${selectedStamp.inkColor}15`,
-                margin: '0 auto 18px',
+                margin: '0 auto 16px',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                transform: 'rotate(-4deg)',
+                transform: `rotate(${selectedStamp.stampAngle}deg)`,
+                boxShadow: `0 8px 24px ${selectedStamp.inkColor}30`,
               }}
             >
-              <span style={{ fontSize: '36px' }}>{selectedStamp.icon}</span>
+              <span style={{ fontSize: '38px' }}>{selectedStamp.icon}</span>
             </div>
 
             <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: selectedStamp.inkColor, fontWeight: 800, letterSpacing: '1px' }}>
-              OFFICIAL DATE CERTIFICATE
+              OFFICIAL DATE MEMORY CERTIFICATE
             </div>
-            <h3 style={{ fontSize: '22px', fontWeight: 900, color: 'var(--ink)', margin: '4px 0 2px' }}>
+            <h3 style={{ fontSize: '24px', fontWeight: 900, color: 'var(--ink)', margin: '4px 0 2px' }}>
               {selectedStamp.title}
             </h3>
-            <div style={{ fontSize: '13px', fontFamily: 'var(--font-mono)', color: 'var(--ink-soft)', marginBottom: '14px' }}>
+            <div style={{ fontSize: '13px', fontFamily: 'var(--font-mono)', color: 'var(--ink-soft)', marginBottom: '12px' }}>
               {selectedStamp.koreanTitle}
             </div>
 
-            <p style={{ fontSize: '14.5px', color: 'var(--ink-soft)', lineHeight: 1.6, marginBottom: '22px' }}>
-              {selectedStamp.description}
-            </p>
+            <div
+              style={{
+                fontSize: '13px',
+                color: 'var(--ink)',
+                fontStyle: 'italic',
+                background: '#FFFFFF',
+                border: '1px solid var(--line)',
+                borderRadius: '12px',
+                padding: '10px 14px',
+                marginBottom: '18px',
+              }}
+            >
+              {selectedStamp.sweetQuote}
+            </div>
+
+            {/* Couple Custom Memory Note Box */}
+            <div style={{ textAlign: 'left', marginBottom: '22px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                <span style={{ fontSize: '11.5px', fontWeight: 800, color: 'var(--ink)', textTransform: 'uppercase' }}>
+                  💌 Your Couple Memory Note:
+                </span>
+                {editingNoteId !== selectedStamp.id && (
+                  <button
+                    onClick={() => setEditingNoteId(selectedStamp.id)}
+                    style={{ background: 'none', border: 'none', color: 'var(--pink)', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
+                  >
+                    ✎ Edit Note
+                  </button>
+                )}
+              </div>
+
+              {editingNoteId === selectedStamp.id ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <textarea
+                    value={tempNoteText}
+                    onChange={(e) => setTempNoteText(e.target.value)}
+                    rows={3}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      borderRadius: '10px',
+                      border: '1.5px solid var(--pink)',
+                      fontFamily: 'inherit',
+                      fontSize: '13px',
+                      resize: 'none',
+                    }}
+                    placeholder="Write a sweet memory from this date..."
+                  />
+                  <button
+                    onClick={() => handleSaveNote(selectedStamp.id)}
+                    className="btn btn-grad"
+                    style={{ padding: '8px', borderRadius: '8px', fontSize: '12px', fontWeight: 700 }}
+                  >
+                    Save Memory Note 💖
+                  </button>
+                </div>
+              ) : (
+                <div
+                  style={{
+                    background: '#FFFFFF',
+                    border: '1px solid rgba(0,0,0,0.08)',
+                    borderRadius: '12px',
+                    padding: '12px 14px',
+                    fontSize: '13px',
+                    color: 'var(--ink-soft)',
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {stampNotes[selectedStamp.id] || selectedStamp.defaultMemory}
+                </div>
+              )}
+            </div>
 
             <div style={{ display: 'flex', gap: '10px' }}>
               <Link
                 href={selectedStamp.route}
                 className="btn btn-grad"
-                style={{ flex: 1, padding: '10px', fontSize: '13px', borderRadius: '12px', fontWeight: 700 }}
+                style={{ flex: 1, padding: '12px', fontSize: '13px', borderRadius: '12px', fontWeight: 800 }}
               >
-                Replay Activity ▷
+                Replay Date Activity ▷
               </Link>
               <button
                 onClick={() => setSelectedStamp(null)}
                 style={{
-                  padding: '10px 18px',
+                  padding: '12px 20px',
                   borderRadius: '12px',
                   background: 'var(--paper)',
                   border: '1px solid var(--line)',

@@ -2663,30 +2663,71 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   }
 }
 
-/* ============ Korean Couple Date Passport & Rubber Stamps ============ */
-.passport-leather-cover {
-  background: linear-gradient(145deg, #0F172A 0%, #1E293B 50%, #0F172A 100%);
-  border: 2px solid rgba(212, 175, 55, 0.4);
-  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.2);
-  border-radius: 24px;
+/* ============ Korean Couple Date Passport & Romantic Stamps ============ */
+.passport-blush-cover {
+  background: linear-gradient(135deg, #1E1B4B 0%, #2E1065 40%, #1E1B4B 100%);
+  border: 2px solid rgba(253, 230, 138, 0.5);
+  box-shadow: 0 24px 60px rgba(46, 16, 101, 0.35), inset 0 1px 2px rgba(255, 255, 255, 0.25);
+  border-radius: 28px;
   position: relative;
   overflow: hidden;
 }
 
 .passport-gold-text {
-  background: linear-gradient(135deg, #FDE68A 0%, #D4AF37 50%, #B45309 100%);
+  background: linear-gradient(135deg, #FFFBEB 0%, #FDE68A 40%, #D4AF37 70%, #F59E0B 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  text-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+}
+
+.passport-boarding-pass {
+  background: #FFFFFF;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.passport-boarding-pass::before,
+.passport-boarding-pass::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 24px;
+  height: 24px;
+  background: var(--paper);
+  border-radius: 50%;
+  transform: translateY(-50%);
+  border: 1px solid var(--line);
+  z-index: 2;
+}
+
+.passport-boarding-pass::before { left: -12px; }
+.passport-boarding-pass::after { right: -12px; }
+
+.passport-washi-tape {
+  width: 70px;
+  height: 18px;
+  background: rgba(255, 123, 163, 0.3);
+  backdrop-filter: blur(4px);
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-2deg);
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  z-index: 3;
 }
 
 .passport-page-cream {
   background: #FCFBF7;
   background-image: radial-gradient(#E2E8F0 0.8px, transparent 0.8px);
   background-size: 16px 16px;
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  border-radius: 18px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  border-radius: 20px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.03);
+  position: relative;
 }
 
 .passport-stamp-badge {
@@ -2696,21 +2737,23 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 
 .passport-stamp-badge:hover {
-  transform: scale(1.04) translateY(-2px);
+  transform: scale(1.03) translateY(-3px);
+  box-shadow: 0 12px 30px rgba(255, 123, 163, 0.12);
+  border-color: rgba(255, 123, 163, 0.5);
 }
 
 .passport-stamp-badge:active {
-  transform: scale(0.96);
+  transform: scale(0.97);
 }
 
 @keyframes stamp-thud-press {
   0% {
     opacity: 0;
-    transform: scale(2.2) rotate(-15deg);
+    transform: scale(2.4) rotate(-18deg);
   }
-  65% {
+  60% {
     opacity: 1;
-    transform: scale(0.92) rotate(2deg);
+    transform: scale(0.92) rotate(3deg);
   }
   100% {
     opacity: 1;
@@ -2719,7 +2762,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 
 .stamp-ink-effect {
-  animation: stamp-thud-press 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  animation: stamp-thud-press 0.38s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
 
