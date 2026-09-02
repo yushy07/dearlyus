@@ -15,7 +15,7 @@ class SoundManager {
       }
     }
     if (this.ctx && this.ctx.state === 'suspended') {
-      this.ctx.resume();
+      this.ctx.resume().catch(() => {});
     }
     return this.ctx;
   }
@@ -282,7 +282,9 @@ class SoundManager {
 
   public stopRain() {
     if (this.ambientNodes['rain']) {
-      (this.ambientNodes['rain'].source as AudioScheduledSourceNode).stop();
+      try {
+        (this.ambientNodes['rain'].source as AudioScheduledSourceNode).stop();
+      } catch {}
       delete this.ambientNodes['rain'];
     }
   }
@@ -321,7 +323,9 @@ class SoundManager {
 
   public stopFireplace() {
     if (this.ambientNodes['fireplace']) {
-      (this.ambientNodes['fireplace'].source as AudioScheduledSourceNode).stop();
+      try {
+        (this.ambientNodes['fireplace'].source as AudioScheduledSourceNode).stop();
+      } catch {}
       delete this.ambientNodes['fireplace'];
     }
   }
@@ -359,7 +363,9 @@ class SoundManager {
 
   public stopVinyl() {
     if (this.ambientNodes['vinyl']) {
-      (this.ambientNodes['vinyl'].source as AudioScheduledSourceNode).stop();
+      try {
+        (this.ambientNodes['vinyl'].source as AudioScheduledSourceNode).stop();
+      } catch {}
       delete this.ambientNodes['vinyl'];
     }
   }

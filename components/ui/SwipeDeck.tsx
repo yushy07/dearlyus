@@ -41,6 +41,9 @@ export function SwipeDeck({
   const handlePointerUp = (e: React.PointerEvent) => {
     if (!isDragging) return;
     setIsDragging(false);
+    try {
+      (e.target as HTMLElement).releasePointerCapture?.(e.pointerId);
+    } catch {}
 
     if (offset.x > threshold) {
       // Swiped Right

@@ -2476,6 +2476,13 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   animation-delay: 0.5s;
 }
 
+@media (max-width: 820px) {
+  .navbar-quick-links {
+    display: none !important;
+  }
+}
+
+
 
 
 

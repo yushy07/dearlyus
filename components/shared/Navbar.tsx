@@ -20,7 +20,7 @@ export function Navbar({ roomCode, rightAction }: NavbarProps) {
           </Link>
 
           {/* Desktop Quick Nav */}
-          <nav style={{ display: 'flex', gap: '16px', alignItems: 'center', fontSize: '13.5px', fontWeight: 600 }}>
+          <nav className="navbar-quick-links" style={{ display: 'flex', gap: '16px', alignItems: 'center', fontSize: '13.5px', fontWeight: 600 }}>
             <Link href="/photobooth" style={{ color: 'var(--ink)' }}>
               📸 Photobooth
             </Link>

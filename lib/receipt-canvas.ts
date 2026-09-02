@@ -190,10 +190,13 @@ export function drawReceiptToCanvas(canvas: HTMLCanvasElement, data: DateReceipt
 }
 
 export function downloadReceiptPNG(data: DateReceiptData, filename?: string) {
+  if (typeof document === 'undefined') return;
   const canvas = document.createElement('canvas');
   drawReceiptToCanvas(canvas, data);
   const link = document.createElement('a');
-  link.download = filename || `angie-date-receipt-${data.roomCode}.png`;
+  link.download = filename || `angie-date-receipt-${data.roomCode || 'KX7RM'}.png`;
   link.href = canvas.toDataURL('image/png');
+  document.body.appendChild(link);
   link.click();
+  document.body.removeChild(link);
 }
