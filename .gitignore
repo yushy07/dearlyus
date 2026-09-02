@@ -21,6 +21,7 @@
 /outputs/
 /work/
 .site-package-stage/
+*.tsbuildinfo
 
 # Local Environment Variables
 .env
@@ -60,3 +61,13 @@ Thumbs.db
 .cache/
 .parcel-cache/
 .turbo/
+*.tmp
+*.temp
+
+# Ignore loose media placed in root (keeps public/audio clean)
+/*.mp3
+/*.wav
+/*.ogg
+/*.m4a
+/*.aac
+!/public/audio/
