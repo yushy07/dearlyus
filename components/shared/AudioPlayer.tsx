@@ -22,7 +22,8 @@ export function AudioPlayer() {
   const [activePreset, setActivePreset] = useState<'warm' | 'romantic' | 'tokyo' | null>(null);
   const [sleepTimer, setSleepTimerState] = useState<number | null>(null);
   const [sleepRemainingSec, setSleepRemainingSec] = useState<number>(0);
-  const [partnerSync, setPartnerSync] = useState(true);
+  const [partnerSync, setPartnerSync] = useState<boolean>(true);
+  const [candlelightMode, setCandlelightMode] = useState<boolean>(false);
 
   const [warmVol, setWarmVol] = useState(0.4);
   const [romanticVol, setRomanticVol] = useState(0.35);
@@ -508,6 +509,41 @@ export function AudioPlayer() {
               })}
             </div>
 
+            {/* Candlelight Night Mode Dimmer Toggle */}
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                paddingTop: '6px',
+                borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+                marginTop: '2px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10.5px', color: 'rgba(255,255,255,0.7)' }}>
+                <span>🕯️</span>
+                <span>Candlelight Night Dimmer</span>
+              </div>
+              <button
+                onClick={() => {
+                  sounds.playPop();
+                  setCandlelightMode(!candlelightMode);
+                }}
+                style={{
+                  background: candlelightMode ? 'rgba(245, 158, 11, 0.25)' : 'rgba(255, 255, 255, 0.08)',
+                  border: candlelightMode ? '1px solid #F59E0B' : '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '12px',
+                  padding: '2px 8px',
+                  color: candlelightMode ? '#FBBF24' : 'rgba(255,255,255,0.5)',
+                  fontSize: '9.5px',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                }}
+              >
+                {candlelightMode ? 'ON' : 'OFF'}
+              </button>
+            </div>
+
             {/* Partner Room Sync Toggle */}
             <div
               style={{
@@ -805,14 +841,18 @@ export function AudioPlayer() {
           )}
 
           {(isPlaying || isBgMusicActive) && (
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: '2px', height: '12px', marginLeft: '2px' }}>
-              <div className="radio-eq-bar" style={{ width: '2px', height: '6px' }} />
-              <div className="radio-eq-bar" style={{ width: '2px', height: '10px' }} />
-              <div className="radio-eq-bar" style={{ width: '2px', height: '8px' }} />
+            <div className="audio-eq-container" title="Audio streaming live">
+              <span className="audio-eq-bar" />
+              <span className="audio-eq-bar" />
+              <span className="audio-eq-bar" />
+              <span className="audio-eq-bar" />
             </div>
           )}
         </button>
       </div>
+
+      {/* Candlelight Night Mode Overlay */}
+      {candlelightMode && <div className="candlelight-dimmer-overlay" aria-hidden="true" />}
     </aside>
   );
 }

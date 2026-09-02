@@ -96,6 +96,68 @@ export default function ActivityPage() {
           </div>
         </ScrollReveal>
 
+        {/* Featured Date Passport Banner */}
+        <Link
+          href="/passport"
+          style={{
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '6px',
+            padding: '22px',
+            borderRadius: '16px',
+            background: 'linear-gradient(135deg, #1E1B4B 0%, #2E1065 60%, #1E1B4B 100%)',
+            border: '2px solid rgba(253, 230, 138, 0.45)',
+            boxShadow: '0 12px 30px rgba(46, 16, 101, 0.25)',
+            color: '#FFFFFF',
+            textDecoration: 'none',
+            overflow: 'hidden',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '18px' }}>🌸</span>
+            <span style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: '#FDE68A', fontWeight: 800, letterSpacing: '1.5px' }}>
+              대한민국 · COUPLE SOUVENIR PASSPORT
+            </span>
+          </div>
+
+          <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '20px', letterSpacing: '-.02em', margin: '2px 0' }}>
+            Date Passport &amp; Stamps 💮
+          </h2>
+          <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '13.5px', maxWidth: '36ch', lineHeight: 1.4 }}>
+            Earn authentic Korean rubber ink seals and collect sweet memory notes for every date you finish!
+          </p>
+
+          <div style={{ marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px', color: '#FDE68A', fontWeight: 800, fontSize: '13px' }}>
+            <span>Open Couple Passport</span>
+            <span>→</span>
+          </div>
+
+          {/* Miniature Stamp Seal Graphic */}
+          <div
+            style={{
+              position: 'absolute',
+              right: '16px',
+              top: '50%',
+              transform: 'translateY(-50%) rotate(-6deg)',
+              width: '64px',
+              height: '64px',
+              borderRadius: '50%',
+              border: '3px dashed #FDE68A',
+              background: 'rgba(253, 230, 138, 0.1)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '22px',
+              pointerEvents: 'none',
+            }}
+          >
+            <span>💮</span>
+            <span style={{ fontSize: '7px', color: '#FDE68A', fontWeight: 900, fontFamily: 'monospace' }}>OFFICIAL</span>
+          </div>
+        </Link>
+
         {/* Featured Photobooth Banner */}
         <Link
           href="/photobooth"

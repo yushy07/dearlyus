@@ -113,6 +113,107 @@ export default function PassportPage() {
     triggerConfettiCelebration();
   };
 
+  const exportPassportImage = () => {
+    sounds.playSparkleReaction('💖');
+    const canvas = document.createElement('canvas');
+    canvas.width = 1200;
+    canvas.height = 800;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Background Velvet Leather Gradient
+    const bgGrad = ctx.createLinearGradient(0, 0, 1200, 800);
+    bgGrad.addColorStop(0, '#1E1B4B');
+    bgGrad.addColorStop(0.5, '#2E1065');
+    bgGrad.addColorStop(1, '#0F172A');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, 1200, 800);
+
+    // Gold Outer Stitched Border
+    ctx.strokeStyle = '#D4AF37';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(30, 30, 1140, 740);
+
+    ctx.strokeStyle = 'rgba(253, 230, 138, 0.4)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([8, 8]);
+    ctx.strokeRect(42, 42, 1116, 716);
+    ctx.setLineDash([]);
+
+    // Gold Header Crest
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#FDE68A';
+    ctx.font = 'bold 22px Pretendard, sans-serif';
+    ctx.fillText('🌸 대한민국 연인 여권 · REPUBLIC OF LOVE OFFICIAL PASSPORT', 600, 90);
+
+    // Couple Names
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '900 48px Pretendard, sans-serif';
+    ctx.fillText(`${profile.partner1} & ${profile.partner2}`, 600, 155);
+
+    // Flight Route & Date
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.font = 'bold 20px monospace';
+    ctx.fillText(`${profile.originCity}  ✈️ ➔ 💖  ${profile.destinationCity}`, 600, 200);
+
+    ctx.fillStyle = '#FDE68A';
+    ctx.font = 'bold 16px monospace';
+    ctx.fillText(`FLIGHT: ANG-${roomCode}-2026 · SEAT: ${profile.seatNumber} · DATE: ${profile.anniversaryDate}`, 600, 235);
+
+    // 4 Unlocked Souvenir Stamps Cards
+    const unlockedList = PASSPORT_STAMPS.filter((s) => unlockedIds.includes(s.id)).slice(0, 4);
+    unlockedList.forEach((stamp, idx) => {
+      const cardX = 70 + idx * 268;
+      const cardY = 280;
+      const cardW = 250;
+      const cardH = 340;
+
+      // Stamp Card Base
+      ctx.fillStyle = stamp.pastelBg || '#FFF1F2';
+      ctx.fillRect(cardX, cardY, cardW, cardH);
+      ctx.strokeStyle = stamp.inkColor;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(cardX, cardY, cardW, cardH);
+
+      // Stamp Circular Ink Seal
+      ctx.beginPath();
+      ctx.arc(cardX + cardW / 2, cardY + 90, 50, 0, Math.PI * 2);
+      ctx.strokeStyle = stamp.inkColor;
+      ctx.lineWidth = 3;
+      ctx.setLineDash([6, 6]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Stamp Icon
+      ctx.font = '36px sans-serif';
+      ctx.fillText(stamp.icon, cardX + cardW / 2, cardY + 102);
+
+      // Stamp Title
+      ctx.fillStyle = stamp.inkColor;
+      ctx.font = 'bold 18px Pretendard, sans-serif';
+      ctx.fillText(stamp.title, cardX + cardW / 2, cardY + 180);
+
+      // Korean Hangul Title
+      ctx.font = 'bold 13px monospace';
+      ctx.fillText(stamp.koreanTitle, cardX + cardW / 2, cardY + 205);
+
+      // Verified Badge
+      ctx.fillStyle = '#059669';
+      ctx.font = 'bold 12px monospace';
+      ctx.fillText('✓ OFFICIAL STAMP', cardX + cardW / 2, cardY + 240);
+    });
+
+    // Footer Barcode & Serial
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+    ctx.font = '14px monospace';
+    ctx.fillText(`ANGIE SOUVENIR LOVE PASSPORT · GETANGIE.COM · ROOM: ${roomCode}`, 600, 690);
+
+    const a = document.createElement('a');
+    a.download = `angie-passport-${profile.partner1}-${profile.partner2}.png`;
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  };
+
   const categories = ['All', 'Photobooth', 'Games & Duels', 'Keepsakes', 'Milestones'];
 
   const filteredStamps = activeCategory === 'All'
@@ -688,7 +789,28 @@ export default function PassportPage() {
               </p>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              <button
+                onClick={exportPassportImage}
+                style={{
+                  padding: '12px 22px',
+                  fontSize: '13.5px',
+                  fontWeight: 800,
+                  borderRadius: '24px',
+                  background: 'linear-gradient(135deg, #1E1B4B, #2E1065)',
+                  border: '1.5px solid rgba(253, 230, 138, 0.6)',
+                  color: '#FDE68A',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  boxShadow: '0 4px 16px rgba(46, 16, 101, 0.25)',
+                }}
+              >
+                <span>📸</span>
+                <span>Download Souvenir Card</span>
+              </button>
+
               <button
                 onClick={() => {
                   sounds.playPop();
