@@ -2643,24 +2643,35 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   transform: translateX(2px);
 }
 
-/* ============ Floating Couple Reaction Particles ============ */
-@keyframes particle-float-up {
+/* ============ 3D Flying Outward Couple Reaction Particles ============ */
+@keyframes particle-3d-fly-out {
   0% {
-    opacity: 1;
-    transform: translate(0, 0) scale(0.6) rotate(0deg);
+    opacity: 0;
+    transform: translate3d(0, 0, -250px) scale3d(0.2, 0.2, 0.2) rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+    filter: blur(4px) drop-shadow(0 0 10px rgba(255, 123, 163, 0.8));
   }
-  40% {
+  15% {
     opacity: 1;
-    transform: translate(-15px, -120px) scale(1.2) rotate(12deg);
+    transform: translate3d(calc(var(--target-x) * 0.2), calc(var(--target-y) * 0.2), 50px) scale3d(1.1, 1.1, 1.1) rotateX(var(--rot-x)) rotateY(var(--rot-y)) rotateZ(var(--rot-z));
+    filter: blur(0px) drop-shadow(0 12px 35px rgba(255, 123, 163, 0.9));
   }
-  70% {
-    opacity: 0.9;
-    transform: translate(12px, -240px) scale(1.1) rotate(-8deg);
+  75% {
+    opacity: 0.95;
+    transform: translate3d(calc(var(--target-x) * 0.85), calc(var(--target-y) * 0.85), 480px) scale3d(2.6, 2.6, 2.6) rotateX(calc(var(--rot-x) * 2)) rotateY(calc(var(--rot-y) * 2)) rotateZ(calc(var(--rot-z) * 2));
+    filter: drop-shadow(0 25px 60px rgba(255, 123, 163, 1));
   }
   100% {
     opacity: 0;
-    transform: translate(-6px, -360px) scale(0.7) rotate(20deg);
+    transform: translate3d(var(--target-x), var(--target-y), 850px) scale3d(4.2, 4.2, 4.2) rotateX(calc(var(--rot-x) * 3)) rotateY(calc(var(--rot-y) * 3)) rotateZ(calc(var(--rot-z) * 3));
+    filter: blur(10px) drop-shadow(0 35px 90px rgba(255, 123, 163, 0));
   }
+}
+
+.particle-3d-element {
+  animation: particle-3d-fly-out var(--duration) cubic-bezier(0.12, 0.8, 0.25, 1) forwards;
+  will-change: transform, opacity;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
 }
 
 /* ============ Korean Couple Date Passport & Romantic Stamps ============ */
