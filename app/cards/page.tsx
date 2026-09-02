@@ -31,6 +31,7 @@ export default function CardsPage() {
   const [partnerAnswer, setPartnerAnswer] = useState('');
   const [revealed, setRevealed] = useState(false);
   const [hostNote, setHostNote] = useState<string | null>(null);
+  const [sessionHistory, setSessionHistory] = useState<Array<{ question: string; answerA: string; answerB: string }>>([]);
 
   const card = deck[currentIdx] || deck[0];
 
@@ -52,7 +53,15 @@ export default function CardsPage() {
         : 'You bring so much light into my days.'
     );
 
-    // Fetch dynamic adaptive follow-up card
+    const currentRoundData = {
+      question: card.prompt,
+      answerA: myAnswer || 'Loving our late night talks',
+      answerB: 'Feeling closest when we plan our future',
+    };
+    const updatedHistory = [...sessionHistory, currentRoundData];
+    setSessionHistory(updatedHistory);
+
+    // Fetch dynamic adaptive follow-up card connecting multi-round threads
     fetch('/api/questions/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -61,7 +70,7 @@ export default function CardsPage() {
         partnerB: { name: 'Alex', answer: 'Feeling closest when we plan our future' },
         mode: 'cards',
         mood: 'deep',
-        history: [{ question: card.prompt, answerA: myAnswer, answerB: 'Deep reflection' }],
+        history: updatedHistory,
       }),
     })
       .then((res) => res.json())

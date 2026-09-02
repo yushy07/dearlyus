@@ -20,6 +20,7 @@ export default function QuizPage() {
   const [finished, setFinished] = useState(false);
   const [confettiActive, setConfettiActive] = useState(false);
   const [receiptModalData, setReceiptModalData] = useState<DateReceiptData | null>(null);
+  const [sessionHistory, setSessionHistory] = useState<Array<{ question: string; answerA: string; answerB: string }>>([]);
 
   // Custom Lore Quiz Creator Modal State
   const [creatorOpen, setCreatorOpen] = useState(false);
@@ -90,8 +91,16 @@ export default function QuizPage() {
       sounds.playCountdownBeep(true);
     }
 
-    // Parallel background pre-fetch for next adaptive question
+    // Parallel background pre-fetch for next adaptive question with thread connection
     const currentQ = selectedPack.questions[currentQIndex];
+    const currentRoundData = {
+      question: currentQ.q,
+      answerA: currentQ.options[miaPick],
+      answerB: currentQ.options[alexPick],
+    };
+    const updatedHistory = [...sessionHistory, currentRoundData];
+    setSessionHistory(updatedHistory);
+
     fetch('/api/questions/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -99,7 +108,7 @@ export default function QuizPage() {
         partnerA: { name: 'Mia', answer: currentQ.options[miaPick] },
         partnerB: { name: 'Alex', answer: currentQ.options[alexPick] },
         mode: 'quiz',
-        history: [{ question: currentQ.q, answerA: currentQ.options[miaPick], answerB: currentQ.options[alexPick] }],
+        history: updatedHistory,
       }),
     })
       .then((res) => res.json())
@@ -130,6 +139,7 @@ export default function QuizPage() {
     setFinished(false);
     setAdaptiveQueue([]);
     setHostCommentary(null);
+    setSessionHistory([]);
   };
 
   // Add question to custom builder

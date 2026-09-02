@@ -89,20 +89,33 @@ export async function generateAdaptiveQuestion(req: QuestionRequest): Promise<Ge
   }
 
   try {
-    const prompt = `You are the witty, warm, and observant host of a date night game for a long-distance couple named ${req.partnerA.name} and ${req.partnerB.name}.
-Previous Round:
-- ${req.partnerA.name} answered: "${req.partnerA.answer}"
-- ${req.partnerB.name} answered: "${req.partnerB.answer}"
-${req.history?.length ? `Recent Context: ${JSON.stringify(req.history.slice(-2))}` : ''}
-Mode: ${req.mode}
-Mood: ${req.mood || 'playful and romantic'}
+    const historyText = req.history?.length
+      ? req.history
+          .map((h, i) => `Round ${i + 1}: Question: "${h.question}" -> ${req.partnerA.name}: "${h.answerA}", ${req.partnerB.name}: "${h.answerB}"`)
+          .join('\n')
+      : 'This is Round 1.';
 
-Generate the next custom follow-up question that builds directly upon their previous answers or playfully connects their two distinct personalities.
+    const prompt = `You are "Cupidot", the witty, cheeky, observant, romantic date host for a long-distance couple named ${req.partnerA.name} and ${req.partnerB.name}.
+
+Multi-Round History:
+${historyText}
+
+Current Round Choices:
+- ${req.partnerA.name} chose: "${req.partnerA.answer}"
+- ${req.partnerB.name} chose: "${req.partnerB.answer}"
+Mode: ${req.mode}
+Mood: ${req.mood || 'playful, cheeky, romantic'}
+
+CRITICAL TASK:
+1. DEEPLY ANALYZE the patterns across all previous rounds and current choices. Detect recurring themes (e.g. who is the sleeper vs adventurer, who is clingier, love languages, inside jokes, vacation vs homebody instincts).
+2. CONNECT THREADS: Weave together at least two distinct threads from earlier answers into the next question, referencing specific previous choices.
+3. WRITE CHEEKY OBSERVATIONAL COMMENTARY: Start with "Cupidot [Pattern Detected]:" or "Cupidot [Thread Connected]:", playfully teasing them about their emerging dynamic.
+
 Return ONLY valid JSON matching this exact schema:
 {
-  "question": "The question string",
-  "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
-  "commentary": "A short, witty 1-sentence observational reaction to their previous picks"
+  "question": "A tailored dilemma that explicitly references or connects threads from their earlier answers",
+  "options": ["Option 1 (tailored to their dynamic)", "Option 2", "Option 3", "Option 4"],
+  "commentary": "Cupidot's 1-2 sentence witty, cheeky observational reaction identifying their patterns"
 }`;
 
     const controller = new AbortController();

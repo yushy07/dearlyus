@@ -51,6 +51,7 @@ export default function DateHostPage() {
   const [totalRounds, setTotalRounds] = useState(1);
   const [receiptModalData, setReceiptModalData] = useState<DateReceiptData | null>(null);
   const [botState, setBotState] = useState<BotState>('idle');
+  const [sessionHistory, setSessionHistory] = useState<Array<{ question: string; answerA: string; answerB: string }>>([]);
 
   const scenario = scenarios[currentIdx] || scenarios[0];
 
@@ -70,7 +71,15 @@ export default function DateHostPage() {
       setTimeout(() => setBotState('happy'), 2000);
     }
 
-    // Background pre-fetch next tailored dilemma based on both choices
+    const currentRoundData = {
+      question: scenario.question,
+      answerA: scenario.options[partnerAPick],
+      answerB: scenario.options[partnerBPick],
+    };
+    const updatedHistory = [...sessionHistory, currentRoundData];
+    setSessionHistory(updatedHistory);
+
+    // Background pre-fetch next tailored dilemma based on accumulated multi-round threads
     fetch('/api/questions/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -79,7 +88,7 @@ export default function DateHostPage() {
         partnerB: { name: 'Alex', answer: scenario.options[partnerBPick] },
         mode: 'host',
         mood: 'playful',
-        history: [{ question: scenario.question, answerA: scenario.options[partnerAPick], answerB: scenario.options[partnerBPick] }],
+        history: updatedHistory,
       }),
     })
       .then((res) => res.json())
