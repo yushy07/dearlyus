@@ -4,6 +4,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { Footer } from '@/components/shared/Footer';
 import { ShinyText, AuroraBackground, SpotlightCard, MagnetButton, ScrollProgress, ScrollReveal, Floating3D, GlowBadge } from '@/components/ui';
+import { sounds } from '@/lib/sound';
 
 export default function HomePage() {
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
