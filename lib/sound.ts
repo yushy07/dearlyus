@@ -422,10 +422,56 @@ class SoundManager {
     }
   }
 
-  // 4. Procedural Lo-Fi Chords
-  public startLofiChords(volume = 0.2) {
-    if (this.isLofiPlaying) return;
+  private lofiAudio: HTMLAudioElement | null = null;
+
+  // 4. Lo-Fi Chords Audio Track (lofi.mp3 with procedural fallback)
+  public startLofiChords(volume = 0.3) {
+    if (this.isLofiPlaying) {
+      if (this.lofiAudio) {
+        this.lofiAudio.volume = Math.min(Math.max(volume, 0), 1);
+      }
+      return;
+    }
     this.isLofiPlaying = true;
+
+    if (typeof window !== 'undefined') {
+      try {
+        if (!this.lofiAudio) {
+          this.lofiAudio = new Audio('/audio/lofi.mp3');
+          this.lofiAudio.loop = true;
+        }
+        this.lofiAudio.volume = Math.min(Math.max(volume, 0), 1);
+        const playPromise = this.lofiAudio.play();
+        if (playPromise) {
+          playPromise.catch(() => {
+            this.startProceduralLofi(volume);
+          });
+        }
+        return;
+      } catch {
+        this.startProceduralLofi(volume);
+        return;
+      }
+    }
+    this.startProceduralLofi(volume);
+  }
+
+  public stopLofiChords() {
+    this.isLofiPlaying = false;
+    if (this.lofiAudio) {
+      try {
+        this.lofiAudio.pause();
+        this.lofiAudio.currentTime = 0;
+      } catch {}
+    }
+    if (this.lofiTimer) {
+      clearTimeout(this.lofiTimer);
+      this.lofiTimer = null;
+    }
+  }
+
+  // Fallback procedural lo-fi chords synthesizer
+  private startProceduralLofi(volume = 0.2) {
     const ctx = this.getContext();
     if (!ctx) return;
 
@@ -464,14 +510,6 @@ class SoundManager {
     };
 
     playNextChord();
-  }
-
-  public stopLofiChords() {
-    this.isLofiPlaying = false;
-    if (this.lofiTimer) {
-      clearTimeout(this.lofiTimer);
-      this.lofiTimer = null;
-    }
   }
 
   public stopAllAmbience() {
