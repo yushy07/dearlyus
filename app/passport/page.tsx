@@ -3,9 +3,32 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Footer } from '@/components/shared/Footer';
-import { PASSPORT_STAMPS, PassportStamp, getUnlockedStamps, unlockPassportStamp, getStampNotes, saveStampNote } from '@/lib/passport';
+import {
+  PASSPORT_STAMPS,
+  PassportStamp,
+  getUnlockedStamps,
+  unlockPassportStamp,
+  getStampNotes,
+  saveStampNote,
+  getCoupleTicketProfile,
+  saveCoupleTicketProfile,
+  CoupleTicketProfile,
+} from '@/lib/passport';
 import { sounds } from '@/lib/sound';
 import { ScrollReveal } from '@/components/ui';
+
+interface ConfettiPiece {
+  id: string;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  rot: number;
+  vrot: number;
+  char: string;
+  scale: number;
+  color: string;
+}
 
 export default function PassportPage() {
   const [unlockedIds, setUnlockedIds] = useState<string[]>([]);
@@ -15,29 +38,54 @@ export default function PassportPage() {
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [tempNoteText, setTempNoteText] = useState<string>('');
   const [animatingStampId, setAnimatingStampId] = useState<string | null>(null);
-  const [coupleNames, setCoupleNames] = useState({ partner1: 'Mia', partner2: 'Alex' });
+  const [profile, setProfile] = useState<CoupleTicketProfile>(getCoupleTicketProfile());
+  const [isEditingTicket, setIsEditingTicket] = useState(false);
+  const [tempProfile, setTempProfile] = useState<CoupleTicketProfile>(getCoupleTicketProfile());
   const [roomCode, setRoomCode] = useState('KX7RM');
   const [copiedLink, setCopiedLink] = useState(false);
+  const [confetti, setConfetti] = useState<ConfettiPiece[]>([]);
 
   useEffect(() => {
     setUnlockedIds(getUnlockedStamps());
     setStampNotes(getStampNotes());
+    const prof = getCoupleTicketProfile();
+    setProfile(prof);
+    setTempProfile(prof);
 
     if (typeof window !== 'undefined') {
       try {
-        const savedN1 = localStorage.getItem('angie_user_nickname') || 'Mia';
-        const savedN2 = localStorage.getItem('angie_partner_nickname') || 'Alex';
         const savedRoom = localStorage.getItem('angie_room_code') || 'KX7RM';
-        setCoupleNames({ partner1: savedN1, partner2: savedN2 });
         setRoomCode(savedRoom);
       } catch {}
     }
   }, []);
 
+  const triggerConfettiCelebration = () => {
+    const chars = ['🌸', '💖', '⭐', '✨', '🎀', '💌', '🌟'];
+    const colors = ['#FF7BA3', '#F43F5E', '#FDE68A', '#A855F7', '#60A5FA', '#34D399'];
+    const pieces: ConfettiPiece[] = Array.from({ length: 32 }).map((_, i) => ({
+      id: `${Date.now()}-${i}-${Math.random()}`,
+      x: Math.random() * 100,
+      y: -10,
+      vx: (Math.random() - 0.5) * 20,
+      vy: Math.random() * 40 + 30,
+      rot: Math.random() * 360,
+      vrot: (Math.random() - 0.5) * 360,
+      char: chars[Math.floor(Math.random() * chars.length)],
+      scale: Math.random() * 0.6 + 0.8,
+      color: colors[Math.floor(Math.random() * colors.length)],
+    }));
+
+    setConfetti(pieces);
+    setTimeout(() => setConfetti([]), 2800);
+  };
+
   const handleStampClick = (stamp: PassportStamp, isUnlocked: boolean) => {
     sounds.playStampThud();
     setAnimatingStampId(stamp.id);
     setTimeout(() => setAnimatingStampId(null), 600);
+
+    triggerConfettiCelebration();
 
     if (isUnlocked) {
       setSelectedStamp(stamp);
@@ -54,6 +102,15 @@ export default function PassportPage() {
     saveStampNote(stampId, tempNoteText);
     setStampNotes((prev) => ({ ...prev, [stampId]: tempNoteText }));
     setEditingNoteId(null);
+  };
+
+  const handleSaveTicketProfile = (e: React.FormEvent) => {
+    e.preventDefault();
+    sounds.playPop();
+    saveCoupleTicketProfile(tempProfile);
+    setProfile(tempProfile);
+    setIsEditingTicket(false);
+    triggerConfettiCelebration();
   };
 
   const categories = ['All', 'Photobooth', 'Games & Duels', 'Keepsakes', 'Milestones'];
@@ -78,7 +135,38 @@ export default function PassportPage() {
       : '🌱 Level 1: First Date Dreamers';
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--paper)', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--paper)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+      
+      {/* Celebration Confetti Cannon Shower */}
+      {confetti.length > 0 && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            pointerEvents: 'none',
+            zIndex: 99999,
+            overflow: 'hidden',
+          }}
+        >
+          {confetti.map((c) => (
+            <div
+              key={c.id}
+              style={{
+                position: 'absolute',
+                left: `${c.x}vw`,
+                top: `${c.y}vh`,
+                fontSize: `${c.scale * 24}px`,
+                animation: 'confetti-fall 2.6s cubic-bezier(0.25, 1, 0.5, 1) forwards',
+                transform: `rotate(${c.rot}deg)`,
+                filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.15))',
+              }}
+            >
+              {c.char}
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Top Header Navbar */}
       <header
         style={{
@@ -169,7 +257,7 @@ export default function PassportPage() {
                 Couple Date Passport &amp; Love Stamps
               </h1>
               <p style={{ color: 'var(--ink-soft)', fontSize: '16px', maxWidth: '580px', lineHeight: 1.6 }}>
-                Every date night leaves a permanent stamp in your story. Collect authentic Korean ink seals and preserve your sweetest date memories across miles! 💌
+                Every date night leaves a permanent stamp in your story. Collect authentic Korean ink seals, write romantic memory notes, and customize your couple travel ticket! 💌
               </p>
             </div>
           </ScrollReveal>
@@ -179,44 +267,68 @@ export default function PassportPage() {
             <div className="passport-boarding-pass" style={{ padding: '24px 28px', color: 'var(--ink)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', borderBottom: '1px dashed var(--line)', paddingBottom: '16px', marginBottom: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span style={{ fontSize: '20px' }}>✈️</span>
+                  <span style={{ fontSize: '22px' }}>✈️</span>
                   <div>
                     <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--pink)', fontWeight: 800, letterSpacing: '1px' }}>
                       ANGIE LOVE AIRLINES · FIRST CLASS TICKET
                     </div>
                     <div style={{ fontSize: '18px', fontWeight: 900 }}>
-                      Flight to Each Other’s Arms
+                      Non-Stop Flight to Each Other’s Arms
                     </div>
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '20px', alignItems: 'center', fontFamily: 'var(--font-mono)' }}>
+                <div style={{ display: 'flex', gap: '16px', alignItems: 'center', fontFamily: 'var(--font-mono)' }}>
                   <div>
-                    <div style={{ fontSize: '9px', color: 'var(--ink-soft)', textTransform: 'uppercase' }}>Passenger</div>
-                    <div style={{ fontSize: '13px', fontWeight: 800 }}>{coupleNames.partner1} &amp; {coupleNames.partner2}</div>
+                    <div style={{ fontSize: '9px', color: 'var(--ink-soft)', textTransform: 'uppercase' }}>Passengers</div>
+                    <div style={{ fontSize: '13px', fontWeight: 800 }}>{profile.partner1} &amp; {profile.partner2}</div>
                   </div>
                   <div>
                     <div style={{ fontSize: '9px', color: 'var(--ink-soft)', textTransform: 'uppercase' }}>Seat</div>
-                    <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--pink)' }}>1A (Beside You)</div>
+                    <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--pink)' }}>{profile.seatNumber}</div>
                   </div>
                   <div>
-                    <div style={{ fontSize: '9px', color: 'var(--ink-soft)', textTransform: 'uppercase' }}>Room</div>
-                    <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--blue)' }}>{roomCode}</div>
+                    <div style={{ fontSize: '9px', color: 'var(--ink-soft)', textTransform: 'uppercase' }}>Love Date</div>
+                    <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--blue)' }}>{profile.anniversaryDate}</div>
                   </div>
+
+                  <button
+                    onClick={() => {
+                      sounds.playPop();
+                      setTempProfile(profile);
+                      setIsEditingTicket(true);
+                    }}
+                    style={{
+                      background: 'rgba(255, 123, 163, 0.1)',
+                      border: '1px solid rgba(255, 123, 163, 0.4)',
+                      borderRadius: '12px',
+                      padding: '6px 12px',
+                      fontSize: '11px',
+                      fontWeight: 800,
+                      color: 'var(--pink)',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                    }}
+                  >
+                    <span>✎</span>
+                    <span>Edit Ticket</span>
+                  </button>
                 </div>
               </div>
 
               {/* Route Departure / Arrival Hub */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                   <div style={{ textAlign: 'left' }}>
-                    <div style={{ fontSize: '10px', color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}>ORIGIN</div>
-                    <div style={{ fontSize: '16px', fontWeight: 900 }}>Where You Are 🌍</div>
+                    <div style={{ fontSize: '10px', color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}>ORIGIN CITY</div>
+                    <div style={{ fontSize: '15px', fontWeight: 900 }}>{profile.originCity}</div>
                   </div>
                   <div style={{ fontSize: '20px', color: 'var(--pink)', padding: '0 8px' }}>✈️ ➔ 💖</div>
                   <div style={{ textAlign: 'left' }}>
                     <div style={{ fontSize: '10px', color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}>DESTINATION</div>
-                    <div style={{ fontSize: '16px', fontWeight: 900 }}>Reunion Date Night ✨</div>
+                    <div style={{ fontSize: '15px', fontWeight: 900 }}>{profile.destinationCity}</div>
                   </div>
                 </div>
 
@@ -278,7 +390,7 @@ export default function PassportPage() {
                       대한민국 연인 여권 · REPUBLIC OF LOVE
                     </div>
                     <div style={{ fontSize: '24px', fontWeight: 900, letterSpacing: '-0.2px', marginTop: '2px' }}>
-                      {coupleNames.partner1} &amp; {coupleNames.partner2}
+                      {profile.partner1} &amp; {profile.partner2}
                     </div>
                   </div>
                 </div>
@@ -600,6 +712,151 @@ export default function PassportPage() {
           </div>
         </div>
       </main>
+
+      {/* Ticket Profile Editor Modal */}
+      {isEditingTicket && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 100,
+            background: 'rgba(23, 24, 28, 0.65)',
+            backdropFilter: 'blur(10px)',
+            display: 'grid',
+            placeItems: 'center',
+            padding: '20px',
+          }}
+          onClick={() => setIsEditingTicket(false)}
+        >
+          <div
+            style={{
+              width: 'min(480px, 100%)',
+              background: '#FFFFFF',
+              borderRadius: '24px',
+              padding: '32px 28px',
+              boxShadow: '0 24px 60px rgba(0,0,0,0.3)',
+              border: '2px solid rgba(255, 123, 163, 0.4)',
+              position: 'relative',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+              <span style={{ fontSize: '20px' }}>✈️</span>
+              <h3 style={{ fontSize: '20px', fontWeight: 900 }}>Customize Couple Ticket</h3>
+            </div>
+            <p style={{ fontSize: '13px', color: 'var(--ink-soft)', marginBottom: '20px' }}>
+              Personalize your Love Airlines Boarding Pass and Passport credentials.
+            </p>
+
+            <form onSubmit={handleSaveTicketProfile} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 800, color: 'var(--ink)', textTransform: 'uppercase' }}>
+                    Partner 1 Name
+                  </label>
+                  <input
+                    type="text"
+                    value={tempProfile.partner1}
+                    onChange={(e) => setTempProfile({ ...tempProfile, partner1: e.target.value })}
+                    style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid var(--line)', marginTop: '4px', fontSize: '13px', fontWeight: 700 }}
+                    required
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 800, color: 'var(--ink)', textTransform: 'uppercase' }}>
+                    Partner 2 Name
+                  </label>
+                  <input
+                    type="text"
+                    value={tempProfile.partner2}
+                    onChange={(e) => setTempProfile({ ...tempProfile, partner2: e.target.value })}
+                    style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid var(--line)', marginTop: '4px', fontSize: '13px', fontWeight: 700 }}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '11px', fontWeight: 800, color: 'var(--ink)', textTransform: 'uppercase' }}>
+                  Origin City &amp; Timezone
+                </label>
+                <input
+                  type="text"
+                  value={tempProfile.originCity}
+                  onChange={(e) => setTempProfile({ ...tempProfile, originCity: e.target.value })}
+                  style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid var(--line)', marginTop: '4px', fontSize: '13px' }}
+                  placeholder="e.g. Seoul 🇰🇷 (GMT+9)"
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '11px', fontWeight: 800, color: 'var(--ink)', textTransform: 'uppercase' }}>
+                  Destination City &amp; Timezone
+                </label>
+                <input
+                  type="text"
+                  value={tempProfile.destinationCity}
+                  onChange={(e) => setTempProfile({ ...tempProfile, destinationCity: e.target.value })}
+                  style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid var(--line)', marginTop: '4px', fontSize: '13px' }}
+                  placeholder="e.g. San Francisco 🇺🇸 (GMT-7)"
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 800, color: 'var(--ink)', textTransform: 'uppercase' }}>
+                    Anniversary / Love Date
+                  </label>
+                  <input
+                    type="text"
+                    value={tempProfile.anniversaryDate}
+                    onChange={(e) => setTempProfile({ ...tempProfile, anniversaryDate: e.target.value })}
+                    style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid var(--line)', marginTop: '4px', fontSize: '13px' }}
+                    placeholder="2024.11.14"
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 800, color: 'var(--ink)', textTransform: 'uppercase' }}>
+                    Seat Number
+                  </label>
+                  <input
+                    type="text"
+                    value={tempProfile.seatNumber}
+                    onChange={(e) => setTempProfile({ ...tempProfile, seatNumber: e.target.value })}
+                    style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid var(--line)', marginTop: '4px', fontSize: '13px' }}
+                    placeholder="1A (Beside You)"
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                <button
+                  type="submit"
+                  className="btn btn-grad"
+                  style={{ flex: 1, padding: '12px', fontSize: '13.5px', borderRadius: '12px', fontWeight: 800 }}
+                >
+                  Save Ticket &amp; Passport 💖
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsEditingTicket(false)}
+                  style={{
+                    padding: '12px 18px',
+                    borderRadius: '12px',
+                    background: 'var(--paper)',
+                    border: '1px solid var(--line)',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Romantic Polaroid Stamp Memory Modal */}
       {selectedStamp && (

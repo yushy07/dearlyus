@@ -334,6 +334,23 @@ export default function HomePage() {
           <nav>
             <Link href="/activity">Activities</Link>
             <Link href="/photobooth">Photobooth</Link>
+            <Link
+              href="/passport"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                color: '#9333EA',
+                fontWeight: 700,
+                background: 'rgba(168, 85, 247, 0.08)',
+                padding: '4px 10px',
+                borderRadius: '16px',
+                border: '1px solid rgba(168, 85, 247, 0.2)',
+              }}
+            >
+              <span>💮</span>
+              <span>Passport</span>
+            </Link>
             <Link href="/blog">Blog</Link>
             <a href="#faq">FAQ</a>
             <Link className="nav-shop" href="/shop" aria-label="Print shop" title="Print shop">

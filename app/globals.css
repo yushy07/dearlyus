@@ -2776,6 +2776,22 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   animation: stamp-thud-press 0.38s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
+/* ============ Romantic Confetti Shower ============ */
+@keyframes confetti-fall {
+  0% {
+    opacity: 1;
+    transform: translateY(0vh) rotate(0deg) scale(0.6);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(105vh) rotate(720deg) scale(1.1);
+  }
+}
+
+
 
 
 

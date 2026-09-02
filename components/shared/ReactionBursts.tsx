@@ -110,6 +110,47 @@ export function ReactionBursts() {
     } catch {}
   }, [spawnBurst]);
 
+  // Global Double-Click & Double-Tap anywhere on screen for instant 3D Heart burst
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    let lastTapTime = 0;
+
+    const isInteractive = (target: EventTarget | null) => {
+      if (!target || !(target instanceof HTMLElement)) return false;
+      const tag = target.tagName.toUpperCase();
+      if (['BUTTON', 'INPUT', 'TEXTAREA', 'SELECT', 'A'].includes(tag)) return true;
+      if (target.closest('button, input, textarea, select, a, [role="button"], .no-heart-burst')) return true;
+      return false;
+    };
+
+    const handleDblClick = (e: MouseEvent) => {
+      if (isInteractive(e.target)) return;
+      spawnBurst('💖', e.clientX, e.clientY, true);
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      const now = Date.now();
+      const touch = e.changedTouches[0];
+      if (now - lastTapTime < 300 && touch) {
+        if (!isInteractive(e.target)) {
+          spawnBurst('💖', touch.clientX, touch.clientY, true);
+        }
+        lastTapTime = 0;
+      } else {
+        lastTapTime = now;
+      }
+    };
+
+    window.addEventListener('dblclick', handleDblClick, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+    return () => {
+      window.removeEventListener('dblclick', handleDblClick);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [spawnBurst]);
+
   // Clean up expired 3D particles
   useEffect(() => {
     if (particles.length === 0) return;

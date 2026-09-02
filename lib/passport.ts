@@ -272,3 +272,48 @@ export function saveStampNote(stampId: string, note: string) {
     localStorage.setItem('angie_stamp_notes', JSON.stringify(notes));
   } catch {}
 }
+
+export interface CoupleTicketProfile {
+  partner1: string;
+  partner2: string;
+  originCity: string;
+  destinationCity: string;
+  anniversaryDate: string;
+  seatNumber: string;
+}
+
+const DEFAULT_PROFILE: CoupleTicketProfile = {
+  partner1: 'Mia',
+  partner2: 'Alex',
+  originCity: 'Seoul 🇰🇷 (GMT+9)',
+  destinationCity: 'San Francisco 🇺🇸 (GMT-7)',
+  anniversaryDate: '2024.11.14',
+  seatNumber: '1A (Beside You)',
+};
+
+export function getCoupleTicketProfile(): CoupleTicketProfile {
+  if (typeof window === 'undefined') return DEFAULT_PROFILE;
+  try {
+    const saved = localStorage.getItem('angie_couple_ticket_profile');
+    if (saved) return { ...DEFAULT_PROFILE, ...JSON.parse(saved) };
+    
+    // Fallback to legacy nicknames if available
+    const p1 = localStorage.getItem('angie_user_nickname') || DEFAULT_PROFILE.partner1;
+    const p2 = localStorage.getItem('angie_partner_nickname') || DEFAULT_PROFILE.partner2;
+    return { ...DEFAULT_PROFILE, partner1: p1, partner2: p2 };
+  } catch {
+    return DEFAULT_PROFILE;
+  }
+}
+
+export function saveCoupleTicketProfile(profile: Partial<CoupleTicketProfile>) {
+  if (typeof window === 'undefined') return;
+  try {
+    const current = getCoupleTicketProfile();
+    const updated = { ...current, ...profile };
+    localStorage.setItem('angie_couple_ticket_profile', JSON.stringify(updated));
+    if (profile.partner1) localStorage.setItem('angie_user_nickname', profile.partner1);
+    if (profile.partner2) localStorage.setItem('angie_partner_nickname', profile.partner2);
+  } catch {}
+}
+
