@@ -249,8 +249,44 @@ class SoundManager {
     return buffer;
   }
 
-  // 1. Rain on Window Synthesizer
+  private rainAudio: HTMLAudioElement | null = null;
+
+  // 1. Rain Audio Track (rain.wav with procedural fallback)
   public startRain(volume = 0.4) {
+    if (typeof window !== 'undefined') {
+      try {
+        if (!this.rainAudio) {
+          this.rainAudio = new Audio('/audio/rain.wav');
+          this.rainAudio.loop = true;
+        }
+        this.rainAudio.volume = Math.min(Math.max(volume, 0), 1);
+        const playPromise = this.rainAudio.play();
+        if (playPromise) {
+          playPromise.catch(() => {
+            this.startProceduralRain(volume);
+          });
+        }
+        return;
+      } catch {
+        this.startProceduralRain(volume);
+        return;
+      }
+    }
+    this.startProceduralRain(volume);
+  }
+
+  public stopRain() {
+    if (this.rainAudio) {
+      try {
+        this.rainAudio.pause();
+        this.rainAudio.currentTime = 0;
+      } catch {}
+    }
+    this.stopProceduralRain();
+  }
+
+  // Fallback procedural rain synthesizer
+  private startProceduralRain(volume = 0.4) {
     if (this.ambientNodes['rain']) {
       this.ambientNodes['rain'].gain.gain.setValueAtTime(volume, this.getContext()?.currentTime || 0);
       return;
@@ -280,12 +316,28 @@ class SoundManager {
     this.ambientNodes['rain'] = { source: whiteNoise, gain };
   }
 
-  public stopRain() {
+  private stopProceduralRain() {
     if (this.ambientNodes['rain']) {
       try {
         (this.ambientNodes['rain'].source as AudioScheduledSourceNode).stop();
       } catch {}
       delete this.ambientNodes['rain'];
+    }
+  }
+
+  public toggleRainSound(active: boolean, volume = 0.4) {
+    if (active) {
+      this.startRain(volume);
+    } else {
+      this.stopRain();
+    }
+  }
+
+  public toggleFireplaceSound(active: boolean, volume = 0.3) {
+    if (active) {
+      this.startFireplace(volume);
+    } else {
+      this.stopFireplace();
     }
   }
 
