@@ -5,14 +5,21 @@ import Link from 'next/link';
 import { Footer } from '@/components/shared/Footer';
 import { ShinyText, AuroraBackground, SpotlightCard, MagnetButton, ScrollProgress, ScrollReveal, Floating3D, GlowBadge } from '@/components/ui';
 import { sounds } from '@/lib/sound';
+import { useCoupleProfile } from '@/lib/couple';
 
 export default function HomePage() {
+  const { partnerA, partnerB, cityA, cityB } = useCoupleProfile();
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
   const [roomCode, setRoomCode] = useState(['K', 'X', '7', 'R', 'M']);
   const [copied, setCopied] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [nickname, setNickname] = useState('Mia');
-  const [partnerName, setPartnerName] = useState('Alex');
+  const [nickname, setNickname] = useState(partnerA);
+  const [partnerName, setPartnerName] = useState(partnerB);
+
+  useEffect(() => {
+    setNickname(partnerA);
+    setPartnerName(partnerB);
+  }, [partnerA, partnerB]);
 
   // Hero photobooth machine state
   const [litFrames, setLitFrames] = useState<boolean[]>([false, false, false, false]);
@@ -60,7 +67,11 @@ export default function HomePage() {
     '/photos/frame4.webp',
   ]);
   const [demoStickers, setDemoStickers] = useState<string[]>(['💖', '✨']);
-  const [demoCoupleName, setDemoCoupleName] = useState('Mia ♡ Alex');
+  const [demoCoupleName, setDemoCoupleName] = useState(`${partnerA} ♡ ${partnerB}`);
+
+  useEffect(() => {
+    setDemoCoupleName(`${partnerA} ♡ ${partnerB}`);
+  }, [partnerA, partnerB]);
   const demoVideoRef = useRef<HTMLVideoElement>(null);
   const demoCanvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -422,7 +433,7 @@ export default function HomePage() {
                   strokeLinejoin="round"
                 />
               </svg>
-              <span className="tag">{nickname} (Calgary)</span>
+              <span className="tag">{nickname} ({cityA || 'Local'})</span>
             </Floating3D>
           </div>
         </div>
@@ -541,17 +552,20 @@ export default function HomePage() {
                   <ellipse cx="300" cy="300" rx="210" ry="250" className="gl-grat" />
                   <ellipse cx="300" cy="300" rx="140" ry="250" className="gl-grat" />
                   <ellipse cx="300" cy="300" rx="70" ry="250" className="gl-grat" />
+                  <line x1="300" y1="48" x2="300" y2="552" className="gl-grat" />
+
+                  {/* Parallel graticules */}
                   <line x1="48" y1="300" x2="552" y2="300" className="gl-grat" />
                   <line x1="80" y1="200" x2="520" y2="200" className="gl-grat" />
                   <line x1="80" y1="400" x2="520" y2="400" className="gl-grat" />
 
-                  {/* Arcs connecting Calgary & Jakarta */}
+                  {/* Connecting Arcs */}
                   <path d="M 478 214 C 418 188 360 220 320 286" className="gl-arc pink" />
                   <path d="M 126 392 C 188 420 244 386 282 312" className="gl-arc blue" />
                 </g>
               </svg>
 
-              {/* Calgary Node */}
+              {/* Partner A Node */}
               <figure className="gnode a">
                 <span className="gpin" aria-hidden="true"></span>
                 <span className="gring" aria-hidden="true"></span>
@@ -560,15 +574,15 @@ export default function HomePage() {
                   src="/photos/face-calgary.webp"
                   width="92"
                   height="92"
-                  alt="One half of the couple in Calgary"
+                  alt={`One half of the couple in ${cityA || 'Local'}`}
                 />
                 <figcaption className="gcard">
-                  <b>Calgary</b>
-                  <span>Canada</span>
+                  <b>{cityA || 'City 1'}</b>
+                  <span>{partnerA}</span>
                 </figcaption>
               </figure>
 
-              {/* Jakarta Node */}
+              {/* Partner B Node */}
               <figure className="gnode b">
                 <span className="gpin" aria-hidden="true"></span>
                 <span className="gring" aria-hidden="true"></span>
@@ -577,11 +591,11 @@ export default function HomePage() {
                   src="/photos/face-jakarta.webp"
                   width="92"
                   height="92"
-                  alt="Other half of the couple in Jakarta"
+                  alt={`Other half of the couple in ${cityB || 'Remote'}`}
                 />
                 <figcaption className="gcard">
-                  <b>Jakarta</b>
-                  <span>Indonesia</span>
+                  <b>{cityB || 'City 2'}</b>
+                  <span>{partnerB}</span>
                 </figcaption>
               </figure>
 
@@ -1284,15 +1298,15 @@ export default function HomePage() {
                 ) : (
                   <div className="booth-duo-view">
                     <div className="booth-feed-panel">
-                      <img src="/photos/face-calgary.webp" alt="Calgary feed" />
+                      <img src="/photos/face-calgary.webp" alt="Partner 1 feed" />
                       <div className="feed-city-badge pink">
-                        <span className="dot"></span> Calgary (Mia)
+                        <span className="dot"></span> {cityA || 'Local'} ({partnerA})
                       </div>
                     </div>
                     <div className="booth-feed-panel">
-                      <img src="/photos/face-jakarta.webp" alt="Jakarta feed" />
+                      <img src="/photos/face-jakarta.webp" alt="Partner 2 feed" />
                       <div className="feed-city-badge blue">
-                        <span className="dot"></span> Jakarta (Alex)
+                        <span className="dot"></span> {cityB || 'Remote'} ({partnerB})
                       </div>
                     </div>
                   </div>
@@ -1546,9 +1560,9 @@ export default function HomePage() {
             <div className="qd-stage" aria-label="Animated example of a quiz round">
               <div className="qd-card pink">
                 <div className="qd-who">
-                  <b>Mia</b> · answers honestly
+                  <b>{partnerA}</b> · answers honestly
                 </div>
-                <div className="qd-q">What&apos;s Mia&apos;s go-to karaoke song? 🎤</div>
+                <div className="qd-q">What&apos;s {partnerA}&apos;s go-to karaoke song? 🎤</div>
                 <div className="qd-opt pick">Bohemian Rhapsody 🎸</div>
                 <div className="qd-opt">Something by IU 🎧</div>
                 <div className="qd-opt">Rap god, allegedly 🎤</div>
@@ -1556,9 +1570,9 @@ export default function HomePage() {
               </div>
               <div className="qd-card blue">
                 <div className="qd-who">
-                  <b>Alex</b> · guesses her answer
+                  <b>{partnerB}</b> · guesses answer
                 </div>
-                <div className="qd-q">What&apos;s Mia&apos;s go-to karaoke song? 🎤</div>
+                <div className="qd-q">What&apos;s {partnerA}&apos;s go-to karaoke song? 🎤</div>
                 <div className="qd-opt pick">Bohemian Rhapsody 🎸</div>
                 <div className="qd-opt">Something by IU 🎧</div>
                 <div className="qd-opt">Rap god, allegedly 🎤</div>

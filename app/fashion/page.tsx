@@ -3,10 +3,12 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { FASHION_ROUNDS as ROUNDS, FASHION_ITEMS as ITEMS } from '@/data';
-import { Ribbon, Navbar, Confetti } from '@/components/shared';
+import { Ribbon, Navbar, Confetti, CoupleNameBar } from '@/components/shared';
 import { sounds } from '@/lib/sound';
+import { useCoupleProfile } from '@/lib/couple';
 
 export default function FashionShowPage() {
+  const { partnerA, partnerB } = useCoupleProfile();
   const [currentRoundIdx, setCurrentRoundIdx] = useState(0);
   const [stage, setStage] = useState<'STYLE' | 'RUNWAY' | 'JUDGE' | 'VERDICT'>('STYLE');
 
@@ -98,7 +100,7 @@ export default function FashionShowPage() {
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '980px' }}>
         {/* Stage Header */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <span className="eyebrow">The Runway Showdown · Two-Player Game</span>
+          <CoupleNameBar />
           <h1 style={{ fontSize: 'clamp(28px, 5vw, 44px)', fontWeight: 800, margin: '8px 0' }}>
             Fashion Show for <span className="grad">Two</span>
           </h1>
@@ -321,16 +323,16 @@ export default function FashionShowPage() {
             <span style={{ fontSize: '56px', display: 'block', marginBottom: '12px' }}>👑</span>
             <span className="eyebrow">{currentRound.title} Winner</span>
             <h2 style={{ fontSize: '32px', fontWeight: 800, margin: '8px 0 16px' }}>
-              {myScore >= partnerScore ? 'Mia Takes the Crown!' : 'Alex Takes the Crown!'}
+              {myScore >= partnerScore ? `${partnerA} Takes the Crown!` : `${partnerB} Takes the Crown!`}
             </h2>
 
             <div style={{ display: 'flex', justifyContent: 'center', gap: '32px', margin: '24px 0' }}>
               <div style={{ background: '#FFF5F8', padding: '18px 24px', borderRadius: '12px', border: '1px solid #FFD6E8' }}>
-                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--pink)' }}>🌸 Mia&apos;s Score</div>
+                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--pink)' }}>🌸 {partnerA}&apos;s Score</div>
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: '32px', fontWeight: 900 }}>{myScore} / 30</div>
               </div>
               <div style={{ background: '#F0F7FF', padding: '18px 24px', borderRadius: '12px', border: '1px solid #D6E8FF' }}>
-                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--blue)' }}>💙 Alex&apos;s Score</div>
+                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--blue)' }}>💙 {partnerB}&apos;s Score</div>
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: '32px', fontWeight: 900 }}>{partnerScore} / 30</div>
               </div>
             </div>

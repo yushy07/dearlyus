@@ -1,9 +1,8 @@
-'use client';
-
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Ribbon, Navbar } from '@/components/shared';
+import { Ribbon, Navbar, CoupleNameBar } from '@/components/shared';
 import { sounds } from '@/lib/sound';
+import { useCoupleProfile } from '@/lib/couple';
 
 interface ScrapbookItem {
   id: string;
@@ -16,10 +15,11 @@ interface ScrapbookItem {
 }
 
 export default function ScrapbookPage() {
+  const { partnerA, partnerB } = useCoupleProfile();
   const [items, setItems] = useState<ScrapbookItem[]>([
     { id: '1', type: 'polaroid', content: '/photos/frame1.webp', sub: 'Tokyo Station · Aug 2026', x: 40, y: 30, rotation: -4 },
     { id: '2', type: 'ticket', content: 'REUNION PASS ♡ TOKYO', sub: 'Countdown to our next visit', x: 380, y: 50, rotation: 3 },
-    { id: '3', type: 'note', content: '“The 6-hour time difference feels like nothing when we talk until sunrise.”', sub: 'Alex ♡ Mia', x: 60, y: 320, rotation: 2 },
+    { id: '3', type: 'note', content: '“The time difference feels like nothing when we talk until sunrise.”', sub: `${partnerA} ♡ ${partnerB}`, x: 60, y: 320, rotation: 2 },
     { id: '4', type: 'sticker', content: '💖', x: 260, y: 220, rotation: 12 },
     { id: '5', type: 'sticker', content: '✈️', x: 520, y: 200, rotation: -8 },
     { id: '6', type: 'sticker', content: '🌸', x: 120, y: 460, rotation: 5 },
@@ -88,7 +88,7 @@ export default function ScrapbookPage() {
 
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '960px' }}>
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-          <span className="eyebrow" style={{ color: '#8A5D3B' }}>Shared Memory Corkboard</span>
+          <CoupleNameBar />
           <h1 style={{ fontSize: 'clamp(28px, 4.5vw, 42px)', fontWeight: 800, margin: '8px 0' }}>
             Our Digital <span className="grad">Scrapbook Wall</span>
           </h1>

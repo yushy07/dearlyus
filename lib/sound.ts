@@ -402,26 +402,7 @@ class SoundManager {
     osc.stop(ctx.currentTime + 0.1);
   }
 
-  // 6. Wax seal fracturing snap
-  public playWaxCrack() {
-    const ctx = this.getContext();
-    if (!ctx) return;
 
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(950, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(120, ctx.currentTime + 0.07);
-
-    gain.gain.setValueAtTime(0.25, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.07);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start();
-    osc.stop(ctx.currentTime + 0.08);
-  }
 
   // Procedural Noise Buffer Generator
   private createNoiseBuffer(durationSeconds = 3): AudioBuffer | null {

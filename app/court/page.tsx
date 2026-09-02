@@ -5,41 +5,44 @@ import Link from 'next/link';
 import { CupidotBot, BotState } from '@/components/bot/CupidotBot';
 import { judgeCourtCase, CourtVerdict } from '@/lib/cupidot';
 import { sounds } from '@/lib/sound';
+import { CoupleNameBar } from '@/components/shared';
+import { useCoupleProfile } from '@/lib/couple';
 
 interface CaseExample {
   title: string;
-  claim1: string;
-  claim2: string;
+  claim1: (nameA: string, nameB: string) => string;
+  claim2: (nameA: string, nameB: string) => string;
 }
 
 const PRESET_CASES: CaseExample[] = [
   {
     title: 'The Unanswered FaceTime Mystery',
-    claim1: 'Mia: "He took 2 hours to answer when he said he was just going to the fridge!"',
-    claim2: 'Alex: "I fell asleep on the sofa after 14 hours of work with my phone on silent!"',
+    claim1: (a, b) => `${a}: "${b} took 2 hours to answer when they said they were just going to the kitchen!"`,
+    claim2: (a, b) => `${b}: "I fell asleep on the sofa after 14 hours of work with my phone on silent!"`,
   },
   {
     title: 'The Playlist Monopoly Debate',
-    claim1: 'Alex: "Mia skips every song I put on after exactly 18 seconds!"',
-    claim2: 'Mia: "Because his music sounds like heavy machinery in an elevator!"',
+    claim1: (a, b) => `${b}: "${a} skips every song I put on after exactly 18 seconds!"`,
+    claim2: (a, b) => `${a}: "Because their music sounds like heavy machinery in an elevator!"`,
   },
   {
     title: 'The Oversized Hoodie Territorial War',
-    claim1: 'Alex: "My favorite vintage college sweater mysteriously disappeared into her carry-on!"',
-    claim2: 'Mia: "It smells like him and it was legally confiscated under adverse possession!"',
+    claim1: (a, b) => `${b}: "My favorite vintage sweater mysteriously disappeared into ${a}'s luggage!"`,
+    claim2: (a, b) => `${a}: "It smells like ${b} and was legally confiscated under adverse possession!"`,
   },
   {
     title: 'The French Fry Grand Larceny',
-    claim1: 'Alex: "She said she wasn\'t hungry and then ate half my large fries!"',
-    claim2: 'Mia: "Couple food is communal property under international maritime law!"',
+    claim1: (a, b) => `${b}: "${a} said they weren't hungry and then ate half my large fries!"`,
+    claim2: (a, b) => `${a}: "Couple food is communal property under international maritime law!"`,
   },
 ];
 
 export default function CourtPage() {
+  const { partnerA, partnerB } = useCoupleProfile();
   const [caseIdx, setCaseIdx] = useState(0);
   const [customTitle, setCustomTitle] = useState('');
-  const [customMiaClaim, setCustomMiaClaim] = useState('');
-  const [customAlexClaim, setCustomAlexClaim] = useState('');
+  const [customClaimA, setCustomClaimA] = useState('');
+  const [customClaimB, setCustomClaimB] = useState('');
   const [useCustom, setUseCustom] = useState(false);
   const [verdict, setVerdict] = useState<CourtVerdict | null>(null);
   const [botState, setBotState] = useState<BotState>('idle');
@@ -57,11 +60,19 @@ export default function CourtPage() {
       if (useCustom && customTitle) {
         result = judgeCourtCase(
           customTitle,
-          customMiaClaim || 'Mia pleads innocent on all counts',
-          customAlexClaim || 'Alex stands by his innocence'
+          customClaimA || `${partnerA} pleads innocent on all counts`,
+          customClaimB || `${partnerB} stands by innocence`,
+          partnerA,
+          partnerB
         );
       } else {
-        result = judgeCourtCase(current.title, current.claim1, current.claim2);
+        result = judgeCourtCase(
+          current.title,
+          current.claim1(partnerA, partnerB),
+          current.claim2(partnerA, partnerB),
+          partnerA,
+          partnerB
+        );
       }
 
       setVerdict(result);
@@ -99,14 +110,11 @@ export default function CourtPage() {
 
       <main className="wrap" style={{ paddingTop: '32px', maxWidth: '780px' }}>
         {/* Judge Header */}
-        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <div style={{ width: '180px', height: '180px', margin: '0 auto -10px' }}>
             <CupidotBot state={botState} scale={2.2} />
           </div>
-          <span className="eyebrow" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            <span>⚖️ ʚ🤖💘ɞ</span>
-            <span>THE HON. JUDGE CUPIDOT</span>
-          </span>
+          <CoupleNameBar />
           <h1 style={{ fontSize: 'clamp(28px, 4.5vw, 42px)', fontWeight: 800, margin: '8px 0 10px' }}>
             Romantic <span className="grad">Couples Court</span>
           </h1>
@@ -182,19 +190,19 @@ export default function CourtPage() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px', marginBottom: '28px' }}>
                 <div style={{ background: '#FFF5F8', padding: '18px', borderRadius: '14px', border: '1px solid rgba(255, 77, 128, 0.2)' }}>
                   <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 800, color: '#FF4D80', textTransform: 'uppercase', marginBottom: '6px' }}>
-                    🌸 Plaintiff Claim (Mia)
+                    🌸 Plaintiff Claim ({partnerA})
                   </div>
                   <p style={{ margin: 0, fontSize: '14.5px', lineHeight: 1.5, color: '#17181C', fontWeight: 500 }}>
-                    {current.claim1}
+                    {current.claim1(partnerA, partnerB)}
                   </p>
                 </div>
 
                 <div style={{ background: '#F0F6FF', padding: '18px', borderRadius: '14px', border: '1px solid rgba(80, 140, 255, 0.2)' }}>
                   <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 800, color: '#3B82F6', textTransform: 'uppercase', marginBottom: '6px' }}>
-                    💙 Defendant Defense (Alex)
+                    💙 Defendant Defense ({partnerB})
                   </div>
                   <p style={{ margin: 0, fontSize: '14.5px', lineHeight: 1.5, color: '#17181C', fontWeight: 500 }}>
-                    {current.claim2}
+                    {current.claim2(partnerA, partnerB)}
                   </p>
                 </div>
               </div>
@@ -220,25 +228,25 @@ export default function CourtPage() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '14px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 800, color: '#FF4D80', textTransform: 'uppercase', marginBottom: '6px' }}>
-                      Mia&apos;s Testimony:
+                      {partnerA}&apos;s Testimony:
                     </label>
                     <textarea
                       rows={3}
-                      value={customMiaClaim}
-                      onChange={(e) => setCustomMiaClaim(e.target.value)}
-                      placeholder="Explain what Alex did wrong with receipts..."
+                      value={customClaimA}
+                      onChange={(e) => setCustomClaimA(e.target.value)}
+                      placeholder={`Explain what ${partnerB} did wrong with receipts...`}
                       style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--line)', fontSize: '13.5px' }}
                     />
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 800, color: '#3B82F6', textTransform: 'uppercase', marginBottom: '6px' }}>
-                      Alex&apos;s Defense:
+                      {partnerB}&apos;s Defense:
                     </label>
                     <textarea
                       rows={3}
-                      value={customAlexClaim}
-                      onChange={(e) => setCustomAlexClaim(e.target.value)}
-                      placeholder="Alex's defense or counter-allegation..."
+                      value={customClaimB}
+                      onChange={(e) => setCustomClaimB(e.target.value)}
+                      placeholder={`${partnerB}'s defense or counter-allegation...`}
                       style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--line)', fontSize: '13.5px' }}
                     />
                   </div>
@@ -289,15 +297,15 @@ export default function CourtPage() {
                     padding: '4px 10px',
                     borderRadius: '999px',
                     background:
-                      verdict.guiltyParty === 'Mia'
+                      verdict.guiltyParty === partnerA
                         ? '#FFF0F5'
-                        : verdict.guiltyParty === 'Alex'
+                        : verdict.guiltyParty === partnerB
                         ? '#F0F6FF'
                         : '#F3E8FF',
                     color:
-                      verdict.guiltyParty === 'Mia'
+                      verdict.guiltyParty === partnerA
                         ? '#E11D48'
-                        : verdict.guiltyParty === 'Alex'
+                        : verdict.guiltyParty === partnerB
                         ? '#2563EB'
                         : '#7C3AED',
                   }}

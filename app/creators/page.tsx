@@ -218,7 +218,7 @@ export default function CreatorsPage() {
                 <input
                   type="text"
                   required
-                  placeholder="Mia Smith"
+                  placeholder="Your Full Name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   style={{

@@ -15,14 +15,7 @@ import type { PassportStamp, CoupleTicketProfile } from '@/types/passport';
 export function usePassport() {
   const [unlockedIds, setUnlockedIds] = useState<string[]>([]);
   const [stampNotes, setStampNotesState] = useState<Record<string, string>>({});
-  const [profile, setProfileState] = useState<CoupleTicketProfile>({
-    partner1: 'Mia',
-    partner2: 'Alex',
-    originCity: 'Seoul 🇰🇷 (GMT+9)',
-    destinationCity: 'San Francisco 🇺🇸 (GMT-7)',
-    anniversaryDate: '2024.11.14',
-    seatNumber: '1A (Beside You)',
-  });
+  const [profile, setProfileState] = useState<CoupleTicketProfile>(() => getCoupleTicketProfile());
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
@@ -30,6 +23,16 @@ export function usePassport() {
     setStampNotesState(getStampNotes());
     setProfileState(getCoupleTicketProfile());
     setIsLoaded(true);
+
+    const handleProfileSync = () => {
+      setProfileState(getCoupleTicketProfile());
+    };
+    window.addEventListener('angie_couple_profile_updated', handleProfileSync);
+    window.addEventListener('storage', handleProfileSync);
+    return () => {
+      window.removeEventListener('angie_couple_profile_updated', handleProfileSync);
+      window.removeEventListener('storage', handleProfileSync);
+    };
   }, []);
 
   const unlockStamp = useCallback((stampId: string) => {

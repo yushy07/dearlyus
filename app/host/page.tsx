@@ -2,11 +2,12 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Ribbon, Navbar, Confetti } from '@/components/shared';
+import { Ribbon, Navbar, Confetti, CoupleNameBar } from '@/components/shared';
 import { sounds } from '@/lib/sound';
 import { downloadReceiptPNG, DateReceiptData } from '@/lib/receipt-canvas';
 import { ThermalReceiptModal } from '@/components/shared/ThermalReceiptModal';
 import { CupidotBot, BotState } from '@/components/bot/CupidotBot';
+import { useCoupleProfile } from '@/lib/couple';
 
 interface HostScenario {
   id: number;
@@ -46,6 +47,7 @@ export default function DateHostPage() {
   const [partnerAPick, setPartnerAPick] = useState<number | null>(null);
   const [partnerBPick, setPartnerBPick] = useState<number | null>(null);
   const [revealed, setRevealed] = useState(false);
+  const { partnerA, partnerB } = useCoupleProfile();
   const [hostCommentary, setHostCommentary] = useState<string | null>(null);
   const [confettiActive, setConfettiActive] = useState(false);
   const [totalRounds, setTotalRounds] = useState(1);
@@ -84,8 +86,8 @@ export default function DateHostPage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        partnerA: { name: 'Mia', answer: scenario.options[partnerAPick] },
-        partnerB: { name: 'Alex', answer: scenario.options[partnerBPick] },
+        partnerA: { name: partnerA, answer: scenario.options[partnerAPick] },
+        partnerB: { name: partnerB, answer: scenario.options[partnerBPick] },
         mode: 'host',
         mood: 'playful',
         history: updatedHistory,
@@ -147,14 +149,11 @@ export default function DateHostPage() {
 
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '880px' }}>
         {/* 3D Cupidot Mascot Host */}
-        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <div style={{ width: '190px', height: '190px', margin: '0 auto -12px' }}>
             <CupidotBot state={botState} scale={2.2} />
           </div>
-          <span className="eyebrow" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            <span>ʚ🤖💘ɞ</span>
-            <span>CUPIDOT · 3D DATE HOST</span>
-          </span>
+          <CoupleNameBar />
           <h1 style={{ fontSize: 'clamp(28px, 4.5vw, 42px)', fontWeight: 800, margin: '8px 0 10px' }}>
             The <span className="grad">&ldquo;Third Wheel&rdquo;</span> Host
           </h1>
@@ -187,7 +186,7 @@ export default function DateHostPage() {
 
           {/* Two-Player Lock-in Grid */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '28px' }}>
-            {/* Player A (Mia) */}
+            {/* Player A */}
             <div
               style={{
                 background: '#FFF5F8',
@@ -197,7 +196,7 @@ export default function DateHostPage() {
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                <span style={{ fontWeight: 800, fontSize: '14px', color: 'var(--pink)' }}>🌸 Mia&apos;s Strategy</span>
+                <span style={{ fontWeight: 800, fontSize: '14px', color: 'var(--pink)' }}>🌸 {partnerA}&apos;s Strategy</span>
                 <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: partnerAPick !== null ? '#0A7D4D' : 'var(--ink-soft)', fontWeight: 700 }}>
                   {partnerAPick !== null ? '✓ Locked In' : 'Pick one...'}
                 </span>
@@ -226,7 +225,7 @@ export default function DateHostPage() {
               </div>
             </div>
 
-            {/* Player B (Alex) */}
+            {/* Player B */}
             <div
               style={{
                 background: '#F0F7FF',
@@ -236,7 +235,7 @@ export default function DateHostPage() {
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                <span style={{ fontWeight: 800, fontSize: '14px', color: 'var(--blue)' }}>💙 Alex&apos;s Strategy</span>
+                <span style={{ fontWeight: 800, fontSize: '14px', color: 'var(--blue)' }}>💙 {partnerB}&apos;s Strategy</span>
                 <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: partnerBPick !== null ? '#0A7D4D' : 'var(--ink-soft)', fontWeight: 700 }}>
                   {partnerBPick !== null ? '✓ Locked In' : 'Pick one...'}
                 </span>
@@ -292,7 +291,7 @@ export default function DateHostPage() {
                 >
                   {partnerAPick === partnerBPick
                     ? '✨ Unanimous Plan! You both chose the exact same adventure!'
-                    : `⚡ Different approaches! Mia voted for "${scenario.options[partnerAPick!]}" while Alex chose "${scenario.options[partnerBPick!]}".`}
+                    : `⚡ Different approaches! ${partnerA} voted for "${scenario.options[partnerAPick!]}" while ${partnerB} chose "${scenario.options[partnerBPick!]}".`}
                 </div>
 
                 {hostCommentary && (
@@ -334,8 +333,8 @@ export default function DateHostPage() {
                       setReceiptModalData({
                         roomCode: 'KX7RM',
                         date: new Date().toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }),
-                        partnerA: 'Mia',
-                        partnerB: 'Alex',
+                        partnerA,
+                        partnerB,
                         items: scenarios.slice(0, currentIdx + 1).map((sc, i) => ({
                           number: `0${i + 1}`,
                           topic: sc.question.slice(0, 26),

@@ -3,7 +3,7 @@
  * 
  * Deeply analyzes multi-round conversation history, detects recurring couple archetypes,
  * identifies contradictions, tracks power dynamics, and synthesizes dilemmas that
- * weave previous answers directly together.
+ * weave previous answers directly together for ANY couple worldwide.
  */
 
 import { QuestionRequest, GeneratedQuestion } from './gemini';
@@ -22,7 +22,7 @@ export const CUPIDOT_THOUGHTS = [
   "Analyzing who secretly holds the relationship power... 👑",
   "Spotting funny contradictions in your choices... 🧐",
   "Weaving your late-night lore into the next dilemma... 💘",
-  "Calculating compromise friction across 11,420 km... ⚡",
+  "Calculating compromise friction across the miles... ⚡",
   "Matching your love language against your vacation instincts... 🗺️",
   "Consulting the Cupid archives on couple psychology... 🧠",
   "Crafting a dilemma neither of you can dodge... 🌶️",
@@ -73,13 +73,13 @@ function analyzeThemes(req: QuestionRequest): ThemeAnalysis {
   }));
 
   return {
-    hasTravel: /(flight|trip|airport|travel|tokyo|paris|city|wander|pack|explore|bike|train)/.test(allText),
-    hasFood: /(food|eat|ramen|dinner|coffee|cafe|pancake|snack|cook|bakery|dessert|breakfast)/.test(allText),
-    hasSleep: /(sleep|bed|nap|morning|noon|wake|snooze|pajamas|exhausted|jetlag)/.test(allText),
-    hasIntimacy: /(hug|cuddle|kiss|touch|holding|face|bedroom|blush|love|romantic|forehead)/.test(allText),
-    hasArgument: /(argument|fight|disagree|mad|pout|silent|stubborn|yell|apologize|peace)/.test(allText),
+    hasTravel: /(flight|trip|airport|travel|city|wander|pack|explore|bike|train|hotel)/.test(allText),
+    hasFood: /(food|eat|dinner|coffee|cafe|pancake|snack|cook|bakery|dessert|breakfast|ramen|pizza)/.test(allText),
+    hasSleep: /(sleep|bed|nap|morning|noon|wake|snooze|pajamas|exhausted|jetlag|couch)/.test(allText),
+    hasIntimacy: /(hug|cuddle|kiss|touch|holding|face|bedroom|blush|love|romantic|forehead|hand)/.test(allText),
+    hasArgument: /(argument|fight|disagree|mad|pout|silent|stubborn|yell|apologize|peace|guilty)/.test(allText),
     hasJealousy: /(jealous|flirt|territory|cute|look|stranger|protective|attention)/.test(allText),
-    hasLateNight: /(late|night|3 am|midnight|camera|facetime|video|call|freeze|phone)/.test(allText),
+    hasLateNight: /(late|night|midnight|camera|facetime|video|call|freeze|phone|text)/.test(allText),
     agreementCount,
     totalRounds: history.length + 1,
     prevRounds,
@@ -88,11 +88,11 @@ function analyzeThemes(req: QuestionRequest): ThemeAnalysis {
 
 /**
  * Procedural Pattern & Thread Weaver
- * Connects previous answers across rounds into new dilemmas
+ * Connects previous answers across rounds into new dilemmas for any couple
  */
 export function generateCupidotDilemma(req: QuestionRequest): GeneratedQuestion {
-  const nameA = req.partnerA?.name || 'Mia';
-  const nameB = req.partnerB?.name || 'Alex';
+  const nameA = req.partnerA?.name?.trim() || 'Partner 1';
+  const nameB = req.partnerB?.name?.trim() || 'Partner 2';
   const ansA = req.partnerA?.answer || 'loving our moments';
   const ansB = req.partnerB?.answer || 'being together';
 
@@ -107,7 +107,7 @@ export function generateCupidotDilemma(req: QuestionRequest): GeneratedQuestion 
 
     if (analysis.hasFood && analysis.hasSleep) {
       return {
-        question: `Connecting threads from Round 1 & 2: earlier ${nameA} leaned toward "${prevA}", while ${nameB} preferred comfort. When you finally close the distance, who is dragging whom out of bed for food at 11 PM?`,
+        question: `Connecting threads from Round 1 & 2: earlier ${nameA} leaned toward "${prevA}", while ${nameB} preferred comfort. When you finally close the distance, who is dragging whom out of bed for midnight food?`,
         options: [
           `${nameA} uses puppy eyes until ${nameB} puts on shoes`,
           `${nameB} orders food delivery directly to the bed instead`,
@@ -121,14 +121,14 @@ export function generateCupidotDilemma(req: QuestionRequest): GeneratedQuestion 
 
     if (analysis.hasTravel && analysis.hasIntimacy) {
       return {
-        question: `Connecting your travel and intimacy answers: in the previous round, you chose "${prevA}" and "${prevB}". On a 14-hour flight together, who falls asleep on the other's shoulder within 20 minutes of takeoff?`,
+        question: `Connecting your travel and intimacy answers: in the previous round, you chose "${prevA}" and "${prevB}". On a long-haul flight together, who falls asleep on the other's shoulder within 20 minutes of takeoff?`,
         options: [
           `${nameA} passes out immediately using ${nameB} as a human pillow`,
           `${nameB} claims they aren't tired, then drools on ${nameA}'s jacket`,
           `Both fight over the middle armrest while holding hands`,
-          `We stay awake sharing one pair of wired headphones watching movies`,
+          `We stay awake sharing one pair of earphones watching movies`,
         ],
-        commentary: `Cupidot [Thread Weaved]: "Tracking your journey lore: high physical affection combined with international travel endurance! ✈️"`,
+        commentary: `Cupidot [Thread Weaved]: "Tracking your journey lore: high physical affection combined with travel endurance! ✈️"`,
         source: 'fallback',
       };
     }
@@ -184,11 +184,11 @@ export function generateCupidotDilemma(req: QuestionRequest): GeneratedQuestion 
       question: `Deep Thread: In this round, ${nameA} answered "${ansA.slice(0, 24)}" and ${nameB} chose "${ansB.slice(0, 24)}". If either of you had a genuinely horrible day, what brings your heart back to life faster than anything?`,
       options: [
         `An uninterrupted voice note reminding you why everything will be okay`,
-        `A surprise food delivery arriving at your door from across the world`,
+        `A surprise food delivery arriving at your door from across the miles`,
         `Falling asleep together on call with no pressure to talk`,
         `A goofy 60-second video making fun of the entire situation`,
       ],
-      commentary: `Cupidot [Emotional Profile]: "Connecting your attachment styles: distance is hard, but your emotional safety net is ironclad. 💖"`,
+      commentary: `Cupidot [Emotional Profile]: "Connecting your attachment styles: distance is tough, but your emotional safety net is ironclad. 💖"`,
       source: 'fallback',
     };
   }
@@ -210,7 +210,7 @@ export function generateCupidotDilemma(req: QuestionRequest): GeneratedQuestion 
 /**
  * Manual poke dilemma generator with cheeky relationship tests
  */
-export function getPokedCupidotDilemma(nameA = 'Mia', nameB = 'Alex'): CupidotDilemma {
+export function getPokedCupidotDilemma(nameA = 'Partner 1', nameB = 'Partner 2'): CupidotDilemma {
   const dilemmas: CupidotDilemma[] = [
     {
       question: `Poke penalty! Connecting your relationship habits: what is the one thing ${nameA} does on camera that secretly makes ${nameB}'s heart skip a beat?`,
@@ -220,7 +220,7 @@ export function getPokedCupidotDilemma(nameA = 'Mia', nameB = 'Alex'): CupidotDi
         `Biting their lip when trying not to laugh at a bad joke`,
         `Staring intensely at the screen with that little warm smile`,
       ],
-      commentary: `Cupidot: "11,420 km away and you're still giving each other butterflies through an iPhone? Gross. I love it. 💖"`,
+      commentary: `Cupidot: "Miles apart and you're still giving each other butterflies through a screen? Gross. I love it. 💖"`,
       tag: 'spicy',
     },
     {
@@ -267,29 +267,35 @@ export function getPokedCupidotDilemma(nameA = 'Mia', nameB = 'Alex'): CupidotDi
 
 export interface CourtVerdict {
   verdictTitle: string;
-  guiltyParty: 'Mia' | 'Alex' | 'Both' | 'Mutual Chaos';
+  guiltyParty: string;
   reasoning: string;
   sentence: string;
 }
 
-export function judgeCourtCase(title: string, claimA: string, claimB: string): CourtVerdict {
+export function judgeCourtCase(
+  title: string,
+  claimA: string,
+  claimB: string,
+  nameA = 'Partner 1',
+  nameB = 'Partner 2'
+): CourtVerdict {
   const combined = `${title} ${claimA} ${claimB}`.toLowerCase();
 
   if (/sleep|couch|nap|tired|bed|snooze|alarm/.test(combined)) {
     return {
       verdictTitle: 'Guilty of Unlawful Couch-Coma & Notification Neglect ⚖️',
-      guiltyParty: 'Alex',
-      reasoning: 'The court finds Defendant Alex guilty under Statute 14: falling asleep without properly clocking out on FaceTime constitutes gross negligence of couple snuggling protocols.',
-      sentence: 'Alex must send 3 sleepy morning voice notes tomorrow and buy Mia her favorite boba milk tea or iced matcha.',
+      guiltyParty: nameB,
+      reasoning: `The court finds Defendant ${nameB} guilty under Statute 14: falling asleep without properly clocking out on call constitutes gross negligence of couple snuggling protocols.`,
+      sentence: `${nameB} must send 3 sleepy morning voice notes tomorrow and order ${nameA} their favorite drink or dessert.`,
     };
   }
 
   if (/playlist|music|song|skip|aux|sound|artist/.test(combined)) {
     return {
       verdictTitle: 'Guilty of Egregious Bluetooth Monopoly 📻',
-      guiltyParty: 'Mia',
-      reasoning: 'Plaintiff Mia demonstrated blatant disregard for constitutional AUX rights by skipping tracks 18 seconds in before the beat even dropped.',
-      sentence: 'Alex is granted unilateral control of the Bluetooth speaker for 45 uninterrupted minutes without eye-rolling.',
+      guiltyParty: nameA,
+      reasoning: `Plaintiff ${nameA} demonstrated blatant disregard for constitutional AUX rights by skipping tracks 18 seconds in before the beat even dropped.`,
+      sentence: `${nameB} is granted unilateral control of the playlist/speaker for 45 uninterrupted minutes without eye-rolling.`,
     };
   }
 
@@ -297,26 +303,26 @@ export function judgeCourtCase(title: string, claimA: string, claimB: string): C
     return {
       verdictTitle: 'Legitimate Asset Seizure Recognized by International Law 🧥',
       guiltyParty: 'Neither',
-      reasoning: 'Under the Long-Distance Maritime Convention of 2024, once an oversized hoodie enters a girlfriend’s suitcase, legal ownership permanently transfers.',
-      sentence: 'Alex must accept the loss with stoic grace and spray his cologne on the next backup hoodie.',
+      reasoning: `Under the Long-Distance Maritime Convention, once a favorite clothing item enters ${nameA}’s suitcase, legal ownership permanently transfers.`,
+      sentence: `${nameB} must accept the loss with stoic grace and spray their cologne or perfume on the next backup hoodie.`,
     };
   }
 
   if (/read|reply|text|ignore|seen|hours|ghost/.test(combined)) {
     return {
       verdictTitle: 'Criminal Neglect of the Notification Tray 📱',
-      guiltyParty: 'Alex',
-      reasoning: 'Leaving someone on "Seen" for over 42 minutes while active on Instagram Stories is a Class 1 romantic misdemeanor.',
-      sentence: 'Alex must record a 60-second acoustic love ballad or provide 15 consecutive complimentary text messages.',
+      guiltyParty: nameB,
+      reasoning: `Leaving someone on "Seen" for over 42 minutes while active elsewhere is a Class 1 romantic misdemeanor.`,
+      sentence: `${nameB} must record a 60-second acoustic love ballad or provide 15 consecutive compliments to ${nameA}.`,
     };
   }
 
   if (/food|fries|bite|eat|dinner|hungry|share/.test(combined)) {
     return {
-      verdictTitle: 'The "I\'m Not Hungry" Fry Theft Felony 🍟',
-      guiltyParty: 'Mia',
-      reasoning: 'Saying "I just want one bite" and subsequently consuming 40% of the entrée constitutes romantic grand larceny.',
-      sentence: 'Mia must treat Alex to midnight ramen or hand-feed him the first 3 bites of dessert on date night.',
+      verdictTitle: 'The "I\'m Not Hungry" Food Theft Felony 🍟',
+      guiltyParty: nameA,
+      reasoning: `Saying "I just want one bite" and subsequently consuming 40% of ${nameB}'s food constitutes romantic grand larceny.`,
+      sentence: `${nameA} must treat ${nameB} to midnight food or hand-feed them the first 3 bites of dessert on date night.`,
     };
   }
 
@@ -330,16 +336,16 @@ export function judgeCourtCase(title: string, claimA: string, claimB: string): C
     return {
       verdictTitle: `Passionate Drama Verdict on "${title.slice(0, 32)}" ⚖️`,
       guiltyParty: 'Both',
-      reasoning: `Judge Cupidot notes Mia argued with intense theatrical passion (${exclamationsA} exclamation marks!), while Alex attempted stoic avoidance. Both parties are hopelessly obsessed with each other.`,
-      sentence: 'Both parties are sentenced to a mandatory 20-minute silent forehead-touch cuddle upon your next airport reunion.',
+      reasoning: `Judge Cupidot notes ${nameA} argued with intense theatrical passion (${exclamationsA} exclamation marks!), while ${nameB} attempted stoic avoidance. Both parties are hopelessly obsessed with each other.`,
+      sentence: `Both parties are sentenced to a mandatory 20-minute silent forehead-touch cuddle upon your next airport reunion.`,
     };
   }
 
   return {
     verdictTitle: `Compromise Decreed on "${title.slice(0, 32)}" 🏛️`,
     guiltyParty: 'Mutual Chaos',
-    reasoning: `After forensic evaluation of the relationship evidence, Judge Cupidot rules that petty arguments are simply poorly disguised requests for extra attention.`,
-    sentence: 'The accused must immediately send a silly face selfie, and the accuser must reply with an audio recording saying "I still adore you."',
+    reasoning: `After forensic evaluation of the relationship evidence, Judge Cupidot rules that petty arguments between ${nameA} and ${nameB} are simply poorly disguised requests for extra attention.`,
+    sentence: `The accused must immediately send a silly face selfie, and the accuser must reply with an audio recording saying "I still adore you."`,
   };
 }
 
@@ -348,41 +354,48 @@ export function judgeCourtCase(title: string, claimA: string, claimB: string): C
 // ---------------------------------------------------------------------------
 
 export interface DebateVerdict {
-  winner: 'Mia' | 'Alex' | 'Dead Heat Draw';
+  winner: string;
   scoreA: number;
   scoreB: number;
   analysis: string;
   penalty: string;
 }
 
-export function judgeDebate(topic: string, argA: string, argB: string): DebateVerdict {
+export function judgeDebate(
+  topic: string,
+  argA: string,
+  argB: string,
+  nameA = 'Partner 1',
+  nameB = 'Partner 2'
+): DebateVerdict {
   const lenA = argA.trim().length;
   const lenB = argB.trim().length;
 
-  let scoreA = Math.min(96, Math.max(68, 75 + Math.floor((lenA % 15))));
-  let scoreB = Math.min(96, Math.max(68, 73 + Math.floor((lenB % 17))));
+  let scoreA = Math.min(96, Math.max(68, 75 + Math.floor(lenA % 15)));
+  let scoreB = Math.min(96, Math.max(68, 73 + Math.floor(lenB % 17)));
 
   if (lenA > lenB + 40) scoreA += 5;
   if (lenB > lenA + 40) scoreB += 5;
 
-  let winner: 'Mia' | 'Alex' | 'Dead Heat Draw' = 'Dead Heat Draw';
-  if (scoreA > scoreB) winner = 'Mia';
-  else if (scoreB > scoreA) winner = 'Alex';
+  let winner = 'Dead Heat Draw';
+  if (scoreA > scoreB) winner = nameA;
+  else if (scoreB > scoreA) winner = nameB;
 
   const penalties = [
-    "Loser must make breakfast in bed and serve it wearing a makeshift chef's hat on Day 1 of reunion.",
-    "Loser must record a 30-second dramatic Shakespearean monologue declaring the winner's brilliance.",
-    "Loser must let the winner pick the movie tonight with ZERO veto power allowed.",
-    "Loser owes the winner a 15-minute shoulder massage while listening to the winner's favorite album.",
+    `Loser must make breakfast in bed and serve it wearing a makeshift chef's hat on Day 1 of reunion.`,
+    `Loser must record a 30-second dramatic Shakespearean monologue declaring ${winner}'s brilliance.`,
+    `Loser must let ${winner} pick the movie tonight with ZERO veto power allowed.`,
+    `Loser owes ${winner} a 15-minute shoulder massage while listening to ${winner}'s favorite album.`,
   ];
 
   const penalty = penalties[Math.floor(Math.random() * penalties.length)];
 
-  const analysis = winner === 'Mia'
-    ? `Mia clinched victory through ruthless emotional conviction and superior rhetorical flair. Alex made a valiant effort, but folded under the weight of Mia's undeniable couple authority.`
-    : winner === 'Alex'
-    ? `Alex carried the round with calm, calculated logic and devastating counter-points. Mia's passionate defense was admirable, but Alex's argument was bulletproof.`
-    : `A spectacular ideological deadlock! Both argued with such unhinged chemistry that neither deserved to lose.`;
+  const analysis =
+    winner === nameA
+      ? `${nameA} clinched victory through ruthless emotional conviction and superior rhetorical flair. ${nameB} made a valiant effort, but folded under the weight of ${nameA}'s undeniable couple authority.`
+      : winner === nameB
+      ? `${nameB} carried the round with calm, calculated logic and devastating counter-points. ${nameA}'s passionate defense was admirable, but ${nameB}'s argument was bulletproof.`
+      : `A spectacular ideological deadlock! Both ${nameA} and ${nameB} argued with such unhinged chemistry that neither deserved to lose.`;
 
   return {
     winner,
@@ -407,13 +420,13 @@ export interface GeneratedBucketIdea {
 export function generateBucketDate(existingTitles: string[] = []): GeneratedBucketIdea {
   const pool: GeneratedBucketIdea[] = [
     {
-      title: 'Midnight 24-Hour Convenience Store Feast in Tokyo/Seoul',
+      title: 'Midnight 24-Hour Convenience Store Feast in an Exciting City',
       category: 'Food',
       icon: '🍙',
-      whyCupidotLovesIt: 'Pure romantic chaos: holding hands in fluorescent aisles trying every weird snack at 2:30 AM.',
+      whyCupidotLovesIt: 'Pure romantic chaos: holding hands in fluorescent aisles trying every snack at 2:30 AM.',
     },
     {
-      title: 'Synchronized Candlelit FaceTime Steak Dinner Across Timezones',
+      title: 'Synchronized Candlelit FaceTime Dinner Across Timezones',
       category: 'Virtual',
       icon: '🕯️',
       whyCupidotLovesIt: 'Dressing up in formal attire in your own bedroom just to eat with the person on your screen.',
@@ -496,13 +509,13 @@ export function getCupidotPoseIdea(): PoseIdea {
   return PHOTOBOOTH_POSES[Math.floor(Math.random() * PHOTOBOOTH_POSES.length)];
 }
 
-export function generateCupidotCaption(nameA = 'Mia', nameB = 'Alex'): string {
+export function generateCupidotCaption(nameA = 'Partner 1', nameB = 'Partner 2'): string {
   const captions = [
-    `11,420 km apart, but our chemistry still broke the camera lens ✨`,
-    `Proof that distance is just geography, not a match for us 📸💘`,
-    `Two screens, one shared heartbeat. Forever & always.`,
+    `${nameA} & ${nameB}: Across every timezone, our chemistry still broke the camera lens ✨`,
+    `Proof that distance is just geography, not a match for ${nameA} & ${nameB} 📸💘`,
+    `Two screens, one shared heartbeat. ${nameA} ♡ ${nameB} forever.`,
     `Counting down every sunrise until these photos are in the same frame.`,
-    `In a world of 8 billion people, I'd still wait across timezones for you.`,
+    `In a world of 8 billion people, ${nameA} would still wait across the globe for ${nameB}.`,
   ];
   return captions[Math.floor(Math.random() * captions.length)];
 }

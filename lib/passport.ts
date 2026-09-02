@@ -1,3 +1,5 @@
+import { getStoredCoupleProfile } from './couple';
+
 // Couple Date Passport & Collectible Korean Souvenir Stamps System with Romantic Notes
 
 export interface PassportStamp {
@@ -294,13 +296,24 @@ const DEFAULT_PROFILE: CoupleTicketProfile = {
 export function getCoupleTicketProfile(): CoupleTicketProfile {
   if (typeof window === 'undefined') return DEFAULT_PROFILE;
   try {
+    const couple = getStoredCoupleProfile();
     const saved = localStorage.getItem('angie_couple_ticket_profile');
-    if (saved) return { ...DEFAULT_PROFILE, ...JSON.parse(saved) };
+    if (saved) {
+      return {
+        ...DEFAULT_PROFILE,
+        partner1: couple.partnerA,
+        partner2: couple.partnerB,
+        ...JSON.parse(saved),
+      };
+    }
     
-    // Fallback to legacy nicknames if available
-    const p1 = localStorage.getItem('angie_user_nickname') || DEFAULT_PROFILE.partner1;
-    const p2 = localStorage.getItem('angie_partner_nickname') || DEFAULT_PROFILE.partner2;
-    return { ...DEFAULT_PROFILE, partner1: p1, partner2: p2 };
+    return {
+      ...DEFAULT_PROFILE,
+      partner1: couple.partnerA,
+      partner2: couple.partnerB,
+      originCity: couple.cityA || DEFAULT_PROFILE.originCity,
+      destinationCity: couple.cityB || DEFAULT_PROFILE.destinationCity,
+    };
   } catch {
     return DEFAULT_PROFILE;
   }

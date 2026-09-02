@@ -16,7 +16,9 @@ import { Confetti } from '@/components/shared/Confetti';
 import { Ribbon } from '@/components/shared/Ribbon';
 import { TiltedCard, ShinyText } from '@/components/ui';
 import { RoomInviteModal } from '@/components/shared/RoomInviteModal';
+import { CoupleNameBar } from '@/components/shared/CoupleNameBar';
 import { getCupidotPoseIdea, generateCupidotCaption, PoseIdea } from '@/lib/cupidot';
+import { useCoupleProfile } from '@/lib/couple';
 
 export interface PlacedSticker {
   id: string;
@@ -85,10 +87,17 @@ export default function PhotoboothPage() {
   const [selectedLayout, setSelectedLayout] = useState(LAYOUTS[0]);
   const [isGroupMode, setIsGroupMode] = useState(false);
   const [isSoloMode, setIsSoloMode] = useState(false);
-  const [nickname, setNickname] = useState('Mia');
-  const [partnerName, setPartnerName] = useState('Alex');
-  const [coupleName, setCoupleName] = useState('Mia ♡ Alex');
+  const { partnerA, partnerB, cityA, cityB } = useCoupleProfile();
+  const [nickname, setNickname] = useState(partnerA);
+  const [partnerName, setPartnerName] = useState(partnerB);
+  const [coupleName, setCoupleName] = useState(`${partnerA} ♡ ${partnerB}`);
   const [micMuted, setMicMuted] = useState(false);
+
+  useEffect(() => {
+    setNickname(partnerA);
+    setPartnerName(partnerB);
+    setCoupleName(`${partnerA} ♡ ${partnerB}`);
+  }, [partnerA, partnerB]);
 
   // Booth camera & feed state
   const [feedMode, setFeedMode] = useState<'simulated' | 'webcam'>('simulated');
@@ -673,11 +682,11 @@ export default function PhotoboothPage() {
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#0a7d4d' }}></span>
-                  <span style={{ fontSize: '13px', fontWeight: 700 }}>{nickname} (Calgary) — Ready</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700 }}>{nickname} ({cityA || 'Local'}) — Ready</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#0a7d4d' }}></span>
-                  <span style={{ fontSize: '13px', fontWeight: 700 }}>{partnerName} (Jakarta) — Connected</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700 }}>{partnerName} ({cityB || 'Remote'}) — Connected</span>
                 </div>
               </div>
 
@@ -806,15 +815,15 @@ export default function PhotoboothPage() {
                 ) : (
                   <div className="booth-duo-view">
                     <div className="booth-feed-panel">
-                      <img src="/photos/face-calgary.webp" alt="Calgary feed" />
+                      <img src="/photos/face-calgary.webp" alt="Partner 1 feed" />
                       <div className="feed-city-badge pink">
-                        <span className="dot"></span> {nickname} (Calgary)
+                        <span className="dot"></span> {nickname} ({cityA || 'Local'})
                       </div>
                     </div>
                     <div className="booth-feed-panel">
-                      <img src="/photos/face-jakarta.webp" alt="Jakarta feed" />
+                      <img src="/photos/face-jakarta.webp" alt="Partner 2 feed" />
                       <div className="feed-city-badge blue">
-                        <span className="dot"></span> {partnerName} (Jakarta)
+                        <span className="dot"></span> {partnerName} ({cityB || 'Remote'})
                       </div>
                     </div>
                   </div>

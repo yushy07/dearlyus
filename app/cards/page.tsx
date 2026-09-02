@@ -2,10 +2,11 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Ribbon, Navbar } from '@/components/shared';
+import { Ribbon, Navbar, CoupleNameBar } from '@/components/shared';
 import { sounds } from '@/lib/sound';
 import { SwipeDeck, GlowBadge, ScrollProgress, ScrollReveal } from '@/components/ui';
 import { ScratchOffCard } from '@/components/cards/ScratchOffCard';
+import { useCoupleProfile } from '@/lib/couple';
 
 interface Card {
   tier: string;
@@ -23,6 +24,7 @@ const INITIAL_DECK: Card[] = [
 ];
 
 export default function CardsPage() {
+  const { partnerA, partnerB } = useCoupleProfile();
   const [deck, setDeck] = useState<Card[]>(INITIAL_DECK);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -66,8 +68,8 @@ export default function CardsPage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        partnerA: { name: 'Mia', answer: myAnswer || 'Loving our late night talks' },
-        partnerB: { name: 'Alex', answer: 'Feeling closest when we plan our future' },
+        partnerA: { name: partnerA, answer: myAnswer || 'Loving our late night talks' },
+        partnerB: { name: partnerB, answer: 'Feeling closest when we plan our future' },
         mode: 'cards',
         mood: 'deep',
         history: updatedHistory,
@@ -115,7 +117,7 @@ export default function CardsPage() {
 
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '720px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <span className="eyebrow">Honest Cards · Realtime Connection</span>
+          <CoupleNameBar />
           <h1 style={{ fontSize: 'clamp(28px, 4vw, 42px)', marginBottom: '10px' }}>
             The questions you <span className="grad">keep avoiding</span>.
           </h1>
@@ -258,13 +260,13 @@ export default function CardsPage() {
             <div style={{ display: 'grid', gap: '16px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
-                  Your Private Answer (Mia):
+                  Your Private Answer ({partnerA}):
                 </label>
                 <textarea
                   rows={3}
                   value={myAnswer}
                   onChange={(e) => setMyAnswer(e.target.value)}
-                  placeholder="Type your honest thoughts... Alex cannot see until both lock in."
+                  placeholder={`Type your honest thoughts... ${partnerB} cannot see until both lock in.`}
                   style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--line)', fontSize: '14.5px' }}
                 />
               </div>
@@ -280,11 +282,11 @@ export default function CardsPage() {
           ) : (
             <div style={{ display: 'grid', gap: '16px' }}>
               <div style={{ background: 'var(--paper)', padding: '16px', borderRadius: '10px', border: '1px solid var(--line)' }}>
-                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--pink)' }}>🌸 Mia&apos;s Answer:</div>
+                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--pink)' }}>🌸 {partnerA}&apos;s Answer:</div>
                 <p style={{ margin: '6px 0 0', fontSize: '15px', lineHeight: 1.5 }}>{myAnswer}</p>
               </div>
               <div style={{ background: 'var(--paper)', padding: '16px', borderRadius: '10px', border: '1px solid var(--line)' }}>
-                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--blue)' }}>💙 Alex&apos;s Answer:</div>
+                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--blue)' }}>💙 {partnerB}&apos;s Answer:</div>
                 <p style={{ margin: '6px 0 0', fontSize: '15px', lineHeight: 1.5 }}>{partnerAnswer}</p>
               </div>
 

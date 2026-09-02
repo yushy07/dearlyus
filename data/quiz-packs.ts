@@ -19,7 +19,7 @@ export const QUIZ_PACKS: QuizPack[] = [
       },
       {
         q: 'Who usually falls asleep on the call first? 😴',
-        options: ['Definitely Mia 🌸', 'Always Alex 🌙', 'Simultaneous pass out 💤', 'Neither, we talk until 4am ☕'],
+        options: ['Definitely {partnerA} 🌸', 'Always {partnerB} 🌙', 'Simultaneous pass out 💤', 'Neither, we talk until 4am ☕'],
         honestAnswerIndex: 1,
       },
       {
@@ -28,8 +28,8 @@ export const QUIZ_PACKS: QuizPack[] = [
         honestAnswerIndex: 0,
       },
       {
-        q: 'What makes Mia laugh until she cries? 😂',
-        options: ['Terrible puns & dad jokes 🃏', 'Awkward video call lags 📶', 'Funny animal TikToks 🐱', 'Alex doing bad voice impressions 🎭'],
+        q: 'What makes {partnerA} laugh until they cry? 😂',
+        options: ['Terrible puns & dad jokes 🃏', 'Awkward video call lags 📶', 'Funny animal TikToks 🐱', '{partnerB} doing bad voice impressions 🎭'],
         honestAnswerIndex: 3,
       },
     ],
@@ -79,13 +79,13 @@ export const QUIZ_PACKS: QuizPack[] = [
         honestAnswerIndex: 1,
       },
       {
-        q: 'What is the most attractive thing Alex wears on camera? 👀',
+        q: 'What is the most attractive thing {partnerB} wears on camera? 👀',
         options: ['Messy morning hair & oversized hoodie', 'Clean crisp white shirt', 'Cozy glasses & beanie', 'Sweatpants & smile'],
         honestAnswerIndex: 0,
       },
       {
         q: 'Who is the bigger flirt when we text? 😏',
-        options: ['Mia with cute emojis & hints', 'Alex with smooth late-night lines', 'Equal flirty chaos', 'Whoever is caffeinated'],
+        options: ['{partnerA} with cute emojis & hints', '{partnerB} with smooth late-night lines', 'Equal flirty chaos', 'Whoever is caffeinated'],
         honestAnswerIndex: 0,
       },
       {
@@ -103,12 +103,12 @@ export const QUIZ_PACKS: QuizPack[] = [
     questions: [
       {
         q: 'Who panics more at the airport security line? 🛂',
-        options: ['Mia checking passport 14 times', 'Alex thinking they forgot something', 'Both completely calm', 'Neither, too excited to see each other'],
+        options: ['{partnerA} checking passport 14 times', '{partnerB} thinking they forgot something', 'Both completely calm', 'Neither, too excited to see each other'],
         honestAnswerIndex: 0,
       },
       {
         q: 'Window seat or aisle seat? 💺',
-        options: ['Window for views & sleep', 'Aisle for legroom', 'Middle as long as we are together', 'Window for Mia, Aisle for Alex'],
+        options: ['Window for views & sleep', 'Aisle for legroom', 'Middle as long as we are together', 'Window for {partnerA}, Aisle for {partnerB}'],
         honestAnswerIndex: 3,
       },
       {
@@ -182,7 +182,7 @@ export const QUIZ_PACKS: QuizPack[] = [
       },
       {
         q: 'Who will cry harder at the final one-way flight airport gate? 😭',
-        options: ['Mia (happy tears floodgate)', 'Alex (pretending not to cry)', 'Both ugly crying in public', 'Our families seeing us finally together'],
+        options: ['{partnerA} (happy tears floodgate)', '{partnerB} (pretending not to cry)', 'Both ugly crying in public', 'Our families seeing us finally together'],
         honestAnswerIndex: 2,
       },
     ],

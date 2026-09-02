@@ -1,12 +1,17 @@
-'use client';
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useCoupleProfile } from '@/lib/couple';
+import { CoupleNameBar } from '@/components/shared';
 
 export default function BirthdayPage() {
-  const [partnerName, setPartnerName] = useState('Mia');
-  const [customMsg, setCustomMsg] = useState('Happy Birthday my love! Even with 10,000 miles between us, you are the closest thing to my heart.');
+  const { partnerA, partnerB } = useCoupleProfile();
+  const [partnerName, setPartnerName] = useState(partnerB);
+  const [customMsg, setCustomMsg] = useState('Happy Birthday my love! Even with miles between us, you are the closest thing to my heart.');
   const [revealed, setRevealed] = useState(false);
+
+  useEffect(() => {
+    setPartnerName(partnerB);
+  }, [partnerB]);
 
   return (
     <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px' }}>
@@ -27,7 +32,7 @@ export default function BirthdayPage() {
 
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '720px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <span className="eyebrow">Birthday Gift Page · Sealed in Heart QR</span>
+          <CoupleNameBar />
           <h1 style={{ fontSize: 'clamp(28px, 4vw, 42px)', marginBottom: '10px' }}>
             A personalized gift page, <span className="grad">made for them</span>.
           </h1>

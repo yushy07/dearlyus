@@ -1,9 +1,8 @@
-'use client';
-
 import React, { useState } from 'react';
-import { Ribbon, Navbar, Confetti } from '@/components/shared';
+import { Ribbon, Navbar, Confetti, CoupleNameBar } from '@/components/shared';
 import { sounds } from '@/lib/sound';
 import { WaxSealEnvelope, ScrollProgress, ScrollReveal, GlowBadge } from '@/components/ui';
+import { useCoupleProfile } from '@/lib/couple';
 
 interface SealedCapsule {
   id: string;
@@ -15,6 +14,7 @@ interface SealedCapsule {
 }
 
 export default function LetterPage() {
+  const { partnerA, partnerB, cityA, cityB } = useCoupleProfile();
   const [unlockDate, setUnlockDate] = useState('2027-08-01');
   const [letterTitle, setLetterTitle] = useState('To Us on Our 2-Year Anniversary 💌');
   const [letterContent, setLetterContent] = useState(
@@ -29,7 +29,7 @@ export default function LetterPage() {
     {
       id: '1',
       title: 'Our 1st Anniversary Time Capsule',
-      author: 'Mia ♡ Alex',
+      author: `${partnerA} ♡ ${partnerB}`,
       unlockDate: '2026-10-15',
       content: 'Locked in the digital vault. Only accessible when the countdown timer hits zero.',
       stamp: '💖',
@@ -37,7 +37,7 @@ export default function LetterPage() {
     {
       id: '2',
       title: 'The Day We Close the Distance',
-      author: 'Alex',
+      author: partnerB,
       unlockDate: '2027-05-20',
       content: 'A secret letter written on a late night flight home.',
       stamp: '✈️',
@@ -53,7 +53,7 @@ export default function LetterPage() {
     const newCapsule: SealedCapsule = {
       id: Date.now().toString(),
       title: letterTitle,
-      author: 'Mia & Alex',
+      author: `${partnerA} & ${partnerB}`,
       unlockDate,
       content: letterContent,
       stamp,
@@ -90,7 +90,7 @@ export default function LetterPage() {
 
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '840px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <span className="eyebrow">Letters to the Future · Time Capsule</span>
+          <CoupleNameBar />
           <h1 style={{ fontSize: 'clamp(28px, 4vw, 42px)', marginBottom: '10px' }}>
             Write now, <span className="grad">open years from now</span>.
           </h1>
@@ -214,18 +214,18 @@ export default function LetterPage() {
           </div>
           <WaxSealEnvelope
             key={activeCapsule ? activeCapsule.id : 'default'}
-            sender={activeCapsule ? activeCapsule.author : 'Mia (Calgary)'}
-            recipient="Alex (Jakarta)"
-            sealDate={activeCapsule ? `Locked until ${activeCapsule.unlockDate}` : 'Locked until 2-Year Anniversary'}
+            sender={activeCapsule ? activeCapsule.author : `${partnerA} (${cityA || 'Local'})`}
+            recipient={`${partnerB} (${cityB || 'Remote'})`}
+            sealDate={activeCapsule ? `Locked until ${activeCapsule.unlockDate}` : 'Locked until Reunion Date'}
             letterContent={
               <div>
                 <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '22px', marginBottom: '14px', color: '#2B231E' }}>
-                  {activeCapsule ? activeCapsule.title : 'Dear Alex, on the day we close the distance ♡'}
+                  {activeCapsule ? activeCapsule.title : `Dear ${partnerB}, on the day we close the distance ♡`}
                 </h3>
                 <p style={{ fontFamily: 'var(--font-serif)', fontSize: '16px', lineHeight: 1.7, color: '#4A3E34', whiteSpace: 'pre-line' }}>
                   {activeCapsule
                     ? activeCapsule.content
-                    : `If you are reading this, every late-night flight, every airport hug, and every time zone hour was worth it.\nI loved you through 11,420 kilometers, and I love you even more today right next to you.\n\nForever yours,\nMia ♡`}
+                    : `If you are reading this, every late-night flight, every airport hug, and every time zone hour was worth it.\nI loved you across the miles, and I love you even more today right next to you.\n\nForever yours,\n${partnerA} ♡`}
                 </p>
               </div>
             }

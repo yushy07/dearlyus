@@ -1,9 +1,10 @@
-'use client';
-
 import React, { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useCoupleProfile } from '@/lib/couple';
+import { CoupleNameBar } from '@/components/shared';
 
 export default function DrawPage() {
+  const { partnerA, partnerB } = useCoupleProfile();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [color, setColor] = useState('#FF7BA3');
@@ -84,7 +85,7 @@ export default function DrawPage() {
 
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '780px' }}>
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <span className="eyebrow">Draw Together · Live Dual Canvas</span>
+          <CoupleNameBar />
           <h1 style={{ fontSize: 'clamp(28px, 4vw, 40px)', marginBottom: '10px' }}>
             Same prompt, <span className="grad">two canvases</span>.
           </h1>
@@ -162,7 +163,7 @@ export default function DrawPage() {
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
             <span style={{ fontSize: '12px', color: 'var(--ink-soft)' }}>
-              ✏️ Drawing with {color === '#FF7BA3' ? 'Mia (Pink)' : 'Alex (Blue)'}
+              ✏️ Drawing with {color === '#FF7BA3' ? `${partnerA} (Pink)` : `${partnerB} (Blue)`}
             </span>
             <button className="btn btn-grad" onClick={() => alert('Drawing saved to your shared scrapbook!')}>
               Save to Album 🖼️

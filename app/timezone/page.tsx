@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Ribbon, Navbar } from '@/components/shared';
+import { Ribbon, Navbar, CoupleNameBar } from '@/components/shared';
 import { sounds } from '@/lib/sound';
 import { InteractiveGlobe, calculateGreatCircleDistance } from '@/lib/globe';
+import { useCoupleProfile } from '@/lib/couple';
 
 interface PackingItem {
   id: string;
@@ -14,31 +15,35 @@ interface PackingItem {
 }
 
 export default function TimezoneHubPage() {
-  const [city1, setCity1] = useState('Calgary, CA (GMT-6)');
-  const [city2, setCity2] = useState('Jakarta, ID (GMT+7)');
-  const [offsetHours] = useState(13); // Jakarta is 13 hrs ahead of Calgary
+  const { partnerA, partnerB, cityA, cityB } = useCoupleProfile();
+  const [city1, setCity1] = useState(cityA);
+  const [city2, setCity2] = useState(cityB);
+  const [offsetHours] = useState(13);
   const [reunionDate, setReunionDate] = useState('2026-11-20T18:00');
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [heartbeatSent, setHeartbeatSent] = useState(false);
 
+  useEffect(() => {
+    setCity1(cityA);
+    setCity2(cityB);
+  }, [cityA, cityB]);
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const globeInstanceRef = useRef<InteractiveGlobe | null>(null);
 
-  // Calgary: 51.0447° N, 114.0719° W (-114.07)
-  // Jakarta: 6.2088° S (-6.2088), 106.8456° E (106.8456)
   const distanceKm = calculateGreatCircleDistance(51.0447, -114.0719, -6.2088, 106.8456);
 
   useEffect(() => {
     if (!canvasRef.current) return;
     const globe = new InteractiveGlobe(
       canvasRef.current,
-      { name: 'Calgary', lat: 51.0447, lng: -114.0719, color: '#5FA0FF' },
-      { name: 'Jakarta', lat: -6.2088, lng: 106.8456, color: '#FF7BA3' }
+      { name: cityA || partnerA, lat: 51.0447, lng: -114.0719, color: '#5FA0FF' },
+      { name: cityB || partnerB, lat: -6.2088, lng: 106.8456, color: '#FF7BA3' }
     );
     globe.start();
     globeInstanceRef.current = globe;
     return () => globe.stop();
-  }, []);
+  }, [cityA, cityB, partnerA, partnerB]);
 
   // Suitcase Packing Checklist
   const [packingList, setPackingList] = useState<PackingItem[]>([
@@ -120,8 +125,8 @@ export default function TimezoneHubPage() {
 
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '980px' }}>
         {/* Page Header */}
-        <div style={{ textAlign: 'center', marginBottom: '36px' }}>
-          <span className="eyebrow">Bridging the Distance</span>
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <CoupleNameBar />
           <h1 style={{ fontSize: 'clamp(28px, 5vw, 44px)', fontWeight: 800, margin: '8px 0' }}>
             Two Cities, <span className="grad">One Shared Clock</span>.
           </h1>
@@ -150,7 +155,7 @@ export default function TimezoneHubPage() {
             <div>
               <span className="badge hot" style={{ fontSize: '11px' }}>3D Orbit &amp; Flight Arc</span>
               <div style={{ color: '#FFFFFF', fontSize: '15px', fontWeight: 800, marginTop: '4px' }}>
-                Calgary ✈️ Jakarta
+                {city1} ✈️ {city2}
               </div>
             </div>
             <div style={{ textAlign: 'right' }}>
@@ -189,7 +194,7 @@ export default function TimezoneHubPage() {
           <div className="booth-box" style={{ padding: '28px 24px', background: '#FFFFFF' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
               <span className="badge" style={{ background: '#F0F4F8', color: '#334E68', fontWeight: 800 }}>
-                🏙️ Partner A Hometown
+                🌸 {partnerA}&apos;s City
               </span>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--ink-soft)' }}>
                 ☀️ Daytime
@@ -208,7 +213,7 @@ export default function TimezoneHubPage() {
           <div className="booth-box" style={{ padding: '28px 24px', background: '#FFFFFF' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
               <span className="badge" style={{ background: '#FFF0F5', color: 'var(--pink)', fontWeight: 800 }}>
-                🌸 Partner B Hometown
+                💙 {partnerB}&apos;s City
               </span>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--pink)', fontWeight: 800 }}>
                 +{offsetHours} Hours Ahead

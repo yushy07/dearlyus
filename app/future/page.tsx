@@ -1,7 +1,7 @@
-'use client';
-
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useCoupleProfile } from '@/lib/couple';
+import { CoupleNameBar } from '@/components/shared';
 
 interface VisionItem {
   id: string;
@@ -22,6 +22,7 @@ const VISION_ELEMENTS: VisionItem[] = [
 ];
 
 export default function FuturePage() {
+  const { partnerA, partnerB } = useCoupleProfile();
   const [boardItems, setBoardItems] = useState<VisionItem[]>([
     VISION_ELEMENTS[0],
     VISION_ELEMENTS[1],
@@ -72,7 +73,7 @@ export default function FuturePage() {
 
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '860px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <span className="eyebrow">Our Future · Interactive Vision Board</span>
+          <CoupleNameBar />
           <h1 style={{ fontSize: 'clamp(28px, 4vw, 42px)', marginBottom: '10px' }}>
             Design your future <span className="grad">together</span>.
           </h1>
@@ -81,7 +82,7 @@ export default function FuturePage() {
           </p>
         </div>
 
-        {/* Vision Board Canvas */}
+        {/* Vision Board Container */}
         <div
           style={{
             background: '#FFFFFF',
@@ -94,7 +95,7 @@ export default function FuturePage() {
           }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-            <h2 style={{ fontSize: '20px', fontWeight: 800 }}>Mia &amp; Alex&apos;s Life Vision</h2>
+            <h2 style={{ fontSize: '20px', fontWeight: 800 }}>{partnerA} &amp; {partnerB}&apos;s Life Vision</h2>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--ink-soft)' }}>
               {boardItems.length} Dreams Pinned
             </span>

@@ -63,7 +63,7 @@ const LOCAL_FALLBACK_QUESTIONS: Record<string, GeneratedQuestion[]> = {
   host: [
     {
       question: "Scenario: You get a free weekend trip anywhere in the world, but you can only bring one backpack between the two of you. Who packs what?",
-      options: ["Alex gets 70% space, Mia gets 30%", "Mia gets 70% space, Alex gets 30%", "Strict 50/50 division with a scale", "Buy everything at the destination"],
+      options: ["One person gets 70% space, the other gets 30%", "Strict 50/50 division with a luggage scale", "Whoever packs first gets all the space", "Buy everything at the destination"],
       commentary: "Observing your couple packing diplomacy!",
       source: 'fallback',
     },

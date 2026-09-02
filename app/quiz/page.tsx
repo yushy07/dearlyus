@@ -4,17 +4,19 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { QUIZ_PACKS } from '@/data';
 import { QuizPack, QuizQuestion } from '@/types';
-import { Ribbon, Navbar, Confetti } from '@/components/shared';
+import { Ribbon, Navbar, Confetti, CoupleNameBar } from '@/components/shared';
 import { sounds } from '@/lib/sound';
 import { downloadReceiptPNG, DateReceiptData } from '@/lib/receipt-canvas';
 import { ThermalReceiptModal } from '@/components/shared/ThermalReceiptModal';
+import { useCoupleProfile } from '@/lib/couple';
 
 export default function QuizPage() {
+  const { partnerA, partnerB } = useCoupleProfile();
   const [allPacks, setAllPacks] = useState<QuizPack[]>(QUIZ_PACKS);
   const [selectedPack, setSelectedPack] = useState<QuizPack>(QUIZ_PACKS[0]);
   const [currentQIndex, setCurrentQIndex] = useState(0);
-  const [miaPick, setMiaPick] = useState<number | null>(null);
-  const [alexPick, setAlexPick] = useState<number | null>(null);
+  const [partnerAPick, setPartnerAPick] = useState<number | null>(null);
+  const [partnerBPick, setPartnerBPick] = useState<number | null>(null);
   const [revealed, setRevealed] = useState(false);
   const [matches, setMatches] = useState<number>(0);
   const [finished, setFinished] = useState(false);
@@ -63,14 +65,14 @@ export default function QuizPage() {
       updatedQuestions.splice(currentQIndex + 1, 0, nextAdaptive);
       setSelectedPack({ ...selectedPack, questions: updatedQuestions });
       setCurrentQIndex(currentQIndex + 1);
-      setMiaPick(null);
-      setAlexPick(null);
+      setPartnerAPick(null);
+      setPartnerBPick(null);
       setRevealed(false);
       setHostCommentary(null);
     } else if (currentQIndex + 1 < selectedPack.questions.length) {
       setCurrentQIndex(currentQIndex + 1);
-      setMiaPick(null);
-      setAlexPick(null);
+      setPartnerAPick(null);
+      setPartnerBPick(null);
       setRevealed(false);
       setHostCommentary(null);
     } else {
@@ -82,9 +84,9 @@ export default function QuizPage() {
   };
 
   const handleReveal = () => {
-    if (miaPick === null || alexPick === null) return;
+    if (partnerAPick === null || partnerBPick === null) return;
     setRevealed(true);
-    if (miaPick === alexPick) {
+    if (partnerAPick === partnerBPick) {
       setMatches((prev) => prev + 1);
       sounds.playCelebration();
     } else {
@@ -95,8 +97,8 @@ export default function QuizPage() {
     const currentQ = selectedPack.questions[currentQIndex];
     const currentRoundData = {
       question: currentQ.q,
-      answerA: currentQ.options[miaPick],
-      answerB: currentQ.options[alexPick],
+      answerA: currentQ.options[partnerAPick],
+      answerB: currentQ.options[partnerBPick],
     };
     const updatedHistory = [...sessionHistory, currentRoundData];
     setSessionHistory(updatedHistory);
@@ -105,8 +107,8 @@ export default function QuizPage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        partnerA: { name: 'Mia', answer: currentQ.options[miaPick] },
-        partnerB: { name: 'Alex', answer: currentQ.options[alexPick] },
+        partnerA: { name: partnerA, answer: currentQ.options[partnerAPick] },
+        partnerB: { name: partnerB, answer: currentQ.options[partnerBPick] },
         mode: 'quiz',
         history: updatedHistory,
       }),
@@ -132,8 +134,8 @@ export default function QuizPage() {
   const restartQuiz = (pack: QuizPack) => {
     setSelectedPack(pack);
     setCurrentQIndex(0);
-    setMiaPick(null);
-    setAlexPick(null);
+    setPartnerAPick(null);
+    setPartnerBPick(null);
     setRevealed(false);
     setMatches(0);
     setFinished(false);
@@ -197,12 +199,12 @@ export default function QuizPage() {
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '860px' }}>
         {/* Title */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <span className="eyebrow">Know Me Quiz · Private Double-Blind Lock-in</span>
+          <CoupleNameBar />
           <h1 style={{ fontSize: 'clamp(28px, 4.5vw, 42px)', marginBottom: '10px' }}>
             Lock in privately, <span className="grad">reveal together</span>.
           </h1>
           <p style={{ color: 'var(--ink-soft)', fontSize: '16px' }}>
-            Partner A answers honestly, Partner B guesses what they chose. Answers stay secret until both lock in!
+            {partnerA} and {partnerB} lock in secret answers, then reveal together to test your couple telepathy!
           </p>
         </div>
 
@@ -251,70 +253,70 @@ export default function QuizPage() {
 
             {/* Question Text */}
             <h2 style={{ fontSize: 'clamp(20px, 3vw, 26px)', fontWeight: 800, marginBottom: '24px', textAlign: 'center' }}>
-              {currentQ.q}
+              {currentQ.q.replace(/\{partnerA\}/g, partnerA).replace(/\{partnerB\}/g, partnerB)}
             </h2>
 
             {/* Double-Blind Dual Player Pick Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '28px' }}>
-              {/* Partner A (Mia) */}
+              {/* Partner A */}
               <div style={{ background: '#FFF5F8', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,123,163,0.3)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <span style={{ fontWeight: 800, fontSize: '14px', color: 'var(--pink)' }}>🌸 Partner A (Mia)</span>
+                  <span style={{ fontWeight: 800, fontSize: '14px', color: 'var(--pink)' }}>🌸 {partnerA}</span>
                   <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--ink-soft)' }}>
-                    {miaPick !== null ? '🔒 Locked in' : 'Thinking...'}
+                    {partnerAPick !== null ? '🔒 Locked in' : 'Thinking...'}
                   </span>
                 </div>
                 <div style={{ display: 'grid', gap: '8px' }}>
                   {currentQ.options.map((opt, idx) => (
                     <button
                       key={idx}
-                      onClick={() => !revealed && setMiaPick(idx)}
+                      onClick={() => !revealed && setPartnerAPick(idx)}
                       disabled={revealed}
                       style={{
                         textAlign: 'left',
                         padding: '10px 14px',
                         borderRadius: '8px',
-                        border: miaPick === idx ? '2px solid var(--pink)' : '1px solid #FFD6E8',
-                        background: miaPick === idx ? '#FFF' : 'rgba(255,255,255,0.6)',
+                        border: partnerAPick === idx ? '2px solid var(--pink)' : '1px solid #FFD6E8',
+                        background: partnerAPick === idx ? '#FFF' : 'rgba(255,255,255,0.6)',
                         color: 'var(--ink)',
                         fontSize: '13.5px',
-                        fontWeight: miaPick === idx ? 700 : 500,
+                        fontWeight: partnerAPick === idx ? 700 : 500,
                         cursor: revealed ? 'default' : 'pointer',
                       }}
                     >
-                      {opt}
+                      {opt.replace(/\{partnerA\}/g, partnerA).replace(/\{partnerB\}/g, partnerB)}
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Partner B (Alex) */}
+              {/* Partner B */}
               <div style={{ background: '#F0F7FF', padding: '20px', borderRadius: '16px', border: '1px solid rgba(95,160,255,0.3)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <span style={{ fontWeight: 800, fontSize: '14px', color: 'var(--blue)' }}>💙 Partner B (Alex)</span>
+                  <span style={{ fontWeight: 800, fontSize: '14px', color: 'var(--blue)' }}>💙 {partnerB}</span>
                   <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--ink-soft)' }}>
-                    {alexPick !== null ? '🔒 Locked in' : 'Thinking...'}
+                    {partnerBPick !== null ? '🔒 Locked in' : 'Thinking...'}
                   </span>
                 </div>
                 <div style={{ display: 'grid', gap: '8px' }}>
                   {currentQ.options.map((opt, idx) => (
                     <button
                       key={idx}
-                      onClick={() => !revealed && setAlexPick(idx)}
+                      onClick={() => !revealed && setPartnerBPick(idx)}
                       disabled={revealed}
                       style={{
                         textAlign: 'left',
                         padding: '10px 14px',
                         borderRadius: '8px',
-                        border: alexPick === idx ? '2px solid var(--blue)' : '1px solid #D6E8FF',
-                        background: alexPick === idx ? '#FFF' : 'rgba(255,255,255,0.6)',
+                        border: partnerBPick === idx ? '2px solid var(--blue)' : '1px solid #D6E8FF',
+                        background: partnerBPick === idx ? '#FFF' : 'rgba(255,255,255,0.6)',
                         color: 'var(--ink)',
                         fontSize: '13.5px',
-                        fontWeight: alexPick === idx ? 700 : 500,
+                        fontWeight: partnerBPick === idx ? 700 : 500,
                         cursor: revealed ? 'default' : 'pointer',
                       }}
                     >
-                      {opt}
+                      {opt.replace(/\{partnerA\}/g, partnerA).replace(/\{partnerB\}/g, partnerB)}
                     </button>
                   ))}
                 </div>
@@ -326,9 +328,9 @@ export default function QuizPage() {
               {!revealed ? (
                 <button
                   onClick={handleReveal}
-                  disabled={miaPick === null || alexPick === null}
+                  disabled={partnerAPick === null || partnerBPick === null}
                   className="btn btn-primary"
-                  style={{ padding: '12px 36px', fontSize: '15px', opacity: miaPick !== null && alexPick !== null ? 1 : 0.5 }}
+                  style={{ padding: '12px 36px', fontSize: '15px', opacity: partnerAPick !== null && partnerBPick !== null ? 1 : 0.5 }}
                 >
                   Flip &amp; Reveal Answers 🔍
                 </button>
@@ -339,15 +341,15 @@ export default function QuizPage() {
                       padding: '14px 20px',
                       borderRadius: '12px',
                       marginBottom: '16px',
-                      background: miaPick === alexPick ? '#E6F9F0' : '#FFF0F0',
-                      color: miaPick === alexPick ? '#0A7D4D' : '#D93838',
+                      background: partnerAPick === partnerBPick ? '#E6F9F0' : '#FFF0F0',
+                      color: partnerAPick === partnerBPick ? '#0A7D4D' : '#D93838',
                       fontWeight: 800,
                       fontSize: '16px',
                     }}
                   >
-                    {miaPick === alexPick
+                    {partnerAPick === partnerBPick
                       ? '✨ PERFECT MATCH! You both picked the exact same thing!'
-                      : `💔 Clashing picks! Mia chose "${currentQ.options[miaPick!]}" while Alex guessed "${currentQ.options[alexPick!]}".`}
+                      : `💔 Clashing picks! ${partnerA} chose "${currentQ.options[partnerAPick!].replace(/\{partnerA\}/g, partnerA).replace(/\{partnerB\}/g, partnerB)}" while ${partnerB} guessed "${currentQ.options[partnerBPick!].replace(/\{partnerA\}/g, partnerA).replace(/\{partnerB\}/g, partnerB)}".`}
                   </div>
                   {hostCommentary && (
                     <div
@@ -413,8 +415,8 @@ export default function QuizPage() {
                   setReceiptModalData({
                     roomCode: 'KX7RM',
                     date: new Date().toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }),
-                    partnerA: 'Mia',
-                    partnerB: 'Alex',
+                    partnerA,
+                    partnerB,
                     items: selectedPack.questions.map((q, i) => ({
                       number: `0${i + 1}`,
                       topic: q.q,

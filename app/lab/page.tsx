@@ -1,13 +1,18 @@
-'use client';
-
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useCoupleProfile } from '@/lib/couple';
+import { CoupleNameBar } from '@/components/shared';
 
 export default function LabPage() {
+  const { partnerA, partnerB } = useCoupleProfile();
   const [seconds, setSeconds] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [ambientSound, setAmbientSound] = useState<'rain' | 'cafe' | 'lofi' | 'off'>('rain');
-  const [sessionNotes, setSessionNotes] = useState('Mia studying Marketing · Alex coding web app 💻');
+  const [sessionNotes, setSessionNotes] = useState(`${partnerA} working · ${partnerB} studying 💻`);
+
+  useEffect(() => {
+    setSessionNotes(`${partnerA} working · ${partnerB} studying 💻`);
+  }, [partnerA, partnerB]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -40,7 +45,7 @@ export default function LabPage() {
 
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '720px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <span className="eyebrow">The Lab · LDR Study Date &amp; Focus Mode</span>
+          <CoupleNameBar />
           <h1 style={{ fontSize: 'clamp(28px, 4vw, 42px)', marginBottom: '10px' }}>
             Study together, <span className="grad">miles apart</span>.
           </h1>

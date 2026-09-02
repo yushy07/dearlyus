@@ -6,40 +6,54 @@ import { CupidotBot, BotState } from '@/components/bot/CupidotBot';
 import { judgeDebate, DebateVerdict } from '@/lib/cupidot';
 import { sounds } from '@/lib/sound';
 import { Confetti } from '@/components/shared/Confetti';
+import { CoupleNameBar } from '@/components/shared';
+import { useCoupleProfile } from '@/lib/couple';
 
-const DEBATE_TOPICS = [
+interface DebateTopicItem {
+  topic: string;
+  pro: (nameA: string, nameB: string) => string;
+  con: (nameA: string, nameB: string) => string;
+}
+
+const DEBATE_TOPICS: DebateTopicItem[] = [
   {
     topic: 'Is pineapple on pizza an acceptable culinary creation or romantic treason?',
-    pro: 'Pineapple provides sweet acidity that balances savory cheese and tomato!',
-    con: 'Warm wet fruit on mozzarella is an affront to human civilization.',
+    pro: (a, b) => `${a} insists pineapple provides sweet acidity that balances savory cheese and tomato!`,
+    con: (a, b) => `${b} argues warm wet fruit on mozzarella is an affront to human civilization.`,
   },
   {
     topic: 'Who is the objectively superior navigator when wandering in a foreign city?',
-    pro: 'Mia has superior spatial intuition and spots hidden cafes without looking at blue dots.',
-    con: 'Alex actually knows what North means and doesn\'t lead us down dead-end alleys.',
+    pro: (a, b) => `${a} has superior spatial intuition and spots hidden cafes without looking at blue dots.`,
+    con: (a, b) => `${b} actually knows what North means and doesn't lead us down dead-end alleys.`,
   },
   {
     topic: 'Are 6 decorative throw pillows on the bed necessary or excessive psychological warfare?',
-    pro: 'Pillows create a plush aesthetic cloud sanctuary of comfort and luxury.',
-    con: 'They spend 90% of their lifespan being thrown onto the floor before sleep.',
+    pro: (a, b) => `${a} believes pillows create a plush aesthetic cloud sanctuary of comfort and luxury.`,
+    con: (a, b) => `${b} argues they spend 90% of their lifespan being thrown onto the floor before sleep.`,
   },
   {
     topic: 'Is letting your phone reach 2% battery living dangerously or pure laziness?',
-    pro: 'Living on the edge builds character and electric tension!',
-    con: 'It causes unnecessary panic attacks when trying to send goodnight messages.',
+    pro: (a, b) => `${a} claims living on the edge builds character and electric romantic tension!`,
+    con: (a, b) => `${b} insists it causes unnecessary panic attacks when sending goodnight messages.`,
   },
 ];
 
 export default function DebatePage() {
+  const { partnerA, partnerB } = useCoupleProfile();
   const [topicIndex, setTopicIndex] = useState(0);
   const [timer, setTimer] = useState(60);
-  const [activeSpeaker, setActiveSpeaker] = useState<'Mia' | 'Alex'>('Mia');
+  const [activeSpeaker, setActiveSpeaker] = useState<string>(partnerA);
   const [debating, setDebating] = useState(false);
   const [argA, setArgA] = useState('');
   const [argB, setArgB] = useState('');
   const [verdict, setVerdict] = useState<DebateVerdict | null>(null);
   const [botState, setBotState] = useState<BotState>('idle');
   const [confettiActive, setConfettiActive] = useState(false);
+
+  // Sync active speaker with partnerA if profile changes
+  useEffect(() => {
+    setActiveSpeaker(partnerA);
+  }, [partnerA]);
 
   const current = DEBATE_TOPICS[topicIndex];
 
@@ -60,7 +74,7 @@ export default function DebatePage() {
     return () => clearInterval(interval);
   }, [debating, timer]);
 
-  const startDebate = (speaker: 'Mia' | 'Alex') => {
+  const startDebate = (speaker: string) => {
     sounds.playPop();
     setActiveSpeaker(speaker);
     setTimer(60);
@@ -73,9 +87,9 @@ export default function DebatePage() {
     setBotState('thinking');
 
     setTimeout(() => {
-      const finalA = argA || current.pro;
-      const finalB = argB || current.con;
-      const result = judgeDebate(current.topic, finalA, finalB);
+      const finalA = argA || current.pro(partnerA, partnerB);
+      const finalB = argB || current.con(partnerA, partnerB);
+      const result = judgeDebate(current.topic, finalA, finalB, partnerA, partnerB);
 
       setVerdict(result);
       sounds.playCelebration();
@@ -119,14 +133,11 @@ export default function DebatePage() {
 
       <main className="wrap" style={{ paddingTop: '32px', maxWidth: '780px' }}>
         {/* Arbiter Header */}
-        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <div style={{ width: '180px', height: '180px', margin: '0 auto -10px' }}>
             <CupidotBot state={botState} scale={2.2} />
           </div>
-          <span className="eyebrow" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            <span>🎙️ ʚ🤖💘ɞ</span>
-            <span>CUPIDOT · AI DEBATE ARBITER</span>
-          </span>
+          <CoupleNameBar />
           <h1 style={{ fontSize: 'clamp(28px, 4.5vw, 42px)', fontWeight: 800, margin: '8px 0 10px' }}>
             Couple <span className="grad">Debate Arena</span>
           </h1>
@@ -159,60 +170,60 @@ export default function DebatePage() {
 
           {/* Argument Grid */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '28px' }}>
-            {/* Mia (PRO) */}
+            {/* Player A (PRO) */}
             <div
               style={{
-                background: activeSpeaker === 'Mia' && debating ? '#FFF0F5' : '#FFF9FA',
-                border: activeSpeaker === 'Mia' && debating ? '2px solid #FF4D80' : '1px solid rgba(255, 77, 128, 0.25)',
+                background: activeSpeaker === partnerA && debating ? '#FFF0F5' : '#FFF9FA',
+                border: activeSpeaker === partnerA && debating ? '2px solid #FF4D80' : '1px solid rgba(255, 77, 128, 0.25)',
                 padding: '20px',
                 borderRadius: '16px',
                 transition: 'all 0.2s ease',
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                <span style={{ fontWeight: 800, fontSize: '16px', color: '#FF4D80' }}>🌸 Mia (PRO)</span>
+                <span style={{ fontWeight: 800, fontSize: '16px', color: '#FF4D80' }}>🌸 {partnerA} (PRO)</span>
                 <button
-                  onClick={() => startDebate('Mia')}
+                  onClick={() => startDebate(partnerA)}
                   className="btn"
                   style={{ padding: '4px 10px', fontSize: '12px', background: '#FF4D80', color: '#FFF' }}
                 >
-                  {debating && activeSpeaker === 'Mia' ? `Speaking: ${timer}s` : 'Take Mic 🎙️'}
+                  {debating && activeSpeaker === partnerA ? `Speaking: ${timer}s` : 'Take Mic 🎙️'}
                 </button>
               </div>
               <textarea
                 rows={3}
                 value={argA}
                 onChange={(e) => setArgA(e.target.value)}
-                placeholder={`Default: "${current.pro}"`}
+                placeholder={`Default: "${current.pro(partnerA, partnerB)}"`}
                 style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--line)', fontSize: '13.5px' }}
               />
             </div>
 
-            {/* Alex (CON) */}
+            {/* Player B (CON) */}
             <div
               style={{
-                background: activeSpeaker === 'Alex' && debating ? '#F0F6FF' : '#F8FAFC',
-                border: activeSpeaker === 'Alex' && debating ? '2px solid #3B82F6' : '1px solid rgba(80, 140, 255, 0.25)',
+                background: activeSpeaker === partnerB && debating ? '#F0F6FF' : '#F8FAFC',
+                border: activeSpeaker === partnerB && debating ? '2px solid #3B82F6' : '1px solid rgba(80, 140, 255, 0.25)',
                 padding: '20px',
                 borderRadius: '16px',
                 transition: 'all 0.2s ease',
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                <span style={{ fontWeight: 800, fontSize: '16px', color: '#3B82F6' }}>💙 Alex (CON)</span>
+                <span style={{ fontWeight: 800, fontSize: '16px', color: '#3B82F6' }}>💙 {partnerB} (CON)</span>
                 <button
-                  onClick={() => startDebate('Alex')}
+                  onClick={() => startDebate(partnerB)}
                   className="btn"
                   style={{ padding: '4px 10px', fontSize: '12px', background: '#3B82F6', color: '#FFF' }}
                 >
-                  {debating && activeSpeaker === 'Alex' ? `Speaking: ${timer}s` : 'Take Mic 🎙️'}
+                  {debating && activeSpeaker === partnerB ? `Speaking: ${timer}s` : 'Take Mic 🎙️'}
                 </button>
               </div>
               <textarea
                 rows={3}
                 value={argB}
                 onChange={(e) => setArgB(e.target.value)}
-                placeholder={`Default: "${current.con}"`}
+                placeholder={`Default: "${current.con(partnerA, partnerB)}"`}
                 style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--line)', fontSize: '13.5px' }}
               />
             </div>
@@ -246,9 +257,9 @@ export default function DebatePage() {
                   ARBITER SCORECARD
                 </span>
                 <div style={{ display: 'flex', gap: '8px', fontFamily: 'var(--font-mono)', fontSize: '13px', fontWeight: 800 }}>
-                  <span style={{ color: '#FF4D80' }}>Mia: {verdict.scoreA}/100</span>
+                  <span style={{ color: '#FF4D80' }}>{partnerA}: {verdict.scoreA}/100</span>
                   <span>·</span>
-                  <span style={{ color: '#3B82F6' }}>Alex: {verdict.scoreB}/100</span>
+                  <span style={{ color: '#3B82F6' }}>{partnerB}: {verdict.scoreB}/100</span>
                 </div>
               </div>
 

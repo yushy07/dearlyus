@@ -1,7 +1,7 @@
-'use client';
-
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useCoupleProfile } from '@/lib/couple';
+import { CoupleNameBar } from '@/components/shared';
 
 interface MatchQuestion {
   title: string;
@@ -53,6 +53,7 @@ const QUESTIONS: MatchQuestion[] = [
 ];
 
 export default function MatchPage() {
+  const { partnerA, partnerB } = useCoupleProfile();
   const [qIndex, setQIndex] = useState(0);
   const [partner1Picks, setPartner1Picks] = useState<number[]>([]);
   const [partner2Picks, setPartner2Picks] = useState<number[]>([]);
@@ -107,7 +108,7 @@ export default function MatchPage() {
 
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '720px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <span className="eyebrow">Love Match · Personality Compatibility</span>
+          <CoupleNameBar />
           <h1 style={{ fontSize: 'clamp(28px, 4vw, 40px)', marginBottom: '10px' }}>
             Calculate your <span className="grad">LDR synergy score</span>.
           </h1>
@@ -135,7 +136,7 @@ export default function MatchPage() {
                   color: activePartner === 1 ? 'var(--pink)' : 'var(--blue)',
                 }}
               >
-                {activePartner === 1 ? '🌸 Player 1 (Mia) Answering' : '🔷 Player 2 (Alex) Answering'}
+                {activePartner === 1 ? `🌸 ${partnerA} Answering` : `🔷 ${partnerB} Answering`}
               </span>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--ink-soft)' }}>
                 Question {qIndex + 1} of {QUESTIONS.length}

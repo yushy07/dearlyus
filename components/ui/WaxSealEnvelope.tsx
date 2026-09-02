@@ -13,8 +13,8 @@ interface WaxSealEnvelopeProps {
 }
 
 export function WaxSealEnvelope({
-  sender = 'Alex',
-  recipient = 'Mia',
+  sender = 'Partner 1',
+  recipient = 'Partner 2',
   sealDate = 'Sealed until 2030',
   letterContent,
   className = '',

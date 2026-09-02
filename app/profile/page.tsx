@@ -1,16 +1,43 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useCoupleProfile } from '@/lib/couple';
+import { sounds } from '@/lib/sound';
+import { CoupleNameBar } from '@/components/shared';
 
 export default function ProfilePage() {
-  const [userName, setUserName] = useState('Mia');
-  const [userCity, setUserCity] = useState('Calgary, AB');
-  const [partnerName, setPartnerName] = useState('Alex');
-  const [partnerCity, setPartnerCity] = useState('Jakarta, ID');
-  const [roomCode, setRoomCode] = useState('KX7RM');
+  const { partnerA, partnerB, cityA, cityB, roomCode: storedRoom, updateProfile } = useCoupleProfile();
+  const [userName, setUserName] = useState(partnerA);
+  const [userCity, setUserCity] = useState(cityA);
+  const [partnerName, setPartnerName] = useState(partnerB);
+  const [partnerCity, setPartnerCity] = useState(cityB);
+  const [roomCode, setRoomCode] = useState(storedRoom);
+  const [savedMessage, setSavedMessage] = useState(false);
+
+  useEffect(() => {
+    setUserName(partnerA);
+    setPartnerName(partnerB);
+    setUserCity(cityA);
+    setPartnerCity(cityB);
+    setRoomCode(storedRoom);
+  }, [partnerA, partnerB, cityA, cityB, storedRoom]);
+
+  const handleSave = () => {
+    sounds.playCelebration();
+    updateProfile({
+      partnerA: userName,
+      partnerB: partnerName,
+      cityA: userCity,
+      cityB: partnerCity,
+      roomCode,
+    });
+    setSavedMessage(true);
+    setTimeout(() => setSavedMessage(false), 3000);
+  };
+
   const [savedStrips] = useState([
-    { id: '1', date: 'Aug 2026', room: 'KX7RM', img: '/photos/frame1.webp' },
+    { id: '1', date: 'Aug 2026', room: roomCode, img: '/photos/frame1.webp' },
     { id: '2', date: 'Jul 2026', room: 'NX29A', img: '/photos/frame2.webp' },
   ]);
 
@@ -32,8 +59,8 @@ export default function ProfilePage() {
       </header>
 
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '720px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <span className="eyebrow">Your Account · Couple Profile</span>
+        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+          <CoupleNameBar />
           <h1 style={{ fontSize: 'clamp(28px, 4vw, 40px)', marginBottom: '10px' }}>
             {userName} &amp; {partnerName}&apos;s <span className="grad">Space</span>
           </h1>
@@ -57,37 +84,41 @@ export default function ProfilePage() {
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
-                Your Name &amp; City (Pink Dot)
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px', color: 'var(--pink)' }}>
+                Your Name &amp; City (🌸 {userName})
               </label>
               <input
                 type="text"
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
+                placeholder="Your Name"
                 style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--line)', marginBottom: '8px' }}
               />
               <input
                 type="text"
                 value={userCity}
                 onChange={(e) => setUserCity(e.target.value)}
+                placeholder="Your City"
                 style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--line)' }}
               />
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
-                Partner&apos;s Name &amp; City (Blue Dot)
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px', color: 'var(--blue)' }}>
+                Partner&apos;s Name &amp; City (💙 {partnerName})
               </label>
               <input
                 type="text"
                 value={partnerName}
                 onChange={(e) => setPartnerName(e.target.value)}
+                placeholder="Partner's Name"
                 style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--line)', marginBottom: '8px' }}
               />
               <input
                 type="text"
                 value={partnerCity}
                 onChange={(e) => setPartnerCity(e.target.value)}
+                placeholder="Partner's City"
                 style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--line)' }}
               />
             </div>
@@ -96,11 +127,23 @@ export default function ProfilePage() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--line)', paddingTop: '16px' }}>
             <div>
               <span style={{ fontSize: '12px', color: 'var(--ink-soft)' }}>Permanent Room Code</span>
-              <div style={{ fontFamily: 'var(--font-mono)', fontWeight: 800, fontSize: '16px' }}>{roomCode}</div>
+              <input
+                type="text"
+                value={roomCode}
+                onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+                style={{ fontFamily: 'var(--font-mono)', fontWeight: 800, fontSize: '16px', padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--line)', width: '120px' }}
+              />
             </div>
-            <button className="btn btn-primary" onClick={() => alert('Profile settings saved!')}>
-              Save Profile 💾
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              {savedMessage && (
+                <span style={{ color: '#0A7D4D', fontWeight: 700, fontSize: '13px' }}>
+                  ✓ Profile &amp; Names Synced Globally!
+                </span>
+              )}
+              <button className="btn btn-primary" onClick={handleSave}>
+                Save Profile 💾
+              </button>
+            </div>
           </div>
         </div>
 

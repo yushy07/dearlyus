@@ -4,8 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { CupidotBot, BotState } from './CupidotBot';
 import { getRandomCupidotThought, getPokedCupidotDilemma, CupidotDilemma } from '@/lib/cupidot';
 import { sounds } from '@/lib/sound';
+import { useCoupleProfile } from '@/lib/couple';
 
 export function CupidotCompanion() {
+  const { partnerA, partnerB } = useCoupleProfile();
   const [isOpen, setIsOpen] = useState(false);
   const [botState, setBotState] = useState<BotState>('idle');
   const [thought, setThought] = useState(getRandomCupidotThought());
@@ -23,7 +25,7 @@ export function CupidotCompanion() {
   const handlePoke = () => {
     sounds.playPop();
     setBotState('love');
-    const dilemma = getPokedCupidotDilemma('Mia', 'Alex');
+    const dilemma = getPokedCupidotDilemma(partnerA, partnerB);
     setActiveDilemma(dilemma);
     setPokedCount((prev) => prev + 1);
     setIsOpen(true);
