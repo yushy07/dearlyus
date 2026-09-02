@@ -1,5 +1,8 @@
 // Angie Core Platform Type Definitions
 
+export * from './passport';
+export * from './sound';
+
 export interface RoomStyle {
   id: string;
   label: string;

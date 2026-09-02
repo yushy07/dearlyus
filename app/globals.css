@@ -1,8 +1,11 @@
 /* =====================================================================
    ANGIE (getangie.com) GLOBAL DESIGN SYSTEM & TOKENS
-   Cool photo-paper surfaces, saturated pink/blue presence,
-   Pretendard + Space Mono typography, smooth micro-animations.
+   Modular Sheets: tokens.css, 3d-physics.css, animations.css
    ===================================================================== */
+@import "../styles/tokens.css";
+@import "../styles/3d-physics.css";
+@import "../styles/animations.css";
+
 
 :root {
   /* — surface: cool photo-paper, never cream — */

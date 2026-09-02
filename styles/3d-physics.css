@@ -1,0 +1,176 @@
+/* 3D Objects, Turntable, Tonearm, Satin Ribbon, Wax Seal & 3D Reaction Physics */
+
+/* 1. True 3D Turntable & Grooved Vinyl Player */
+.turntable-3d-stage {
+  perspective: 500px;
+  transform-style: preserve-3d;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  width: 52px;
+  height: 44px;
+}
+
+.vinyl-3d-disc {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #381A3C 0%, #151515 22%, #080808 55%, #181818 100%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.7), inset 0 0 0 2px rgba(255, 255, 255, 0.08), inset 0 0 0 5px rgba(0, 0, 0, 0.9), inset 0 0 0 8px rgba(255, 255, 255, 0.05), inset 0 0 0 12px rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transform: rotateX(24deg) rotateY(-10deg);
+  transform-style: preserve-3d;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vinyl-3d-disc.spinning {
+  animation: spin-vinyl-3d 3.5s linear infinite;
+}
+
+@keyframes spin-vinyl-3d {
+  0% { transform: rotateX(24deg) rotateY(-10deg) rotateZ(0deg); }
+  100% { transform: rotateX(24deg) rotateY(-10deg) rotateZ(360deg); }
+}
+
+.vinyl-center-label {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FF7BA3, #FF9E64);
+  border: 1px solid #FFFFFF;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.6);
+  position: relative;
+}
+
+.vinyl-center-hole {
+  width: 3px;
+  height: 3px;
+  background: #000000;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Turntable Metallic Tonearm Needle */
+.turntable-tonearm {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 18px;
+  height: 32px;
+  transform-origin: top right;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.turntable-tonearm.active {
+  transform: rotate(26deg);
+}
+
+.turntable-tonearm.paused {
+  transform: rotate(0deg);
+}
+
+.tonearm-pivot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #E2E8F0, #94A3B8);
+  border: 1px solid #FFFFFF;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.tonearm-arm {
+  width: 2px;
+  height: 26px;
+  background: linear-gradient(180deg, #CBD5E1 0%, #64748B 100%);
+  position: absolute;
+  top: 4px;
+  right: 2.5px;
+  transform-origin: top center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.tonearm-head {
+  width: 5px;
+  height: 8px;
+  background: #E11D48;
+  border-radius: 1px;
+  position: absolute;
+  bottom: 0;
+  right: 1px;
+  box-shadow: 0 0 4px rgba(225, 29, 72, 0.6);
+}
+
+/* 2. True 3D Satin Ribbon & 3D Gold Wax Seal */
+.passport-satin-ribbon {
+  width: 24px;
+  height: 54px;
+  background: linear-gradient(180deg, #881337 0%, #BE123C 30%, #E11D48 70%, #9F1239 100%);
+  position: absolute;
+  bottom: -38px;
+  right: 52px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5), 0 4px 8px rgba(190, 18, 60, 0.4);
+  z-index: 10;
+  clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 50% 80%, 0% 100%);
+  transform-origin: top center;
+  transform: perspective(600px) rotateX(18deg) rotateZ(2deg);
+  animation: ribbon-3d-wave 4.5s ease-in-out infinite alternate;
+}
+
+.passport-satin-ribbon::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.25) 0%, transparent 40%, rgba(0, 0, 0, 0.3) 100%);
+  pointer-events: none;
+}
+
+@keyframes ribbon-3d-wave {
+  0% {
+    transform: perspective(600px) rotateX(16deg) rotateY(-8deg) rotateZ(-2deg) skewY(-1deg);
+    box-shadow: -4px 10px 20px rgba(0, 0, 0, 0.45);
+  }
+  50% {
+    transform: perspective(600px) rotateX(24deg) rotateY(4deg) rotateZ(3deg) skewY(2deg);
+    box-shadow: 0 14px 26px rgba(0, 0, 0, 0.5);
+  }
+  100% {
+    transform: perspective(600px) rotateX(14deg) rotateY(-6deg) rotateZ(1deg) skewY(-2deg);
+    box-shadow: 4px 12px 22px rgba(0, 0, 0, 0.45);
+  }
+}
+
+.gold-wax-seal-3d {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #FFFBEB 0%, #FDE68A 25%, #D4AF37 55%, #92400E 100%);
+  border: 2px solid #FEF3C7;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35), inset 0 2px 4px rgba(255, 255, 255, 0.8), inset 0 -3px 5px rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #78350F;
+  font-size: 20px;
+  font-weight: 900;
+  flex-shrink: 0;
+  transform: perspective(600px) rotateX(10deg);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+}
+
+.gold-wax-seal-3d:hover {
+  transform: perspective(600px) rotateX(0deg) scale(1.1);
+  box-shadow: 0 12px 28px rgba(212, 175, 55, 0.45), inset 0 2px 4px rgba(255, 255, 255, 0.9);
+}

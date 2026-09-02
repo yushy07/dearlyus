@@ -1,0 +1,22 @@
+/* Angie Color & Design System Tokens */
+:root {
+  --pink: #FF7BA3;
+  --pink-tint: rgba(255, 123, 163, 0.12);
+  --pink-glow: rgba(255, 123, 163, 0.35);
+  --blue: #5FA0FF;
+  --blue-tint: rgba(95, 160, 255, 0.12);
+  --blue-glow: rgba(95, 160, 255, 0.35);
+  --amber: #F59E0B;
+  --green: #10B981;
+  --gold: #D4AF37;
+  --gold-light: #FDE68A;
+  
+  --paper: #FAF8F5;
+  --paper-raised: #FFFFFF;
+  --ink: #17181C;
+  --ink-soft: #64748B;
+  --line: #E2E8F0;
+  
+  --font-display: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+}

@@ -3,55 +3,50 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Footer } from '@/components/shared/Footer';
-import {
-  PASSPORT_STAMPS,
-  PassportStamp,
-  getUnlockedStamps,
-  unlockPassportStamp,
-  getStampNotes,
-  saveStampNote,
-  getCoupleTicketProfile,
-  saveCoupleTicketProfile,
-  CoupleTicketProfile,
-} from '@/lib/passport';
 import { sounds } from '@/lib/sound';
 import { ScrollReveal } from '@/components/ui';
+import { usePassport } from '@/hooks/usePassport';
+import type { PassportStamp, CoupleTicketProfile } from '@/types/passport';
+import { BoardingPassCard } from './_components/BoardingPassCard';
+import { PassportBookletCover } from './_components/PassportBookletCover';
+import { StampCard } from './_components/StampCard';
+import { TicketEditorModal } from './_components/TicketEditorModal';
 
 interface ConfettiPiece {
   id: string;
   x: number;
   y: number;
-  vx: number;
-  vy: number;
   rot: number;
-  vrot: number;
   char: string;
   scale: number;
-  color: string;
 }
 
 export default function PassportPage() {
-  const [unlockedIds, setUnlockedIds] = useState<string[]>([]);
-  const [stampNotes, setStampNotes] = useState<Record<string, string>>({});
+  const {
+    stamps,
+    unlockedIds,
+    stampNotes,
+    profile,
+    unlockedCount,
+    totalCount,
+    progressPercent,
+    rankTier,
+    unlockStamp,
+    updateNote,
+    updateProfile,
+  } = usePassport();
+
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [selectedStamp, setSelectedStamp] = useState<PassportStamp | null>(null);
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [tempNoteText, setTempNoteText] = useState<string>('');
   const [animatingStampId, setAnimatingStampId] = useState<string | null>(null);
-  const [profile, setProfile] = useState<CoupleTicketProfile>(getCoupleTicketProfile());
   const [isEditingTicket, setIsEditingTicket] = useState(false);
-  const [tempProfile, setTempProfile] = useState<CoupleTicketProfile>(getCoupleTicketProfile());
   const [roomCode, setRoomCode] = useState('KX7RM');
   const [copiedLink, setCopiedLink] = useState(false);
   const [confetti, setConfetti] = useState<ConfettiPiece[]>([]);
 
   useEffect(() => {
-    setUnlockedIds(getUnlockedStamps());
-    setStampNotes(getStampNotes());
-    const prof = getCoupleTicketProfile();
-    setProfile(prof);
-    setTempProfile(prof);
-
     if (typeof window !== 'undefined') {
       try {
         const savedRoom = localStorage.getItem('angie_room_code') || 'KX7RM';
@@ -62,18 +57,13 @@ export default function PassportPage() {
 
   const triggerConfettiCelebration = () => {
     const chars = ['🌸', '💖', '⭐', '✨', '🎀', '💌', '🌟'];
-    const colors = ['#FF7BA3', '#F43F5E', '#FDE68A', '#A855F7', '#60A5FA', '#34D399'];
     const pieces: ConfettiPiece[] = Array.from({ length: 32 }).map((_, i) => ({
       id: `${Date.now()}-${i}-${Math.random()}`,
       x: Math.random() * 100,
       y: -10,
-      vx: (Math.random() - 0.5) * 20,
-      vy: Math.random() * 40 + 30,
       rot: Math.random() * 360,
-      vrot: (Math.random() - 0.5) * 360,
       char: chars[Math.floor(Math.random() * chars.length)],
       scale: Math.random() * 0.6 + 0.8,
-      color: colors[Math.floor(Math.random() * colors.length)],
     }));
 
     setConfetti(pieces);
@@ -91,26 +81,15 @@ export default function PassportPage() {
       setSelectedStamp(stamp);
       setTempNoteText(stampNotes[stamp.id] || stamp.defaultMemory);
     } else {
-      unlockPassportStamp(stamp.id);
-      setUnlockedIds(getUnlockedStamps());
+      unlockStamp(stamp.id);
       sounds.playSparkleReaction('💖');
     }
   };
 
   const handleSaveNote = (stampId: string) => {
     sounds.playPop();
-    saveStampNote(stampId, tempNoteText);
-    setStampNotes((prev) => ({ ...prev, [stampId]: tempNoteText }));
+    updateNote(stampId, tempNoteText);
     setEditingNoteId(null);
-  };
-
-  const handleSaveTicketProfile = (e: React.FormEvent) => {
-    e.preventDefault();
-    sounds.playPop();
-    saveCoupleTicketProfile(tempProfile);
-    setProfile(tempProfile);
-    setIsEditingTicket(false);
-    triggerConfettiCelebration();
   };
 
   const exportPassportImage = () => {
@@ -161,7 +140,7 @@ export default function PassportPage() {
     ctx.fillText(`FLIGHT: ANG-${roomCode}-2026 · SEAT: ${profile.seatNumber} · DATE: ${profile.anniversaryDate}`, 600, 235);
 
     // 4 Unlocked Souvenir Stamps Cards
-    const unlockedList = PASSPORT_STAMPS.filter((s) => unlockedIds.includes(s.id)).slice(0, 4);
+    const unlockedList = stamps.filter((s) => unlockedIds.includes(s.id)).slice(0, 4);
     unlockedList.forEach((stamp, idx) => {
       const cardX = 70 + idx * 268;
       const cardY = 280;
@@ -217,23 +196,8 @@ export default function PassportPage() {
   const categories = ['All', 'Photobooth', 'Games & Duels', 'Keepsakes', 'Milestones'];
 
   const filteredStamps = activeCategory === 'All'
-    ? PASSPORT_STAMPS
-    : PASSPORT_STAMPS.filter((s) => s.category === activeCategory);
-
-  const totalCount = PASSPORT_STAMPS.length;
-  const unlockedCount = unlockedIds.length;
-  const progressPercent = Math.round((unlockedCount / totalCount) * 100);
-
-  const rankTier =
-    unlockedCount >= 10
-      ? '👑 Level 5: Eternal Soulmates 💖'
-      : unlockedCount >= 6
-      ? '✈️ Level 4: Global Date Masters 🌍'
-      : unlockedCount >= 4
-      ? '🌸 Level 3: Sweetheart Duo 💌'
-      : unlockedCount >= 2
-      ? '✨ Level 2: Cozy Date Explorers ☕'
-      : '🌱 Level 1: First Date Dreamers';
+    ? stamps
+    : stamps.filter((s) => s.category === activeCategory);
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--paper)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
@@ -365,190 +329,22 @@ export default function PassportPage() {
 
           {/* Romantic First Class Boarding Pass Ticket Stub */}
           <ScrollReveal animation="fade-up">
-            <div className="passport-boarding-pass" style={{ padding: '24px 28px', color: 'var(--ink)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', borderBottom: '1px dashed var(--line)', paddingBottom: '16px', marginBottom: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                  <div className="gold-wax-seal-3d" title="Authentic Angie Love Seal">
-                    <span>💮</span>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--pink)', fontWeight: 800, letterSpacing: '1px' }}>
-                      ANGIE LOVE AIRLINES · FIRST CLASS TICKET
-                    </div>
-                    <div style={{ fontSize: '18px', fontWeight: 900 }}>
-                      Non-Stop Flight to Each Other’s Arms
-                    </div>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', gap: '16px', alignItems: 'center', fontFamily: 'var(--font-mono)' }}>
-                  <div>
-                    <div style={{ fontSize: '9px', color: 'var(--ink-soft)', textTransform: 'uppercase' }}>Passengers</div>
-                    <div style={{ fontSize: '13px', fontWeight: 800 }}>{profile.partner1} &amp; {profile.partner2}</div>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '9px', color: 'var(--ink-soft)', textTransform: 'uppercase' }}>Seat</div>
-                    <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--pink)' }}>{profile.seatNumber}</div>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '9px', color: 'var(--ink-soft)', textTransform: 'uppercase' }}>Love Date</div>
-                    <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--blue)' }}>{profile.anniversaryDate}</div>
-                  </div>
-
-                  <button
-                    onClick={() => {
-                      sounds.playPop();
-                      setTempProfile(profile);
-                      setIsEditingTicket(true);
-                    }}
-                    style={{
-                      background: 'rgba(255, 123, 163, 0.1)',
-                      border: '1px solid rgba(255, 123, 163, 0.4)',
-                      borderRadius: '12px',
-                      padding: '6px 12px',
-                      fontSize: '11px',
-                      fontWeight: 800,
-                      color: 'var(--pink)',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                    }}
-                  >
-                    <span>✎</span>
-                    <span>Edit Ticket</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Route Departure / Arrival Hub */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                  <div style={{ textAlign: 'left' }}>
-                    <div style={{ fontSize: '10px', color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}>ORIGIN CITY</div>
-                    <div style={{ fontSize: '15px', fontWeight: 900 }}>{profile.originCity}</div>
-                  </div>
-                  <div style={{ fontSize: '20px', color: 'var(--pink)', padding: '0 8px' }}>✈️ ➔ 💖</div>
-                  <div style={{ textAlign: 'left' }}>
-                    <div style={{ fontSize: '10px', color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}>DESTINATION</div>
-                    <div style={{ fontSize: '15px', fontWeight: 900 }}>{profile.destinationCity}</div>
-                  </div>
-                </div>
-
-                <div
-                  style={{
-                    background: 'var(--paper)',
-                    border: '1px dashed var(--line)',
-                    borderRadius: '10px',
-                    padding: '6px 14px',
-                    fontSize: '11px',
-                    fontFamily: 'var(--font-mono)',
-                    color: 'var(--ink-soft)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                  }}
-                >
-                  <span>💮 STATUS:</span>
-                  <b style={{ color: '#059669' }}>LIFETIME BOARDING PASS VALID</b>
-                </div>
-              </div>
-            </div>
+            <BoardingPassCard
+              profile={profile}
+              onEditClick={() => setIsEditingTicket(true)}
+            />
           </ScrollReveal>
 
           {/* Romantic Velvet & Gold Passport Booklet Cover */}
           <ScrollReveal animation="fade-up">
-            <div className="passport-blush-cover" style={{ padding: '36px 30px', color: '#FFFFFF' }}>
-              {/* Gold Crest & Passport Title */}
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  flexWrap: 'wrap',
-                  gap: '20px',
-                  paddingBottom: '24px',
-                  borderBottom: '1px solid rgba(253, 230, 138, 0.3)',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
-                  <div
-                    style={{
-                      width: '64px',
-                      height: '64px',
-                      borderRadius: '50%',
-                      background: 'radial-gradient(circle, rgba(253, 230, 138, 0.35) 0%, rgba(212, 175, 55, 0.1) 100%)',
-                      border: '2px solid #FDE68A',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '30px',
-                      boxShadow: '0 0 25px rgba(253, 230, 138, 0.4)',
-                    }}
-                  >
-                    🌸
-                  </div>
-                  <div>
-                    <div className="passport-gold-text" style={{ fontSize: '13px', fontFamily: 'var(--font-mono)', letterSpacing: '2.5px', fontWeight: 800 }}>
-                      대한민국 연인 여권 · REPUBLIC OF LOVE
-                    </div>
-                    <div style={{ fontSize: '24px', fontWeight: 900, letterSpacing: '-0.2px', marginTop: '2px' }}>
-                      {profile.partner1} &amp; {profile.partner2}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Passport Serial & Rank Badge */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-                  <div style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'rgba(255, 255, 255, 0.65)' }}>
-                    PASSPORT ID
-                  </div>
-                  <div style={{ fontSize: '17px', fontFamily: 'var(--font-mono)', fontWeight: 800, color: '#FDE68A', letterSpacing: '1.5px' }}>
-                    ANG-{roomCode}-2026
-                  </div>
-                  <div
-                    style={{
-                      fontSize: '11.5px',
-                      background: 'rgba(255, 255, 255, 0.12)',
-                      padding: '3px 10px',
-                      borderRadius: '12px',
-                      color: '#FDE68A',
-                      fontWeight: 700,
-                      marginTop: '2px',
-                    }}
-                  >
-                    {rankTier}
-                  </div>
-                </div>
-              </div>
-
-              {/* Passport Progress Bar */}
-              <div style={{ marginTop: '24px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '8px' }}>
-                  <span style={{ color: 'rgba(255,255,255,0.85)' }}>
-                    Souvenir Date Stamps Unlocked ({unlockedCount}/{totalCount} Completed)
-                  </span>
-                  <span style={{ color: '#FDE68A', fontWeight: 800, fontFamily: 'var(--font-mono)' }}>
-                    {progressPercent}% Complete
-                  </span>
-                </div>
-                <div style={{ width: '100%', height: '10px', background: 'rgba(255,255,255,0.12)', borderRadius: '6px', overflow: 'hidden' }}>
-                  <div
-                    style={{
-                      height: '100%',
-                      width: `${progressPercent}%`,
-                      background: 'linear-gradient(90deg, #FF7BA3, #FFA07A, #FDE68A)',
-                      borderRadius: '6px',
-                      boxShadow: '0 0 12px rgba(255, 123, 163, 0.6)',
-                      transition: 'width 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* 3D Satin Ribbon Bookmark */}
-              <div className="passport-satin-ribbon" title="Satin Bookmark Ribbon" aria-hidden="true" />
-            </div>
+            <PassportBookletCover
+              profile={profile}
+              roomCode={roomCode}
+              rankTier={rankTier}
+              unlockedCount={unlockedCount}
+              totalCount={totalCount}
+              progressPercent={progressPercent}
+            />
           </ScrollReveal>
 
           {/* Category Filter Chips */}
@@ -563,13 +359,13 @@ export default function PassportPage() {
                 style={{
                   padding: '8px 18px',
                   borderRadius: '20px',
-                  border: activeCategory === cat ? '1px solid var(--pink)' : '1px solid var(--line)',
-                  background: activeCategory === cat ? 'linear-gradient(135deg, var(--pink), #FF9E64)' : '#FFFFFF',
-                  color: activeCategory === cat ? '#FFFFFF' : 'var(--ink)',
                   fontSize: '13px',
-                  fontWeight: 700,
+                  fontWeight: 800,
                   cursor: 'pointer',
-                  boxShadow: activeCategory === cat ? '0 4px 14px rgba(255, 123, 163, 0.35)' : 'none',
+                  border: activeCategory === cat ? 'none' : '1px solid var(--line)',
+                  background: activeCategory === cat ? 'var(--ink)' : 'var(--paper-raised)',
+                  color: activeCategory === cat ? '#FFFFFF' : 'var(--ink-soft)',
+                  boxShadow: activeCategory === cat ? '0 4px 14px rgba(0,0,0,0.15)' : 'none',
                   transition: 'all 0.15s ease',
                 }}
               >
@@ -592,180 +388,19 @@ export default function PassportPage() {
               const userNote = stampNotes[stamp.id] || stamp.defaultMemory;
 
               return (
-                <div
+                <StampCard
                   key={stamp.id}
-                  className={`passport-page-cream passport-stamp-badge ${isAnimating ? 'stamp-ink-effect' : ''}`}
-                  onClick={() => handleStampClick(stamp, isUnlocked)}
-                  style={{
-                    padding: '28px 22px 20px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    minHeight: '260px',
-                    background: stamp.pastelBg,
-                    border: isUnlocked ? `1.5px solid ${stamp.inkColor}33` : '1.5px dashed var(--line)',
+                  stamp={stamp}
+                  isUnlocked={isUnlocked}
+                  isAnimating={isAnimating}
+                  userNote={userNote}
+                  onStampClick={handleStampClick}
+                  onEditNoteClick={(s) => {
+                    setSelectedStamp(s);
+                    setEditingNoteId(s.id);
+                    setTempNoteText(stampNotes[s.id] || s.defaultMemory);
                   }}
-                >
-                  {/* Cute Washi Tape Graphic */}
-                  <div className="passport-washi-tape" style={{ background: `${stamp.inkColor}25` }} />
-
-                  {/* Top Category Badge */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <span
-                      style={{
-                        fontSize: '10.5px',
-                        fontFamily: 'var(--font-mono)',
-                        textTransform: 'uppercase',
-                        color: 'var(--ink-soft)',
-                        fontWeight: 700,
-                      }}
-                    >
-                      {stamp.category}
-                    </span>
-
-                    {isUnlocked ? (
-                      <span
-                        style={{
-                          fontSize: '10px',
-                          background: `${stamp.inkColor}15`,
-                          border: `1px solid ${stamp.inkColor}44`,
-                          color: stamp.inkColor,
-                          padding: '2px 8px',
-                          borderRadius: '10px',
-                          fontWeight: 800,
-                          fontFamily: 'var(--font-mono)',
-                        }}
-                      >
-                        ✓ STAMPED ON DATE
-                      </span>
-                    ) : (
-                      <span
-                        style={{
-                          fontSize: '10px',
-                          background: 'rgba(0,0,0,0.04)',
-                          color: 'var(--ink-soft)',
-                          padding: '2px 8px',
-                          borderRadius: '10px',
-                          fontWeight: 700,
-                        }}
-                      >
-                        🔒 TAP TO STAMP
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Stamp Center Emblem */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', margin: '8px 0' }}>
-                    <div
-                      style={{
-                        width: '70px',
-                        height: '70px',
-                        borderRadius: stamp.sealShape === 'circle' || stamp.sealShape === 'heart' ? '50%' : '16px',
-                        border: isUnlocked ? `3.5px dashed ${stamp.inkColor}` : '2px dashed #CBD5E1',
-                        background: isUnlocked ? '#FFFFFF' : 'rgba(0,0,0,0.02)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                        transform: isUnlocked ? `rotate(${stamp.stampAngle}deg)` : 'none',
-                        boxShadow: isUnlocked ? `0 4px 16px ${stamp.inkColor}22` : 'none',
-                        transition: 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
-                      }}
-                    >
-                      <span style={{ fontSize: '26px', opacity: isUnlocked ? 1 : 0.4 }}>
-                        {stamp.icon}
-                      </span>
-                      {isUnlocked && (
-                        <span
-                          style={{
-                            fontSize: '7.5px',
-                            fontWeight: 900,
-                            color: stamp.inkColor,
-                            fontFamily: 'var(--font-mono)',
-                            marginTop: '-2px',
-                          }}
-                        >
-                          OFFICIAL
-                        </span>
-                      )}
-                    </div>
-
-                    <div>
-                      <div
-                        style={{
-                          fontSize: '16px',
-                          fontWeight: 800,
-                          color: isUnlocked ? stamp.inkColor : 'var(--ink)',
-                          letterSpacing: '-0.2px',
-                        }}
-                      >
-                        {stamp.title}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: '11.5px',
-                          fontFamily: 'var(--font-mono)',
-                          color: isUnlocked ? stamp.inkColor : 'var(--ink-soft)',
-                          fontWeight: 700,
-                          opacity: 0.85,
-                          marginBottom: '4px',
-                        }}
-                      >
-                        {stamp.koreanTitle}
-                      </div>
-                      <div style={{ fontSize: '12px', color: 'var(--ink-soft)', lineHeight: 1.4 }}>
-                        {stamp.description}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Romantic Couple Memory Sticky Snippet */}
-                  {isUnlocked && (
-                    <div
-                      style={{
-                        background: '#FFFFFF',
-                        border: '1px solid rgba(0,0,0,0.06)',
-                        borderRadius: '10px',
-                        padding: '8px 10px',
-                        fontSize: '11.5px',
-                        color: 'var(--ink)',
-                        fontStyle: 'italic',
-                        lineHeight: 1.4,
-                        margin: '6px 0 10px',
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: '6px',
-                      }}
-                    >
-                      <span>💬</span>
-                      <span>{userNote}</span>
-                    </div>
-                  )}
-
-                  {/* Bottom Action Bar */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '10px', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
-                    <span style={{ fontSize: '11px', color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}>
-                      {isUnlocked ? '💮 Tap to view memory' : '▷ Unplayed Date'}
-                    </span>
-                    <Link
-                      href={stamp.route}
-                      onClick={(e) => e.stopPropagation()}
-                      style={{
-                        fontSize: '12px',
-                        fontWeight: 800,
-                        color: stamp.inkColor,
-                        textDecoration: 'none',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                      }}
-                    >
-                      <span>Start Date</span>
-                      <span>→</span>
-                    </Link>
-                  </div>
-                </div>
+                />
               );
             })}
           </div>
@@ -841,149 +476,15 @@ export default function PassportPage() {
       </main>
 
       {/* Ticket Profile Editor Modal */}
-      {isEditingTicket && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 100,
-            background: 'rgba(23, 24, 28, 0.65)',
-            backdropFilter: 'blur(10px)',
-            display: 'grid',
-            placeItems: 'center',
-            padding: '20px',
-          }}
-          onClick={() => setIsEditingTicket(false)}
-        >
-          <div
-            style={{
-              width: 'min(480px, 100%)',
-              background: '#FFFFFF',
-              borderRadius: '24px',
-              padding: '32px 28px',
-              boxShadow: '0 24px 60px rgba(0,0,0,0.3)',
-              border: '2px solid rgba(255, 123, 163, 0.4)',
-              position: 'relative',
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-              <span style={{ fontSize: '20px' }}>✈️</span>
-              <h3 style={{ fontSize: '20px', fontWeight: 900 }}>Customize Couple Ticket</h3>
-            </div>
-            <p style={{ fontSize: '13px', color: 'var(--ink-soft)', marginBottom: '20px' }}>
-              Personalize your Love Airlines Boarding Pass and Passport credentials.
-            </p>
-
-            <form onSubmit={handleSaveTicketProfile} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <div>
-                  <label style={{ fontSize: '11px', fontWeight: 800, color: 'var(--ink)', textTransform: 'uppercase' }}>
-                    Partner 1 Name
-                  </label>
-                  <input
-                    type="text"
-                    value={tempProfile.partner1}
-                    onChange={(e) => setTempProfile({ ...tempProfile, partner1: e.target.value })}
-                    style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid var(--line)', marginTop: '4px', fontSize: '13px', fontWeight: 700 }}
-                    required
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: '11px', fontWeight: 800, color: 'var(--ink)', textTransform: 'uppercase' }}>
-                    Partner 2 Name
-                  </label>
-                  <input
-                    type="text"
-                    value={tempProfile.partner2}
-                    onChange={(e) => setTempProfile({ ...tempProfile, partner2: e.target.value })}
-                    style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid var(--line)', marginTop: '4px', fontSize: '13px', fontWeight: 700 }}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label style={{ fontSize: '11px', fontWeight: 800, color: 'var(--ink)', textTransform: 'uppercase' }}>
-                  Origin City &amp; Timezone
-                </label>
-                <input
-                  type="text"
-                  value={tempProfile.originCity}
-                  onChange={(e) => setTempProfile({ ...tempProfile, originCity: e.target.value })}
-                  style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid var(--line)', marginTop: '4px', fontSize: '13px' }}
-                  placeholder="e.g. Seoul 🇰🇷 (GMT+9)"
-                />
-              </div>
-
-              <div>
-                <label style={{ fontSize: '11px', fontWeight: 800, color: 'var(--ink)', textTransform: 'uppercase' }}>
-                  Destination City &amp; Timezone
-                </label>
-                <input
-                  type="text"
-                  value={tempProfile.destinationCity}
-                  onChange={(e) => setTempProfile({ ...tempProfile, destinationCity: e.target.value })}
-                  style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid var(--line)', marginTop: '4px', fontSize: '13px' }}
-                  placeholder="e.g. San Francisco 🇺🇸 (GMT-7)"
-                />
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <div>
-                  <label style={{ fontSize: '11px', fontWeight: 800, color: 'var(--ink)', textTransform: 'uppercase' }}>
-                    Anniversary / Love Date
-                  </label>
-                  <input
-                    type="text"
-                    value={tempProfile.anniversaryDate}
-                    onChange={(e) => setTempProfile({ ...tempProfile, anniversaryDate: e.target.value })}
-                    style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid var(--line)', marginTop: '4px', fontSize: '13px' }}
-                    placeholder="2024.11.14"
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: '11px', fontWeight: 800, color: 'var(--ink)', textTransform: 'uppercase' }}>
-                    Seat Number
-                  </label>
-                  <input
-                    type="text"
-                    value={tempProfile.seatNumber}
-                    onChange={(e) => setTempProfile({ ...tempProfile, seatNumber: e.target.value })}
-                    style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid var(--line)', marginTop: '4px', fontSize: '13px' }}
-                    placeholder="1A (Beside You)"
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                <button
-                  type="submit"
-                  className="btn btn-grad"
-                  style={{ flex: 1, padding: '12px', fontSize: '13.5px', borderRadius: '12px', fontWeight: 800 }}
-                >
-                  Save Ticket &amp; Passport 💖
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsEditingTicket(false)}
-                  style={{
-                    padding: '12px 18px',
-                    borderRadius: '12px',
-                    background: 'var(--paper)',
-                    border: '1px solid var(--line)',
-                    fontSize: '13px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                  }}
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <TicketEditorModal
+        isOpen={isEditingTicket}
+        profile={profile}
+        onClose={() => setIsEditingTicket(false)}
+        onSave={(updated) => {
+          updateProfile(updated);
+          triggerConfettiCelebration();
+        }}
+      />
 
       {/* Romantic Polaroid Stamp Memory Modal */}
       {selectedStamp && (
