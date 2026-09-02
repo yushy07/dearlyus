@@ -1,0 +1,41 @@
+{
+  "name": "Angie - Couples Date Night & Photobooth",
+  "short_name": "Angie",
+  "description": "Fun dates, Korean Life4Cuts photobooth, and 15 realtime multiplayer activities for long distance couples.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAF9F6",
+  "theme_color": "#17181C",
+  "orientation": "portrait-primary",
+  "categories": ["lifestyle", "entertainment", "social"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/og.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Photobooth",
+      "url": "/photobooth",
+      "description": "Open Korean Life4Cuts Photobooth"
+    },
+    {
+      "name": "Date Passport",
+      "url": "/passport",
+      "description": "View Couple Date Passport & Stamps"
+    },
+    {
+      "name": "All Activities",
+      "url": "/activity",
+      "description": "Explore 35 Realtime Dates"
+    }
+  ]
+}

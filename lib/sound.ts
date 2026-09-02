@@ -9,6 +9,11 @@ class SoundManager {
   public isBgPlaying = false;
   private bgInitialized = false;
 
+  private sleepTimerId: NodeJS.Timeout | null = null;
+  private sleepTimerEnd: number | null = null;
+  private sleepTimerTicker: NodeJS.Timeout | null = null;
+  public sleepTimerMinutes: number | null = null;
+
   // Background audio (background.mp3) played on page load until radio mixer interaction
   public startBackgroundMusic(volume = 0.3) {
     if (typeof window === 'undefined') return;
@@ -76,6 +81,116 @@ class SoundManager {
           });
       }
     } catch {}
+  }
+
+  // Sleep Timer with smooth volume ramp-down in the last 60 seconds
+  public setSleepTimer(minutes: number, onTick?: (secondsLeft: number) => void, onComplete?: () => void) {
+    this.clearSleepTimer();
+    if (minutes <= 0) return;
+
+    this.sleepTimerMinutes = minutes;
+    const totalMs = minutes * 60 * 1000;
+    this.sleepTimerEnd = Date.now() + totalMs;
+
+    this.sleepTimerTicker = setInterval(() => {
+      const remainingSec = this.getSleepTimerRemaining();
+      if (onTick) onTick(remainingSec);
+
+      // Smooth gradual fade in the final 60 seconds
+      if (remainingSec <= 60 && remainingSec > 0) {
+        const factor = Math.max(remainingSec / 60, 0.05);
+        if (this.warmAudio) this.warmAudio.volume = Math.min(0.4 * factor, 1);
+        if (this.romanticAudio) this.romanticAudio.volume = Math.min(0.35 * factor, 1);
+        if (this.pianoAudio) this.pianoAudio.volume = Math.min(0.35 * factor, 1);
+        if (this.jazzAudio) this.jazzAudio.volume = Math.min(0.3 * factor, 1);
+        if (this.bgAudio) this.bgAudio.volume = Math.min(0.3 * factor, 1);
+      }
+
+      if (remainingSec <= 0) {
+        this.clearSleepTimer();
+        this.stopAllAmbience();
+        this.stopBackgroundMusic();
+        if (onComplete) onComplete();
+      }
+    }, 1000);
+  }
+
+  public clearSleepTimer() {
+    if (this.sleepTimerId) {
+      clearTimeout(this.sleepTimerId);
+      this.sleepTimerId = null;
+    }
+    if (this.sleepTimerTicker) {
+      clearInterval(this.sleepTimerTicker);
+      this.sleepTimerTicker = null;
+    }
+    this.sleepTimerEnd = null;
+    this.sleepTimerMinutes = null;
+  }
+
+  public getSleepTimerRemaining(): number {
+    if (!this.sleepTimerEnd) return 0;
+    const diff = Math.max(0, Math.floor((this.sleepTimerEnd - Date.now()) / 1000));
+    return diff;
+  }
+
+  // Stamp Thud: Mechanical heavy rubber stamp pressing into paper
+  public playStampThud() {
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(140, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(32, ctx.currentTime + 0.14);
+
+    gain.gain.setValueAtTime(0.6, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.16);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 0.17);
+
+    // High frequency paper tap slap
+    const tapOsc = ctx.createOscillator();
+    const tapGain = ctx.createGain();
+    tapOsc.type = 'triangle';
+    tapOsc.frequency.setValueAtTime(480, ctx.currentTime);
+    tapOsc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.04);
+    tapGain.gain.setValueAtTime(0.2, ctx.currentTime);
+    tapGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+    tapOsc.connect(tapGain);
+    tapGain.connect(ctx.destination);
+    tapOsc.start();
+    tapOsc.stop(ctx.currentTime + 0.06);
+  }
+
+  // Reaction Sparkle Pop Chime
+  public playSparkleReaction(emoji = '✨') {
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    const baseFreq = emoji === '💖' ? 523.25 : emoji === '💋' ? 659.25 : emoji === '☕' ? 392.0 : 783.99;
+    [0, 4, 7, 12].forEach((interval, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const freq = baseFreq * Math.pow(2, interval / 12);
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.035);
+
+      gain.gain.setValueAtTime(0.12, ctx.currentTime + idx * 0.035);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + idx * 0.035 + 0.28);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(ctx.currentTime + idx * 0.035);
+      osc.stop(ctx.currentTime + idx * 0.035 + 0.3);
+    });
   }
 
   public getContext(): AudioContext | null {

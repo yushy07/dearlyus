@@ -225,6 +225,9 @@ export function Footer() {
               <span>Keepsakes &amp; Vault</span>
             </div>
             <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13.5px' }}>
+              <Link href="/passport" className="foot-link" style={{ fontWeight: 700, color: '#A855F7' }}>
+                Couple Date Passport 💮
+              </Link>
               <Link href="/future" className="foot-link">Our Future Vision Board</Link>
               <Link href="/letter" className="foot-link">Letters to Future (Time Vault)</Link>
               <Link href="/scrapbook" className="foot-link">Digital Scrapbook Corkboard</Link>

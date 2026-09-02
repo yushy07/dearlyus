@@ -2637,14 +2637,89 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   transform: translateY(0) scale(0.96);
 }
 
-.radio-channel-card {
-  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
-}
-
 .radio-channel-card:hover {
   background: rgba(255, 255, 255, 0.06) !important;
   border-color: rgba(255, 255, 255, 0.16) !important;
   transform: translateX(2px);
+}
+
+/* ============ Floating Couple Reaction Particles ============ */
+@keyframes particle-float-up {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(0.6) rotate(0deg);
+  }
+  40% {
+    opacity: 1;
+    transform: translate(-15px, -120px) scale(1.2) rotate(12deg);
+  }
+  70% {
+    opacity: 0.9;
+    transform: translate(12px, -240px) scale(1.1) rotate(-8deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-6px, -360px) scale(0.7) rotate(20deg);
+  }
+}
+
+/* ============ Korean Couple Date Passport & Rubber Stamps ============ */
+.passport-leather-cover {
+  background: linear-gradient(145deg, #0F172A 0%, #1E293B 50%, #0F172A 100%);
+  border: 2px solid rgba(212, 175, 55, 0.4);
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.2);
+  border-radius: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.passport-gold-text {
+  background: linear-gradient(135deg, #FDE68A 0%, #D4AF37 50%, #B45309 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.passport-page-cream {
+  background: #FCFBF7;
+  background-image: radial-gradient(#E2E8F0 0.8px, transparent 0.8px);
+  background-size: 16px 16px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 18px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+.passport-stamp-badge {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  position: relative;
+}
+
+.passport-stamp-badge:hover {
+  transform: scale(1.04) translateY(-2px);
+}
+
+.passport-stamp-badge:active {
+  transform: scale(0.96);
+}
+
+@keyframes stamp-thud-press {
+  0% {
+    opacity: 0;
+    transform: scale(2.2) rotate(-15deg);
+  }
+  65% {
+    opacity: 1;
+    transform: scale(0.92) rotate(2deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.stamp-ink-effect {
+  animation: stamp-thud-press 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
 

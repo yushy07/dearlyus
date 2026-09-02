@@ -41,14 +41,21 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Fun Dates for Long Distance Relationships — 11 Realtime Games | Angie',
+    title: 'Fun Dates for Long Distance Relationships — 15 Realtime Games & Dates | Angie',
     description:
-      'Riddle Night, IQ Duel, a couples quiz, debates, drawing, an arcade, and a realtime photobooth — a hub of things to actually do together while apart.',
+      'Korean Life4Cuts photobooth, IQ Duel, couple quiz, debates, drawing, arcade, and memory keepsakes — a realtime date platform for two screens across any timezone.',
     images: ['/og.svg'],
+  },
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Angie Dates',
   },
 };
 
 import { AudioPlayer } from '@/components/shared/AudioPlayer';
+import { ReactionBursts } from '@/components/shared/ReactionBursts';
 import { ClickSpark } from '@/components/ui/ClickSpark';
 
 export default function RootLayout({
@@ -59,6 +66,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#17181C" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <link rel="apple-touch-icon" href="/favicon.svg" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
@@ -73,6 +85,7 @@ export default function RootLayout({
       <body>
         {children}
         <AudioPlayer />
+        <ReactionBursts />
         <ClickSpark />
       </body>
     </html>

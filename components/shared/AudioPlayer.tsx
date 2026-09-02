@@ -20,6 +20,9 @@ export function AudioPlayer() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isBgMusicActive, setIsBgMusicActive] = useState(true);
   const [activePreset, setActivePreset] = useState<'warm' | 'romantic' | 'tokyo' | null>(null);
+  const [sleepTimer, setSleepTimerState] = useState<number | null>(null);
+  const [sleepRemainingSec, setSleepRemainingSec] = useState<number>(0);
+  const [partnerSync, setPartnerSync] = useState(true);
 
   const [warmVol, setWarmVol] = useState(0.4);
   const [romanticVol, setRomanticVol] = useState(0.35);
@@ -34,10 +37,78 @@ export function AudioPlayer() {
       if (sounds.isBgPlaying && !isPlaying) {
         setIsBgMusicActive(true);
       }
+      if (sounds.sleepTimerMinutes) {
+        setSleepRemainingSec(sounds.getSleepTimerRemaining());
+      }
     }, 1000);
 
     return () => clearInterval(timer);
   }, [isPlaying]);
+
+  // Global Keyboard Shortcut [M] for Instant Mute/Unmute
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const activeTag = document.activeElement?.tagName.toLowerCase();
+      if (activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select') return;
+
+      if (e.key === 'm' || e.key === 'M') {
+        e.preventDefault();
+        toggleMaster();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  });
+
+  // Partner Soundscape Room Sync Listener
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const channel = new BroadcastChannel('angie_soundscape_sync');
+      channel.onmessage = (event) => {
+        if (!partnerSync) return;
+        const data = event.data;
+        if (data?.type === 'SYNC_SOUNDSCAPE') {
+          if (data.preset) setPreset(data.preset, false);
+          if (data.warm !== undefined) setWarmVol(data.warm);
+          if (data.romantic !== undefined) setRomanticVol(data.romantic);
+          if (data.piano !== undefined) setPianoVol(data.piano);
+          if (data.lofi !== undefined) setLofiVol(data.lofi);
+        }
+      };
+      return () => channel.close();
+    } catch {}
+  }, [partnerSync]);
+
+  const broadcastSync = (data: { preset?: string; warm?: number; romantic?: number; piano?: number; lofi?: number }) => {
+    if (!partnerSync || typeof window === 'undefined') return;
+    try {
+      const channel = new BroadcastChannel('angie_soundscape_sync');
+      channel.postMessage({ type: 'SYNC_SOUNDSCAPE', ...data });
+    } catch {}
+  };
+
+  const handleSetSleepTimer = (minutes: number | null) => {
+    sounds.playPop();
+    if (!minutes) {
+      sounds.clearSleepTimer();
+      setSleepTimerState(null);
+      setSleepRemainingSec(0);
+    } else {
+      setSleepTimerState(minutes);
+      sounds.setSleepTimer(
+        minutes,
+        (rem) => setSleepRemainingSec(rem),
+        () => {
+          setIsPlaying(false);
+          setIsBgMusicActive(false);
+          setSleepTimerState(null);
+          setSleepRemainingSec(0);
+        }
+      );
+    }
+  };
 
   const stopBg = () => {
     sounds.stopBackgroundMusic();
@@ -67,7 +138,7 @@ export function AudioPlayer() {
     }
   };
 
-  const setPreset = (preset: 'warm' | 'romantic' | 'tokyo') => {
+  const setPreset = (preset: 'warm' | 'romantic' | 'tokyo', shouldBroadcast = true) => {
     sounds.playPop();
     stopBg();
     setActivePreset(preset);
@@ -83,6 +154,7 @@ export function AudioPlayer() {
         sounds.startPiano(0.35);
         sounds.startTokyoCafe(0.2);
       }
+      if (shouldBroadcast) broadcastSync({ preset: 'warm', warm: 0.65, romantic: 0.2, piano: 0.35, lofi: 0.2 });
     } else if (preset === 'romantic') {
       setWarmVol(0.2);
       setRomanticVol(0.65);
@@ -94,6 +166,7 @@ export function AudioPlayer() {
         sounds.startPiano(0.4);
         sounds.startTokyoCafe(0.25);
       }
+      if (shouldBroadcast) broadcastSync({ preset: 'romantic', warm: 0.2, romantic: 0.65, piano: 0.4, lofi: 0.25 });
     } else if (preset === 'tokyo') {
       setWarmVol(0.3);
       setRomanticVol(0.2);
@@ -105,6 +178,7 @@ export function AudioPlayer() {
         sounds.startPiano(0.35);
         sounds.startTokyoCafe(0.65);
       }
+      if (shouldBroadcast) broadcastSync({ preset: 'tokyo', warm: 0.3, romantic: 0.2, piano: 0.35, lofi: 0.65 });
     }
   };
 
@@ -304,10 +378,16 @@ export function AudioPlayer() {
           </div>
 
           {/* Quick Atmosphere Presets */}
-          <div style={{ marginBottom: '18px' }}>
-            <div style={{ fontSize: '10.5px', textTransform: 'uppercase', letterSpacing: '0.8px', color: 'rgba(255,255,255,0.45)', fontWeight: 700, marginBottom: '8px' }}>
-              Curated Moods
+          <div style={{ marginBottom: '14px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <div style={{ fontSize: '10.5px', textTransform: 'uppercase', letterSpacing: '0.8px', color: 'rgba(255,255,255,0.45)', fontWeight: 700 }}>
+                Curated Moods
+              </div>
+              <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-mono)' }}>
+                Press <b>[M]</b> to Mute
+              </div>
             </div>
+
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
               <button
                 onClick={() => setPreset('warm')}
@@ -373,6 +453,93 @@ export function AudioPlayer() {
               >
                 <span style={{ fontSize: '14px' }}>🎷</span>
                 <span>Tokyo Cafe</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Sleep Timer & Partner Sync Bar */}
+          <div
+            style={{
+              background: 'rgba(255, 255, 255, 0.03)',
+              border: '1px solid rgba(255, 255, 255, 0.07)',
+              borderRadius: '12px',
+              padding: '10px 12px',
+              marginBottom: '14px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+            }}
+          >
+            {/* Sleep Timer Selector */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', fontWeight: 700 }}>
+                <span>🌙</span>
+                <span>Sleep Timer:</span>
+              </div>
+              {sleepRemainingSec > 0 && (
+                <div style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: '#4ADE80', fontWeight: 700 }}>
+                  {Math.floor(sleepRemainingSec / 60)}:{(sleepRemainingSec % 60).toString().padStart(2, '0')} left
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '4px' }}>
+              {[null, 15, 30, 45, 60].map((mins) => {
+                const isSelected = sleepTimer === mins;
+                return (
+                  <button
+                    key={mins === null ? 'off' : mins}
+                    onClick={() => handleSetSleepTimer(mins)}
+                    style={{
+                      background: isSelected ? 'rgba(74, 222, 128, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                      border: isSelected ? '1px solid rgba(74, 222, 128, 0.6)' : '1px solid rgba(255, 255, 255, 0.08)',
+                      borderRadius: '6px',
+                      padding: '4px 0',
+                      color: isSelected ? '#4ADE80' : 'rgba(255, 255, 255, 0.7)',
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    {mins === null ? 'Off' : `${mins}m`}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Partner Room Sync Toggle */}
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                paddingTop: '6px',
+                borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+                marginTop: '2px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10.5px', color: 'rgba(255,255,255,0.7)' }}>
+                <span>📻</span>
+                <span>Room Partner Sync</span>
+              </div>
+              <button
+                onClick={() => {
+                  sounds.playPop();
+                  setPartnerSync(!partnerSync);
+                }}
+                style={{
+                  background: partnerSync ? 'rgba(255, 123, 163, 0.2)' : 'rgba(255, 255, 255, 0.08)',
+                  border: partnerSync ? '1px solid var(--pink)' : '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '12px',
+                  padding: '2px 8px',
+                  color: partnerSync ? 'var(--pink)' : 'rgba(255,255,255,0.5)',
+                  fontSize: '9.5px',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                }}
+              >
+                {partnerSync ? 'ACTIVE' : 'OFF'}
               </button>
             </div>
           </div>
@@ -619,6 +786,23 @@ export function AudioPlayer() {
           <span>
             {isPlaying ? 'Soundscape Live' : isBgMusicActive ? 'Music Playing' : 'Radio Mixer'}
           </span>
+
+          {sleepRemainingSec > 0 && (
+            <span
+              style={{
+                fontSize: '10px',
+                background: 'rgba(74, 222, 128, 0.25)',
+                border: '1px solid rgba(74, 222, 128, 0.5)',
+                color: '#4ADE80',
+                padding: '1px 6px',
+                borderRadius: '10px',
+                fontFamily: 'var(--font-mono)',
+                fontWeight: 700,
+              }}
+            >
+              🌙 {Math.ceil(sleepRemainingSec / 60)}m
+            </span>
+          )}
 
           {(isPlaying || isBgMusicActive) && (
             <div style={{ display: 'flex', alignItems: 'flex-end', gap: '2px', height: '12px', marginLeft: '2px' }}>
