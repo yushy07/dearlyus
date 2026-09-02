@@ -342,18 +342,27 @@ export default function QuizPage() {
                   {hostCommentary && (
                     <div
                       style={{
-                        padding: '10px 16px',
-                        borderRadius: '8px',
-                        background: 'var(--paper)',
-                        border: '1px solid var(--line)',
+                        padding: '12px 18px',
+                        borderRadius: '14px',
+                        background: 'linear-gradient(135deg, #FFF5F8 0%, #FFFFFF 100%)',
+                        border: '1.5px solid rgba(255, 77, 128, 0.25)',
                         fontSize: '13px',
-                        fontStyle: 'italic',
-                        color: 'var(--ink-soft)',
+                        color: 'var(--ink)',
                         marginBottom: '16px',
-                        display: 'inline-block',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        boxShadow: '0 4px 14px rgba(255, 77, 128, 0.08)',
+                        textAlign: 'left',
                       }}
                     >
-                      💬 &ldquo;{hostCommentary}&rdquo;
+                      <span style={{ fontSize: '20px' }}>ʚ🤖💘ɞ</span>
+                      <div>
+                        <div style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', fontWeight: 800, color: '#FF4D80', textTransform: 'uppercase' }}>
+                          CUPIDOT&apos;S CHEEKY VERDICT
+                        </div>
+                        <span style={{ fontStyle: 'italic', fontWeight: 600 }}>&ldquo;{hostCommentary}&rdquo;</span>
+                      </div>
                     </div>
                   )}
                   <br />

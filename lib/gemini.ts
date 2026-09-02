@@ -76,17 +76,16 @@ const LOCAL_FALLBACK_QUESTIONS: Record<string, GeneratedQuestion[]> = {
   ],
 };
 
+import { generateCupidotDilemma } from './cupidot';
+
 /**
- * Generates the next question via Gemini Flash or seamlessly returns localized fallback.
+ * Generates the next question via Gemini Flash or seamlessly returns Cupidot's on-device fallback.
  */
 export async function generateAdaptiveQuestion(req: QuestionRequest): Promise<GeneratedQuestion> {
   const apiKey = process.env.GEMINI_API_KEY;
-  const modeKey = req.mode || 'quiz';
-  const fallbackPool = LOCAL_FALLBACK_QUESTIONS[modeKey] || LOCAL_FALLBACK_QUESTIONS.quiz;
-  const fallbackChoice = fallbackPool[Math.floor(Math.random() * fallbackPool.length)];
 
   if (!apiKey) {
-    return fallbackChoice;
+    return generateCupidotDilemma(req);
   }
 
   try {
@@ -129,16 +128,16 @@ Return ONLY valid JSON matching this exact schema:
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      return fallbackChoice;
+      return generateCupidotDilemma(req);
     }
 
     const data: any = await response.json();
     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!text) return fallbackChoice;
+    if (!text) return generateCupidotDilemma(req);
 
     const parsed = JSON.parse(text);
     if (!parsed.question || !Array.isArray(parsed.options) || parsed.options.length < 2) {
-      return fallbackChoice;
+      return generateCupidotDilemma(req);
     }
 
     return {
@@ -148,6 +147,6 @@ Return ONLY valid JSON matching this exact schema:
       source: 'gemini',
     };
   } catch {
-    return fallbackChoice;
+    return generateCupidotDilemma(req);
   }
 }

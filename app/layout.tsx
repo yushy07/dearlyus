@@ -57,6 +57,7 @@ export const metadata: Metadata = {
 import { AudioPlayer } from '@/components/shared/AudioPlayer';
 import { ReactionBursts } from '@/components/shared/ReactionBursts';
 import { ClickSpark } from '@/components/ui/ClickSpark';
+import { CupidotCompanion } from '@/components/bot/CupidotCompanion';
 
 export default function RootLayout({
   children,
@@ -111,6 +112,7 @@ export default function RootLayout({
         <AudioPlayer />
         <ReactionBursts />
         <ClickSpark />
+        <CupidotCompanion />
       </body>
     </html>
   );

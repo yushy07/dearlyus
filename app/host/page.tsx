@@ -6,6 +6,7 @@ import { Ribbon, Navbar, Confetti } from '@/components/shared';
 import { sounds } from '@/lib/sound';
 import { downloadReceiptPNG, DateReceiptData } from '@/lib/receipt-canvas';
 import { ThermalReceiptModal } from '@/components/shared/ThermalReceiptModal';
+import { CupidotBot, BotState } from '@/components/bot/CupidotBot';
 
 interface HostScenario {
   id: number;
@@ -49,6 +50,7 @@ export default function DateHostPage() {
   const [confettiActive, setConfettiActive] = useState(false);
   const [totalRounds, setTotalRounds] = useState(1);
   const [receiptModalData, setReceiptModalData] = useState<DateReceiptData | null>(null);
+  const [botState, setBotState] = useState<BotState>('idle');
 
   const scenario = scenarios[currentIdx] || scenarios[0];
 
@@ -59,9 +61,13 @@ export default function DateHostPage() {
     if (partnerAPick === partnerBPick) {
       sounds.playCelebration();
       setConfettiActive(true);
+      setBotState('celebration');
       setTimeout(() => setConfettiActive(false), 2500);
+      setTimeout(() => setBotState('love'), 1800);
     } else {
       sounds.playCountdownBeep(true);
+      setBotState('talking');
+      setTimeout(() => setBotState('happy'), 2000);
     }
 
     // Background pre-fetch next tailored dilemma based on both choices
@@ -104,6 +110,7 @@ export default function DateHostPage() {
       setRevealed(false);
       setHostCommentary(null);
       setTotalRounds((r) => r + 1);
+      setBotState('idle');
     }
   };
 
@@ -130,14 +137,20 @@ export default function DateHostPage() {
       />
 
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '880px' }}>
-        {/* Title */}
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <span className="eyebrow">Interactive Date Host</span>
+        {/* 3D Cupidot Mascot Host */}
+        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+          <div style={{ width: '190px', height: '190px', margin: '0 auto -12px' }}>
+            <CupidotBot state={botState} scale={2.2} />
+          </div>
+          <span className="eyebrow" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <span>ʚ🤖💘ɞ</span>
+            <span>CUPIDOT · 3D DATE HOST</span>
+          </span>
           <h1 style={{ fontSize: 'clamp(28px, 4.5vw, 42px)', fontWeight: 800, margin: '8px 0 10px' }}>
             The <span className="grad">&ldquo;Third Wheel&rdquo;</span> Host
           </h1>
           <p style={{ color: 'var(--ink-soft)', fontSize: '16px', maxWidth: '52ch', margin: '0 auto' }}>
-            Angie acts as your observant date host, giving commentary on your choices and adapting future scenarios to how you answer.
+            Cupidot observes your real choices, tracks your synergy, and delivers witty commentary while adapting every dilemma.
           </p>
         </div>
 
@@ -276,18 +289,28 @@ export default function DateHostPage() {
                 {hostCommentary && (
                   <div
                     style={{
-                      padding: '12px 18px',
-                      borderRadius: '10px',
-                      background: 'var(--paper)',
-                      border: '1px solid var(--line)',
+                      padding: '14px 20px',
+                      borderRadius: '16px',
+                      background: 'linear-gradient(135deg, #FFF5F8 0%, #FFFFFF 100%)',
+                      border: '1.5px solid rgba(255, 77, 128, 0.25)',
                       fontSize: '14px',
-                      fontStyle: 'italic',
                       color: 'var(--ink)',
-                      marginBottom: '20px',
-                      display: 'inline-block',
+                      marginBottom: '22px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      boxShadow: '0 4px 16px rgba(255, 77, 128, 0.08)',
+                      textAlign: 'left',
+                      maxWidth: '560px',
                     }}
                   >
-                    🎙️ Host Commentary: &ldquo;{hostCommentary}&rdquo;
+                    <span style={{ fontSize: '24px' }}>ʚ🤖💘ɞ</span>
+                    <div>
+                      <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 800, color: '#FF4D80', textTransform: 'uppercase', marginBottom: '2px' }}>
+                        CUPIDOT&apos;S OBSERVATION
+                      </div>
+                      <span style={{ fontStyle: 'italic', fontWeight: 600 }}>&ldquo;{hostCommentary}&rdquo;</span>
+                    </div>
                   </div>
                 )}
                 <br />

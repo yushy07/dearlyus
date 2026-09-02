@@ -280,8 +280,28 @@ export default function CardsPage() {
               </div>
 
               {hostNote && (
-                <div style={{ padding: '10px 16px', borderRadius: '8px', background: '#FFF9F0', border: '1px solid #FFE4C4', fontSize: '13px', fontStyle: 'italic', color: '#8A5D3B' }}>
-                  💬 &ldquo;{hostNote}&rdquo;
+                <div
+                  style={{
+                    padding: '12px 18px',
+                    borderRadius: '14px',
+                    background: 'linear-gradient(135deg, #FFF5F8 0%, #FFFFFF 100%)',
+                    border: '1.5px solid rgba(255, 77, 128, 0.25)',
+                    fontSize: '13px',
+                    color: 'var(--ink)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    boxShadow: '0 4px 14px rgba(255, 77, 128, 0.08)',
+                    textAlign: 'left',
+                  }}
+                >
+                  <span style={{ fontSize: '20px' }}>ʚ🤖💘ɞ</span>
+                  <div>
+                    <div style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', fontWeight: 800, color: '#FF4D80', textTransform: 'uppercase' }}>
+                      CUPIDOT&apos;S CHEEKY NOTE
+                    </div>
+                    <span style={{ fontStyle: 'italic', fontWeight: 600 }}>&ldquo;{hostNote}&rdquo;</span>
+                  </div>
                 </div>
               )}
 
