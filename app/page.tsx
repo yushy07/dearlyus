@@ -1649,53 +1649,104 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* FAQ Accordion */}
-      <section className="section" id="faq">
+      {/* Modern FAQ Studio */}
+      <section className="section" id="faq" style={{ padding: '80px 0 100px' }}>
         <div className="wrap">
           <ScrollReveal animation="fade-up">
-            <div className="section-head">
-              <div className="kicker">Good to know</div>
-              <h2>Questions long distance couples ask.</h2>
+            <div className="faq-layout">
+              {/* Left Column: Sticky Context & Support Card */}
+              <div className="faq-sidebar">
+                <div className="kicker" style={{ color: 'var(--pink)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <span>✨</span>
+                  <span>Good to Know</span>
+                </div>
+                <h2>Questions long distance couples ask.</h2>
+                <p>
+                  Zero downloads, instant 5-letter room codes, Korean Life4Cuts photo strips, and real-time multiplayer across any country or timezone.
+                </p>
+
+                {/* Direct Contact Helper Card */}
+                <div
+                  style={{
+                    background: 'var(--paper-raised)',
+                    border: '1px solid var(--line)',
+                    borderRadius: '16px',
+                    padding: '20px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px',
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.03)',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800, fontSize: '14px' }}>
+                    <span>💌</span>
+                    <span>Need help planning a date?</span>
+                  </div>
+                  <p style={{ fontSize: '13px', color: 'var(--ink-soft)', lineHeight: 1.5 }}>
+                    We answer every single couple. Have an activity request or timezone question? Reach out anytime!
+                  </p>
+                  <a
+                    href="mailto:hello@getangie.com"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      color: 'var(--pink)',
+                      textDecoration: 'none',
+                    }}
+                  >
+                    <span>Email us at hello@getangie.com</span>
+                    <span>→</span>
+                  </a>
+                </div>
+              </div>
+
+              {/* Right Column: Interactive Card Accordion */}
+              <div className="faq-list">
+                {[
+                  {
+                    q: 'What games and activities can we play on Angie?',
+                    a: 'Over 15 realtime activities are live: Truth or Dare with 20 tiny minigames, Honest Cards, the Our Future planning date, the Love Match compatibility test, Riddle Night, IQ Duel, the How Well Do You Know Me quiz, Korean Life4Cuts online photobooth, Couples Debate, Draw Together, Couples Court, Snap Hunt, PvP Fashion Show, Face Avatar Arcade, and The Lab study-date timer. Everything happens synchronously in one shared room.',
+                  },
+                  {
+                    q: 'Is Angie free to play?',
+                    a: 'Yes. Open a room, share your 5-letter code, and play together completely for free. The photobooth is always free and every single game has a full free tier. Premium unlocks unlimited plays, custom themes, and fresh questions that never repeat.',
+                  },
+                  {
+                    q: 'How does a realtime online date work?',
+                    a: 'One partner opens a room and sends the 5-letter code; the other joins from anywhere in the world. You see each other\'s live presence cursors, lock in answers privately, and reveal at the exact same second — with shared countdowns that fire simultaneously on both screens.',
+                  },
+                  {
+                    q: 'Do we need to install an app?',
+                    a: 'No! Angie runs right in any modern web browser on iPhone, Android, iPad, Mac, or Windows — zero downloads needed. Just tap the link and you\'re connected together in under 5 seconds.',
+                  },
+                  {
+                    q: 'Is the photobooth like 인생네컷 / Life4Cuts?',
+                    a: 'Yes — Angie\'s photobooth is meticulously styled after authentic Korean Life4Cuts (인생네컷) booths, customized for long-distance couples. You get synchronized countdown snaps, vintage frame colorways, cute stickers, and high-resolution downloadable strips to save or print.',
+                  },
+                ].map((item, idx) => (
+                  <details
+                    key={idx}
+                    className="faq-card"
+                    open={activeFaq === idx}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      sounds.playPop();
+                      setActiveFaq(activeFaq === idx ? null : idx);
+                    }}
+                  >
+                    <summary>
+                      <span>{item.q}</span>
+                      <span className="faq-icon-badge">+</span>
+                    </summary>
+                    <p>{item.a}</p>
+                  </details>
+                ))}
+              </div>
             </div>
-            <div className="faq">
-            {[
-              {
-                q: 'What games can we play on Angie?',
-                a: 'Fifteen realtime activities are live: Truth or Dare with 20 tiny minigames, Honest Cards, the Our Future planning date, the Love Match compatibility test, Riddle Night, IQ Duel, the How Well Do You Know Me quiz, the online photobooth, Couples Debate, Draw Together, Couples Court, Snap Hunt, Fashion Show, a face-avatar Arcade, and The Lab study-date game. Everything happens in one shared room at the same second — not messaging in parallel.',
-              },
-              {
-                q: 'Is Angie free to play?',
-                a: 'Yes. Open a room, share the 5-letter code, and play together for free — the photobooth is always free and every game has a free tier. Premium unlocks unlimited plays, every question pack, a game log of your scores, and fresh questions that never repeat.',
-              },
-              {
-                q: 'How does a realtime online date work?',
-                a: 'One person opens a room and sends the code; the other joins from anywhere. You see each other\'s live cursors, lock in answers privately, and reveal at the exact same second — and in the photobooth a shared countdown fires the shot on both screens at once.',
-              },
-              {
-                q: 'Do we need to install an app?',
-                a: 'No. Angie runs right in the browser on phone or laptop — nothing to download. There\'s also a native app if you prefer one.',
-              },
-              {
-                q: 'Is the photobooth like 인생네컷 / Life4Cuts?',
-                a: 'Yes — Angie\'s photobooth is built in the Korean Life4Cuts (인생네컷) style, but online and made for two people in different places. You get the same clean photo strip you\'d print from a booth.',
-              },
-            ].map((item, idx) => (
-              <details
-                key={idx}
-                open={activeFaq === idx}
-                onClick={(e) => {
-                  e.preventDefault();
-                  setActiveFaq(activeFaq === idx ? null : idx);
-                }}
-              >
-                <summary>
-                  {item.q} <span className="pm">+</span>
-                </summary>
-                <p>{item.a}</p>
-              </details>
-            ))}
-          </div>
-        </ScrollReveal>
+          </ScrollReveal>
         </div>
       </section>
 
