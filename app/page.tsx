@@ -7,7 +7,8 @@ import { ShinyText, AuroraBackground, SpotlightCard, MagnetButton, ScrollProgres
 
 export default function HomePage() {
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
-  const [roomCode] = useState(['K', 'X', '7', 'R', 'M']);
+  const [roomCode, setRoomCode] = useState(['K', 'X', '7', 'R', 'M']);
+  const [copied, setCopied] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [nickname, setNickname] = useState('Mia');
   const [partnerName, setPartnerName] = useState('Alex');
@@ -17,6 +18,11 @@ export default function HomePage() {
   const [shotStep, setShotStep] = useState<number>(0);
   const [countNum, setCountNum] = useState<string>('');
   const [flashing, setFlashing] = useState<boolean>(false);
+
+  // Stats counters state
+  const [datesCount, setDatesCount] = useState(14820);
+  const [sessionsCount, setSessionsCount] = useState(38940);
+  const [stripsCount, setStripsCount] = useState(52180);
 
   // Presence cursors state
   const blueCursorRef = useRef<HTMLDivElement>(null);
