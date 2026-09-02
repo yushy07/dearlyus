@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Ribbon, Navbar, Confetti } from '@/components/shared';
 import { sounds } from '@/lib/sound';
-import { downloadReceiptPNG } from '@/lib/receipt-canvas';
+import { downloadReceiptPNG, DateReceiptData } from '@/lib/receipt-canvas';
+import { ThermalReceiptModal } from '@/components/shared/ThermalReceiptModal';
 
 interface HostScenario {
   id: number;
@@ -47,6 +48,7 @@ export default function DateHostPage() {
   const [hostCommentary, setHostCommentary] = useState<string | null>(null);
   const [confettiActive, setConfettiActive] = useState(false);
   const [totalRounds, setTotalRounds] = useState(1);
+  const [receiptModalData, setReceiptModalData] = useState<DateReceiptData | null>(null);
 
   const scenario = scenarios[currentIdx] || scenarios[0];
 
@@ -296,7 +298,8 @@ export default function DateHostPage() {
                   </button>
                   <button
                     onClick={() => {
-                      downloadReceiptPNG({
+                      sounds.playPop();
+                      setReceiptModalData({
                         roomCode: 'KX7RM',
                         date: new Date().toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }),
                         partnerA: 'Mia',
@@ -311,7 +314,6 @@ export default function DateHostPage() {
                         overallSync: partnerAPick === partnerBPick ? 95 : 75,
                         hostVerdict: hostCommentary || 'Observing spontaneous couple travel instincts!',
                       });
-                      sounds.playCelebration();
                     }}
                     className="btn btn-primary"
                     style={{ padding: '12px 24px', fontSize: '14px' }}
@@ -326,6 +328,15 @@ export default function DateHostPage() {
             )}
           </div>
         </div>
+
+        {/* Thermal Receipt Date Lore Modal with Paper Tear Audio */}
+        {receiptModalData && (
+          <ThermalReceiptModal
+            isOpen={Boolean(receiptModalData)}
+            onClose={() => setReceiptModalData(null)}
+            data={receiptModalData}
+          />
+        )}
       </main>
     </div>
   );

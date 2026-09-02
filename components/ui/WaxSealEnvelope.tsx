@@ -27,12 +27,16 @@ export function WaxSealEnvelope({
     if (isOpen || isOpening) return;
     setIsOpening(true);
     sounds.playWaxCrack();
-    sounds.playChime();
+    
+    // Play tactile parchment unfolding sound as letter slides out
+    setTimeout(() => {
+      sounds.playParchmentUnfold();
+    }, 320);
 
     setTimeout(() => {
       setIsOpen(true);
       onOpen?.();
-    }, 900);
+    }, 850);
   };
 
   return (
@@ -66,6 +70,7 @@ export function WaxSealEnvelope({
             justifyContent: 'center',
             minHeight: '340px',
             backgroundImage: 'repeating-linear-gradient(45deg, rgba(0,0,0,0.01) 0, rgba(0,0,0,0.01) 2px, transparent 0, transparent 4px)',
+            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
           }}
         >
           {/* Diagonal Envelope Crease Lines */}
@@ -97,27 +102,92 @@ export function WaxSealEnvelope({
             <span style={{ fontSize: '13px', color: '#8C6E54', fontStyle: 'italic' }}>From: {sender} · {sealDate}</span>
           </div>
 
-          {/* 3D Wax Seal Stamp */}
+          {/* 3D Wax Seal Stamp with Realistic Jagged Crack Physics */}
           <div
-            className={isOpening ? 'wax-fracturing' : 'floating-3d'}
             style={{
-              width: '76px',
-              height: '76px',
-              borderRadius: '50%',
-              background: 'radial-gradient(circle at 35% 35%, #E63946 0%, #9B111E 70%, #5E000B 100%)',
-              boxShadow: '0 8px 24px rgba(155, 17, 30, 0.45), inset 0 2px 3px rgba(255,255,255,0.4)',
-              border: '2px solid rgba(255,255,255,0.2)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#FFE5EC',
-              fontSize: '28px',
-              fontWeight: 900,
+              position: 'relative',
+              width: '84px',
+              height: '84px',
               zIndex: 10,
-              userSelect: 'none',
+              display: 'grid',
+              placeItems: 'center',
             }}
           >
-            ♡
+            {/* Left Seal Half */}
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                borderRadius: '50%',
+                background: 'radial-gradient(circle at 35% 35%, #E63946 0%, #9B111E 70%, #5E000B 100%)',
+                boxShadow: '0 8px 24px rgba(155, 17, 30, 0.45), inset 0 2px 3px rgba(255,255,255,0.4)',
+                border: '2px solid rgba(255,255,255,0.25)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#FFE5EC',
+                fontSize: '32px',
+                fontWeight: 900,
+                clipPath: 'polygon(0 0, 52% 0, 48% 30%, 54% 60%, 47% 100%, 0 100%)',
+                transform: isOpening ? 'translate(-30px, -10px) rotate(-22deg)' : 'none',
+                opacity: isOpening ? 0 : 1,
+                transition: 'transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.65s ease',
+              }}
+            >
+              ♡
+            </div>
+
+            {/* Right Seal Half */}
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                borderRadius: '50%',
+                background: 'radial-gradient(circle at 35% 35%, #E63946 0%, #9B111E 70%, #5E000B 100%)',
+                boxShadow: '0 8px 24px rgba(155, 17, 30, 0.45), inset 0 2px 3px rgba(255,255,255,0.4)',
+                border: '2px solid rgba(255,255,255,0.25)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#FFE5EC',
+                fontSize: '32px',
+                fontWeight: 900,
+                clipPath: 'polygon(52% 0, 100% 0, 100% 100%, 47% 100%, 54% 60%, 48% 30%)',
+                transform: isOpening ? 'translate(30px, 10px) rotate(22deg)' : 'none',
+                opacity: isOpening ? 0 : 1,
+                transition: 'transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.65s ease',
+              }}
+            >
+              ♡
+            </div>
+
+            {/* Breaking Wax Particle Flecks */}
+            {isOpening && (
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: '-20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  pointerEvents: 'none',
+                }}
+              >
+                {['✨', '💥', '✨'].map((p, i) => (
+                  <span
+                    key={i}
+                    style={{
+                      position: 'absolute',
+                      fontSize: '16px',
+                      animation: 'ping 0.6s ease-out forwards',
+                      transform: `translate(${(i - 1) * 28}px, ${(i % 2 === 0 ? -1 : 1) * 20}px)`,
+                    }}
+                  >
+                    {p}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           <span
@@ -131,7 +201,7 @@ export function WaxSealEnvelope({
               zIndex: 2,
             }}
           >
-            ✨ Tap wax seal to unseal letter ▷
+            {isOpening ? '🕯️ Wax seal cracking...' : '✨ Tap wax seal to break & open letter ▷'}
           </span>
         </div>
       ) : (

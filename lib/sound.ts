@@ -828,6 +828,153 @@ class SoundManager {
     playNextChord();
   }
 
+  // --- PROCEDURAL TACTILE SOUND SYNTHESIS ---
+
+  // Thermal dot-matrix printer stepper burst
+  public playThermalPrinter() {
+    const ctx = this.getContext();
+    if (!ctx) return;
+    try {
+      const now = ctx.currentTime;
+      for (let i = 0; i < 14; i++) {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const time = now + i * 0.04;
+        osc.type = i % 2 === 0 ? 'square' : 'triangle';
+        osc.frequency.setValueAtTime(1400 + (i % 4) * 250, time);
+        gain.gain.setValueAtTime(0.04, time);
+        gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.025);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(time);
+        osc.stop(time + 0.028);
+      }
+    } catch {}
+  }
+
+  // Serrated paper cutter tear sound
+  public playPaperTear() {
+    const ctx = this.getContext();
+    if (!ctx) return;
+    try {
+      const now = ctx.currentTime;
+      const dur = 0.16;
+      const bufferSize = Math.floor(ctx.sampleRate * dur);
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.35));
+      }
+      const noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(2400, now);
+      filter.frequency.exponentialRampToValueAtTime(750, now + dur);
+      filter.Q.setValueAtTime(2.5, now);
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+      noise.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+      noise.start(now);
+    } catch {}
+  }
+
+  // 3D Wax seal fracture and snap
+  public playWaxCrack() {
+    const ctx = this.getContext();
+    if (!ctx) return;
+    try {
+      const now = ctx.currentTime;
+      // High snap
+      const snap = ctx.createOscillator();
+      const snapGain = ctx.createGain();
+      snap.type = 'triangle';
+      snap.frequency.setValueAtTime(2400, now);
+      snap.frequency.exponentialRampToValueAtTime(400, now + 0.08);
+      snapGain.gain.setValueAtTime(0.25, now);
+      snapGain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+      snap.connect(snapGain);
+      snapGain.connect(ctx.destination);
+      snap.start(now);
+      snap.stop(now + 0.09);
+
+      // Low contact thud
+      const thud = ctx.createOscillator();
+      const thudGain = ctx.createGain();
+      thud.type = 'sine';
+      thud.frequency.setValueAtTime(140, now);
+      thud.frequency.exponentialRampToValueAtTime(40, now + 0.12);
+      thudGain.gain.setValueAtTime(0.3, now);
+      thudGain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+      thud.connect(thudGain);
+      thudGain.connect(ctx.destination);
+      thud.start(now);
+      thud.stop(now + 0.14);
+    } catch {}
+  }
+
+  // Heavy parchment paper unfolding rustle
+  public playParchmentUnfold() {
+    const ctx = this.getContext();
+    if (!ctx) return;
+    try {
+      const now = ctx.currentTime;
+      const dur = 0.28;
+      const bufferSize = Math.floor(ctx.sampleRate * dur);
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.sin((i / bufferSize) * Math.PI);
+      }
+      const noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(1200, now);
+      filter.frequency.linearRampToValueAtTime(1800, now + 0.15);
+      filter.frequency.exponentialRampToValueAtTime(500, now + dur);
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.1, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+      noise.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+      noise.start(now);
+    } catch {}
+  }
+
+  // Coin silver foil scratch texture
+  public playCoinScratch() {
+    const ctx = this.getContext();
+    if (!ctx) return;
+    try {
+      const now = ctx.currentTime;
+      const dur = 0.09;
+      const bufferSize = Math.floor(ctx.sampleRate * dur);
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+      const noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(3400 + Math.random() * 400, now);
+      filter.Q.setValueAtTime(4, now);
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+      noise.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+      noise.start(now);
+    } catch {}
+  }
+
   public stopAllAmbience() {
     this.stopWarm();
     this.stopRain();

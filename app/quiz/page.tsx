@@ -6,7 +6,8 @@ import { QUIZ_PACKS } from '@/data';
 import { QuizPack, QuizQuestion } from '@/types';
 import { Ribbon, Navbar, Confetti } from '@/components/shared';
 import { sounds } from '@/lib/sound';
-import { downloadReceiptPNG } from '@/lib/receipt-canvas';
+import { downloadReceiptPNG, DateReceiptData } from '@/lib/receipt-canvas';
+import { ThermalReceiptModal } from '@/components/shared/ThermalReceiptModal';
 
 export default function QuizPage() {
   const [allPacks, setAllPacks] = useState<QuizPack[]>(QUIZ_PACKS);
@@ -18,6 +19,7 @@ export default function QuizPage() {
   const [matches, setMatches] = useState<number>(0);
   const [finished, setFinished] = useState(false);
   const [confettiActive, setConfettiActive] = useState(false);
+  const [receiptModalData, setReceiptModalData] = useState<DateReceiptData | null>(null);
 
   // Custom Lore Quiz Creator Modal State
   const [creatorOpen, setCreatorOpen] = useState(false);
@@ -388,7 +390,8 @@ export default function QuizPage() {
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
               <button
                 onClick={() => {
-                  downloadReceiptPNG({
+                  sounds.playPop();
+                  setReceiptModalData({
                     roomCode: 'KX7RM',
                     date: new Date().toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }),
                     partnerA: 'Mia',
@@ -403,7 +406,6 @@ export default function QuizPage() {
                     overallSync: matchPercent,
                     hostVerdict: matchPercent >= 80 ? 'Exceptional soulmate-level alignment!' : 'Playful chemistry with great inside jokes.',
                   });
-                  sounds.playCelebration();
                 }}
                 className="btn btn-primary"
                 style={{ padding: '12px 28px' }}
@@ -538,6 +540,15 @@ export default function QuizPage() {
               </form>
             </div>
           </div>
+        )}
+
+        {/* Thermal Receipt Date Lore Modal with Paper Tear Audio */}
+        {receiptModalData && (
+          <ThermalReceiptModal
+            isOpen={Boolean(receiptModalData)}
+            onClose={() => setReceiptModalData(null)}
+            data={receiptModalData}
+          />
         )}
       </main>
     </div>

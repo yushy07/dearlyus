@@ -119,6 +119,7 @@ export default function PhotoboothPage() {
   const [motionFrameIdx, setMotionFrameIdx] = useState(0);
   const [isDrawingMode, setIsDrawingMode] = useState(false);
   const [neonPenColor, setNeonPenColor] = useState('#FF7BA3');
+  const [isVintageCamMode, setIsVintageCamMode] = useState(false);
 
   // Motion strip looping interval
   useEffect(() => {
@@ -251,11 +252,36 @@ export default function PhotoboothPage() {
     if (!ctx) return;
 
     // Background
-    ctx.fillStyle = selectedStyle.bg.startsWith('linear') ? '#FFFFFF' : selectedStyle.bg;
+    if (selectedStyle.foilEffect === 'holographic') {
+      const grad = ctx.createLinearGradient(0, 0, 600, 1600);
+      grad.addColorStop(0, '#FFD1DC');
+      grad.addColorStop(0.25, '#FFE4B5');
+      grad.addColorStop(0.5, '#D4F0FF');
+      grad.addColorStop(0.75, '#E8D7FF');
+      grad.addColorStop(1, '#FFD1DC');
+      ctx.fillStyle = grad;
+    } else if (selectedStyle.foilEffect === 'chrome') {
+      const grad = ctx.createLinearGradient(0, 0, 600, 1600);
+      grad.addColorStop(0, '#CBD5E1');
+      grad.addColorStop(0.3, '#FFFFFF');
+      grad.addColorStop(0.5, '#94A3B8');
+      grad.addColorStop(0.7, '#FFFFFF');
+      grad.addColorStop(1, '#CBD5E1');
+      ctx.fillStyle = grad;
+    } else if (selectedStyle.foilEffect === 'matte-foil') {
+      ctx.fillStyle = '#101216';
+    } else if (selectedStyle.bg.startsWith('linear')) {
+      const grad = ctx.createLinearGradient(0, 0, 0, 1600);
+      grad.addColorStop(0, '#FFE4D6');
+      grad.addColorStop(1, '#FFD6E8');
+      ctx.fillStyle = grad;
+    } else {
+      ctx.fillStyle = selectedStyle.bg;
+    }
     ctx.fillRect(0, 0, 600, 1600);
 
     // Border
-    ctx.strokeStyle = selectedStyle.border;
+    ctx.strokeStyle = selectedStyle.foilEffect === 'matte-foil' ? '#E2E8F0' : selectedStyle.border;
     ctx.lineWidth = 2.5;
     ctx.strokeRect(16, 16, 568, 1568);
 
@@ -304,6 +330,26 @@ export default function PhotoboothPage() {
           dy = y - (dh - 320) / 2;
         }
         ctx.drawImage(img, dx, dy, dw, dh);
+
+        // Optional 90s Film Cam light leak & LED date stamp
+        if (isVintageCamMode) {
+          const leakGrad = ctx.createRadialGradient(42 + 516 * 0.85, y + 40, 10, 42 + 516 * 0.85, y + 40, 240);
+          leakGrad.addColorStop(0, 'rgba(255, 120, 50, 0.45)');
+          leakGrad.addColorStop(0.4, 'rgba(255, 40, 100, 0.22)');
+          leakGrad.addColorStop(1, 'rgba(255, 40, 100, 0)');
+          ctx.fillStyle = leakGrad;
+          ctx.fillRect(42, y, 516, 320);
+
+          ctx.save();
+          ctx.font = 'bold 20px monospace';
+          ctx.fillStyle = '#FF6A00';
+          ctx.shadowColor = '#FF4500';
+          ctx.shadowBlur = 6;
+          ctx.textAlign = 'right';
+          ctx.fillText("'26  9  3", 42 + 516 - 16, y + 320 - 16);
+          ctx.restore();
+        }
+
         ctx.restore();
       }
 
@@ -1152,6 +1198,26 @@ export default function PhotoboothPage() {
                     ))}
                   </div>
                 </div>
+
+                {/* 90s Vintage Cam Date Stamp & Light Leak Toggle */}
+                <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid var(--line)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <span style={{ fontWeight: 800, fontSize: '13px' }}>🎞️ 90s Film Cam Mode</span>
+                    <p style={{ fontSize: '11.5px', color: 'var(--ink-soft)', margin: '2px 0 0' }}>
+                      LED date stamp (&apos;26 9 3) &amp; warm nostalgic light leaks.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      sounds.playPop();
+                      setIsVintageCamMode(!isVintageCamMode);
+                    }}
+                    className={`btn ${isVintageCamMode ? 'btn-primary' : 'btn-ghost'}`}
+                    style={{ padding: '4px 12px', fontSize: '12px', whiteSpace: 'nowrap' }}
+                  >
+                    {isVintageCamMode ? '✓ Vintage Active' : 'Enable Vintage'}
+                  </button>
+                </div>
               </div>
 
               <div style={{ display: 'grid', gap: '10px' }}>
@@ -1192,9 +1258,43 @@ export default function PhotoboothPage() {
                   style={{
                     background: selectedStyle.bg,
                     color: selectedStyle.color,
-                    borderColor: selectedStyle.border,
+                    borderColor: selectedStyle.foilEffect === 'matte-foil' ? '#E2E8F0' : selectedStyle.border,
+                    boxShadow: selectedStyle.foilEffect === 'holographic'
+                      ? '0 20px 50px rgba(192, 132, 252, 0.3), 0 0 30px rgba(255, 209, 220, 0.4)'
+                      : selectedStyle.foilEffect === 'chrome'
+                      ? '0 20px 50px rgba(148, 163, 184, 0.4), inset 0 0 0 1px rgba(255,255,255,0.8)'
+                      : undefined,
+                    position: 'relative',
+                    overflow: 'hidden',
                   }}
                 >
+                  {/* Holographic / Chrome Specular Overlay */}
+                  {selectedStyle.foilEffect === 'holographic' && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        background: 'linear-gradient(125deg, transparent 20%, rgba(255, 255, 255, 0.45) 35%, transparent 50%, rgba(255, 255, 255, 0.35) 65%, transparent 80%)',
+                        backgroundSize: '250% 250%',
+                        mixBlendMode: 'overlay',
+                        pointerEvents: 'none',
+                        zIndex: 4,
+                      }}
+                    />
+                  )}
+                  {selectedStyle.foilEffect === 'chrome' && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, transparent 35%, rgba(255, 255, 255, 0.3) 65%, transparent 100%)',
+                        mixBlendMode: 'screen',
+                        pointerEvents: 'none',
+                        zIndex: 4,
+                      }}
+                    />
+                  )}
+
                   <div className="real-strip-brand">ANGIE · 인생네컷</div>
                   <div className="real-strip-frames">
                     {capturedShots.map((shot, idx) => (
@@ -1204,10 +1304,47 @@ export default function PhotoboothPage() {
                         style={{
                           transform: isMotionMode && motionFrameIdx === idx ? 'scale(1.03)' : 'scale(1)',
                           transition: 'transform 0.2s ease',
+                          position: 'relative',
+                          overflow: 'hidden',
                         }}
                       >
                         <img src={shot} alt="" style={{ filter: selectedColorFilter.filter }} />
                         <span className="frame-tag">0{idx + 1}</span>
+
+                        {/* Optional 90s Film Cam Overlays */}
+                        {isVintageCamMode && (
+                          <>
+                            {/* Warm Light Leak */}
+                            <div
+                              style={{
+                                position: 'absolute',
+                                inset: 0,
+                                background: 'radial-gradient(ellipse at 85% 15%, rgba(255, 120, 50, 0.42) 0%, rgba(255, 40, 100, 0.22) 40%, transparent 75%)',
+                                mixBlendMode: 'screen',
+                                pointerEvents: 'none',
+                                zIndex: 6,
+                              }}
+                            />
+                            {/* LED Date Stamp */}
+                            <div
+                              style={{
+                                position: 'absolute',
+                                bottom: '6px',
+                                right: '8px',
+                                fontFamily: 'var(--font-mono)',
+                                fontSize: '10.5px',
+                                fontWeight: 900,
+                                color: '#FF6A00',
+                                textShadow: '0 0 4px #FF4500, 0 0 8px rgba(255, 69, 0, 0.6)',
+                                letterSpacing: '1px',
+                                pointerEvents: 'none',
+                                zIndex: 8,
+                              }}
+                            >
+                              &apos;26 &nbsp;9 &nbsp;3
+                            </div>
+                          </>
+                        )}
                       </div>
                     ))}
                   </div>

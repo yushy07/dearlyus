@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Ribbon, Navbar } from '@/components/shared';
 import { sounds } from '@/lib/sound';
 import { SwipeDeck, GlowBadge, ScrollProgress, ScrollReveal } from '@/components/ui';
+import { ScratchOffCard } from '@/components/cards/ScratchOffCard';
 
 interface Card {
   tier: string;
@@ -25,6 +26,7 @@ export default function CardsPage() {
   const [deck, setDeck] = useState<Card[]>(INITIAL_DECK);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
+  const [scratchMode, setScratchMode] = useState(true);
   const [myAnswer, setMyAnswer] = useState('');
   const [partnerAnswer, setPartnerAnswer] = useState('');
   const [revealed, setRevealed] = useState(false);
@@ -113,56 +115,131 @@ export default function CardsPage() {
           </p>
         </div>
 
-        {/* Swipeable Card Stage */}
+        {/* Swipeable Card Stage with Scratch-Off Silver Foil */}
         <div style={{ perspective: '1200px', margin: '0 auto 28px', maxWidth: '520px' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
+            <button
+              onClick={() => {
+                sounds.playPop();
+                setScratchMode(!scratchMode);
+              }}
+              style={{
+                background: scratchMode ? 'var(--pink-tint)' : 'var(--paper-raised)',
+                border: scratchMode ? '1.5px solid var(--pink)' : '1px solid var(--line)',
+                color: scratchMode ? 'var(--pink)' : 'var(--ink-soft)',
+                padding: '5px 14px',
+                borderRadius: '20px',
+                fontSize: '12px',
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              <span>🪙</span>
+              <span>{scratchMode ? '✓ Silver Foil Scratch Mode' : 'Instant Card View'}</span>
+            </button>
+          </div>
+
           <SwipeDeck
             onSwipeRight={handleNext}
             onSwipeLeft={handleNext}
           >
-            <div
-              onClick={() => {
-                setFlipped(!flipped);
-                sounds.playTick();
-              }}
-              className="card-3d"
-              style={{
-                background: 'linear-gradient(135deg, #FFFDFB, #F6F1EA)',
-                border: '2px solid var(--line)',
-                borderRadius: '20px',
-                padding: '48px 36px',
-                minHeight: '290px',
-                boxShadow: '0 20px 40px rgba(0,0,0,0.08), 0 4px 12px rgba(255,123,163,0.06)',
-                cursor: 'grab',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                textAlign: 'center',
-                position: 'relative',
-                transition: 'transform 0.3s ease',
-              }}
-            >
-              <div>
-                <div style={{ display: 'inline-flex', justifyContent: 'center', marginBottom: '8px' }}>
-                  <GlowBadge text={`${card.tier} · ${card.category}`} size="sm" />
-                </div>
-                <h2
+            {scratchMode ? (
+              <ScratchOffCard resetKey={currentIdx}>
+                <div
+                  onClick={() => {
+                    setFlipped(!flipped);
+                    sounds.playTick();
+                  }}
+                  className="card-3d"
                   style={{
-                    fontSize: '22px',
-                    fontWeight: 700,
-                    lineHeight: 1.4,
-                    marginTop: '16px',
-                    color: 'var(--ink)',
+                    background: 'linear-gradient(135deg, #FFFDFB, #F6F1EA)',
+                    border: '2px solid var(--line)',
+                    borderRadius: '20px',
+                    padding: '48px 36px',
+                    minHeight: '290px',
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.08), 0 4px 12px rgba(255,123,163,0.06)',
+                    cursor: 'grab',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    textAlign: 'center',
+                    position: 'relative',
+                    transition: 'transform 0.3s ease',
                   }}
                 >
-                  &ldquo;{card.prompt}&rdquo;
-                </h2>
-              </div>
+                  <div>
+                    <div style={{ display: 'inline-flex', justifyContent: 'center', marginBottom: '8px' }}>
+                      <GlowBadge text={`${card.tier} · ${card.category}`} size="sm" />
+                    </div>
+                    <h2
+                      style={{
+                        fontSize: '22px',
+                        fontWeight: 700,
+                        lineHeight: 1.4,
+                        marginTop: '16px',
+                        color: 'var(--ink)',
+                      }}
+                    >
+                      &ldquo;{card.prompt}&rdquo;
+                    </h2>
+                  </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', fontSize: '12px', color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}>
-                <span>👆 Swipe left/right for next card</span>
-                <span>{revealed ? '✓ Revealed' : 'Tap to flip'}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', fontSize: '12px', color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}>
+                    <span>👆 Swipe left/right for next</span>
+                    <span>{revealed ? '✓ Revealed' : 'Tap to flip'}</span>
+                  </div>
+                </div>
+              </ScratchOffCard>
+            ) : (
+              <div
+                onClick={() => {
+                  setFlipped(!flipped);
+                  sounds.playTick();
+                }}
+                className="card-3d"
+                style={{
+                  background: 'linear-gradient(135deg, #FFFDFB, #F6F1EA)',
+                  border: '2px solid var(--line)',
+                  borderRadius: '20px',
+                  padding: '48px 36px',
+                  minHeight: '290px',
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.08), 0 4px 12px rgba(255,123,163,0.06)',
+                  cursor: 'grab',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  textAlign: 'center',
+                  position: 'relative',
+                  transition: 'transform 0.3s ease',
+                }}
+              >
+                <div>
+                  <div style={{ display: 'inline-flex', justifyContent: 'center', marginBottom: '8px' }}>
+                    <GlowBadge text={`${card.tier} · ${card.category}`} size="sm" />
+                  </div>
+                  <h2
+                    style={{
+                      fontSize: '22px',
+                      fontWeight: 700,
+                      lineHeight: 1.4,
+                      marginTop: '16px',
+                      color: 'var(--ink)',
+                    }}
+                  >
+                    &ldquo;{card.prompt}&rdquo;
+                  </h2>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', fontSize: '12px', color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}>
+                  <span>👆 Swipe left/right for next</span>
+                  <span>{revealed ? '✓ Revealed' : 'Tap to flip'}</span>
+                </div>
               </div>
-            </div>
+            )}
           </SwipeDeck>
         </div>
 

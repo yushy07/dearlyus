@@ -11,6 +11,7 @@ export interface RoomStyle {
   color: string;
   border: string;
   accent: string;
+  foilEffect?: 'holographic' | 'chrome' | 'matte-foil';
 }
 
 export interface PhotoboothLayout {

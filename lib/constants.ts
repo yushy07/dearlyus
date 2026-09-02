@@ -14,6 +14,9 @@ export const ROOM_STYLES: RoomStyle[] = [
   { id: 'cyber', label: 'Cyber Blue', sub: 'Neon city lights & futuristic grid', bg: '#101726', color: '#DCEBFF', border: '#5FA0FF', accent: '#5FA0FF' },
   { id: 'laundry', label: 'Retro Laundromat', sub: 'Cozy 90s indie date aesthetic', bg: '#F2EDE4', color: '#3A322D', border: '#D6C8B8', accent: '#E07A5F' },
   { id: 'karaoke', label: 'Tokyo Karaoke', sub: 'Neon disco stage & singing mic', bg: '#1E122C', color: '#F3EEFC', border: '#9D6EE8', accent: '#FF7BA3' },
+  { id: 'holo', label: '🌈 Prism Holographic', sub: 'Iridescent spectral rainbow photocard', bg: 'linear-gradient(135deg, #FFD1DC 0%, #FFE4B5 25%, #D4F0FF 50%, #E8D7FF 75%, #FFD1DC 100%)', color: '#2C1B4D', border: '#E9D5FF', accent: '#C084FC', foilEffect: 'holographic' },
+  { id: 'chrome', label: '🪞 Y2K Liquid Chrome', sub: 'High-gloss specular metallic mirror border', bg: 'linear-gradient(135deg, #CBD5E1 0%, #FFFFFF 30%, #94A3B8 50%, #FFFFFF 70%, #CBD5E1 100%)', color: '#0F172A', border: '#94A3B8', accent: '#38BDF8', foilEffect: 'chrome' },
+  { id: 'velvet-foil', label: '✨ Midnight & Silver Foil', sub: 'Velvet obsidian with hot-stamped silver', bg: '#101216', color: '#FFFFFF', border: '#E2E8F0', accent: '#F8FAFC', foilEffect: 'matte-foil' },
   { id: 'noir', label: 'Midnight Noir', sub: 'Monochrome contrast studio film', bg: '#17181C', color: '#F8F9FB', border: '#33353D', accent: '#FFFFFF' },
   { id: 'vinyl', label: 'Vintage Vinyl Lounge', sub: 'Analog record shelves & amber lamp', bg: '#2B1E17', color: '#FDF0D5', border: '#780000', accent: '#C1121F' },
 ];
