@@ -341,45 +341,42 @@ class SoundManager {
     }
   }
 
-  // 2. Cozy Fireplace Synthesizer
-  public startFireplace(volume = 0.3) {
-    if (this.ambientNodes['fireplace']) {
-      this.ambientNodes['fireplace'].gain.gain.setValueAtTime(volume, this.getContext()?.currentTime || 0);
-      return;
+  private romanticAudio: HTMLAudioElement | null = null;
+
+  // 2. Romantic Serenade Track (romantic.mp3)
+  public startRomantic(volume = 0.35) {
+    if (typeof window !== 'undefined') {
+      try {
+        if (!this.romanticAudio) {
+          this.romanticAudio = new Audio('/audio/romantic.mp3');
+          this.romanticAudio.loop = true;
+        }
+        this.romanticAudio.volume = Math.min(Math.max(volume, 0), 1);
+        const playPromise = this.romanticAudio.play();
+        if (playPromise) {
+          playPromise.catch(() => {});
+        }
+        return;
+      } catch {}
     }
-    const ctx = this.getContext();
-    if (!ctx) return;
+  }
 
-    const buffer = this.createNoiseBuffer(4);
-    if (!buffer) return;
+  public stopRomantic() {
+    if (this.romanticAudio) {
+      try {
+        this.romanticAudio.pause();
+        this.romanticAudio.currentTime = 0;
+      } catch {}
+    }
+  }
 
-    const noise = ctx.createBufferSource();
-    noise.buffer = buffer;
-    noise.loop = true;
-
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'bandpass';
-    filter.frequency.setValueAtTime(300, ctx.currentTime);
-    filter.Q.setValueAtTime(3.0, ctx.currentTime);
-
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(volume, ctx.currentTime);
-
-    noise.connect(filter);
-    filter.connect(gain);
-    gain.connect(ctx.destination);
-
-    noise.start();
-    this.ambientNodes['fireplace'] = { source: noise, gain };
+  // Aliases for backward compatibility
+  public startFireplace(volume = 0.35) {
+    this.startRomantic(volume);
   }
 
   public stopFireplace() {
-    if (this.ambientNodes['fireplace']) {
-      try {
-        (this.ambientNodes['fireplace'].source as AudioScheduledSourceNode).stop();
-      } catch {}
-      delete this.ambientNodes['fireplace'];
-    }
+    this.stopRomantic();
   }
 
   private pianoAudio: HTMLAudioElement | null = null;
@@ -512,6 +509,7 @@ class SoundManager {
 
   public stopAllAmbience() {
     this.stopRain();
+    this.stopRomantic();
     this.stopFireplace();
     this.stopPiano();
     this.stopVinyl();

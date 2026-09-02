@@ -7,7 +7,7 @@ export function AudioPlayer() {
   const [isOpen, setIsOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [rainVol, setRainVol] = useState(0.4);
-  const [fireVol, setFireVol] = useState(0.3);
+  const [romanticVol, setRomanticVol] = useState(0.35);
   const [pianoVol, setPianoVol] = useState(0.35);
   const [lofiVol, setLofiVol] = useState(0.3);
 
@@ -17,7 +17,7 @@ export function AudioPlayer() {
       setIsPlaying(false);
     } else {
       sounds.startRain(rainVol);
-      sounds.startFireplace(fireVol);
+      sounds.startRomantic(romanticVol);
       sounds.startPiano(pianoVol);
       sounds.startLofiChords(lofiVol);
       setIsPlaying(true);
@@ -27,34 +27,34 @@ export function AudioPlayer() {
   const setPreset = (preset: 'rain' | 'cozy' | 'lofi') => {
     if (preset === 'rain') {
       setRainVol(0.6);
-      setFireVol(0.1);
+      setRomanticVol(0.2);
       setPianoVol(0.35);
       setLofiVol(0.2);
       if (isPlaying) {
         sounds.startRain(0.6);
-        sounds.startFireplace(0.1);
+        sounds.startRomantic(0.2);
         sounds.startPiano(0.35);
         sounds.startLofiChords(0.2);
       }
     } else if (preset === 'cozy') {
       setRainVol(0.2);
-      setFireVol(0.6);
+      setRomanticVol(0.6);
       setPianoVol(0.4);
       setLofiVol(0.3);
       if (isPlaying) {
         sounds.startRain(0.2);
-        sounds.startFireplace(0.6);
+        sounds.startRomantic(0.6);
         sounds.startPiano(0.4);
         sounds.startLofiChords(0.3);
       }
     } else if (preset === 'lofi') {
       setRainVol(0.3);
-      setFireVol(0.2);
+      setRomanticVol(0.2);
       setPianoVol(0.35);
       setLofiVol(0.6);
       if (isPlaying) {
         sounds.startRain(0.3);
-        sounds.startFireplace(0.2);
+        sounds.startRomantic(0.2);
         sounds.startPiano(0.35);
         sounds.startLofiChords(0.6);
       }
@@ -132,7 +132,7 @@ export function AudioPlayer() {
                 fontWeight: 600,
               }}
             >
-              🔥 Fireside
+              💖 Romantic
             </button>
             <button
               onClick={() => setPreset('lofi')}
@@ -175,21 +175,21 @@ export function AudioPlayer() {
 
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                <span>🔥 Fireplace</span>
-                <span>{Math.round(fireVol * 100)}%</span>
+                <span>💖 Romantic Serenade</span>
+                <span>{Math.round(romanticVol * 100)}%</span>
               </div>
               <input
                 type="range"
                 min="0"
                 max="1"
                 step="0.05"
-                value={fireVol}
+                value={romanticVol}
                 onChange={(e) => {
                   const val = parseFloat(e.target.value);
-                  setFireVol(val);
-                  if (isPlaying) sounds.startFireplace(val);
+                  setRomanticVol(val);
+                  if (isPlaying) sounds.startRomantic(val);
                 }}
-                style={{ width: '100%', accentColor: '#FF9E64' }}
+                style={{ width: '100%', accentColor: 'var(--pink)' }}
               />
             </div>
 
@@ -229,7 +229,7 @@ export function AudioPlayer() {
                   setLofiVol(val);
                   if (isPlaying) sounds.startLofiChords(val);
                 }}
-                style={{ width: '100%', accentColor: 'var(--pink)' }}
+                style={{ width: '100%', accentColor: '#9D8DF1' }}
               />
             </div>
           </div>
