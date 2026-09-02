@@ -6,7 +6,7 @@ import { sounds } from '@/lib/sound';
 export function AudioPlayer() {
   const [isOpen, setIsOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [rainVol, setRainVol] = useState(0.4);
+  const [warmVol, setWarmVol] = useState(0.4);
   const [romanticVol, setRomanticVol] = useState(0.35);
   const [pianoVol, setPianoVol] = useState(0.35);
   const [lofiVol, setLofiVol] = useState(0.3);
@@ -16,7 +16,7 @@ export function AudioPlayer() {
       sounds.stopAllAmbience();
       setIsPlaying(false);
     } else {
-      sounds.startRain(rainVol);
+      sounds.startWarm(warmVol);
       sounds.startRomantic(romanticVol);
       sounds.startPiano(pianoVol);
       sounds.startLofiChords(lofiVol);
@@ -24,36 +24,36 @@ export function AudioPlayer() {
     }
   };
 
-  const setPreset = (preset: 'rain' | 'cozy' | 'lofi') => {
-    if (preset === 'rain') {
-      setRainVol(0.6);
+  const setPreset = (preset: 'warm' | 'romantic' | 'lofi') => {
+    if (preset === 'warm') {
+      setWarmVol(0.6);
       setRomanticVol(0.2);
       setPianoVol(0.35);
       setLofiVol(0.2);
       if (isPlaying) {
-        sounds.startRain(0.6);
+        sounds.startWarm(0.6);
         sounds.startRomantic(0.2);
         sounds.startPiano(0.35);
         sounds.startLofiChords(0.2);
       }
-    } else if (preset === 'cozy') {
-      setRainVol(0.2);
+    } else if (preset === 'romantic') {
+      setWarmVol(0.2);
       setRomanticVol(0.6);
       setPianoVol(0.4);
       setLofiVol(0.3);
       if (isPlaying) {
-        sounds.startRain(0.2);
+        sounds.startWarm(0.2);
         sounds.startRomantic(0.6);
         sounds.startPiano(0.4);
         sounds.startLofiChords(0.3);
       }
     } else if (preset === 'lofi') {
-      setRainVol(0.3);
+      setWarmVol(0.3);
       setRomanticVol(0.2);
       setPianoVol(0.35);
       setLofiVol(0.6);
       if (isPlaying) {
-        sounds.startRain(0.3);
+        sounds.startWarm(0.3);
         sounds.startRomantic(0.2);
         sounds.startPiano(0.35);
         sounds.startLofiChords(0.6);
@@ -105,7 +105,7 @@ export function AudioPlayer() {
           {/* Quick Presets */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', marginBottom: '16px' }}>
             <button
-              onClick={() => setPreset('rain')}
+              onClick={() => setPreset('warm')}
               style={{
                 background: 'rgba(255,255,255,0.08)',
                 border: '1px solid rgba(255,255,255,0.1)',
@@ -117,10 +117,10 @@ export function AudioPlayer() {
                 fontWeight: 600,
               }}
             >
-              🌧️ Attic Rain
+              ☕ Warm Cozy
             </button>
             <button
-              onClick={() => setPreset('cozy')}
+              onClick={() => setPreset('romantic')}
               style={{
                 background: 'rgba(255,255,255,0.08)',
                 border: '1px solid rgba(255,255,255,0.1)',
@@ -147,7 +147,7 @@ export function AudioPlayer() {
                 fontWeight: 600,
               }}
             >
-              ☕ Tokyo Cafe
+              🎧 Tokyo Lo-Fi
             </button>
           </div>
 
@@ -155,19 +155,19 @@ export function AudioPlayer() {
           <div style={{ display: 'grid', gap: '10px', fontSize: '11.5px', fontFamily: 'var(--font-mono)' }}>
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                <span>🌧️ Rain</span>
-                <span>{Math.round(rainVol * 100)}%</span>
+                <span>☕ Warm Ambience</span>
+                <span>{Math.round(warmVol * 100)}%</span>
               </div>
               <input
                 type="range"
                 min="0"
                 max="1"
                 step="0.05"
-                value={rainVol}
+                value={warmVol}
                 onChange={(e) => {
                   const val = parseFloat(e.target.value);
-                  setRainVol(val);
-                  if (isPlaying) sounds.startRain(val);
+                  setWarmVol(val);
+                  if (isPlaying) sounds.startWarm(val);
                 }}
                 style={{ width: '100%', accentColor: 'var(--blue)' }}
               />

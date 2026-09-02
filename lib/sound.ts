@@ -249,87 +249,57 @@ class SoundManager {
     return buffer;
   }
 
-  private rainAudio: HTMLAudioElement | null = null;
+  private warmAudio: HTMLAudioElement | null = null;
 
-  // 1. Rain Audio Track (rain.wav with procedural fallback)
-  public startRain(volume = 0.4) {
+  // 1. Warm Ambience Track (warm.mp3)
+  public startWarm(volume = 0.4) {
     if (typeof window !== 'undefined') {
       try {
-        if (!this.rainAudio) {
-          this.rainAudio = new Audio('/audio/rain.wav');
-          this.rainAudio.loop = true;
+        if (!this.warmAudio) {
+          this.warmAudio = new Audio('/audio/warm.mp3');
+          this.warmAudio.loop = true;
         }
-        this.rainAudio.volume = Math.min(Math.max(volume, 0), 1);
-        const playPromise = this.rainAudio.play();
+        this.warmAudio.volume = Math.min(Math.max(volume, 0), 1);
+        const playPromise = this.warmAudio.play();
         if (playPromise) {
-          playPromise.catch(() => {
-            this.startProceduralRain(volume);
-          });
+          playPromise.catch(() => {});
         }
         return;
-      } catch {
-        this.startProceduralRain(volume);
-        return;
-      }
+      } catch {}
     }
-    this.startProceduralRain(volume);
+  }
+
+  public stopWarm() {
+    if (this.warmAudio) {
+      try {
+        this.warmAudio.pause();
+        this.warmAudio.currentTime = 0;
+      } catch {}
+    }
+  }
+
+  // Aliases for backward compatibility
+  public startRain(volume = 0.4) {
+    this.startWarm(volume);
   }
 
   public stopRain() {
-    if (this.rainAudio) {
-      try {
-        this.rainAudio.pause();
-        this.rainAudio.currentTime = 0;
-      } catch {}
-    }
-    this.stopProceduralRain();
-  }
-
-  // Fallback procedural rain synthesizer
-  private startProceduralRain(volume = 0.4) {
-    if (this.ambientNodes['rain']) {
-      this.ambientNodes['rain'].gain.gain.setValueAtTime(volume, this.getContext()?.currentTime || 0);
-      return;
-    }
-    const ctx = this.getContext();
-    if (!ctx) return;
-
-    const buffer = this.createNoiseBuffer(5);
-    if (!buffer) return;
-
-    const whiteNoise = ctx.createBufferSource();
-    whiteNoise.buffer = buffer;
-    whiteNoise.loop = true;
-
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(1000, ctx.currentTime);
-
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(volume, ctx.currentTime);
-
-    whiteNoise.connect(filter);
-    filter.connect(gain);
-    gain.connect(ctx.destination);
-
-    whiteNoise.start();
-    this.ambientNodes['rain'] = { source: whiteNoise, gain };
-  }
-
-  private stopProceduralRain() {
-    if (this.ambientNodes['rain']) {
-      try {
-        (this.ambientNodes['rain'].source as AudioScheduledSourceNode).stop();
-      } catch {}
-      delete this.ambientNodes['rain'];
-    }
+    this.stopWarm();
   }
 
   public toggleRainSound(active: boolean, volume = 0.4) {
     if (active) {
-      this.startRain(volume);
+      this.startWarm(volume);
     } else {
-      this.stopRain();
+      this.stopWarm();
+    }
+  }
+
+  public toggleWarmSound(active: boolean, volume = 0.4) {
+    if (active) {
+      this.startWarm(volume);
+    } else {
+      this.stopWarm();
     }
   }
 
@@ -508,6 +478,7 @@ class SoundManager {
   }
 
   public stopAllAmbience() {
+    this.stopWarm();
     this.stopRain();
     this.stopRomantic();
     this.stopFireplace();
