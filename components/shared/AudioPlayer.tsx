@@ -18,12 +18,31 @@ interface TrackConfig {
 export function AudioPlayer() {
   const [isOpen, setIsOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isBgMusicActive, setIsBgMusicActive] = useState(true);
   const [activePreset, setActivePreset] = useState<'warm' | 'romantic' | 'tokyo' | null>(null);
 
   const [warmVol, setWarmVol] = useState(0.4);
   const [romanticVol, setRomanticVol] = useState(0.35);
   const [pianoVol, setPianoVol] = useState(0.35);
   const [lofiVol, setLofiVol] = useState(0.3);
+
+  // Auto-start background music on site load
+  useEffect(() => {
+    sounds.autoStartBackgroundMusic(0.3);
+
+    const timer = setInterval(() => {
+      if (sounds.isBgPlaying && !isPlaying) {
+        setIsBgMusicActive(true);
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [isPlaying]);
+
+  const stopBg = () => {
+    sounds.stopBackgroundMusic();
+    setIsBgMusicActive(false);
+  };
 
   // Previous non-zero volumes for quick channel mute/unmute
   const [prevVols, setPrevVols] = useState({
@@ -35,6 +54,7 @@ export function AudioPlayer() {
 
   const toggleMaster = () => {
     sounds.playPop();
+    stopBg();
     if (isPlaying) {
       sounds.stopAllAmbience();
       setIsPlaying(false);
@@ -49,6 +69,7 @@ export function AudioPlayer() {
 
   const setPreset = (preset: 'warm' | 'romantic' | 'tokyo') => {
     sounds.playPop();
+    stopBg();
     setActivePreset(preset);
 
     if (preset === 'warm') {
@@ -94,6 +115,7 @@ export function AudioPlayer() {
     startFn: (v: number) => void
   ) => {
     sounds.playPop();
+    stopBg();
     if (currentVol > 0) {
       setPrevVols((prev) => ({ ...prev, [key]: currentVol }));
       setVol(0);
@@ -449,6 +471,7 @@ export function AudioPlayer() {
                       value={track.volume}
                       onChange={(e) => {
                         const val = parseFloat(e.target.value);
+                        stopBg();
                         track.setVolume(val);
                         setActivePreset(null);
                         if (isPlaying) track.start(val);
@@ -492,10 +515,11 @@ export function AudioPlayer() {
               <span>{isPlaying ? 'Pause Ambience' : 'Play Soundscape'}</span>
             </button>
 
-            {isPlaying && (
+            {(isPlaying || isBgMusicActive) && (
               <button
                 onClick={() => {
                   sounds.playPop();
+                  stopBg();
                   sounds.stopAllAmbience();
                   setIsPlaying(false);
                 }}
@@ -528,10 +552,10 @@ export function AudioPlayer() {
           background: 'rgba(16, 18, 24, 0.90)',
           backdropFilter: 'blur(20px) saturate(180%)',
           WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-          border: isPlaying ? '1px solid rgba(255, 123, 163, 0.4)' : '1px solid rgba(255, 255, 255, 0.16)',
+          border: (isPlaying || isBgMusicActive) ? '1px solid rgba(255, 123, 163, 0.4)' : '1px solid rgba(255, 255, 255, 0.16)',
           borderRadius: '36px',
           padding: '6px 14px 6px 8px',
-          boxShadow: isPlaying
+          boxShadow: (isPlaying || isBgMusicActive)
             ? '0 12px 30px rgba(0, 0, 0, 0.5), 0 0 24px rgba(255, 123, 163, 0.35)'
             : '0 8px 24px rgba(0, 0, 0, 0.35)',
           transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
@@ -544,7 +568,7 @@ export function AudioPlayer() {
             width: '34px',
             height: '34px',
             borderRadius: '50%',
-            background: isPlaying
+            background: (isPlaying || isBgMusicActive)
               ? 'linear-gradient(135deg, var(--pink), #FF9E64)'
               : 'rgba(255, 255, 255, 0.12)',
             border: 'none',
@@ -554,7 +578,7 @@ export function AudioPlayer() {
             placeItems: 'center',
             cursor: 'pointer',
             transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-            boxShadow: isPlaying ? '0 2px 10px rgba(255, 123, 163, 0.5)' : 'none',
+            boxShadow: (isPlaying || isBgMusicActive) ? '0 2px 10px rgba(255, 123, 163, 0.5)' : 'none',
           }}
           title={isPlaying ? 'Pause Ambience' : 'Play Soundscape'}
           aria-label={isPlaying ? 'Pause Ambience' : 'Play Soundscape'}
@@ -583,18 +607,20 @@ export function AudioPlayer() {
         >
           {/* Rotating Vinyl Icon When Playing */}
           <span
-            className={isPlaying ? 'radio-spinning-disc' : ''}
+            className={(isPlaying || isBgMusicActive) ? 'radio-spinning-disc' : ''}
             style={{
               fontSize: '14px',
               display: 'inline-block',
             }}
           >
-            {isPlaying ? '💿' : '📻'}
+            {(isPlaying || isBgMusicActive) ? '💿' : '📻'}
           </span>
 
-          <span>{isPlaying ? 'Soundscape Live' : 'Radio Mixer'}</span>
+          <span>
+            {isPlaying ? 'Soundscape Live' : isBgMusicActive ? 'Music Playing' : 'Radio Mixer'}
+          </span>
 
-          {isPlaying && (
+          {(isPlaying || isBgMusicActive) && (
             <div style={{ display: 'flex', alignItems: 'flex-end', gap: '2px', height: '12px', marginLeft: '2px' }}>
               <div className="radio-eq-bar" style={{ width: '2px', height: '6px' }} />
               <div className="radio-eq-bar" style={{ width: '2px', height: '10px' }} />

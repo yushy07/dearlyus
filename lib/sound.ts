@@ -5,6 +5,78 @@ class SoundManager {
   private ambientNodes: { [key: string]: { source: AudioNode; gain: GainNode } } = {};
   private isLofiPlaying = false;
   private lofiTimer: NodeJS.Timeout | null = null;
+  private bgAudio: HTMLAudioElement | null = null;
+  public isBgPlaying = false;
+  private bgInitialized = false;
+
+  // Background audio (background.mp3) played on page load until radio mixer interaction
+  public startBackgroundMusic(volume = 0.3) {
+    if (typeof window === 'undefined') return;
+    try {
+      if (!this.bgAudio) {
+        this.bgAudio = new Audio('/audio/background.mp3');
+        this.bgAudio.loop = true;
+      }
+      this.bgAudio.volume = Math.min(Math.max(volume, 0), 1);
+      const playPromise = this.bgAudio.play();
+      if (playPromise) {
+        playPromise
+          .then(() => {
+            this.isBgPlaying = true;
+          })
+          .catch(() => {
+            this.isBgPlaying = false;
+          });
+      }
+    } catch {}
+  }
+
+  public stopBackgroundMusic() {
+    this.isBgPlaying = false;
+    if (this.bgAudio) {
+      try {
+        this.bgAudio.pause();
+        this.bgAudio.currentTime = 0;
+      } catch {}
+    }
+  }
+
+  public autoStartBackgroundMusic(volume = 0.3) {
+    if (typeof window === 'undefined' || this.bgInitialized) return;
+    this.bgInitialized = true;
+
+    try {
+      if (!this.bgAudio) {
+        this.bgAudio = new Audio('/audio/background.mp3');
+        this.bgAudio.loop = true;
+      }
+      this.bgAudio.volume = Math.min(Math.max(volume, 0), 1);
+      const playPromise = this.bgAudio.play();
+      if (playPromise) {
+        playPromise
+          .then(() => {
+            this.isBgPlaying = true;
+          })
+          .catch(() => {
+            // Autoplay restricted by browser - start immediately on first user touch/click/keypress
+            const startOnInteraction = () => {
+              if (!this.isBgPlaying && !this.isLofiPlaying && this.bgAudio) {
+                this.bgAudio.play().then(() => {
+                  this.isBgPlaying = true;
+                }).catch(() => {});
+              }
+              document.removeEventListener('pointerdown', startOnInteraction);
+              document.removeEventListener('keydown', startOnInteraction);
+              document.removeEventListener('touchstart', startOnInteraction);
+            };
+
+            document.addEventListener('pointerdown', startOnInteraction, { once: true });
+            document.addEventListener('keydown', startOnInteraction, { once: true });
+            document.addEventListener('touchstart', startOnInteraction, { once: true });
+          });
+      }
+    } catch {}
+  }
 
   public getContext(): AudioContext | null {
     if (typeof window === 'undefined') return null;
