@@ -565,13 +565,160 @@ class SoundManager {
     }
   }
 
+  // --- ANALOG VINYL NEEDLE & GROOVE SYNTHESIS ---
+  private vinylCrackleSource: AudioBufferSourceNode | null = null;
+  private vinylCrackleGain: GainNode | null = null;
+  public isVinylCrackleActive = false;
+
+  // Realistic needle-drop contact sound: mechanical low thump + friction scrape
+  public playNeedleDrop() {
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+
+    // 1. Stylus contact thump: resonant low-frequency impact
+    const osc = ctx.createOscillator();
+    const oscGain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(80, now);
+    osc.frequency.exponentialRampToValueAtTime(30, now + 0.14);
+
+    oscGain.gain.setValueAtTime(0.32, now);
+    oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+
+    osc.connect(oscGain);
+    oscGain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.16);
+
+    // 2. Micro surface friction scratch (high-pass bandpass noise pulse)
+    try {
+      const bufferSize = Math.floor(ctx.sampleRate * 0.2);
+      const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        const isTransient = Math.random() < 0.05;
+        output[i] = (Math.random() * 2 - 1) * (isTransient ? 0.9 : 0.07);
+      }
+
+      const noiseSource = ctx.createBufferSource();
+      noiseSource.buffer = noiseBuffer;
+
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(1600, now);
+      filter.Q.setValueAtTime(2.2, now);
+
+      const noiseGain = ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.22, now + 0.02);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+
+      noiseSource.connect(filter);
+      filter.connect(noiseGain);
+      noiseGain.connect(ctx.destination);
+
+      noiseSource.start(now + 0.02);
+    } catch {}
+  }
+
+  // Stylus lift sound: gentle upward pop
+  public playNeedleLift() {
+    const ctx = this.getContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(95, now);
+    osc.frequency.exponentialRampToValueAtTime(260, now + 0.07);
+
+    gain.gain.setValueAtTime(0.18, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.09);
+  }
+
+  // Continuous subtle analog vinyl crackle & surface noise loop
+  public startVinylCrackle(volume = 0.06) {
+    const ctx = this.getContext();
+    if (!ctx || this.isVinylCrackleActive) return;
+
+    try {
+      const bufferSize = Math.floor(ctx.sampleRate * 2.5); // 2.5s loop
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+
+      let lastOut = 0.0;
+      for (let i = 0; i < bufferSize; i++) {
+        // Filtered pink noise baseline
+        const white = Math.random() * 2 - 1;
+        const pink = (lastOut + 0.02 * white) / 1.02;
+        lastOut = pink;
+
+        // Occasional microscopic dust pops
+        const pop = Math.random() < 0.0006 ? (Math.random() * 2 - 1) * 0.8 : 0;
+        data[i] = pink * 0.12 + pop;
+      }
+
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      source.loop = true;
+
+      const bandpass = ctx.createBiquadFilter();
+      bandpass.type = 'bandpass';
+      bandpass.frequency.setValueAtTime(1700, ctx.currentTime);
+      bandpass.Q.setValueAtTime(0.9, ctx.currentTime);
+
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.001, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(Math.min(volume, 0.15), ctx.currentTime + 0.4);
+
+      source.connect(bandpass);
+      bandpass.connect(gain);
+      gain.connect(ctx.destination);
+
+      source.start();
+      this.vinylCrackleSource = source;
+      this.vinylCrackleGain = gain;
+      this.isVinylCrackleActive = true;
+    } catch {}
+  }
+
+  public stopVinylCrackle() {
+    if (!this.isVinylCrackleActive) return;
+    this.isVinylCrackleActive = false;
+    if (this.vinylCrackleGain && this.ctx) {
+      try {
+        this.vinylCrackleGain.gain.linearRampToValueAtTime(0.0001, this.ctx.currentTime + 0.2);
+        setTimeout(() => {
+          if (this.vinylCrackleSource) {
+            try { this.vinylCrackleSource.stop(); } catch {}
+            this.vinylCrackleSource.disconnect();
+            this.vinylCrackleSource = null;
+          }
+          if (this.vinylCrackleGain) {
+            this.vinylCrackleGain.disconnect();
+            this.vinylCrackleGain = null;
+          }
+        }, 220);
+      } catch {}
+    }
+  }
+
   // Alias for backward compatibility
   public startVinyl(volume = 0.35) {
     this.startPiano(volume);
+    this.startVinylCrackle(0.05);
   }
 
   public stopVinyl() {
     this.stopPiano();
+    this.stopVinylCrackle();
   }
 
   private jazzAudio: HTMLAudioElement | null = null;

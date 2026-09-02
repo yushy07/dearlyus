@@ -7,9 +7,10 @@ import { sounds } from '@/lib/sound';
 interface BoardingPassCardProps {
   profile: CoupleTicketProfile;
   onEditClick: () => void;
+  onShareClick?: () => void;
 }
 
-export function BoardingPassCard({ profile, onEditClick }: BoardingPassCardProps) {
+export function BoardingPassCard({ profile, onEditClick, onShareClick }: BoardingPassCardProps) {
   return (
     <div className="passport-boarding-pass" style={{ padding: '24px 28px', color: 'var(--ink)' }}>
       {/* Header section with 3D gold wax seal */}
@@ -47,7 +48,7 @@ export function BoardingPassCard({ profile, onEditClick }: BoardingPassCardProps
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '16px', alignItems: 'center', fontFamily: 'var(--font-mono)' }}>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', fontFamily: 'var(--font-mono)', flexWrap: 'wrap' }}>
           <div>
             <div style={{ fontSize: '9px', color: 'var(--ink-soft)', textTransform: 'uppercase' }}>Passengers</div>
             <div style={{ fontSize: '13px', fontWeight: 800 }}>
@@ -63,29 +64,58 @@ export function BoardingPassCard({ profile, onEditClick }: BoardingPassCardProps
             <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--blue)' }}>{profile.anniversaryDate}</div>
           </div>
 
-          <button
-            onClick={() => {
-              sounds.playPop();
-              onEditClick();
-            }}
-            style={{
-              background: 'rgba(255, 123, 163, 0.1)',
-              border: '1px solid rgba(255, 123, 163, 0.4)',
-              borderRadius: '12px',
-              padding: '6px 12px',
-              fontSize: '11px',
-              fontWeight: 800,
-              color: 'var(--pink)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              transition: 'all 0.15s ease',
-            }}
-          >
-            <span>✎</span>
-            <span>Edit Ticket</span>
-          </button>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {onShareClick && (
+              <button
+                onClick={() => {
+                  sounds.playPop();
+                  onShareClick();
+                }}
+                style={{
+                  background: 'linear-gradient(135deg, #FF7BA3, #FF9E64)',
+                  border: 'none',
+                  borderRadius: '12px',
+                  padding: '6px 14px',
+                  fontSize: '11.5px',
+                  fontWeight: 800,
+                  color: '#FFFFFF',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  boxShadow: '0 2px 8px rgba(255, 123, 163, 0.35)',
+                  transition: 'transform 0.15s ease',
+                }}
+              >
+                <span>💌</span>
+                <span>Invite &amp; QR</span>
+              </button>
+            )}
+
+            <button
+              onClick={() => {
+                sounds.playPop();
+                onEditClick();
+              }}
+              style={{
+                background: 'rgba(255, 123, 163, 0.1)',
+                border: '1px solid rgba(255, 123, 163, 0.4)',
+                borderRadius: '12px',
+                padding: '6px 12px',
+                fontSize: '11px',
+                fontWeight: 800,
+                color: 'var(--pink)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              <span>✎</span>
+              <span>Edit</span>
+            </button>
+          </div>
         </div>
       </div>
 

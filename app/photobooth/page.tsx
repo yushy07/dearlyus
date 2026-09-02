@@ -15,6 +15,62 @@ import { downloadAnimatedStripVideo } from '@/lib/gif-recorder';
 import { Confetti } from '@/components/shared/Confetti';
 import { Ribbon } from '@/components/shared/Ribbon';
 import { TiltedCard, ShinyText } from '@/components/ui';
+import { RoomInviteModal } from '@/components/shared/RoomInviteModal';
+
+export interface PlacedSticker {
+  id: string;
+  content: string;
+  x: number; // 0 - 100 percentage
+  y: number; // 0 - 100 percentage
+  rotation: number; // degrees (-30 to +30)
+  scale: number; // 0.8 - 1.5
+  isHangul?: boolean;
+}
+
+const STICKER_CATEGORIES = [
+  {
+    id: 'hangul',
+    name: '🇰🇷 Korean Text',
+    items: [
+      { text: '사랑해', label: 'I Love You', isHangul: true },
+      { text: '인생네컷', label: 'Life4Cuts', isHangul: true },
+      { text: '우리둘이', label: 'Just Us Two', isHangul: true },
+      { text: '영원히', label: 'Forever', isHangul: true },
+      { text: '보고싶어', label: 'Miss You', isHangul: true },
+      { text: '뽀뽀', label: 'Kisses', isHangul: true },
+      { text: '최고야', label: 'You Are Best', isHangul: true },
+      { text: '행복해', label: 'Happy', isHangul: true },
+    ],
+  },
+  {
+    id: 'props',
+    name: '🎀 Cute Props',
+    items: [
+      { text: '🐱', label: 'Cat Ears' },
+      { text: '🐰', label: 'Bunny' },
+      { text: '👼', label: 'Angel' },
+      { text: '🌸', label: 'Blush' },
+      { text: '💖', label: 'Heart' },
+      { text: '🎀', label: 'Ribbon' },
+      { text: '🧸', label: 'Teddy' },
+      { text: '👑', label: 'Crown' },
+      { text: '🕶️', label: 'Retro Shades' },
+      { text: '🍓', label: 'Strawberry' },
+    ],
+  },
+  {
+    id: 'sparkles',
+    name: '✨ Sparkles & Stars',
+    items: [
+      { text: '✨', label: 'Sparkles' },
+      { text: '💫', label: 'Dizzy Star' },
+      { text: '🌟', label: 'Glowing Star' },
+      { text: '🪄', label: 'Magic Wand' },
+      { text: '⭐', label: 'Star' },
+      { text: '🫧', label: 'Bubbles' },
+    ],
+  },
+];
 
 export default function PhotoboothPage() {
   // Navigation & Scene state: START | ROOM | PROFILE | LAYOUT | THEME | BOOTH | EDIT | FILTER | DECORATE | DOWNLOAD
@@ -47,7 +103,14 @@ export default function PhotoboothPage() {
   ]);
   const [selectedArFilter, setSelectedArFilter] = useState(AR_FILTERS[0]);
   const [selectedColorFilter, setSelectedColorFilter] = useState(COLOR_FILTERS[0]);
-  const [placedStickers, setPlacedStickers] = useState<string[]>(['💖', '✨', '🫰']);
+  const [placedStickers, setPlacedStickers] = useState<PlacedSticker[]>([
+    { id: '1', content: '사랑해', x: 28, y: 18, rotation: -6, scale: 1, isHangul: true },
+    { id: '2', content: '✨', x: 74, y: 38, rotation: 12, scale: 1.1 },
+    { id: '3', content: '💖', x: 80, y: 84, rotation: 8, scale: 1.2 },
+  ]);
+  const [selectedStickerId, setSelectedStickerId] = useState<string | null>(null);
+  const [activeStickerTab, setActiveStickerTab] = useState<'hangul' | 'props' | 'sparkles'>('hangul');
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [confettiActive, setConfettiActive] = useState(false);
 
@@ -145,10 +208,31 @@ export default function PhotoboothPage() {
     shootStep(0);
   };
 
-  const addSticker = (stk: string) => {
-    if (placedStickers.length < 8) {
-      setPlacedStickers([...placedStickers, stk]);
-    }
+  const addSticker = (content: string, isHangul = false) => {
+    sounds.playPop();
+    const newStk: PlacedSticker = {
+      id: `${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      content,
+      x: Math.round(20 + Math.random() * 60),
+      y: Math.round(15 + Math.random() * 70),
+      rotation: Math.round((Math.random() - 0.5) * 24),
+      scale: 1,
+      isHangul,
+    };
+    setPlacedStickers((prev) => [...prev.slice(-14), newStk]);
+    setSelectedStickerId(newStk.id);
+  };
+
+  const updateSticker = (id: string, updates: Partial<PlacedSticker>) => {
+    setPlacedStickers((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, ...updates } : s))
+    );
+  };
+
+  const removeSticker = (id: string) => {
+    sounds.playTick();
+    setPlacedStickers((prev) => prev.filter((s) => s.id !== id));
+    if (selectedStickerId === id) setSelectedStickerId(null);
   };
 
   const copyRoomLink = () => {
@@ -157,8 +241,9 @@ export default function PhotoboothPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // High-Resolution 600x1600 Canvas Strip Exporter
-  const downloadHighResStrip = () => {
+  // High-Resolution 600x1600 Canvas Strip Exporter with Baked Photos & Stickers
+  const downloadHighResStrip = async () => {
+    sounds.playTick();
     const canvas = document.createElement('canvas');
     canvas.width = 600;
     canvas.height = 1600;
@@ -180,23 +265,112 @@ export default function PhotoboothPage() {
     ctx.textAlign = 'center';
     ctx.fillText('ANGIE · 인생네컷', 300, 62);
 
+    // Helper to load photos
+    const loadImage = (src: string): Promise<HTMLImageElement> => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(img);
+        img.src = src;
+      });
+    };
+
+    const loadedImages = await Promise.all(capturedShots.map((s) => loadImage(s)));
+
     // 4 Photo Frames
     for (let i = 0; i < 4; i++) {
       const y = 85 + i * 348;
       ctx.fillStyle = '#F8F9FB';
       ctx.fillRect(42, y, 516, 320);
+
+      const img = loadedImages[i];
+      if (img && img.width > 0) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(42, y, 516, 320);
+        ctx.clip();
+        const imgRatio = img.width / img.height;
+        const frameRatio = 516 / 320;
+        let dw = 516;
+        let dh = 320;
+        let dx = 42;
+        let dy = y;
+        if (imgRatio > frameRatio) {
+          dw = 320 * imgRatio;
+          dx = 42 - (dw - 516) / 2;
+        } else {
+          dh = 516 / imgRatio;
+          dy = y - (dh - 320) / 2;
+        }
+        ctx.drawImage(img, dx, dy, dw, dh);
+        ctx.restore();
+      }
+
       ctx.strokeStyle = selectedStyle.border;
+      ctx.lineWidth = 1.5;
       ctx.strokeRect(42, y, 516, 320);
 
       // Frame number tag
       ctx.fillStyle = '#8B8E98';
       ctx.font = 'bold 13px monospace';
+      ctx.textAlign = 'center';
       ctx.fillText(`0${i + 1} · ${nickname.toUpperCase()} ♡ ${partnerName.toUpperCase()}`, 300, y + 165);
     }
+
+    // Bake Placed Stickers onto Canvas
+    placedStickers.forEach((stk) => {
+      ctx.save();
+      const px = (stk.x / 100) * 600;
+      const py = (stk.y / 100) * 1600;
+      ctx.translate(px, py);
+      ctx.rotate((stk.rotation * Math.PI) / 180);
+      ctx.scale(stk.scale, stk.scale);
+
+      if (stk.isHangul) {
+        ctx.font = 'bold 24px Pretendard, sans-serif';
+        const txtW = ctx.measureText(stk.content).width;
+        const bW = txtW + 28;
+        const bH = 38;
+
+        // Shadow
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.18)';
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetY = 4;
+
+        // Pill background
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath();
+        ctx.roundRect(-bW / 2, -bH / 2, bW, bH, 19);
+        ctx.fill();
+
+        // Pill border
+        ctx.shadowColor = 'transparent';
+        ctx.strokeStyle = '#FF7BA3';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        // Text
+        ctx.fillStyle = '#FF4D80';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(stk.content, 0, 1);
+      } else {
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.25)';
+        ctx.shadowBlur = 8;
+        ctx.shadowOffsetY = 4;
+        ctx.font = '40px "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(stk.content, 0, 0);
+      }
+      ctx.restore();
+    });
 
     // Couple Name & Footer
     ctx.fillStyle = selectedStyle.color;
     ctx.font = 'bold 22px Pretendard, sans-serif';
+    ctx.textAlign = 'center';
     ctx.fillText(coupleName, 300, 1515);
 
     ctx.font = '13px monospace';
@@ -237,22 +411,30 @@ export default function PhotoboothPage() {
 
           {/* Scene Step breadcrumb pills */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span
+            <button
+              onClick={() => {
+                sounds.playPop();
+                setIsInviteModalOpen(true);
+              }}
               style={{
                 fontFamily: 'var(--font-mono)',
                 fontSize: '12px',
                 background: 'var(--paper-raised)',
-                padding: '5px 10px',
-                borderRadius: '6px',
+                padding: '5px 12px',
+                borderRadius: '8px',
                 border: '1px solid var(--line)',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
               }}
+              title="Click to invite partner via QR code or WhatsApp"
             >
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#0a7d4d', display: 'inline-block' }}></span>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', boxShadow: '0 0 6px #10B981', display: 'inline-block' }}></span>
               ROOM: <b>{roomCode}</b>
-            </span>
+              <span style={{ fontSize: '11px', color: 'var(--pink)', fontWeight: 700 }}>💌 Invite</span>
+            </button>
 
             <Link className="btn btn-ghost" href="/activity" style={{ fontSize: '13px', padding: '6px 12px' }}>
               Activities ▷
@@ -669,9 +851,9 @@ export default function PhotoboothPage() {
                       pointerEvents: 'none',
                     }}
                   >
-                    {placedStickers.map((stk, i) => (
-                      <span key={i} style={{ fontSize: '18px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }}>
-                        {stk}
+                    {placedStickers.map((stk) => (
+                      <span key={stk.id} style={{ fontSize: '18px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }}>
+                        {stk.content}
                       </span>
                     ))}
                   </div>
@@ -831,44 +1013,104 @@ export default function PhotoboothPage() {
                 />
               </div>
 
-              {/* Sticker Selector */}
+              {/* Categorized Korean Sticker Studio */}
               <div style={{ marginBottom: '24px' }}>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>
-                  Tap Stickers to Decorate:
-                </label>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  {STICKER_PALETTE.map((stk, i) => (
-                    <button
-                      key={i}
-                      onClick={() => addSticker(stk)}
-                      style={{
-                        width: '38px',
-                        height: '38px',
-                        borderRadius: '8px',
-                        border: '1px solid var(--line)',
-                        background: 'var(--paper)',
-                        fontSize: '18px',
-                      }}
-                    >
-                      {stk}
-                    </button>
-                  ))}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    Sticker Studio &amp; Korean Badges:
+                  </label>
                   {placedStickers.length > 0 && (
                     <button
-                      onClick={() => setPlacedStickers([])}
+                      onClick={() => {
+                        sounds.playTick();
+                        setPlacedStickers([]);
+                        setSelectedStickerId(null);
+                      }}
                       style={{
-                        padding: '0 12px',
-                        borderRadius: '8px',
+                        padding: '2px 8px',
+                        borderRadius: '6px',
                         border: '1px solid var(--line)',
                         background: 'none',
-                        fontSize: '12px',
+                        fontSize: '11px',
                         color: 'var(--ink-soft)',
+                        cursor: 'pointer',
                       }}
                     >
-                      Clear Stickers
+                      Clear All ({placedStickers.length})
                     </button>
                   )}
                 </div>
+
+                {/* Category Pills */}
+                <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
+                  {STICKER_CATEGORIES.map((cat) => {
+                    const isActive = activeStickerTab === cat.id;
+                    return (
+                      <button
+                        key={cat.id}
+                        onClick={() => {
+                          sounds.playPop();
+                          setActiveStickerTab(cat.id as any);
+                        }}
+                        style={{
+                          padding: '6px 12px',
+                          borderRadius: '20px',
+                          border: isActive ? '1.5px solid var(--pink)' : '1px solid var(--line)',
+                          background: isActive ? 'var(--pink-tint)' : 'var(--paper)',
+                          color: isActive ? 'var(--pink)' : 'var(--ink-soft)',
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        {cat.name}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Active Category Sticker Grid */}
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: '8px',
+                    flexWrap: 'wrap',
+                    background: 'var(--paper)',
+                    padding: '12px',
+                    borderRadius: '12px',
+                    border: '1px solid var(--line)',
+                    minHeight: '60px',
+                  }}
+                >
+                  {STICKER_CATEGORIES.find((c) => c.id === activeStickerTab)?.items.map((item, i) => (
+                    <button
+                      key={i}
+                      onClick={() => addSticker(item.text, (item as any).isHangul)}
+                      title={item.label}
+                      style={{
+                        padding: (item as any).isHangul ? '6px 14px' : '6px 10px',
+                        borderRadius: '10px',
+                        border: '1px solid var(--line)',
+                        background: '#FFFFFF',
+                        fontSize: (item as any).isHangul ? '13px' : '20px',
+                        fontWeight: (item as any).isHangul ? 800 : 400,
+                        color: (item as any).isHangul ? 'var(--pink)' : 'inherit',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
+                        transition: 'transform 0.1s ease',
+                      }}
+                    >
+                      {item.text}
+                    </button>
+                  ))}
+                </div>
+                <p style={{ fontSize: '11px', color: 'var(--ink-soft)', marginTop: '6px', marginInline: '2px' }}>
+                  💡 <b>Tip:</b> Tap stickers to drop onto your strip · Drag to reposition · Tap on a sticker to rotate, resize, or remove.
+                </p>
               </div>
 
               {/* Motion Strip Mode & Neon Doodling Controls */}
@@ -970,26 +1212,173 @@ export default function PhotoboothPage() {
                     ))}
                   </div>
 
-                  {placedStickers.length > 0 && (
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: '36px',
-                        left: '12px',
-                        right: '12px',
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        gap: '6px',
-                        pointerEvents: 'none',
-                      }}
-                    >
-                      {placedStickers.map((stk, i) => (
-                        <span key={i} style={{ fontSize: '18px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }}>
-                          {stk}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                  {/* Interactive Draggable Placed Stickers Layer */}
+                  {placedStickers.map((stk) => {
+                    const isSelected = selectedStickerId === stk.id;
+                    return (
+                      <div
+                        key={stk.id}
+                        onPointerDown={(e) => {
+                          e.stopPropagation();
+                          setSelectedStickerId(stk.id);
+                          const stripEl = e.currentTarget.parentElement;
+                          if (!stripEl) return;
+                          const rect = stripEl.getBoundingClientRect();
+
+                          const onPointerMove = (moveEvt: PointerEvent) => {
+                            const newX = Math.max(5, Math.min(95, ((moveEvt.clientX - rect.left) / rect.width) * 100));
+                            const newY = Math.max(4, Math.min(96, ((moveEvt.clientY - rect.top) / rect.height) * 100));
+                            updateSticker(stk.id, { x: Math.round(newX), y: Math.round(newY) });
+                          };
+
+                          const onPointerUp = () => {
+                            window.removeEventListener('pointermove', onPointerMove);
+                            window.removeEventListener('pointerup', onPointerUp);
+                          };
+
+                          window.addEventListener('pointermove', onPointerMove);
+                          window.addEventListener('pointerup', onPointerUp);
+                        }}
+                        style={{
+                          position: 'absolute',
+                          left: `${stk.x}%`,
+                          top: `${stk.y}%`,
+                          transform: `translate(-50%, -50%) rotate(${stk.rotation}deg) scale(${stk.scale})`,
+                          cursor: 'grab',
+                          userSelect: 'none',
+                          touchAction: 'none',
+                          zIndex: isSelected ? 35 : 25,
+                        }}
+                      >
+                        {stk.isHangul ? (
+                          <span
+                            style={{
+                              background: '#FFFFFF',
+                              border: isSelected ? '2px solid #FF4D80' : '1.5px solid var(--pink)',
+                              color: '#FF4D80',
+                              padding: '4px 10px',
+                              borderRadius: '20px',
+                              fontSize: '12px',
+                              fontWeight: 900,
+                              fontFamily: 'var(--font-display)',
+                              boxShadow: isSelected
+                                ? '0 0 0 3px rgba(255,123,163,0.4), 0 4px 12px rgba(0,0,0,0.15)'
+                                : '0 2px 8px rgba(0,0,0,0.12)',
+                              whiteSpace: 'nowrap',
+                              display: 'inline-block',
+                            }}
+                          >
+                            {stk.content}
+                          </span>
+                        ) : (
+                          <span
+                            style={{
+                              fontSize: '24px',
+                              filter: isSelected
+                                ? 'drop-shadow(0 0 6px rgba(255,123,163,0.8)) drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
+                                : 'drop-shadow(0 2px 4px rgba(0,0,0,0.25))',
+                              display: 'inline-block',
+                            }}
+                          >
+                            {stk.content}
+                          </span>
+                        )}
+
+                        {/* Selected Sticker Floating Quick Controls */}
+                        {isSelected && (
+                          <div
+                            onClick={(e) => e.stopPropagation()}
+                            style={{
+                              position: 'absolute',
+                              top: '-32px',
+                              left: '50%',
+                              transform: 'translateX(-50%)',
+                              display: 'flex',
+                              gap: '3px',
+                              background: 'rgba(14, 16, 22, 0.92)',
+                              padding: '2px 4px',
+                              borderRadius: '16px',
+                              boxShadow: '0 4px 14px rgba(0,0,0,0.35)',
+                              backdropFilter: 'blur(8px)',
+                              zIndex: 45,
+                            }}
+                          >
+                            <button
+                              onClick={() => updateSticker(stk.id, { rotation: stk.rotation - 12 })}
+                              title="Rotate Left"
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#FFFFFF',
+                                fontSize: '11px',
+                                cursor: 'pointer',
+                                padding: '2px 4px',
+                              }}
+                            >
+                              ↺
+                            </button>
+                            <button
+                              onClick={() => updateSticker(stk.id, { rotation: stk.rotation + 12 })}
+                              title="Rotate Right"
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#FFFFFF',
+                                fontSize: '11px',
+                                cursor: 'pointer',
+                                padding: '2px 4px',
+                              }}
+                            >
+                              ↻
+                            </button>
+                            <button
+                              onClick={() => updateSticker(stk.id, { scale: Math.max(0.7, stk.scale - 0.15) })}
+                              title="Smaller"
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#FFFFFF',
+                                fontSize: '11px',
+                                cursor: 'pointer',
+                                padding: '2px 4px',
+                              }}
+                            >
+                              ➖
+                            </button>
+                            <button
+                              onClick={() => updateSticker(stk.id, { scale: Math.min(1.6, stk.scale + 0.15) })}
+                              title="Larger"
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#FFFFFF',
+                                fontSize: '11px',
+                                cursor: 'pointer',
+                                padding: '2px 4px',
+                              }}
+                            >
+                              ➕
+                            </button>
+                            <button
+                              onClick={() => removeSticker(stk.id)}
+                              title="Delete Sticker"
+                              style={{
+                                background: 'rgba(255,77,106,0.3)',
+                                border: 'none',
+                                color: '#FF7BA3',
+                                fontSize: '10px',
+                                cursor: 'pointer',
+                                padding: '2px 5px',
+                                borderRadius: '8px',
+                              }}
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
 
                   <div className="real-strip-footer">
                     <div className="real-strip-name">{coupleName}</div>
@@ -1007,6 +1396,16 @@ export default function PhotoboothPage() {
           </div>
         )}
       </main>
+
+      {/* 1-Tap Shareable Room Invite Modal */}
+      <RoomInviteModal
+        isOpen={isInviteModalOpen}
+        onClose={() => setIsInviteModalOpen(false)}
+        roomCode={roomCode}
+        activityName="Korean Life4Cuts Photobooth"
+        partnerAName={nickname}
+        activitySlug="photobooth"
+      />
     </div>
   );
 }

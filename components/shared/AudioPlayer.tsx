@@ -125,12 +125,15 @@ export function AudioPlayer() {
   });
 
   const toggleMaster = () => {
-    sounds.playPop();
     stopBg();
     if (isPlaying) {
+      sounds.playNeedleLift();
+      sounds.stopVinylCrackle();
       sounds.stopAllAmbience();
       setIsPlaying(false);
     } else {
+      sounds.playNeedleDrop();
+      sounds.startVinylCrackle(0.06);
       sounds.startWarm(warmVol);
       sounds.startRomantic(romanticVol);
       sounds.startPiano(pianoVol);
@@ -721,8 +724,9 @@ export function AudioPlayer() {
             {(isPlaying || isBgMusicActive) && (
               <button
                 onClick={() => {
-                  sounds.playPop();
+                  sounds.playNeedleLift();
                   stopBg();
+                  sounds.stopVinylCrackle();
                   sounds.stopAllAmbience();
                   setIsPlaying(false);
                 }}

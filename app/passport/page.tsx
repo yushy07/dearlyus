@@ -11,6 +11,7 @@ import { BoardingPassCard } from './_components/BoardingPassCard';
 import { PassportBookletCover } from './_components/PassportBookletCover';
 import { StampCard } from './_components/StampCard';
 import { TicketEditorModal } from './_components/TicketEditorModal';
+import { RoomInviteModal } from '@/components/shared/RoomInviteModal';
 
 interface ConfettiPiece {
   id: string;
@@ -42,6 +43,7 @@ export default function PassportPage() {
   const [tempNoteText, setTempNoteText] = useState<string>('');
   const [animatingStampId, setAnimatingStampId] = useState<string | null>(null);
   const [isEditingTicket, setIsEditingTicket] = useState(false);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [roomCode, setRoomCode] = useState('KX7RM');
   const [copiedLink, setCopiedLink] = useState(false);
   const [confetti, setConfetti] = useState<ConfettiPiece[]>([]);
@@ -332,6 +334,7 @@ export default function PassportPage() {
             <BoardingPassCard
               profile={profile}
               onEditClick={() => setIsEditingTicket(true)}
+              onShareClick={() => setIsInviteModalOpen(true)}
             />
           </ScrollReveal>
 
@@ -646,6 +649,16 @@ export default function PassportPage() {
           </div>
         </div>
       )}
+
+      {/* 1-Tap Shareable Room Invite Modal */}
+      <RoomInviteModal
+        isOpen={isInviteModalOpen}
+        onClose={() => setIsInviteModalOpen(false)}
+        roomCode={roomCode}
+        activityName="Couple Date Passport"
+        partnerAName={profile.partner1}
+        activitySlug="passport"
+      />
 
       {/* Footer */}
       <Footer />
