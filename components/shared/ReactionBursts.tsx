@@ -217,17 +217,14 @@ export function ReactionBursts() {
       >
         {isExpanded && (
           <div
+            className="specular-glass-dock"
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              background: 'rgba(16, 18, 24, 0.92)',
-              backdropFilter: 'blur(24px) saturate(190%)',
-              WebkitBackdropFilter: 'blur(24px) saturate(190%)',
               border: '1px solid rgba(255, 123, 163, 0.4)',
               borderRadius: '36px',
               padding: '6px 10px',
-              boxShadow: '0 12px 36px rgba(0, 0, 0, 0.5), 0 0 24px rgba(255, 123, 163, 0.3)',
               animation: 'gl-rise 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
             }}
           >

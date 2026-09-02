@@ -295,16 +295,26 @@ export function AudioPlayer() {
             }}
           />
 
-          {/* Studio Header */}
+          {/* Studio Header with 3D Turntable */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div className={`luxury-vinyl-record ${isPlaying || isBgMusicActive ? 'spinning' : ''}`} title="Angie Lofi Vinyl · 33⅓ RPM">
-                <div className="luxury-vinyl-center" />
+              <div className="turntable-3d-stage" title="Angie Analog Turntable · 33⅓ RPM">
+                <div className={`vinyl-3d-disc ${isPlaying || isBgMusicActive ? 'spinning' : ''}`}>
+                  <div className="vinyl-center-label">
+                    <div className="vinyl-center-hole" />
+                  </div>
+                </div>
+                {/* 3D Tonearm Needle */}
+                <div className={`turntable-tonearm ${isPlaying || isBgMusicActive ? 'active' : 'paused'}`}>
+                  <div className="tonearm-pivot" />
+                  <div className="tonearm-arm" />
+                  <div className="tonearm-head" />
+                </div>
               </div>
               <div>
                 <div style={{ fontSize: '13.5px', fontWeight: 900, letterSpacing: '-0.2px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <span>Soundscape Studio</span>
-                  <span style={{ fontSize: '9px', background: 'rgba(255, 123, 163, 0.2)', color: 'var(--pink)', padding: '1px 6px', borderRadius: '6px', fontWeight: 800 }}>PRO</span>
+                  <span style={{ fontSize: '9px', background: 'rgba(255, 123, 163, 0.2)', color: 'var(--pink)', padding: '1px 6px', borderRadius: '6px', fontWeight: 800 }}>3D PRO</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '10px', color: 'rgba(255,255,255,0.6)' }}>
                   <span
@@ -317,7 +327,7 @@ export function AudioPlayer() {
                       display: 'inline-block',
                     }}
                   />
-                  <span>{isPlaying ? '4 Analog Channels Active' : isBgMusicActive ? 'Background Music Live' : 'Ready to stream'}</span>
+                  <span>{isPlaying ? '4 Analog Channels Streaming' : isBgMusicActive ? 'Background Music Live' : 'Ready to stream'}</span>
                 </div>
               </div>
             </div>
