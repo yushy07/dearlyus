@@ -935,12 +935,13 @@ h2 {
 
 a.act:hover {
   transform: perspective(1000px) rotateX(3deg) rotateY(-2deg) translateY(-6px) translateZ(12px);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(255, 123, 163, 0.08);
-  border-color: rgba(255, 123, 163, 0.3);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.08), 0 0 24px rgba(255, 123, 163, 0.16);
+  border-color: rgba(255, 123, 163, 0.5);
 }
 
 a.act:hover .seamline {
   opacity: 1;
+  box-shadow: 0 0 10px rgba(255, 123, 163, 0.8);
 }
 
 .act .ic {
@@ -2853,6 +2854,168 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
     background: radial-gradient(circle at center, rgba(245, 158, 11, 0.10) 0%, rgba(15, 23, 42, 0.76) 75%, rgba(10, 15, 30, 0.90) 100%);
   }
 }
+
+/* ============ 1. Luxury Vinyl Record & Glowing Sliders ============ */
+.luxury-vinyl-record {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #2D1B36 0%, #1A1A1A 25%, #0A0A0A 60%, #171717 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6), inset 0 0 0 2px rgba(255, 255, 255, 0.05), inset 0 0 0 5px rgba(0, 0, 0, 0.8), inset 0 0 0 8px rgba(255, 255, 255, 0.04);
+  display: flex;
+  align-items: center;
+  justifyContent: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.luxury-vinyl-record.spinning {
+  animation: spin-vinyl 4s linear infinite;
+}
+
+@keyframes spin-vinyl {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.luxury-vinyl-center {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FF7BA3, #FF9E64);
+  border: 1px solid #FFFFFF;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+}
+
+.luxury-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.12);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.luxury-slider:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.luxury-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  border: 2px solid var(--slider-accent, #FF7BA3);
+  box-shadow: 0 0 10px var(--slider-accent, rgba(255, 123, 163, 0.8));
+  cursor: pointer;
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.luxury-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.35);
+  box-shadow: 0 0 16px var(--slider-accent, rgba(255, 123, 163, 1));
+}
+
+/* ============ 2. 3D Satin Ribbon Bookmark & Gold Wax Seal ============ */
+.passport-satin-ribbon {
+  width: 22px;
+  height: 48px;
+  background: linear-gradient(180deg, #991B1B 0%, #DC2626 50%, #B91C1C 100%);
+  position: absolute;
+  bottom: -32px;
+  right: 48px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
+  z-index: 10;
+  clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 50% 75%, 0% 100%);
+  animation: ribbon-sway 4s ease-in-out infinite alternate;
+  transform-origin: top center;
+}
+
+@keyframes ribbon-sway {
+  0% { transform: rotate(-2deg); }
+  100% { transform: rotate(3deg); }
+}
+
+.gold-wax-seal-3d {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #FDE68A 0%, #D4AF37 40%, #92400E 100%);
+  border: 2px solid #FEF3C7;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3), inset 0 2px 3px rgba(255, 255, 255, 0.6), inset 0 -2px 4px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #78350F;
+  font-size: 18px;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+/* ============ 3. Specular Glass Docks & Magnetic Hover ============ */
+.specular-glass-dock {
+  background: rgba(14, 16, 22, 0.88) !important;
+  backdrop-filter: blur(24px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), inset 0 1px 1.5px rgba(255, 255, 255, 0.4) !important;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease !important;
+}
+
+.specular-glass-dock:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 1px 2px rgba(255, 255, 255, 0.6) !important;
+}
+
+/* ============ 4. Camera Flash FX ============ */
+.camera-flash-overlay {
+  position: fixed;
+  inset: 0;
+  background: #FFFFFF;
+  z-index: 999999;
+  pointer-events: none;
+  animation: camera-flash 0.45s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+}
+
+@keyframes camera-flash {
+  0% { opacity: 0.95; }
+  40% { opacity: 0.6; }
+  100% { opacity: 0; }
+}
+
+/* ============ 5. Aurora Glow & Gradient Border Bento Cards ============ */
+.aurora-bento-card {
+  position: relative;
+  border-radius: 20px;
+  background: var(--paper-raised, #FFFFFF);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+.aurora-bento-card::before {
+  content: '';
+  position: absolute;
+  inset: -1.5px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(255, 123, 163, 0.6), rgba(95, 160, 255, 0.6), rgba(253, 230, 138, 0.6));
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.aurora-bento-card:hover::before {
+  opacity: 1;
+}
+
+.aurora-bento-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(255, 123, 163, 0.15);
+}
+
 
 
 

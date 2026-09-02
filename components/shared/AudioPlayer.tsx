@@ -297,25 +297,14 @@ export function AudioPlayer() {
 
           {/* Studio Header */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '10px',
-                  background: isPlaying ? 'linear-gradient(135deg, rgba(255,123,163,0.3), rgba(95,160,255,0.3))' : 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '15px',
-                }}
-              >
-                📻
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div className={`luxury-vinyl-record ${isPlaying || isBgMusicActive ? 'spinning' : ''}`} title="Angie Lofi Vinyl · 33⅓ RPM">
+                <div className="luxury-vinyl-center" />
               </div>
               <div>
-                <div style={{ fontSize: '13px', fontWeight: 800, letterSpacing: '-0.2px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ fontSize: '13.5px', fontWeight: 900, letterSpacing: '-0.2px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <span>Soundscape Studio</span>
+                  <span style={{ fontSize: '9px', background: 'rgba(255, 123, 163, 0.2)', color: 'var(--pink)', padding: '1px 6px', borderRadius: '6px', fontWeight: 800 }}>PRO</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '10px', color: 'rgba(255,255,255,0.6)' }}>
                   <span
@@ -328,7 +317,7 @@ export function AudioPlayer() {
                       display: 'inline-block',
                     }}
                   />
-                  <span>{isPlaying ? '4 Tracks Active' : 'Ready to stream'}</span>
+                  <span>{isPlaying ? '4 Analog Channels Active' : isBgMusicActive ? 'Background Music Live' : 'Ready to stream'}</span>
                 </div>
               </div>
             </div>
@@ -679,9 +668,10 @@ export function AudioPlayer() {
                         setActivePreset(null);
                         if (isPlaying) track.start(val);
                       }}
-                      className="radio-slider"
+                      className="luxury-slider"
                       style={{
                         background: `linear-gradient(90deg, ${track.color} 0%, ${track.color} ${percent}%, rgba(255,255,255,0.12) ${percent}%, rgba(255,255,255,0.12) 100%)`,
+                        ['--slider-accent' as string]: track.color,
                       }}
                     />
                   </div>
@@ -748,13 +738,11 @@ export function AudioPlayer() {
 
       {/* Floating Action Pill Trigger */}
       <div
+        className="specular-glass-dock"
         style={{
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
-          background: 'rgba(16, 18, 24, 0.90)',
-          backdropFilter: 'blur(20px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
           border: (isPlaying || isBgMusicActive) ? '1px solid rgba(255, 123, 163, 0.4)' : '1px solid rgba(255, 255, 255, 0.16)',
           borderRadius: '36px',
           padding: '6px 14px 6px 8px',

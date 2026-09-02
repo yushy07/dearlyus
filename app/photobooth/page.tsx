@@ -538,7 +538,8 @@ export default function PhotoboothPage() {
                 {/* 3..2..1 Countdown Flash */}
                 {countdown !== null && <div className="booth-flash-num">{countdown}</div>}
 
-                {/* Camera Flash Screen Effect */}
+                {/* Studio Camera Flashbulb Effect */}
+                {flashing && <div className="camera-flash-overlay" aria-hidden="true" />}
                 {flashing && <div className="booth-camera-flash" />}
 
                 {/* AR Filter Overlays */}

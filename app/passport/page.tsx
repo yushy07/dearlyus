@@ -367,8 +367,10 @@ export default function PassportPage() {
           <ScrollReveal animation="fade-up">
             <div className="passport-boarding-pass" style={{ padding: '24px 28px', color: 'var(--ink)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', borderBottom: '1px dashed var(--line)', paddingBottom: '16px', marginBottom: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span style={{ fontSize: '22px' }}>✈️</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                  <div className="gold-wax-seal-3d" title="Authentic Angie Love Seal">
+                    <span>💮</span>
+                  </div>
                   <div>
                     <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--pink)', fontWeight: 800, letterSpacing: '1px' }}>
                       ANGIE LOVE AIRLINES · FIRST CLASS TICKET
@@ -543,6 +545,9 @@ export default function PassportPage() {
                   />
                 </div>
               </div>
+
+              {/* 3D Satin Ribbon Bookmark */}
+              <div className="passport-satin-ribbon" title="Satin Bookmark Ribbon" aria-hidden="true" />
             </div>
           </ScrollReveal>
 
