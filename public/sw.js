@@ -20,11 +20,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
+        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
       );
     })
   );
@@ -54,10 +50,11 @@ self.addEventListener('fetch', (event) => {
         }
         const toCache = response.clone();
         caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, toCache);
-        });
+          cache.put(event.request, toCache).catch(() => {});
+        }).catch(() => {});
         return response;
-      }).catch(() => {});
+      }).catch(() => caches.match('/'));
     })
   );
 });
+

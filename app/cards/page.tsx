@@ -63,7 +63,7 @@ export default function CardsPage() {
       }),
     })
       .then((res) => res.json())
-      .then((data) => {
+      .then((data: any) => {
         if (data?.question) {
           const newCard: Card = {
             tier: 'Level 4 · Deep Lore',

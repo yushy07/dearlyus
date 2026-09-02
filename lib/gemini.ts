@@ -132,7 +132,7 @@ Return ONLY valid JSON matching this exact schema:
       return fallbackChoice;
     }
 
-    const data = await response.json();
+    const data: any = await response.json();
     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!text) return fallbackChoice;
 

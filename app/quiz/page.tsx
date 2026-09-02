@@ -101,7 +101,7 @@ export default function QuizPage() {
       }),
     })
       .then((res) => res.json())
-      .then((data) => {
+      .then((data: any) => {
         if (data?.question && Array.isArray(data.options)) {
           setAdaptiveQueue([
             {

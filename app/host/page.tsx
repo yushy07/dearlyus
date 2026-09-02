@@ -75,7 +75,7 @@ export default function DateHostPage() {
       }),
     })
       .then((res) => res.json())
-      .then((data) => {
+      .then((data: any) => {
         if (data?.question && Array.isArray(data.options)) {
           const nextScenario: HostScenario = {
             id: Date.now(),
