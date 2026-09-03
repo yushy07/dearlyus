@@ -14,7 +14,7 @@ export default function BlogPostPage() {
   return (
     <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px', color: 'var(--ink)' }}>
       {/* Ribbon */}
-      <Ribbon text={<>📖 Angie Blog · <b>Stories, Science &amp; Date Ideas for Long Distance Love</b></>} />
+      <Ribbon text={<>📖 Dearly Us Blog · <b>Stories, Science &amp; Date Ideas for Long Distance Love</b></>} />
 
       {/* Top Navbar */}
       <Navbar

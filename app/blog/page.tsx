@@ -12,7 +12,7 @@ export default function BlogPage() {
 
   return (
     <div style={{ background: '#FFFBF6', minHeight: '100vh', color: '#23242A', paddingBottom: '80px' }}>
-      <Ribbon text={<>📖 Angie Stories &amp; Guides · <b>Research, Advice &amp; Ideas for Long Distance Love</b></>} />
+      <Ribbon text={<>📖 Dearly Us Stories &amp; Guides · <b>Research, Advice &amp; Ideas for Long Distance Love</b></>} />
 
       <Navbar
         rightAction={

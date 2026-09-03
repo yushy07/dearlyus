@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   const config = {
-    appName: 'Angie',
-    tagline: '100% Free realtime date night & synced photobooth for long distance couples worldwide',
+    appName: 'Dearly Us',
+    tagline: 'Made for the moments that belong to you two. Realtime date night & synced photobooth for couples worldwide',
     pricing: {
       status: '100% Free Forever',
       costUSD: 0,

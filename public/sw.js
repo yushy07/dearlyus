@@ -1,5 +1,5 @@
-// Angie Service Worker for fast caching & PWA offline shell
-const CACHE_NAME = 'angie-v1.0.1';
+// Dearly Us Service Worker for fast caching & PWA offline shell
+const CACHE_NAME = 'dearly-us-v1.0.0';
 const ASSETS_TO_CACHE = [
   '/',
   '/favicon.svg',

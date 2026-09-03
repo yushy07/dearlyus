@@ -27,7 +27,7 @@ export function BoardingPassCard({ profile, onEditClick, onShareClick }: Boardin
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <div className="gold-wax-seal-3d" title="Authentic Angie Love Seal">
+          <div className="gold-wax-seal-3d" title="Authentic Dearly Us Love Seal">
             <span>💮</span>
           </div>
           <div>
@@ -40,7 +40,7 @@ export function BoardingPassCard({ profile, onEditClick, onShareClick }: Boardin
                 letterSpacing: '1px',
               }}
             >
-              ANGIE LOVE AIRLINES · FIRST CLASS TICKET
+              DEARLY US AIRLINES · FIRST CLASS TICKET
             </div>
             <div style={{ fontSize: '18px', fontWeight: 900 }}>
               Non-Stop Flight to Each Other’s Arms

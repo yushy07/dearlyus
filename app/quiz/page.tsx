@@ -45,7 +45,7 @@ export default function QuizPage() {
   // Load any saved custom packs from localStorage
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('angie_custom_quiz_packs');
+      const saved = localStorage.getItem('dearly_custom_quiz_packs');
       if (saved) {
         const parsed = JSON.parse(saved);
         setAllPacks([...QUIZ_PACKS, ...parsed]);
@@ -201,8 +201,8 @@ export default function QuizPage() {
     setCreatorOpen(false);
 
     try {
-      const existingCustom = JSON.parse(localStorage.getItem('angie_custom_quiz_packs') || '[]');
-      localStorage.setItem('angie_custom_quiz_packs', JSON.stringify([...existingCustom, newPack]));
+      const existingCustom = JSON.parse(localStorage.getItem('dearly_custom_quiz_packs') || '[]');
+      localStorage.setItem('dearly_custom_quiz_packs', JSON.stringify([...existingCustom, newPack]));
     } catch {}
   };
 

@@ -90,7 +90,7 @@ export function ReactionBursts() {
 
     if (shouldBroadcast && typeof window !== 'undefined') {
       try {
-        const channel = new BroadcastChannel('angie_reaction_bursts');
+        const channel = new BroadcastChannel('dearly_reaction_bursts');
         channel.postMessage({ emoji, x: startX, y: startY });
       } catch {}
     }
@@ -100,7 +100,7 @@ export function ReactionBursts() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
-      const channel = new BroadcastChannel('angie_reaction_bursts');
+      const channel = new BroadcastChannel('dearly_reaction_bursts');
       channel.onmessage = (e) => {
         if (e.data?.emoji) {
           spawnBurst(e.data.emoji, e.data.x, e.data.y, false);

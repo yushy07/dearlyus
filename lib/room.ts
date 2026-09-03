@@ -98,7 +98,7 @@ export function useRoomSync({
     // 1. Local BroadcastChannel
     if ('BroadcastChannel' in window) {
       try {
-        const channel = new BroadcastChannel(`angie_room_${normalizedCode}`);
+        const channel = new BroadcastChannel(`dearly_room_${normalizedCode}`);
         channel.onmessage = (ev) => {
           if (ev.data) handleInboundEvent(ev.data);
         };

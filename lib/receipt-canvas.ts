@@ -66,7 +66,7 @@ export function drawReceiptToCanvas(canvas: HTMLCanvasElement, data: DateReceipt
 
   // Receipt Header
   ctx.font = 'bold 22px "Space Mono", monospace, sans-serif';
-  ctx.fillText('ANGIE DATE NIGHT LORE', width / 2, 50);
+  ctx.fillText('DEARLY US DATE NIGHT LORE', width / 2, 50);
 
   ctx.font = '13px "Space Mono", monospace, sans-serif';
   ctx.fillStyle = '#555761';
@@ -168,7 +168,7 @@ export function drawReceiptToCanvas(canvas: HTMLCanvasElement, data: DateReceipt
   y += 56;
   ctx.font = '11px "Space Mono", monospace, sans-serif';
   ctx.fillStyle = '#6B6E78';
-  ctx.fillText(`* ANGIE-${data.roomCode}-${Date.now().toString().slice(-6)} *`, width / 2, y);
+  ctx.fillText(`* DEARLY-US-${data.roomCode}-${Date.now().toString().slice(-6)} *`, width / 2, y);
 
   // Footer message
   y += 22;
@@ -194,7 +194,7 @@ export function downloadReceiptPNG(data: DateReceiptData, filename?: string) {
   const canvas = document.createElement('canvas');
   drawReceiptToCanvas(canvas, data);
   const link = document.createElement('a');
-  link.download = filename || `angie-date-receipt-${data.roomCode || 'KX7RM'}.png`;
+  link.download = filename || `dearly-us-date-receipt-${data.roomCode || 'KX7RM'}.png`;
   link.href = canvas.toDataURL('image/png');
   document.body.appendChild(link);
   link.click();

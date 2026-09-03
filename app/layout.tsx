@@ -2,11 +2,12 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.SITE_URL ?? 'https://getangie.com'),
-  title: 'Fun Dates for Long Distance Relationships — 13 Realtime Games & Activities | Angie',
+  metadataBase: new URL(process.env.SITE_URL ?? 'https://dearlyus.love'),
+  title: 'Dearly Us ♡ — Made for the moments that belong to you two.',
   description:
-    'Angie is a hub of 13 realtime games and dates for long distance couples — a compatibility test, a future-planning date, riddles, an IQ duel, a couples quiz, debates, drawing, an arcade, and a photobooth that puts you both in one frame. Free to play, no app, just a code.',
+    'Dearly Us is the realtime date night sanctuary and photobooth studio for couples separated by distance. 35+ interactive games, authentic Korean 인생네컷 photostrips, 3D memory vaults, and intimate keepsakes.',
   keywords: [
+    'dearly us',
     'fun dates for long distance relationships',
     'long distance date ideas',
     'long distance couple games',
@@ -21,19 +22,21 @@ export const metadata: Metadata = {
   ],
   icons: {
     icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+    apple: '/favicon.svg',
   },
   openGraph: {
-    title: 'Fun Dates for Long Distance Relationships — 11 Realtime Games & Activities',
+    title: 'Dearly Us ♡ — Made for the moments that belong to you two.',
     description:
-      'A hub of realtime games and dates for two screens in two places — riddles, an IQ duel, a couples quiz, debates, drawing, an arcade, and a photobooth that puts you both in one frame.',
-    url: 'https://getangie.com/',
-    siteName: 'Angie',
+      'A realtime date sanctuary for couples — authentic Korean Life4Cuts photostrips, 3D memory vaults, interactive duels, and 35+ activities for two screens across any distance.',
+    url: 'https://dearlyus.love/',
+    siteName: 'Dearly Us',
     images: [
       {
         url: '/og.svg',
         width: 1200,
         height: 630,
-        alt: 'Angie — a photo strip with one partner in pink and one in blue, side by side in the same frame.',
+        alt: 'Dearly Us — a photo strip with one partner in pink and one in blue, side by side in the same frame.',
       },
     ],
     locale: 'en_US',
@@ -41,7 +44,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Fun Dates for Long Distance Relationships — 15 Realtime Games & Dates | Angie',
+    title: 'Dearly Us ♡ — Made for the moments that belong to you two.',
     description:
       'Korean Life4Cuts photobooth, IQ Duel, couple quiz, debates, drawing, arcade, and memory keepsakes — a realtime date platform for two screens across any timezone.',
     images: ['/og.svg'],
@@ -50,7 +53,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'Angie Dates',
+    title: 'Dearly Us',
   },
 };
 
@@ -68,7 +71,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#17181C" />
+        <meta name="theme-color" content="#1C1924" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <link rel="apple-touch-icon" href="/favicon.svg" />

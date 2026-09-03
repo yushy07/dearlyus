@@ -64,7 +64,7 @@ export default function RiddlePage() {
       <header className="bar">
         <div className="wrap">
           <Link className="brand" href="/">
-            angie
+            dearly us
             <span className="dots">
               <i className="p"></i>
               <i className="b"></i>

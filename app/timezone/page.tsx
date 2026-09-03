@@ -37,8 +37,8 @@ export default function TimezoneHubPage() {
     if (!canvasRef.current) return;
     const globe = new InteractiveGlobe(
       canvasRef.current,
-      { name: cityA || partnerA, lat: 51.0447, lng: -114.0719, color: '#5FA0FF' },
-      { name: cityB || partnerB, lat: -6.2088, lng: 106.8456, color: '#FF7BA3' }
+      { name: cityA || partnerA, lat: 51.0447, lng: -114.0719, color: '#437EEB' },
+      { name: cityB || partnerB, lat: -6.2088, lng: 106.8456, color: '#FF4E78' }
     );
     globe.start();
     globeInstanceRef.current = globe;
@@ -52,7 +52,7 @@ export default function TimezoneHubPage() {
     { id: '3', text: 'Universal dual-voltage power plug adapter', category: 'Electronics', packed: false },
     { id: '4', text: 'Snacks & candy partner cannot get in their country', category: 'Gifts', packed: false },
     { id: '5', text: 'Noise-cancelling headphones for the long-haul flight', category: 'Electronics', packed: false },
-    { id: '6', text: 'Framed 인생네컷 photostrip to place on their nightstand', category: 'Keepsakes', packed: false },
+    { id: '6', text: 'Framed Dearly Us photostrip to place on their nightstand', category: 'Keepsakes', packed: false },
   ]);
 
   const [newItemText, setNewItemText] = useState('');

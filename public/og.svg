@@ -1,54 +1,54 @@
 <svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="1200" height="630" fill="#F8F9FB"/>
-  <rect x="24" y="24" width="1152" height="582" rx="16" fill="#FFFFFF" stroke="#E3E5EA" stroke-width="2"/>
+  <rect width="1200" height="630" fill="#FAF8F5"/>
+  <rect x="24" y="24" width="1152" height="582" rx="20" fill="#FFFFFF" stroke="#E8E2D9" stroke-width="2"/>
   
   <!-- Subtle Gradient Glow -->
-  <circle cx="280" cy="300" r="220" fill="#FF7BA3" fill-opacity="0.12" filter="blur(60px)"/>
-  <circle cx="920" cy="320" r="220" fill="#5FA0FF" fill-opacity="0.12" filter="blur(60px)"/>
+  <circle cx="280" cy="300" r="220" fill="#FF4E78" fill-opacity="0.10" filter="blur(60px)"/>
+  <circle cx="920" cy="320" r="220" fill="#437EEB" fill-opacity="0.10" filter="blur(60px)"/>
 
   <!-- Logo -->
-  <text x="80" y="110" font-family="Pretendard, -apple-system, sans-serif" font-weight="900" font-size="44" fill="#17181C" letter-spacing="-0.04em">angie</text>
-  <circle cx="212" cy="84" r="7" fill="#FF7BA3"/>
-  <circle cx="230" cy="84" r="7" fill="#5FA0FF"/>
+  <text x="80" y="110" font-family="Pretendard, -apple-system, sans-serif" font-weight="900" font-size="44" fill="#1C1924" letter-spacing="-0.04em">dearly us</text>
+  <circle cx="280" cy="84" r="7" fill="#FF4E78"/>
+  <circle cx="298" cy="84" r="7" fill="#437EEB"/>
 
   <!-- Tagline -->
-  <text x="80" y="220" font-family="Pretendard, -apple-system, sans-serif" font-weight="900" font-size="52" fill="#17181C" letter-spacing="-0.03em">
-    Fun dates &amp; synced photobooth
+  <text x="80" y="220" font-family="Pretendard, -apple-system, sans-serif" font-weight="900" font-size="52" fill="#1C1924" letter-spacing="-0.03em">
+    Made for the moments that
   </text>
-  <text x="80" y="285" font-family="Pretendard, -apple-system, sans-serif" font-weight="900" font-size="52" fill="#FF7BA3" letter-spacing="-0.03em">
-    for long distance relationships.
+  <text x="80" y="285" font-family="Pretendard, -apple-system, sans-serif" font-weight="900" font-size="52" fill="#FF4E78" letter-spacing="-0.03em">
+    belong to you two.
   </text>
 
-  <text x="80" y="360" font-family="Pretendard, -apple-system, sans-serif" font-weight="500" font-size="22" fill="#606470">
-    24 realtime games and date night activities played on two screens at once.
+  <text x="80" y="360" font-family="Pretendard, -apple-system, sans-serif" font-weight="500" font-size="22" fill="#6A6576">
+    35 realtime games and date night activities played on two screens at once.
   </text>
-  <text x="80" y="395" font-family="Pretendard, -apple-system, sans-serif" font-weight="500" font-size="22" fill="#606470">
+  <text x="80" y="395" font-family="Pretendard, -apple-system, sans-serif" font-weight="500" font-size="22" fill="#6A6576">
     인생네컷 online photobooth · couples quiz · personality match · free to play.
   </text>
 
   <!-- Photostrip Card Representation -->
   <g transform="translate(860, 80) rotate(5)">
-    <rect width="220" height="460" rx="6" fill="#FFFFFF" stroke="#D8DBE2" stroke-width="2" filter="drop-shadow(0 20px 30px rgba(0,0,0,0.1))"/>
-    <text x="110" y="28" font-family="monospace" font-weight="700" font-size="10" fill="#8E929E" text-anchor="middle" letter-spacing="0.2em">ANGIE · 인생네컷</text>
+    <rect width="220" height="460" rx="12" fill="#FFFFFF" stroke="#E8E2D9" stroke-width="2" filter="drop-shadow(0 20px 30px rgba(28,25,36,0.08))"/>
+    <text x="110" y="28" font-family="monospace" font-weight="700" font-size="10" fill="#8E929E" text-anchor="middle" letter-spacing="0.2em">DEARLY US · 인생네컷</text>
     
-    <rect x="18" y="40" width="184" height="85" rx="3" fill="#FFEBF1"/>
-    <circle cx="110" cy="82" r="22" fill="#FF7BA3"/>
+    <rect x="18" y="40" width="184" height="85" rx="6" fill="#FFF0F4"/>
+    <circle cx="110" cy="82" r="22" fill="#FF4E78"/>
     
-    <rect x="18" y="135" width="184" height="85" rx="3" fill="#EBF3FF"/>
-    <circle cx="110" cy="177" r="22" fill="#5FA0FF"/>
+    <rect x="18" y="135" width="184" height="85" rx="6" fill="#EEF4FF"/>
+    <circle cx="110" cy="177" r="22" fill="#437EEB"/>
     
-    <rect x="18" y="230" width="184" height="85" rx="3" fill="#FFEBF1"/>
+    <rect x="18" y="230" width="184" height="85" rx="6" fill="#FFF0F4"/>
     <text x="110" y="278" font-family="sans-serif" font-size="28" text-anchor="middle">💖</text>
     
-    <rect x="18" y="325" width="184" height="85" rx="3" fill="#EBF3FF"/>
+    <rect x="18" y="325" width="184" height="85" rx="6" fill="#EEF4FF"/>
     <text x="110" y="373" font-family="sans-serif" font-size="28" text-anchor="middle">🫰</text>
     
-    <text x="110" y="435" font-family="sans-serif" font-weight="800" font-size="12" fill="#17181C" text-anchor="middle">MIA ♡ ALEX</text>
+    <text x="110" y="435" font-family="sans-serif" font-weight="800" font-size="12" fill="#1C1924" text-anchor="middle">MIA ♡ ALEX</text>
   </g>
 
   <!-- Bottom Badges -->
-  <rect x="80" y="480" width="180" height="44" rx="8" fill="#17181C"/>
-  <text x="170" y="508" font-family="Pretendard, -apple-system, sans-serif" font-weight="800" font-size="15" fill="#FFFFFF" text-anchor="middle">Play Free Online ▷</text>
+  <rect x="80" y="480" width="190" height="46" rx="23" fill="#1C1924"/>
+  <text x="175" y="509" font-family="Pretendard, -apple-system, sans-serif" font-weight="800" font-size="15" fill="#FFFFFF" text-anchor="middle">Play Free Online ▷</text>
   
-  <text x="280" y="508" font-family="monospace" font-weight="700" font-size="14" fill="#8E929E">getangie.com · no app required</text>
+  <text x="290" y="509" font-family="monospace" font-weight="700" font-size="14" fill="#8E929E">dearlyus.love · no app required</text>
 </svg>

@@ -75,7 +75,7 @@ export default function ForecastPage() {
     ctx.fillStyle = '#FF4D80';
     ctx.font = 'bold 28px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('ʚ 🤖 💘 ɞ  ANGIE × CUPIDOT WEATHER BUREAU', 540, 140);
+    ctx.fillText('ʚ 🤖 💘 ɞ  DEARLY US × CUPIDOT WEATHER BUREAU', 540, 140);
 
     ctx.fillStyle = '#FFE0B2';
     ctx.font = 'bold 54px serif';
@@ -196,7 +196,7 @@ export default function ForecastPage() {
     ctx.textAlign = 'center';
     ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
     ctx.font = 'bold 26px monospace';
-    ctx.fillText('CERTIFIED BY CUPIDOT 3D ROMANTIC AI · OURSPACE / ANGIE', 540, 1720);
+    ctx.fillText('CERTIFIED BY CUPIDOT 3D ROMANTIC AI · DEARLY US', 540, 1720);
     ctx.fillText('✨ KEEP THIS FORECAST FOREVER AS A MILESTONE ✨', 540, 1760);
 
     // Convert to image download
@@ -211,11 +211,11 @@ export default function ForecastPage() {
     <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '90px', color: 'var(--ink)' }}>
       <Confetti active={confettiActive} />
 
-      {/* Top Angie Navigation Bar */}
+      {/* Top Navigation Bar */}
       <header className="bar">
         <div className="wrap">
           <Link className="brand" href="/">
-            angie
+            dearly us
             <span className="dots">
               <i className="p"></i>
               <i className="b"></i>

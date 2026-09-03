@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-  // Live statistics simulation matching Angie's real metrics
+  // Live statistics simulation matching Dearly Us real metrics
   const stats = {
     datesHosted: 54120,
     stripsPrinted: 18490,

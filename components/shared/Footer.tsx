@@ -47,7 +47,15 @@ export function Footer() {
           <div style={{ maxWidth: '440px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
               <span className="brand" style={{ fontSize: '26px', fontWeight: 900, letterSpacing: '-0.5px' }}>
-                angie
+                <span className="brand-emblem" aria-hidden="true">
+                  <svg width="32" height="32" viewBox="0 0 128 128" fill="none">
+                    <rect width="128" height="128" rx="36" fill="#1C1924" />
+                    <path d="M64 77 C51 93 29 86 29 64 C29 45 48 38 64 58" stroke="#FF4E78" strokeWidth="12" strokeLinecap="round" />
+                    <path d="M64 58 C80 38 99 45 99 64 C99 86 77 93 64 77" stroke="#437EEB" strokeWidth="12" strokeLinecap="round" />
+                    <circle cx="64" cy="67" r="5" fill="#FFFFFF" />
+                  </svg>
+                </span>
+                <span>Dearly Us</span>
                 <span className="dots" style={{ marginLeft: '4px' }}>
                   <i className="p" style={{ display: 'inline-block', width: '7px', height: '7px', borderRadius: '50%', background: 'var(--pink)', marginRight: '3px' }}></i>
                   <i className="b" style={{ display: 'inline-block', width: '7px', height: '7px', borderRadius: '50%', background: 'var(--blue)' }}></i>
@@ -69,7 +77,7 @@ export function Footer() {
             </div>
 
             <p style={{ fontSize: '14.5px', color: 'var(--ink-soft)', lineHeight: 1.6 }}>
-              The realtime online date platform for long distance couples. Zero lag, shared photobooth strips, interactive duels, and memory keepsakes across any timezone.
+              Made for the moments that belong to you two. Zero lag, shared photobooth strips, interactive duels, and memory keepsakes across any timezone.
             </p>
           </div>
 
@@ -258,11 +266,11 @@ export function Footer() {
             </div>
             <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13.5px' }}>
               <Link href="/creators" className="foot-link">Creator Partner Community</Link>
-              <Link href="/blog" className="foot-link">Angie Guides &amp; LDR Stories</Link>
+              <Link href="/blog" className="foot-link">Dearly Us Guides &amp; LDR Stories</Link>
               <Link href="/privacy" className="foot-link">Privacy &amp; Data Security</Link>
               <Link href="/terms" className="foot-link">Terms &amp; Conditions</Link>
-              <a href="mailto:hello@getangie.com" className="foot-link" style={{ color: 'var(--ink)', fontWeight: 600 }}>
-                hello@getangie.com
+              <a href="mailto:hello@dearlyus.love" className="foot-link" style={{ color: 'var(--ink)', fontWeight: 600 }}>
+                hello@dearlyus.love
               </a>
             </nav>
           </div>
@@ -283,13 +291,13 @@ export function Footer() {
           }}
         >
           <div>
-            © {new Date().getFullYear()} <b>Angie</b> (getangie.com). All rights reserved.
+            © {new Date().getFullYear()} <b>Dearly Us</b>. Made for the moments that belong to you two.
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span>Made with</span>
             <span style={{ color: 'var(--pink)', fontSize: '14px' }}>💖</span>
-            <span>for long distance couples across the world.</span>
+            <span>for couples making memories across any distance.</span>
           </div>
 
           <div style={{ display: 'flex', gap: '16px' }}>

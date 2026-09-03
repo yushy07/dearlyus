@@ -27,10 +27,10 @@ export function usePassport() {
     const handleProfileSync = () => {
       setProfileState(getCoupleTicketProfile());
     };
-    window.addEventListener('angie_couple_profile_updated', handleProfileSync);
+    window.addEventListener('dearly_couple_profile_updated', handleProfileSync);
     window.addEventListener('storage', handleProfileSync);
     return () => {
-      window.removeEventListener('angie_couple_profile_updated', handleProfileSync);
+      window.removeEventListener('dearly_couple_profile_updated', handleProfileSync);
       window.removeEventListener('storage', handleProfileSync);
     };
   }, []);

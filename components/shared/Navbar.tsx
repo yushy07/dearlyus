@@ -11,8 +11,16 @@ export function Navbar({ roomCode, rightAction }: NavbarProps) {
     <header className="bar">
       <div className="wrap" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
-          <Link className="brand" href="/">
-            angie
+          <Link className="brand" href="/" aria-label="Dearly Us Home">
+            <span className="brand-emblem" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 128 128" fill="none">
+                <rect width="128" height="128" rx="36" fill="#1C1924" />
+                <path d="M64 77 C51 93 29 86 29 64 C29 45 48 38 64 58" stroke="#FF4E78" strokeWidth="12" strokeLinecap="round" />
+                <path d="M64 58 C80 38 99 45 99 64 C99 86 77 93 64 77" stroke="#437EEB" strokeWidth="12" strokeLinecap="round" />
+                <circle cx="64" cy="67" r="5" fill="#FFFFFF" />
+              </svg>
+            </span>
+            <span>Dearly Us</span>
             <span className="dots">
               <i className="p"></i>
               <i className="b"></i>
@@ -46,16 +54,17 @@ export function Navbar({ roomCode, rightAction }: NavbarProps) {
                 fontFamily: 'var(--font-mono)',
                 fontSize: '12px',
                 background: 'var(--paper-raised)',
-                padding: '4px 10px',
-                borderRadius: '6px',
+                padding: '5px 12px',
+                borderRadius: '20px',
                 border: '1px solid var(--line)',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
+                boxShadow: 'var(--shadow-soft)',
               }}
             >
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#0a7d4d', display: 'inline-block' }}></span>
-              ROOM: <b>{roomCode}</b>
+              <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#10B981', boxShadow: '0 0 6px #10B981', display: 'inline-block' }}></span>
+              ROOM: <b style={{ color: 'var(--pink)' }}>{roomCode}</b>
             </span>
           )}
 

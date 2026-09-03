@@ -86,7 +86,7 @@ export async function createAnimatedPhotostripVideo(
       ctx.fillStyle = '#FFFFFF';
       ctx.font = 'bold 16px "Space Mono", monospace, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(`ANGIE 인생네컷 · CUT 0${f + 1}/04`, canvas.width / 2, canvas.height - 55);
+      ctx.fillText(`DEARLY US 인생네컷 · CUT 0${f + 1}/04`, canvas.width / 2, canvas.height - 55);
       ctx.font = '12px "Space Mono", monospace, sans-serif';
       ctx.fillStyle = 'rgba(255,255,255,0.7)';
       ctx.fillText(new Date().toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }), canvas.width / 2, canvas.height - 32);
@@ -107,7 +107,7 @@ export async function downloadAnimatedStripVideo(frames: string[], filename?: st
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = filename || `angie-photostrip-live-${Date.now()}.webm`;
+  a.download = filename || `dearly-us-photostrip-live-${Date.now()}.webm`;
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 2000);
 }

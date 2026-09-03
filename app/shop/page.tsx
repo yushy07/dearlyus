@@ -23,7 +23,7 @@ const KEEPSAKES: KeepsakeTemplate[] = [
     description: 'High-resolution 300 DPI layout formatted for standard 4×6 photo paper at home or your local print kiosk.',
     features: ['300 DPI print-ready layout', 'Standard 4×6 photo border guidelines', 'Direct PNG / PDF export'],
     icon: '🖨️',
-    previewUrl: '/photos/frame1.webp',
+    previewUrl: '/photos/dearly-strip.jpg',
   },
   {
     id: 'lockscreen',
@@ -32,7 +32,7 @@ const KEEPSAKES: KeepsakeTemplate[] = [
     description: 'A matching pair of HD phone wallpapers for both of your lockscreens featuring your custom photostrips.',
     features: ['Optimized for iPhone & Android screens', 'Matching ambient background tones', 'Instant high-res download'],
     icon: '📱',
-    previewUrl: '/photos/frame2.webp',
+    previewUrl: '/photos/quiz-duo.webp',
   },
   {
     id: 'magnet-template',
@@ -41,7 +41,7 @@ const KEEPSAKES: KeepsakeTemplate[] = [
     description: 'Printable cutout template with trim guidelines to mount your photostrips onto magnetic backing sheets.',
     features: ['Exact Korean 4-cut 인생네컷 dimensions', 'Trim-line guides for easy mounting', 'High-res printable sheet'],
     icon: '🧲',
-    previewUrl: '/photos/frame3.webp',
+    previewUrl: '/photos/magnet-fridge.webp',
   },
   {
     id: 'calendar',
@@ -50,7 +50,7 @@ const KEEPSAKES: KeepsakeTemplate[] = [
     description: 'A custom digital calendar card commemorating your milestone dates, anniversary, and favorite memories.',
     features: ['Dual timezone highlights', 'Custom couple names and coordinates', 'Print-ready export'],
     icon: '📅',
-    previewUrl: '/photos/frame4.webp',
+    previewUrl: '/august/gate.webp',
   },
 ];
 

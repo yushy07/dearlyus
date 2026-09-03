@@ -19,7 +19,7 @@ interface BucketDate {
 
 export default function BucketListPage() {
   const [dates, setDates] = useState<BucketDate[]>([
-    { id: 1, title: 'Take a 4-cut 인생네컷 photostrip on Angie', category: 'Virtual', icon: '📸', completed: true, completedDate: 'Aug 14, 2026' },
+    { id: 1, title: 'Take a 4-cut 인생네컷 photostrip on Dearly Us', category: 'Virtual', icon: '📸', completed: true, completedDate: 'Aug 14, 2026' },
     { id: 2, title: 'Cook the exact same recipe in two kitchens', category: 'Food', icon: '🍝', completed: true, completedDate: 'Aug 20, 2026' },
     { id: 3, title: 'Sleep on FaceTime the entire night until sunrise', category: 'Virtual', icon: '😴', completed: true, completedDate: 'Aug 28, 2026' },
     { id: 4, title: 'Airport sprint hug at the arrival terminal gate', category: 'Reunion', icon: '✈️', completed: false },

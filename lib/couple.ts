@@ -26,7 +26,7 @@ export const DEFAULT_COUPLE: CoupleProfile = {
   roomCode: 'KX7RM',
 };
 
-const STORAGE_KEY = 'angie_couple_profile';
+const STORAGE_KEY = 'dearly_couple_profile';
 
 export function getStoredCoupleProfile(): CoupleProfile {
   if (typeof window === 'undefined') return DEFAULT_COUPLE;
@@ -59,7 +59,7 @@ export function saveStoredCoupleProfile(updates: Partial<CoupleProfile>): Couple
       roomCode: updates.roomCode !== undefined ? updates.roomCode.trim() : current.roomCode,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
-    window.dispatchEvent(new CustomEvent('angie_couple_profile_updated', { detail: merged }));
+    window.dispatchEvent(new CustomEvent('dearly_couple_profile_updated', { detail: merged }));
     return merged;
   } catch {}
   return DEFAULT_COUPLE;
@@ -79,10 +79,10 @@ export function useCoupleProfile() {
       else setProfile(getStoredCoupleProfile());
     };
 
-    window.addEventListener('angie_couple_profile_updated', handleUpdate);
+    window.addEventListener('dearly_couple_profile_updated', handleUpdate);
     window.addEventListener('storage', handleUpdate);
     return () => {
-      window.removeEventListener('angie_couple_profile_updated', handleUpdate);
+      window.removeEventListener('dearly_couple_profile_updated', handleUpdate);
       window.removeEventListener('storage', handleUpdate);
     };
   }, []);

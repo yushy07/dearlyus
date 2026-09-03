@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 110" width="540" height="110" fill="none">
+  <defs>
+    <!-- Left Ribbon Gradient (Rose Coral to Sunset Magenta) -->
+    <linearGradient id="dearly-rose" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF6584"/>
+      <stop offset="60%" stop-color="#FF4E78"/>
+      <stop offset="100%" stop-color="#D91E52"/>
+    </linearGradient>
+
+    <!-- Right Ribbon Gradient (Twilight Cerulean to Deep Indigo) -->
+    <linearGradient id="dearly-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#60A5FA"/>
+      <stop offset="60%" stop-color="#437EEB"/>
+      <stop offset="100%" stop-color="#2563EB"/>
+    </linearGradient>
+
+    <!-- Center Blend Glow -->
+    <radialGradient id="center-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.9"/>
+      <stop offset="40%" stop-color="#F472B6" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#818CF8" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Soft Drop Shadows -->
+    <filter id="emblem-shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#FF4E78" flood-opacity="0.22"/>
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#1C1924" flood-opacity="0.12"/>
+    </filter>
+
+    <filter id="star-sparkle" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- ==================== EMBLEM ICON ==================== -->
+  <g transform="translate(10, 15)" filter="url(#emblem-shadow)">
+    <!-- Container Badge (Velvet Plum Squircle with Subtle Rose Edge) -->
+    <rect width="80" height="80" rx="24" fill="#1C1924"/>
+    <rect width="78" height="78" x="1" y="1" rx="23" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1.5"/>
+
+    <!-- Ambient Core Glow -->
+    <circle cx="40" cy="40" r="28" fill="url(#center-glow)" opacity="0.35"/>
+
+    <!-- Left Partner Loop (Rose Infinity Arc) -->
+    <path d="M40 48 C32 58 18 54 18 40 C18 28 30 24 40 36" 
+          stroke="url(#dearly-rose)" 
+          stroke-width="7.5" 
+          stroke-linecap="round" 
+          stroke-linejoin="round"
+          fill="none"/>
+
+    <!-- Right Partner Loop (Cerulean Infinity Arc) -->
+    <path d="M40 36 C50 24 62 28 62 40 C62 54 48 58 40 48" 
+          stroke="url(#dearly-blue)" 
+          stroke-width="7.5" 
+          stroke-linecap="round" 
+          stroke-linejoin="round"
+          fill="none"/>
+
+    <!-- Heart Peak Intersect Knot -->
+    <path d="M40 26 C38 21 32 20 28 24 C24 28 25 34 29 37 L40 48 L51 37 C55 34 56 28 52 24 C48 20 42 21 40 26 Z"
+          fill="none"
+          stroke="url(#dearly-rose)"
+          stroke-width="1.5"
+          opacity="0.3"/>
+
+    <!-- Central Twin Presence Node (Luminous Sparkle Knot) -->
+    <circle cx="40" cy="42" r="3.5" fill="#FFFFFF" filter="url(#star-sparkle)"/>
+    <path d="M40 36 L41.2 40.8 L46 42 L41.2 43.2 L40 48 L38.8 43.2 L34 42 L38.8 40.8 Z" 
+          fill="#FFFFFF" 
+          opacity="0.95"/>
+  </g>
+
+  <!-- ==================== TYPOGRAPHIC WORDMARK ==================== -->
+  <g transform="translate(108, 0)">
+    <!-- Brand Wordmark -->
+    <text x="0" y="60" 
+          font-family="Outfit, Pretendard, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" 
+          font-size="44" 
+          font-weight="800" 
+          fill="#1C1924" 
+          letter-spacing="-0.035em">
+      Dearly <tspan fill="url(#dearly-rose)">Us</tspan>
+    </text>
+
+    <!-- Presence Connect Dots -->
+    <circle cx="218" cy="38" r="6.5" fill="url(#dearly-rose)"/>
+    <circle cx="236" cy="38" r="6.5" fill="url(#dearly-blue)"/>
+
+    <!-- Tagline Ribbon -->
+    <text x="2" y="86" 
+          font-family="Pretendard, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" 
+          font-size="14" 
+          font-weight="600" 
+          fill="#6A6576" 
+          letter-spacing="0.005em">
+      Made for the moments that belong to you two.
+    </text>
+  </g>
+</svg>

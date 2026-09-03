@@ -26,7 +26,7 @@ export function RoomInviteModal({
 
   if (!isOpen) return null;
 
-  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://getangie.com';
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://dearlyus.love';
   const joinUrl = `${origin}/${activitySlug}?room=${roomCode}`;
 
   const handleCopyLink = () => {
@@ -47,7 +47,7 @@ export function RoomInviteModal({
     }
   };
 
-  const shareText = `Hey love! 💕 Join me in our shared ${activityName} room on Angie:\nRoom Code: ${roomCode}\n${joinUrl}`;
+  const shareText = `Hey love! 💕 Join me in our shared ${activityName} room on Dearly Us:\nRoom Code: ${roomCode}\n${joinUrl}`;
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
 
   return (

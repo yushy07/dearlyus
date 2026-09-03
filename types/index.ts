@@ -1,4 +1,4 @@
-// Angie Core Platform Type Definitions
+// Dearly Us Core Platform Type Definitions
 
 export * from './passport';
 export * from './sound';

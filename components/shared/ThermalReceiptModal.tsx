@@ -33,7 +33,7 @@ export function ThermalReceiptModal({ isOpen, onClose, data }: ThermalReceiptMod
     setTimeout(() => setDownloaded(false), 2500);
   };
 
-  const shareText = `🧾 Our Angie Date Lore Receipt!\nCompatibility: ${data.overallSync}%\nVerdict: ${data.hostVerdict}\nRoom: ${data.roomCode}`;
+  const shareText = `🧾 Our Dearly Us Date Lore Receipt!\nCompatibility: ${data.overallSync}%\nVerdict: ${data.hostVerdict}\nRoom: ${data.roomCode}`;
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
 
   return (
@@ -120,7 +120,7 @@ export function ThermalReceiptModal({ isOpen, onClose, data }: ThermalReceiptMod
               ✦ OFFICIAL DATE MEMORY ✦
             </div>
             <h3 style={{ fontSize: '18px', fontWeight: 900, margin: '6px 0 4px', letterSpacing: '0.5px' }}>
-              ANGIE DATE NIGHT LORE
+              DEARLY US DATE NIGHT LORE
             </h3>
             <div style={{ fontSize: '11px', color: '#555761' }}>
               ROOM: #{data.roomCode} · {data.date}
@@ -183,7 +183,7 @@ export function ThermalReceiptModal({ isOpen, onClose, data }: ThermalReceiptMod
               ))}
             </div>
             <div style={{ fontSize: '9px', letterSpacing: '2px', color: '#777A86' }}>
-              *ANGIE-{data.roomCode}-DATE*
+              *DEARLY-US-{data.roomCode}-DATE*
             </div>
           </div>
 

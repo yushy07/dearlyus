@@ -173,7 +173,7 @@ export default function ShirtsStudioPage() {
               ) : (
                 <div style={{ textAlign: 'center', color: selectedColor.textHex }}>
                   <div style={{ fontSize: '42px', marginBottom: '8px' }}>💖</div>
-                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', fontWeight: 800 }}>ANGIE LDR CLUB</div>
+                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', fontWeight: 800 }}>DEARLY US CLUB</div>
                   <div style={{ fontSize: '11px', opacity: 0.7, marginTop: '4px' }}>EST. 2026 · DISTANCE CLOSED</div>
                 </div>
               )}

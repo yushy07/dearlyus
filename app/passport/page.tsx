@@ -51,7 +51,7 @@ export default function PassportPage() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
-        const savedRoom = localStorage.getItem('angie_room_code') || 'KX7RM';
+        const savedRoom = localStorage.getItem('dearly_room_code') || 'KX7RM';
         setRoomCode(savedRoom);
       } catch {}
     }
@@ -187,10 +187,10 @@ export default function PassportPage() {
     // Footer Barcode & Serial
     ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
     ctx.font = '14px monospace';
-    ctx.fillText(`ANGIE SOUVENIR LOVE PASSPORT · GETANGIE.COM · ROOM: ${roomCode}`, 600, 690);
+    ctx.fillText(`DEARLY US SOUVENIR LOVE PASSPORT · ROOM: ${roomCode}`, 600, 690);
 
     const a = document.createElement('a');
-    a.download = `angie-passport-${profile.partner1}-${profile.partner2}.png`;
+    a.download = `dearly-us-passport-${profile.partner1}-${profile.partner2}.png`;
     a.href = canvas.toDataURL('image/png');
     a.click();
   };
@@ -257,7 +257,7 @@ export default function PassportPage() {
         >
           <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
             <span className="brand" style={{ fontSize: '22px', fontWeight: 900 }}>
-              angie
+              dearly us
               <span className="dots" style={{ marginLeft: '4px' }}>
                 <i className="p" style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: 'var(--pink)', marginRight: '3px' }}></i>
                 <i className="b" style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: 'var(--blue)' }}></i>

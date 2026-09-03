@@ -44,7 +44,7 @@ export default function ActivityPage() {
               letterSpacing: '-.03em',
             }}
           >
-            angie
+            dearly us
             <span style={{ display: 'inline-flex', gap: '4px' }}>
               <i style={{ width: '9px', height: '9px', borderRadius: '50%', background: 'var(--pink)', display: 'block' }}></i>
               <i style={{ width: '9px', height: '9px', borderRadius: '50%', background: 'var(--blue)', display: 'block' }}></i>
@@ -862,7 +862,7 @@ export default function ActivityPage() {
           <Link href="/" style={{ textDecoration: 'underline' }}>
             ← back to home
           </Link>{' '}
-          · getangie.com · made for two
+          · dearly us · made for the moments that belong to you two
         </div>
       </main>
     </div>

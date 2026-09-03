@@ -29,7 +29,7 @@ export default function CreatorsPage() {
 
   return (
     <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px', color: 'var(--ink)' }}>
-      <Ribbon text={<>🎬 Angie Creator Community · <b>Share Your Date Nights &amp; Get Featured Worldwide</b></>} />
+      <Ribbon text={<>🎬 Dearly Us Creator Community · <b>Share Your Date Nights &amp; Get Featured Worldwide</b></>} />
 
       <Navbar
         rightAction={
@@ -69,7 +69,7 @@ export default function CreatorsPage() {
           Inspire Couples Worldwide.
         </h1>
         <p style={{ fontSize: '16px', maxWidth: '560px', margin: '0 auto', opacity: 0.9, lineHeight: 1.6 }}>
-          We&apos;re Angie — the online photobooth &amp; date-night games platform for long distance couples. Share your sessions on TikTok or Instagram, and get featured on our global showcase!
+          We&apos;re Dearly Us — the online photobooth &amp; date-night games platform for couples. Share your sessions on TikTok or Instagram, and get featured on our global showcase!
         </p>
       </div>
 
@@ -99,7 +99,7 @@ export default function CreatorsPage() {
               lineHeight: 1.5,
             }}
           >
-            Submit your video URL below. Once approved by our team, you&apos;ll be featured on the Angie homepage and official Instagram / TikTok!
+            Submit your video URL below. Once approved by our team, you&apos;ll be featured on the Dearly Us homepage and official channels!
           </div>
 
           {!videoSubmitted ? (

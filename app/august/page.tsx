@@ -20,7 +20,7 @@ export default function AugustPage() {
       >
         <div className="wrap" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '66px' }}>
           <Link href="/" style={{ fontFamily: 'var(--font-serif)', fontSize: '24px', fontWeight: 700 }}>
-            get<span style={{ color: '#C9829C' }}>Angie</span>
+            dearly<span style={{ color: '#C9829C' }}>us</span>
           </Link>
           <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
             <Link href="/activity" style={{ fontSize: '14px', fontWeight: 600, color: '#6B6C76' }}>

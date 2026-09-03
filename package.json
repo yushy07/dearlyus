@@ -1,7 +1,7 @@
 {
-  "name": "ourspace",
+  "name": "dearly-us",
   "version": "1.0.0",
-  "description": "OurSpace — Recreated Angie (getangie.com) real-time interactive date night & photobooth web application for couples.",
+  "description": "Dearly Us — Made for the moments that belong to you two. Real-time interactive date night sanctuary & multiplayer photobooth web application for couples.",
   "private": true,
   "engines": {
     "node": ">=22.13.0"

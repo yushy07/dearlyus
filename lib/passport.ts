@@ -230,10 +230,10 @@ export const PASSPORT_STAMPS: PassportStamp[] = [
 export function getUnlockedStamps(): string[] {
   if (typeof window === 'undefined') return PASSPORT_STAMPS.filter(s => s.defaultUnlocked).map(s => s.id);
   try {
-    const saved = localStorage.getItem('angie_unlocked_stamps');
+    const saved = localStorage.getItem('dearly_unlocked_stamps');
     if (saved) return JSON.parse(saved);
     const defaults = PASSPORT_STAMPS.filter(s => s.defaultUnlocked).map(s => s.id);
-    localStorage.setItem('angie_unlocked_stamps', JSON.stringify(defaults));
+    localStorage.setItem('dearly_unlocked_stamps', JSON.stringify(defaults));
     return defaults;
   } catch {
     return PASSPORT_STAMPS.filter(s => s.defaultUnlocked).map(s => s.id);
@@ -246,7 +246,7 @@ export function unlockPassportStamp(id: string): boolean {
     const current = getUnlockedStamps();
     if (!current.includes(id)) {
       const updated = [...current, id];
-      localStorage.setItem('angie_unlocked_stamps', JSON.stringify(updated));
+      localStorage.setItem('dearly_unlocked_stamps', JSON.stringify(updated));
       return true;
     }
     return false;
@@ -258,7 +258,7 @@ export function unlockPassportStamp(id: string): boolean {
 export function getStampNotes(): Record<string, string> {
   if (typeof window === 'undefined') return {};
   try {
-    const saved = localStorage.getItem('angie_stamp_notes');
+    const saved = localStorage.getItem('dearly_stamp_notes');
     if (saved) return JSON.parse(saved);
     return {};
   } catch {
@@ -271,7 +271,7 @@ export function saveStampNote(stampId: string, note: string) {
   try {
     const notes = getStampNotes();
     notes[stampId] = note;
-    localStorage.setItem('angie_stamp_notes', JSON.stringify(notes));
+    localStorage.setItem('dearly_stamp_notes', JSON.stringify(notes));
   } catch {}
 }
 
@@ -297,7 +297,7 @@ export function getCoupleTicketProfile(): CoupleTicketProfile {
   if (typeof window === 'undefined') return DEFAULT_PROFILE;
   try {
     const couple = getStoredCoupleProfile();
-    const saved = localStorage.getItem('angie_couple_ticket_profile');
+    const saved = localStorage.getItem('dearly_couple_ticket_profile');
     if (saved) {
       return {
         ...DEFAULT_PROFILE,
@@ -324,9 +324,13 @@ export function saveCoupleTicketProfile(profile: Partial<CoupleTicketProfile>) {
   try {
     const current = getCoupleTicketProfile();
     const updated = { ...current, ...profile };
-    localStorage.setItem('angie_couple_ticket_profile', JSON.stringify(updated));
-    if (profile.partner1) localStorage.setItem('angie_user_nickname', profile.partner1);
-    if (profile.partner2) localStorage.setItem('angie_partner_nickname', profile.partner2);
+    localStorage.setItem('dearly_couple_ticket_profile', JSON.stringify(updated));
+    if (profile.partner1) {
+      localStorage.setItem('dearly_user_nickname', profile.partner1);
+    }
+    if (profile.partner2) {
+      localStorage.setItem('dearly_partner_nickname', profile.partner2);
+    }
   } catch {}
 }
 

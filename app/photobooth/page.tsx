@@ -300,7 +300,7 @@ export default function PhotoboothPage() {
     ctx.fillStyle = selectedStyle.color;
     ctx.font = 'bold 24px Pretendard, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('ANGIE · 인생네컷', 300, 62);
+    ctx.fillText('DEARLY US · 인생네컷', 300, 62);
 
     // Helper to load photos
     const loadImage = (src: string): Promise<HTMLImageElement> => {
@@ -435,7 +435,7 @@ export default function PhotoboothPage() {
     ctx.fillText(`ROOM: ${roomCode} · ${new Date().toLocaleDateString()}`, 300, 1545);
 
     const a = document.createElement('a');
-    a.download = `angie-photostrip-${roomCode}.png`;
+    a.download = `dearly-us-photostrip-${roomCode}.png`;
     a.href = canvas.toDataURL('image/png');
     a.click();
 
@@ -458,8 +458,16 @@ export default function PhotoboothPage() {
       {/* Top Navbar */}
       <header className="bar">
         <div className="wrap">
-          <Link className="brand" href="/">
-            angie
+          <Link className="brand" href="/" aria-label="Dearly Us Home">
+            <span className="brand-emblem" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 128 128" fill="none">
+                <rect width="128" height="128" rx="36" fill="#1C1924" />
+                <path d="M64 77 C51 93 29 86 29 64 C29 45 48 38 64 58" stroke="#FF4E78" strokeWidth="12" strokeLinecap="round" />
+                <path d="M64 58 C80 38 99 45 99 64 C99 86 77 93 64 77" stroke="#437EEB" strokeWidth="12" strokeLinecap="round" />
+                <circle cx="64" cy="67" r="5" fill="#FFFFFF" />
+              </svg>
+            </span>
+            <span>Dearly Us</span>
             <span className="dots">
               <i className="p"></i>
               <i className="b"></i>
@@ -935,7 +943,7 @@ export default function PhotoboothPage() {
                   borderColor: selectedStyle.border,
                 }}
               >
-                <div className="real-strip-brand">ANGIE · 인생네컷</div>
+                <div className="real-strip-brand">DEARLY US · 인생네컷</div>
 
                 <div className="real-strip-frames">
                   {capturedShots.map((shot, idx) => (
@@ -999,7 +1007,7 @@ export default function PhotoboothPage() {
                     ✨ Cupidot AI Caption
                   </button>
                   <div className="real-strip-serial">
-                    ANGIE · <b>{roomCode}</b>
+                    DEARLY US · <b>{roomCode}</b>
                   </div>
                 </div>
               </div>
@@ -1094,7 +1102,7 @@ export default function PhotoboothPage() {
                   borderColor: selectedStyle.border,
                 }}
               >
-                <div className="real-strip-brand">ANGIE · 인생네컷</div>
+                <div className="real-strip-brand">DEARLY US · 인생네컷</div>
                 <div className="real-strip-frames">
                   {capturedShots.map((shot, idx) => (
                     <div key={idx} className="real-strip-cell">
@@ -1106,7 +1114,7 @@ export default function PhotoboothPage() {
                 <div className="real-strip-footer">
                   <div className="real-strip-name">{coupleName}</div>
                   <div className="real-strip-serial">
-                    ANGIE · <b>{roomCode}</b>
+                    DEARLY US · <b>{roomCode}</b>
                   </div>
                 </div>
               </div>
@@ -1317,7 +1325,7 @@ export default function PhotoboothPage() {
                       setConfettiActive(true);
                       setTimeout(() => setConfettiActive(false), 3000);
                       try {
-                        await downloadAnimatedStripVideo(capturedShots, `angie-live-strip-${roomCode}.webm`, {
+                        await downloadAnimatedStripVideo(capturedShots, `dearly-us-live-strip-${roomCode}.webm`, {
                           includeFlash: true,
                           fps: 2,
                           frameBorderColor: selectedStyle.bg,
@@ -1380,7 +1388,7 @@ export default function PhotoboothPage() {
                     />
                   )}
 
-                  <div className="real-strip-brand">ANGIE · 인생네컷</div>
+                  <div className="real-strip-brand">DEARLY US · 인생네컷</div>
                   <div className="real-strip-frames">
                     {capturedShots.map((shot, idx) => (
                       <div
@@ -1605,7 +1613,7 @@ export default function PhotoboothPage() {
                   <div className="real-strip-footer">
                     <div className="real-strip-name">{coupleName}</div>
                     <div className="real-strip-serial">
-                      ANGIE · <b>{roomCode}</b>
+                      DEARLY US · <b>{roomCode}</b>
                     </div>
                   </div>
                 </div>

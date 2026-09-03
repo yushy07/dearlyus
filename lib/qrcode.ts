@@ -248,7 +248,7 @@ export function QRCodeSVG({
     try {
       return encodeQRCode(text);
     } catch {
-      return encodeQRCode('https://getangie.com');
+      return encodeQRCode('https://dearlyus.love');
     }
   }, [text]);
 

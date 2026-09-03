@@ -66,7 +66,7 @@ export function AudioPlayer() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
-      const channel = new BroadcastChannel('angie_soundscape_sync');
+      const channel = new BroadcastChannel('dearly_soundscape_sync');
       channel.onmessage = (event) => {
         if (!partnerSync) return;
         const data = event.data;
@@ -85,7 +85,7 @@ export function AudioPlayer() {
   const broadcastSync = (data: { preset?: string; warm?: number; romantic?: number; piano?: number; lofi?: number }) => {
     if (!partnerSync || typeof window === 'undefined') return;
     try {
-      const channel = new BroadcastChannel('angie_soundscape_sync');
+      const channel = new BroadcastChannel('dearly_soundscape_sync');
       channel.postMessage({ type: 'SYNC_SOUNDSCAPE', ...data });
     } catch {}
   };
@@ -301,7 +301,7 @@ export function AudioPlayer() {
           {/* Studio Header with 3D Turntable */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div className="turntable-3d-stage" title="Angie Analog Turntable · 33⅓ RPM">
+              <div className="turntable-3d-stage" title="Dearly Us Analog Turntable · 33⅓ RPM">
                 <div className={`vinyl-3d-disc ${isPlaying || isBgMusicActive ? 'spinning' : ''}`}>
                   <div className="vinyl-center-label">
                     <div className="vinyl-center-hole" />

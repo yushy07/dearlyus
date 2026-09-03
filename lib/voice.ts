@@ -27,7 +27,7 @@ export type VoiceMood =
   | 'pouty'
   | 'tweaking';
 
-const STORAGE_KEY = 'angie_cupidot_voice_mode';
+const STORAGE_KEY = 'dearly_cupidot_voice_mode';
 
 let audioCtx: AudioContext | null = null;
 let activeChirpTimers: NodeJS.Timeout[] = [];
@@ -62,7 +62,7 @@ export function setStoredVoiceMode(mode: VoiceMode): void {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(STORAGE_KEY, mode);
-    window.dispatchEvent(new CustomEvent('angie_cupidot_voice_mode_changed', { detail: mode }));
+    window.dispatchEvent(new CustomEvent('dearly_cupidot_voice_mode_changed', { detail: mode }));
   } catch {}
 }
 

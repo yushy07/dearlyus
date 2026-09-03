@@ -1,19 +1,19 @@
 import { RoomStyle, PhotoboothLayout, ArFilter, ColorFilter } from '@/types';
 
-export const APP_NAME = 'Angie';
-export const APP_TAGLINE = 'Fun dates & synced photobooth for long distance relationships';
+export const APP_NAME = 'Dearly Us';
+export const APP_TAGLINE = 'Made for the moments that belong to you two.';
 
 export const ROOM_STYLES: RoomStyle[] = [
-  { id: 'classic', label: 'Classic White', sub: '인생네컷 clean photo-paper border', bg: '#FFFFFF', color: '#17181C', border: '#E3E5EA', accent: '#FF7BA3' },
-  { id: 'vintage', label: '1930s Automat', sub: 'Velvet curtains & automat marquee', bg: '#201715', color: '#F6EDE6', border: '#543E38', accent: '#FFD68A' },
+  { id: 'dearly-signature', label: 'Dearly Us Rose & Alabaster', sub: 'Warm candlelight border with romantic rose seal', bg: '#FAF8F5', color: '#1C1924', border: '#E8E2D9', accent: '#FF4E78', foilEffect: 'matte-foil' },
+  { id: 'classic', label: 'Classic White', sub: '인생네컷 clean photo-paper border', bg: '#FFFFFF', color: '#1C1924', border: '#E8E2D9', accent: '#FF4E78' },
+  { id: 'vintage', label: '1930s Automat', sub: 'Velvet curtains & automat marquee', bg: '#201715', color: '#F6EDE6', border: '#543E38', accent: '#E5A93C' },
   { id: 'kyoto', label: 'Kyoto Rain Veranda', sub: 'Wooden tea pavilion with raindrops', bg: '#1C2321', color: '#EEF0F2', border: '#4E6151', accent: '#70A9A1' },
   { id: 'vhs', label: '90s VHS Lounge', sub: 'Retro scanlines & analog cassette tape', bg: '#141115', color: '#F2E8CF', border: '#8A1C14', accent: '#FF6B6B' },
   { id: 'subway', label: 'Seoul Subway Car', sub: 'Warm train lighting over Han River', bg: '#232931', color: '#EEEEEE', border: '#4ECCA3', accent: '#4ECCA3' },
-  { id: 'rooftop', label: 'Midnight Rooftop', sub: 'Starlit skyline & twinkling city lights', bg: '#0B0C10', color: '#C5C6C7', border: '#45A29E', accent: '#66FCF1' },
-  { id: 'sunset', label: 'Sunset Romance', sub: 'Golden hour terrace over Seoul', bg: 'linear-gradient(180deg, #FFE4D6, #FFD6E8)', color: '#23242A', border: '#FFB3C7', accent: '#FF7BA3' },
-  { id: 'cyber', label: 'Cyber Blue', sub: 'Neon city lights & futuristic grid', bg: '#101726', color: '#DCEBFF', border: '#5FA0FF', accent: '#5FA0FF' },
+  { id: 'sunset', label: 'Sunset Romance', sub: 'Golden hour terrace over Seoul', bg: 'linear-gradient(180deg, #FFE4D6, #FFD6E8)', color: '#23242A', border: '#FFB3C7', accent: '#FF4E78' },
+  { id: 'cyber', label: 'Twilight Cerulean', sub: 'Dusk skyline & neon ambient glow', bg: '#101726', color: '#EEF4FF', border: '#437EEB', accent: '#437EEB' },
   { id: 'laundry', label: 'Retro Laundromat', sub: 'Cozy 90s indie date aesthetic', bg: '#F2EDE4', color: '#3A322D', border: '#D6C8B8', accent: '#E07A5F' },
-  { id: 'karaoke', label: 'Tokyo Karaoke', sub: 'Neon disco stage & singing mic', bg: '#1E122C', color: '#F3EEFC', border: '#9D6EE8', accent: '#FF7BA3' },
+  { id: 'karaoke', label: 'Tokyo Karaoke', sub: 'Neon disco stage & singing mic', bg: '#1E122C', color: '#F3EEFC', border: '#9D6EE8', accent: '#FF4E78' },
   { id: 'holo', label: '🌈 Prism Holographic', sub: 'Iridescent spectral rainbow photocard', bg: 'linear-gradient(135deg, #FFD1DC 0%, #FFE4B5 25%, #D4F0FF 50%, #E8D7FF 75%, #FFD1DC 100%)', color: '#2C1B4D', border: '#E9D5FF', accent: '#C084FC', foilEffect: 'holographic' },
   { id: 'chrome', label: '🪞 Y2K Liquid Chrome', sub: 'High-gloss specular metallic mirror border', bg: 'linear-gradient(135deg, #CBD5E1 0%, #FFFFFF 30%, #94A3B8 50%, #FFFFFF 70%, #CBD5E1 100%)', color: '#0F172A', border: '#94A3B8', accent: '#38BDF8', foilEffect: 'chrome' },
   { id: 'velvet-foil', label: '✨ Midnight & Silver Foil', sub: 'Velvet obsidian with hot-stamped silver', bg: '#101216', color: '#FFFFFF', border: '#E2E8F0', accent: '#F8FAFC', foilEffect: 'matte-foil' },

@@ -163,7 +163,7 @@ export default function HomePage() {
     ctx.fillStyle = demoTheme.text;
     ctx.font = 'bold 24px Pretendard, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('angie · 인생네컷', 300, 60);
+    ctx.fillText('dearly us · 인생네컷', 300, 60);
 
     // 4 Photo Frames
     for (let i = 0; i < 4; i++) {
@@ -187,7 +187,7 @@ export default function HomePage() {
     ctx.fillText(`ROOM: ${roomCode.join('')} · ${new Date().toLocaleDateString()}`, 300, 1540);
 
     const a = document.createElement('a');
-    a.download = `angie-photostrip-${roomCode.join('')}.png`;
+    a.download = `dearly-us-photostrip-${roomCode.join('')}.png`;
     a.href = canvas.toDataURL('image/png');
     a.click();
   };
@@ -328,15 +328,23 @@ export default function HomePage() {
       {/* Tagline Ribbon */}
       <div className="ribbon">
         <span className="ribbon-in">
-          ♡ Making LDR couples experience dates like other couples · <b>13 Realtime Games Live</b>
+          ♡ Dearly Us · Made for the moments that belong to you two. · <b>35 Realtime Activities</b>
         </span>
       </div>
 
       {/* Top Navbar */}
       <header className="bar">
         <div className="wrap">
-          <Link className="brand" href="/">
-            angie
+          <Link className="brand" href="/" aria-label="Dearly Us Home">
+            <span className="brand-emblem" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 128 128" fill="none">
+                <rect width="128" height="128" rx="36" fill="#1C1924" />
+                <path d="M64 77 C51 93 29 86 29 64 C29 45 48 38 64 58" stroke="#FF4E78" strokeWidth="12" strokeLinecap="round" />
+                <path d="M64 58 C80 38 99 45 99 64 C99 86 77 93 64 77" stroke="#437EEB" strokeWidth="12" strokeLinecap="round" />
+                <circle cx="64" cy="67" r="5" fill="#FFFFFF" />
+              </svg>
+            </span>
+            <span>Dearly Us</span>
             <span className="dots">
               <i className="p"></i>
               <i className="b"></i>
@@ -447,15 +455,12 @@ export default function HomePage() {
               </span>
             </div>
             <h1>
-              Fun Dates for
+              Moments That
               <br />
-              <span className="pink">Long</span> <span className="blue">Distance</span>
-              <br />
-              Relationships
+              Belong to <span className="pink">You</span> <span className="blue">Two</span>.
             </h1>
             <p className="lede">
-              This was made for my LDR girlfriend, Angie. This is our little hub of dates and activities
-              that kept us together through the distance this past 2 years. I hope you&apos;ll enjoy them too!
+              Made for the moments that belong to you two. A realtime sanctuary for couples bridging distance with 35+ interactive games, authentic Korean Life4Cuts photostrips, 3D memory vaults, and intimate keepsakes.
             </p>
             <div className="cta-row">
               <Link className="btn btn-grad btn-3d" href="/activity">
@@ -499,7 +504,7 @@ export default function HomePage() {
               <span className="plat">💻 Mac &amp; Windows</span>
             </p>
             <p className="assure">
-              <span>● you</span> &nbsp;+&nbsp; <span>● me</span>
+              <span>● {nickname || 'You'}</span> &nbsp;♡&nbsp; <span>● {partnerName || 'Love'}</span>
             </p>
           </div>
 
@@ -521,12 +526,12 @@ export default function HomePage() {
                     <stop offset="100%" stopColor="#1C7A47" />
                   </linearGradient>
                   <linearGradient id="gl-arc-a" x1="1" y1="0" x2="0" y2="0">
-                    <stop offset="0%" stopColor="#FF7BA3" stopOpacity=".15" />
-                    <stop offset="100%" stopColor="#FF7BA3" stopOpacity=".95" />
+                    <stop offset="0%" stopColor="#FF4E78" stopOpacity=".15" />
+                    <stop offset="100%" stopColor="#FF4E78" stopOpacity=".95" />
                   </linearGradient>
                   <linearGradient id="gl-arc-b" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#5FA0FF" stopOpacity=".15" />
-                    <stop offset="100%" stopColor="#5FA0FF" stopOpacity=".95" />
+                    <stop offset="0%" stopColor="#437EEB" stopOpacity=".15" />
+                    <stop offset="100%" stopColor="#437EEB" stopOpacity=".95" />
                   </linearGradient>
                   <clipPath id="gl-clip">
                     <circle cx="300" cy="300" r="252" />
@@ -634,7 +639,7 @@ export default function HomePage() {
                       <img className="shot" src="/photos/frame4.webp" width="503" height="377" alt="Photobooth shot 4" />
                     </div>
                     <div className="serial">
-                      angie · <b>KX7RM</b>
+                      dearly us · <b>KX7RM</b>
                     </div>
                   </div>
 
@@ -657,7 +662,7 @@ export default function HomePage() {
                       <img className="shot" src="/photos/b4.webp" width="503" height="377" alt="" />
                     </div>
                     <div className="serial">
-                      angie · <b>7K2QF</b>
+                      dearly us · <b>7K2QF</b>
                     </div>
                   </div>
                 </div>
@@ -667,43 +672,42 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* August 1st Girlfriends Day Special Band */}
-      <section className="section august-band" id="august-band">
+      {/* Curated Date Night Sanctuary Band */}
+      <section className="section august-band" id="curated-journey">
         <div className="wrap">
-          <Link className="august-card" href="/august">
+          <Link className="august-card" href="/date">
             <span className="august-art">
               <img
                 src="/august/gate.webp"
-                alt="Watercolor painting of a couple walking into a garden"
+                alt="Watercolor painting of a couple walking into a romantic garden"
                 width="1440"
                 height="930"
               />
-              <span className="august-stamp">August 1 · Girlfriends Day</span>
+              <span className="august-stamp">✦ Curated Sanctuary Experience</span>
             </span>
             <span className="august-body">
-              <span className="august-eyebrow">Girlfriends Day Special</span>
+              <span className="august-eyebrow">Couples Night Sanctuary</span>
               <h2>
-                The <em>Couples Day Date</em> — a whole evening, already planned.
+                The <em>Complete Date Journey</em> — an entire evening, beautifully planned.
               </h2>
               <p>
-                Seven things to play together in one shared room, from two cities. It starts easy,
-                gets honest, and ends with the two of you designing matching outfits you both wear.
+                Seven intimate moments to experience synchronously in one room, across any distance. From cozy warmup banters to deep connection cards and matching keepsakes.
               </p>
 
               <ul className="august-run" style={{ marginTop: '20px' }}>
-                <li><b>01</b> Photobooth</li>
-                <li><b>02</b> Love Match</li>
-                <li><b>03</b> Riddles</li>
-                <li><b>04</b> Know-me quiz</li>
-                <li><b>05</b> Debate</li>
-                <li><b>06</b> Honest Cards</li>
-                <li><b>07</b> Design the outfits</li>
+                <li><b>01</b> Warmup Photobooth</li>
+                <li><b>02</b> Harmony Match</li>
+                <li><b>03</b> Riddle Mystery</li>
+                <li><b>04</b> Lore Quiz Duel</li>
+                <li><b>05</b> Playful Debate</li>
+                <li><b>06</b> Midnight Honest Cards</li>
+                <li><b>07</b> Twin Keepsake Studio</li>
               </ul>
               <span className="august-cta">
                 <span className="btn">
-                  Start Date Night Plan <span className="arr">▷</span>
+                  Begin Tonight’s Journey <span className="arr">▷</span>
                 </span>
-                <span className="when">two hours · she needs no account</span>
+                <span className="when">two screens · instant connection · zero sign-up</span>
               </span>
             </span>
           </Link>
@@ -716,20 +720,20 @@ export default function HomePage() {
           <div className="closer-grid">
             <div>
               <h2>
-                One hub of games &amp; dates for <span className="grad">long-distance couples</span>.
+                One sanctuary of games &amp; moments for <span className="grad">two hearts apart</span>.
               </h2>
             </div>
             <div className="closer-aside">
               <p>
-                Seventeen realtime games and dates you play in one shared room, at the same second.
-                Open a room and send the code — they&apos;ll be there in a tap.
+                Thirty-five realtime activities and intimate dates you experience in one shared room, at the exact same second.
+                Open a private room and send the code — your partner will be there in one tap.
               </p>
               <div className="cta-row">
                 <Link className="btn btn-grad" href="/activity">
                   Browse all activities <span className="arr">▷</span>
                 </Link>
                 <Link className="btn btn-ghost" href="/photobooth">
-                  Join with a code
+                  Open Photobooth Studio
                 </Link>
               </div>
               <div className="joincode">
@@ -743,11 +747,11 @@ export default function HomePage() {
                       value={char}
                       onChange={(e) => handleCellChange(idx, e.target.value)}
                       style={{
-                        width: '32px',
-                        height: '40px',
+                        width: '36px',
+                        height: '42px',
                         textAlign: 'center',
-                        border: '1px solid var(--line)',
-                        borderRadius: '4px',
+                        border: '1.5px solid var(--line)',
+                        borderRadius: '10px',
                         fontWeight: 700,
                         fontSize: '17px',
                         fontFamily: 'var(--font-mono)',
@@ -761,15 +765,40 @@ export default function HomePage() {
                   onClick={copyCode}
                   style={{
                     border: 'none',
-                    background: 'none',
+                    background: 'var(--pink-tint)',
+                    padding: '6px 12px',
+                    borderRadius: '20px',
                     fontSize: '12px',
                     fontFamily: 'var(--font-mono)',
                     color: 'var(--pink)',
+                    fontWeight: 700,
                     cursor: 'pointer',
-                    marginLeft: '6px',
+                    marginLeft: '8px',
                   }}
                 >
                   {copied ? '✓ Copied' : 'Copy'}
+                </button>
+                <button
+                  onClick={() => {
+                    sounds.playPop();
+                    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+                    const fresh = Array.from({ length: 5 }, () => chars[Math.floor(Math.random() * chars.length)]);
+                    setRoomCode(fresh);
+                  }}
+                  style={{
+                    border: '1px solid var(--line)',
+                    background: 'var(--paper-raised)',
+                    padding: '6px 12px',
+                    borderRadius: '20px',
+                    fontSize: '12px',
+                    fontFamily: 'var(--font-mono)',
+                    color: 'var(--ink)',
+                    cursor: 'pointer',
+                    marginLeft: '4px',
+                  }}
+                  title="Generate Fresh Private Room"
+                >
+                  🎲 New
                 </button>
               </div>
             </div>
@@ -1227,7 +1256,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Photobooth Live Interactive Showcase (Angie 인생네컷) */}
+      {/* Photobooth Live Interactive Showcase (Dearly Us 인생네컷) */}
       <section className="section" id="photobooth-demo">
         <canvas ref={demoCanvasRef} style={{ display: 'none' }} />
         <div className="wrap">
@@ -1462,7 +1491,7 @@ export default function HomePage() {
                   borderColor: demoTheme.border,
                 }}
               >
-                <div className="real-strip-brand">ANGIE · 인생네컷</div>
+                <div className="real-strip-brand">DEARLY US · 인생네컷</div>
 
                 <div className="real-strip-frames">
                   {demoShots.map((shotUrl, idx) => (
@@ -1509,7 +1538,7 @@ export default function HomePage() {
                     }}
                   />
                   <div className="real-strip-serial">
-                    ANGIE · <b>{roomCode.join('')}</b>
+                    DEARLY US · <b>{roomCode.join('')}</b>
                   </div>
                 </div>
               </div>
@@ -1632,7 +1661,7 @@ export default function HomePage() {
                     <img className="shot" src="/photos/frame3.webp" width="503" height="377" alt="" />
                   </div>
                   <div className="serial">
-                    angie · <b>♡ us</b>
+                    dearly us · <b>♡ us</b>
                   </div>
                 </div>
                 <span className="pb-tag">
@@ -1653,11 +1682,11 @@ export default function HomePage() {
               <div>
                 <div className="kicker">Creator program</div>
                 <h2>
-                  Post one video, <span className="grad">get Angie free for life</span>.
+                  Post one video, <span className="grad">get Dearly Us VIP for life</span>.
                 </h2>
                 <p>
                   Film a photobooth session with your partner or best friend, post it on TikTok or Instagram, and send us
-                  the link. If it&apos;s approved, you get a <b>Lifetime Pass</b> — every game, every HD download, forever.
+                  the link. If it&apos;s approved, you get a <b>Lifetime VIP Pass</b> — every game, every HD download, forever.
                 </p>
               </div>
               <div className="cb-cta">
@@ -1708,7 +1737,7 @@ export default function HomePage() {
                     We answer every single couple. Have an activity request or timezone question? Reach out anytime!
                   </p>
                   <a
-                    href="mailto:hello@getangie.com"
+                    href="mailto:hello@dearlyus.love"
                     style={{
                       display: 'inline-flex',
                       alignItems: 'center',
@@ -1719,7 +1748,7 @@ export default function HomePage() {
                       textDecoration: 'none',
                     }}
                   >
-                    <span>Email us at hello@getangie.com</span>
+                    <span>Email us at hello@dearlyus.love</span>
                     <span>→</span>
                   </a>
                 </div>
@@ -1729,11 +1758,11 @@ export default function HomePage() {
               <div className="faq-list">
                 {[
                   {
-                    q: 'What games and activities can we play on Angie?',
-                    a: 'Over 15 realtime activities are live: Truth or Dare with 20 tiny minigames, Honest Cards, the Our Future planning date, the Love Match compatibility test, Riddle Night, IQ Duel, the How Well Do You Know Me quiz, Korean Life4Cuts online photobooth, Couples Debate, Draw Together, Couples Court, Snap Hunt, PvP Fashion Show, Face Avatar Arcade, and The Lab study-date timer. Everything happens synchronously in one shared room.',
+                    q: 'What games and activities can we play on Dearly Us?',
+                    a: 'Over 35 realtime activities are live: Truth or Dare with 20 tiny minigames, Honest Cards, the Our Future planning date, the Love Match compatibility test, Riddle Night, IQ Duel, the How Well Do You Know Me quiz, Korean Life4Cuts online photobooth, Couples Debate, Draw Together, Couples Court, Snap Hunt, PvP Fashion Show, Face Avatar Arcade, and The Lab study-date timer. Everything happens synchronously in one shared room.',
                   },
                   {
-                    q: 'Is Angie free to play?',
+                    q: 'Is Dearly Us free to play?',
                     a: 'Yes. Open a room, share your 5-letter code, and play together completely for free. The photobooth is always free and every single game has a full free tier. Premium unlocks unlimited plays, custom themes, and fresh questions that never repeat.',
                   },
                   {
@@ -1742,11 +1771,11 @@ export default function HomePage() {
                   },
                   {
                     q: 'Do we need to install an app?',
-                    a: 'No! Angie runs right in any modern web browser on iPhone, Android, iPad, Mac, or Windows — zero downloads needed. Just tap the link and you\'re connected together in under 5 seconds.',
+                    a: 'No! Dearly Us runs right in any modern web browser on iPhone, Android, iPad, Mac, or Windows — zero downloads needed. Just tap the link and you\'re connected together in under 5 seconds.',
                   },
                   {
                     q: 'Is the photobooth like 인생네컷 / Life4Cuts?',
-                    a: 'Yes — Angie\'s photobooth is meticulously styled after authentic Korean Life4Cuts (인생네컷) booths, customized for long-distance couples. You get synchronized countdown snaps, vintage frame colorways, cute stickers, and high-resolution downloadable strips to save or print.',
+                    a: 'Yes — the Dearly Us photobooth is meticulously styled after authentic Korean Life4Cuts (인생네컷) booths, customized for couples. You get synchronized countdown snaps, vintage frame colorways, cute stickers, and high-resolution downloadable strips to save or print.',
                   },
                 ].map((item, idx) => (
                   <details
@@ -1802,7 +1831,7 @@ export default function HomePage() {
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-              <h3 style={{ fontSize: '20px', fontWeight: 800 }}>Your Angie Profile</h3>
+              <h3 style={{ fontSize: '20px', fontWeight: 800 }}>Your Dearly Us Profile</h3>
               <button
                 onClick={() => setProfileOpen(false)}
                 style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }}

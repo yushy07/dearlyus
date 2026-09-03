@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" fill="none">
+  <defs>
+    <linearGradient id="pwa512-rose" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF6584"/>
+      <stop offset="60%" stop-color="#FF4E78"/>
+      <stop offset="100%" stop-color="#D91E52"/>
+    </linearGradient>
+    <linearGradient id="pwa512-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#60A5FA"/>
+      <stop offset="60%" stop-color="#437EEB"/>
+      <stop offset="100%" stop-color="#2563EB"/>
+    </linearGradient>
+    <radialGradient id="pwa512-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.9"/>
+      <stop offset="40%" stop-color="#F472B6" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#818CF8" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="pwa512-sparkle" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="512" height="512" rx="144" fill="#1C1924"/>
+  <rect width="508" height="508" x="2" y="2" rx="142" stroke="rgba(255, 255, 255, 0.12)" stroke-width="4"/>
+  <circle cx="256" cy="256" r="176" fill="url(#pwa512-glow)" opacity="0.35"/>
+
+  <!-- Left Loop -->
+  <path d="M256 308 C204 372 116 348 116 256 C116 182 192 154 256 232" 
+        stroke="url(#pwa512-rose)" 
+        stroke-width="48" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"
+        fill="none"/>
+
+  <!-- Right Loop -->
+  <path d="M256 232 C320 154 396 182 396 256 C396 348 308 372 256 308" 
+        stroke="url(#pwa512-blue)" 
+        stroke-width="48" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"
+        fill="none"/>
+
+  <!-- Sparkle Star -->
+  <circle cx="256" cy="268" r="22" fill="#FFFFFF" filter="url(#pwa512-sparkle)"/>
+  <path d="M256 228 L264 258 L288 268 L264 278 L256 308 L248 278 L224 268 L248 258 Z" 
+        fill="#FFFFFF" 
+        opacity="0.95"/>
+</svg>

@@ -1,61 +1,103 @@
-# OurSpace ♡ (Angie)
+<div align="center">
 
-> **The ultimate realtime online photobooth studio, 3D multiplayer games, and date night sanctuary for couples separated by distance.**  
-> A pixel-perfect, feature-expanded recreation and enhancement of [getangie.com](https://getangie.com/).
+  <img src="public/logo.svg" alt="Dearly Us Logo" width="460" />
 
-[![Next.js](https://img.shields.io/badge/Next.js-15%2B-black?style=flat&logo=next.js)](https://nextjs.org/)
-[![React](https://img.shields.io/badge/React-19-61DAFB?style=flat&logo=react)](https://react.dev/)
-[![Vite](https://img.shields.io/badge/Vite-8-646CFF?style=flat&logo=vite)](https://vitejs.dev/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-38B2AC?style=flat&logo=tailwind-css)](https://tailwindcss.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+  <h3>Made for the moments that belong to you two.</h3>
 
----
+  <p>
+    An intimate realtime date night sanctuary for couples separated by distance or sharing screens together.<br/>
+    Synchronized Korean Life4Cuts photobooths, 3D interactive memory keepsakes, dual-blind quizzes, and live date games.
+  </p>
 
-## 🌟 What's New & Core Capabilities
+  <p>
+    <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-15%2B-black?style=for-the-badge&logo=next.js" alt="Next.js" /></a>
+    <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react" alt="React 19" /></a>
+    <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript" alt="TypeScript" /></a>
+    <a href="https://webrtc.org/"><img src="https://img.shields.io/badge/WebRTC-P2P_Sync-333333?style=for-the-badge&logo=webrtc" alt="WebRTC" /></a>
+    <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-FF4E78?style=for-the-badge" alt="License MIT" /></a>
+  </p>
 
-### 🧠 1. Ultra-Fast Adaptive Question Engine & Zero-Delay Local Fallback
-- **Sub-Second Dynamic AI**: Powered by Gemini Flash with strict 1.2s timeout race + hand-crafted localized fallback packs. Zero latency, zero user-facing errors.
-- **Background Pre-Fetching**: Invisible latency hiding during reveal animations across **Know Me Quiz** (`/quiz`), **Honest Cards** (`/cards`), and the **Third Wheel Date Host** (`/host`).
+  <br/>
 
-### 🧾 2. "Our Date Lore" Printable Vintage Thermal Receipts (`/quiz`, `/host`)
-- **Thermal Canvas Renderer**: Custom dot-matrix monospace typography, jagged tear edges, itemized Q&A breakdown, sync %, `100% LOVE` subtotal, and 1-click high-res PNG download.
+  <img src="public/og.png" alt="Dearly Us Couple Date Night Preview" width="100%" style="border-radius: 16px; box-shadow: 0 12px 36px rgba(0,0,0,0.15);" />
 
-### 📸 3. Photobooth 3.0 Animated Live Strip Exporter (`/photobooth`)
-- **Client-Side GIF & Video Sequencer**: Pure Canvas `captureStream` + `MediaRecorder` engine exporting looping `.webm` animated photostrips with 60ms camera flash transitions and Korean *인생네컷* frames.
-
-### 🌍 4. Interactive 3D Earth Globe & Geodesic Reunion Flight Arc (`/timezone`)
-- **3D Orthographic Projection**: Great-circle distance calculations (`11,420 km`), interactive mouse drag rotation, glowing city pins, and concentric heartbeat waves traveling between Calgary and Jakarta.
-
-### 🎵 5. Multi-Track Ambient Soundscape Mixer 2.0 (`/date`, Global Dock)
-- **5 Procedural Web Audio Synthesizers**: *Rain on Attic*, *Cozy Fireplace*, *Tokyo Midnight Cafe*, *90s Vinyl Needle Crackle*, and *Lo-Fi Piano Chords* with individual volume sliders and atmospheric presets.
-
-### 🪄 6. Fluid Motion & Tactile Physics Suite
-- **View Transitions API**: Seamless cross-page morphing between the Activity Directory and game rooms.
-- **Kinetic Touch SwipeDeck**: Drag-and-swipe physics for card decks with angular tilt (`rotate(${deltaX * 0.08}deg)`).
-- **Web Audio Micro-Haptics**: Real-time synthesized bubble pops, wooden ticks, and chime chords.
-- **3D Wax Seal Envelope**: 3D embossed red wax stamp that fractures and unfolds in 3D perspective to reveal time capsule letters (`/letter`).
-
-### 🌈 7. React Bits & MotionSites.ai Kinetic UI
-- **Animated Border-Mask Badges (`GlowBadge`)**: 1px rotating radial gradient border mask with shimmering text.
-- **Kinetic Bento Cards (`KineticCard`)**: Diagonal shimmer sweep beams (`animate-shimmer`) on hover.
-- **ClickSpark**: 60fps canvas particle sparks on every pointer tap across the site.
-- **SpotlightCard & TiltedCard**: Cursor-following radial glows and 3D parallax mouse tilt.
+</div>
 
 ---
 
-## 🎮 Complete 35-Route Inventory
+## 🌸 About Dearly Us
 
-| Route | Feature Description |
+Long distance dates often default to muted video calls or passive movie streaming. **Dearly Us** transforms screen-time into genuine connection:
+
+- **Instant 1-Tap Connection**: No passwords, no credit cards, zero sign-up. Just share a private 5-letter room code (e.g., `KX7RM`).
+- **Privacy by Design**: Live video feeds run peer-to-peer (WebRTC) between you and your partner. Your videos and photobooth cuts are never stored on cloud servers.
+- **Physical & Digital Keepsakes**: Export high-resolution 300 DPI *인생네컷* photostrips, printable thermal receipts of your quiz lore, phone wallpapers, and digital time capsule envelopes.
+
+---
+
+## 📸 Experience & Visual Gallery
+
+<div align="center">
+  <table>
+    <tr>
+      <td width="50%" align="center">
+        <img src="public/photos/dearly-strip.jpg" alt="Physical Life4Cuts Photostrip" width="100%" style="border-radius: 12px;" />
+        <br/><b>Korean Life4Cuts Physical Keepsakes</b>
+      </td>
+      <td width="50%" align="center">
+        <img src="public/photos/quiz-duo.webp" alt="Know Me Couple Quiz Dual Screen" width="100%" style="border-radius: 12px;" />
+        <br/><b>Know Me Double-Blind Couple Quiz</b>
+      </td>
+    </tr>
+    <tr>
+      <td width="50%" align="center">
+        <img src="public/august/gate.webp" alt="Sanctuary Garden Gate" width="100%" style="border-radius: 12px;" />
+        <br/><b>Curated Couple Night Sanctuary Journey</b>
+      </td>
+      <td width="50%" align="center">
+        <img src="public/photos/magnet-fridge.webp" alt="Fridge Magnet Keepsakes" width="100%" style="border-radius: 12px;" />
+        <br/><b>DIY Fridge Magnet &amp; Printables Studio</b>
+      </td>
+    </tr>
+  </table>
+</div>
+
+---
+
+## 🌟 Key Architecture & Capabilities
+
+### 📸 1. Synchronized Photobooth 3.0 (`/photobooth`)
+- **Realtime Flash & Countdown**: Synchronized 3..2..1 photo countdown across both screens with camera flash simulation.
+- **Bespoke Frames**: Choose from *Dearly Us Rose & Alabaster*, *Retro Vintage Vinyl*, *Tokyo Midnight Cafe*, *Pastel Sakura*, and *Korean Minimalist*.
+- **Animated Video Strips**: Exports looping animated `.webm` live strips directly from the client canvas.
+
+### 🧠 2. Adaptive Couple Quiz Engine (`/quiz`)
+- **Double-Blind Lock-in**: Neither partner can peek at their partner's answer until both have clicked submit.
+- **Sub-Second Adaptive AI**: Instant contextual question generation with offline-ready hand-crafted fallback packs.
+- **Vintage Thermal Date Lore Receipts**: Renders dot-matrix style thermal receipts summarizing your answers, match %, and couple lore for 1-click download.
+
+### 🌍 3. Interactive 3D Earth Globe & Clock Sync (`/timezone`)
+- **Orthographic 3D Projection**: Great-circle geodesic flight arcs between partner cities with concentric heartbeat pulses.
+- **Dual Local Time Calculator**: Synchronized timezone slider showing overlapping waking hours.
+
+### 🎵 4. Multi-Track Ambient Soundscape Synthesizer (`/date`, Global Dock)
+- **5 Procedural Audio Channels**: *Attic Rain*, *Cozy Fireplace*, *Tokyo Midnight Cafe*, *90s Vinyl Needle*, and *Lo-Fi Chords* with real-time Web Audio API synthesis.
+
+---
+
+## 🎮 Complete 35-Route Directory
+
+| Route | Feature & Activity |
 | :--- | :--- |
-| **`/`** | Homepage with Aurora background, live couple cursors, spotlight activities & demo booth. |
-| **`/activity`** | Activity Directory with 17 realtime multiplayer dates. |
+| **`/`** | Homepage with 3D flight globe, live partner cursors, instant room generator, and photostrip showcase. |
+| **`/activity`** | Complete 17+ multiplayer date night activity catalog. |
 | **`/photobooth`** | Korean Life4Cuts (*인생네컷*) 4-shot synchronized photobooth studio. |
-| **`/timezone`** | Interactive 3D Earth Globe, geodesic flight path, and live couple clock sync. |
+| **`/timezone`** | Interactive 3D Earth Globe, geodesic flight arc, and couple clock sync. |
 | **`/quiz`** | Know Me Quiz with secret lock-in, match scoring & Printable Thermal Receipt. |
-| **`/host`** | "Third Wheel" Date Host game mode with observational AI commentary. |
+| **`/host`** | "Third Wheel" Date Host game mode with playful observational commentary. |
 | **`/cards`** | Honest Cards with kinetic swipe deck and 3 intimacy levels. |
 | **`/dare`** | Truth or Dare with 20 mini-games and fast-tap duels. |
-| **`/date`** | Date Night Planner & Ambient Soundscape Mixer. |
+| **`/date`** | Date Night Planner & Multi-track Ambient Soundscape Mixer. |
 | **`/bucket`** | 100 Dates Scratch-Off Checklist with progress bar and confetti. |
 | **`/scrapbook`** | Digital Memory Corkboard with 3D polaroids, flight stubs & washi tape. |
 | **`/letter`** | Time Capsule Letters with 3D wax seal cracking & unfolding envelope. |
@@ -63,7 +105,7 @@
 | **`/fashion`** | Couple PvP Fashion Runway with outfit voting. |
 | **`/shirts`** | Digital matching outfit designer for date nights. |
 | **`/shop`** | 100% Free DIY Printable Keepsakes (4×6 photo sheets, wallpapers, fridge magnets). |
-| **`/august`** | Curated 7-step Girlfriends Day couples date itinerary. |
+| **`/august`** | Curated 7-step couple date night journey itinerary. |
 | **`/match`** | 16-dimension romance personality compatibility test. |
 | **`/arcade`** | Face-avatar retro mini-games (*Heart Jump*, *Asteroid Dodge*, *Berry Catch*). |
 | **`/draw`** | Real-time dual shared canvas sketchpad. |
@@ -75,66 +117,67 @@
 | **`/riddle`** | Co-op brain teasers and riddle night puzzles. |
 | **`/iq`** | Head-to-head timed logic and spatial pattern duel. |
 | **`/profile`** | Couple settings (names, cities, room code `KX7RM`, saved album). |
-| **`/creators`** | Creator program for TikTok / Instagram creators (Free Lifetime Pass). |
+| **`/creators`** | Creator community & date night video submission showcase. |
 | **`/blog`** | Editorial blog with LDR date guides, ideas, and relationship advice. |
 | **`/blog/:slug`** | Dynamic editorial article reader with scroll progress. |
-| **`/privacy`** | Privacy policy. |
-| **`/terms`** | Terms of service. |
+| **`/privacy`** | Transparent privacy policy & WebRTC security pledge. |
+| **`/terms`** | Terms of service and user conduct guidelines. |
 | **`/api/config`** | Realtime room config & status API endpoint. |
-| **`/api/questions/generate`** | Low-latency adaptive question generation endpoint with 1.2s timeout race. |
 | **`/api/stats`** | Live global stats endpoint. |
 
 ---
 
-## 🎨 Design Tokens
+## 🎨 Design System & Palette
 
-- **Paper Background**: `#F8F9FB`
-- **Ink Primary**: `#17181C`
-- **Couple Pink**: `#FF7BA3`
-- **Couple Blue**: `#5FA0FF`
-- **Warm Gold**: `#FFD68A`
-- **Success Mint**: `#4ECCA3`
-- **Cream Tint**: `#FFFBF6`
-- **Line Border**: `#E7E9EE`
+Dearly Us utilizes a curated candlelight alabaster and plum-obsidian palette:
+
+| Token | Hex Value | Role |
+| :--- | :--- | :--- |
+| `--paper` | `#FAF8F5` | Warm Candlelight Alabaster background |
+| `--paper-subtle` | `#F3EFEA` | Soft linen contrast surface |
+| `--ink` | `#1C1924` | Velvety Deep Plum-Obsidian typography |
+| `--ink-soft` | `#6A6576` | Muted twilight body copy |
+| `--line` | `#E8E2D9` | Delicate linen border hairline |
+| `--pink` | `#FF4E78` | Rose Coral partner presence accent |
+| `--blue` | `#437EEB` | Twilight Dusk Cerulean partner presence accent |
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Getting Started Locally
 
 ### Prerequisites
-- Node.js `>=22.13.0`
-- npm or pnpm
+- Node.js `>=20.0.0`
+- npm, pnpm, or yarn
 
 ### Installation
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/yushy07/ourspace.git
-cd ourspace
+git clone https://github.com/yushy07/dearlyus.git
+cd dearlyus
 
 # 2. Install dependencies
 npm install
 
-# 3. Start local development server
+# 3. Start development server
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### Building for Production
+### Verification & Production Build
 
 ```bash
+# Type check the codebase
+npx tsc --noEmit
+
+# Build production bundle
 npm run build
 ```
 
 ---
 
-## 🤝 Contributors
+## 📄 License & Attribution
 
-Please see [CONTRIBUTORS.md](CONTRIBUTORS.md) for the list of maintainers and contributors.
-
----
-
-## 📄 License
-
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [MIT License](LICENSE).  
+Made with 💖 for couples making memories across any distance.

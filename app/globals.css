@@ -1,5 +1,5 @@
 /* =====================================================================
-   ANGIE (getangie.com) GLOBAL DESIGN SYSTEM & TOKENS
+   DEARLY US GLOBAL DESIGN SYSTEM & TOKENS
    Modular Sheets: tokens.css, 3d-physics.css, animations.css
    ===================================================================== */
 @import "../styles/tokens.css";
@@ -8,27 +8,30 @@
 
 
 :root {
-  /* — surface: cool photo-paper, never cream — */
-  --paper:        #F8F9FB;
+  /* — surface: warm romantic candlelight alabaster — */
+  --paper:        #FAF8F5;
   --paper-raised: #FFFFFF;
-  --ink:          #17181C;
-  --ink-soft:     #5B5E68;
-  --line:         #E3E5EA;
+  --paper-subtle: #F4EFEB;
+  --ink:          #1C1924;
+  --ink-soft:     #6A6576;
+  --line:         #E8E2D9;
 
-  /* — the two people. saturated = presence only — */
-  --pink:        #FF7BA3;
-  --pink-tint:   #FFE0EA;
-  --blue:        #5FA0FF;
-  --blue-tint:   #DCEBFF;
+  /* — Dearly Us Partner Presence Palette — */
+  --pink:        #FF4E78;
+  --pink-tint:   #FFF0F4;
+  --pink-glow:   rgba(255, 78, 120, 0.28);
+  --blue:        #437EEB;
+  --blue-tint:   #EEF4FF;
+  --blue-glow:   rgba(67, 126, 235, 0.28);
 
   --font-display: "Pretendard", system-ui, -apple-system, sans-serif;
   --font-body:    "Pretendard", system-ui, -apple-system, sans-serif;
   --font-mono:    "Space Mono", "Pretendard", monospace;
   --font-serif:   "Playfair Display", Georgia, "Times New Roman", serif;
 
-  --shadow: 0 6px 24px rgba(23,24,28,.06);
-  --shadow-lg: 0 18px 50px rgba(23,24,28,.10);
-  --shadow-soft: 0 2px 10px rgba(23,24,28,.05);
+  --shadow: 0 4px 20px rgba(28, 25, 36, 0.05);
+  --shadow-lg: 0 16px 44px rgba(28, 25, 36, 0.09);
+  --shadow-soft: 0 2px 10px rgba(28, 25, 36, 0.04);
 }
 
 * {
@@ -121,7 +124,7 @@ button {
 .ribbon {
   display: block;
   text-align: center;
-  background: linear-gradient(100deg, var(--pink), var(--blue));
+  background: linear-gradient(115deg, #FF4E78 0%, #E11D48 35%, #6366F1 75%, #437EEB 100%);
   color: #fff;
   font-family: var(--font-body);
   font-weight: 600;
@@ -130,6 +133,7 @@ button {
   padding: 9px 16px;
   position: relative;
   z-index: 25;
+  box-shadow: 0 2px 12px rgba(255, 78, 120, 0.15);
 }
 
 .ribbon-in {
@@ -169,27 +173,54 @@ button {
 .brand {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 10px;
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 23px;
+  font-size: 22px;
   letter-spacing: -.03em;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.brand-emblem {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  filter: drop-shadow(0 3px 10px rgba(255, 78, 120, 0.25));
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.brand:hover .brand-emblem {
+  transform: rotate(-6deg) scale(1.1);
 }
 
 .brand .dots {
   display: inline-flex;
-  gap: 4px;
+  gap: 5px;
+  align-items: center;
 }
 
 .brand .dots i {
-  width: 9px;
-  height: 9px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   display: block;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.brand .dots i.p { background: var(--pink); }
-.brand .dots i.b { background: var(--blue); }
+.brand .dots i.p {
+  background: var(--pink);
+  box-shadow: 0 0 8px var(--pink-glow);
+}
+.brand .dots i.b {
+  background: var(--blue);
+  box-shadow: 0 0 8px var(--blue-glow);
+}
+
+.brand:hover .dots i {
+  transform: scale(1.2);
+}
 
 .bar nav {
   display: flex;
@@ -245,17 +276,18 @@ button {
   font-family: var(--font-body);
   font-weight: 600;
   font-size: 15px;
-  padding: 11px 20px;
-  border-radius: 4px;
+  padding: 11px 22px;
+  border-radius: 12px;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: transform .12s ease, box-shadow .12s ease, background .12s ease, color .12s ease;
+  transition: transform .14s ease, box-shadow .14s ease, background .14s ease, color .14s ease;
   white-space: nowrap;
 }
 
 .btn-primary {
   background: var(--ink);
   color: var(--paper);
+  border-radius: 12px;
 }
 
 .btn-primary:hover {
@@ -267,6 +299,7 @@ button {
   background: var(--paper-raised);
   color: var(--ink);
   border-color: var(--line);
+  border-radius: 12px;
 }
 
 .btn-ghost:hover {
@@ -275,14 +308,16 @@ button {
 }
 
 .btn-grad {
-  background: linear-gradient(100deg, var(--pink), var(--blue));
+  background: linear-gradient(115deg, #FF4E78 0%, #E11D48 35%, #6366F1 80%, #437EEB 100%);
   color: #fff;
   border-color: transparent;
+  border-radius: 9999px;
+  box-shadow: 0 4px 16px rgba(255, 78, 120, 0.22);
 }
 
 .btn-grad:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(255, 78, 120, 0.32);
 }
 
 .btn .arr {
@@ -290,13 +325,14 @@ button {
 }
 
 .bar .btn {
-  padding: 9px 16px;
+  padding: 9px 18px;
   font-size: 14px;
+  border-radius: 9999px;
 }
 
 /* reusable gradient text */
 .grad {
-  background: linear-gradient(100deg, var(--pink), var(--blue));
+  background: linear-gradient(115deg, #FF4E78 0%, #E11D48 35%, #6366F1 80%, #437EEB 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -1752,7 +1788,7 @@ a.act:hover .badge {
 }
 
 /* =====================================================================
-   PHOTOBOOTH SECTION & STUDIO DESIGN (Angie 인생네컷)
+   PHOTOBOOTH SECTION & STUDIO DESIGN (Dearly Us 인생네컷)
    ===================================================================== */
 #photobooth-demo {
   background: var(--paper);

@@ -112,7 +112,7 @@ export default function DateNightPlannerPage() {
             Never Ask <span className="grad">&ldquo;What should we do?&rdquo;</span> Again.
           </h1>
           <p style={{ color: 'var(--ink-soft)', fontSize: '16px', maxWidth: '54ch', margin: '0 auto' }}>
-            Pick tonight&apos;s mood and time limit. Angie builds a seamless itinerary of synced games, prompts, and photobooth milestones.
+            Pick tonight&apos;s mood and time limit. Dearly Us builds a seamless itinerary of synced games, prompts, and photobooth milestones.
           </p>
         </div>
 

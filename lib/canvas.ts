@@ -37,12 +37,12 @@ export function exportPhotostripPNG({
     ctx.fillStyle = style.color;
     ctx.font = 'bold 24px Pretendard, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('ANGIE · 인생네컷', 300, 62);
+    ctx.fillText('DEARLY US · 인생네컷', 300, 62);
 
     // 4 Photo Frames
     for (let i = 0; i < 4; i++) {
       const y = 85 + i * 348;
-      ctx.fillStyle = '#F8F9FB';
+      ctx.fillStyle = '#FAF8F5';
       ctx.fillRect(42, y, 516, 320);
       ctx.strokeStyle = style.border;
       ctx.strokeRect(42, y, 516, 320);
@@ -64,7 +64,7 @@ export function exportPhotostripPNG({
 
     const dataUrl = canvas.toDataURL('image/png');
     const a = document.createElement('a');
-    a.download = `angie-photostrip-${roomCode}.png`;
+    a.download = `dearly-us-photostrip-${roomCode}.png`;
     a.href = dataUrl;
     a.click();
 
