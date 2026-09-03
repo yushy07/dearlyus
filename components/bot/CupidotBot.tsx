@@ -4,7 +4,19 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
-export type BotState = 'idle' | 'happy' | 'love' | 'thinking' | 'talking' | 'sleeping' | 'celebration';
+export type BotState =
+  | 'idle'
+  | 'happy'
+  | 'love'
+  | 'thinking'
+  | 'talking'
+  | 'sleeping'
+  | 'celebration'
+  | 'angry'
+  | 'sassy'
+  | 'shock'
+  | 'pouty'
+  | 'tweaking';
 
 export interface CupidotBotProps {
   state?: BotState;
@@ -275,9 +287,114 @@ export function CupidotBot({
 
             case 'talking': {
               // Expressive conversational head nodding & speech bounce
-              model.position.y = baseY + Math.sin(time * 7.5) * 0.025;
-              model.rotation.x = Math.sin(time * 8.0) * 0.05;
-              model.rotation.y = THREE.MathUtils.lerp(model.rotation.y, mousePos.current.x * 0.45, 0.08);
+              model.position.y = baseY + Math.sin(time * 9.0) * 0.035;
+              model.position.x = Math.sin(time * 4.5) * 0.015;
+              model.rotation.x = Math.sin(time * 10.0) * 0.08;
+              model.rotation.z = Math.sin(time * 5.0) * 0.04;
+              model.scale.y = baseScale * (1 + Math.sin(time * 11.0) * 0.04);
+              model.rotation.y = THREE.MathUtils.lerp(model.rotation.y, mousePos.current.x * 0.5, 0.1);
+              if (lightsRef.current) {
+                lightsRef.current.fill.color.set('#FFA8C5');
+                lightsRef.current.key.color.set('#FFF8F0');
+              }
+              break;
+            }
+
+            case 'angry': {
+              // Furious rapid jitter, aggressive forward stomp, indignant head jerks
+              const jitterX = Math.sin(time * 38.0) * 0.016;
+              const stompY = Math.abs(Math.sin(time * 18.0)) * 0.035;
+              model.position.x = jitterX;
+              model.position.y = baseY + stompY;
+              model.position.z = 0.08;
+              model.rotation.x = -0.22; // aggressive forward lean
+              model.rotation.z = Math.sin(time * 20.0) * 0.12; // indignation head shake
+              model.rotation.y = THREE.MathUtils.lerp(model.rotation.y, mousePos.current.x * 0.5, 0.1);
+              // Puff up in frustration
+              model.scale.y = baseScale * (1 + Math.sin(time * 18.0) * 0.05);
+              model.scale.x = baseScale * (1 - Math.sin(time * 18.0) * 0.03);
+              model.scale.z = baseScale;
+
+              if (lightsRef.current) {
+                lightsRef.current.fill.color.set('#FF1744');
+                lightsRef.current.key.color.set('#FF6B8B');
+              }
+              break;
+            }
+
+            case 'sassy': {
+              // Cheeky side head-tilt, chin forward, rhythmic sassy swagger
+              model.position.x = Math.sin(time * 4.0) * 0.03;
+              model.position.y = baseY + Math.sin(time * 8.0) * 0.025;
+              model.position.z = 0.04;
+              model.rotation.z = 0.22 + Math.sin(time * 4.0) * 0.06;
+              model.rotation.x = -0.08 + Math.cos(time * 3.5) * 0.04;
+              model.rotation.y = THREE.MathUtils.lerp(model.rotation.y, -0.28 + mousePos.current.x * 0.4, 0.08);
+              model.scale.setScalar(baseScale);
+
+              if (lightsRef.current) {
+                lightsRef.current.fill.color.set('#FF7BA3');
+                lightsRef.current.key.color.set('#FFF0F5');
+              }
+              break;
+            }
+
+            case 'shock': {
+              // Dramatic recoil backward & upward, elongated shocked gasp posture
+              model.position.y = baseY + 0.14 + Math.sin(time * 4.0) * 0.02;
+              model.position.z = -0.16;
+              model.position.x = Math.sin(time * 45.0) * 0.008; // high-speed shiver
+              model.rotation.x = 0.18;
+              model.rotation.z = Math.sin(time * 40.0) * 0.035;
+              model.rotation.y = THREE.MathUtils.lerp(model.rotation.y, mousePos.current.x * 0.2, 0.08);
+              // Surprised vertical stretch
+              model.scale.y = baseScale * 1.22;
+              model.scale.x = baseScale * 0.86;
+              model.scale.z = baseScale * 0.86;
+
+              if (lightsRef.current) {
+                lightsRef.current.fill.color.set('#93C5FD');
+                lightsRef.current.key.color.set('#FFFFFF');
+              }
+              break;
+            }
+
+            case 'pouty': {
+              // Dejected forward slouch, looking away sulking like a cute toddler
+              model.position.y = baseY - 0.05 + Math.sin(time * 1.5) * 0.015;
+              model.position.z = 0;
+              model.rotation.x = 0.24; // sad dropped head
+              model.rotation.y = THREE.MathUtils.lerp(model.rotation.y, 0.45 + Math.sin(time * 1.8) * 0.03, 0.06);
+              model.rotation.z = -0.09;
+              model.scale.y = baseScale * 0.94;
+              model.scale.x = baseScale * 1.02;
+              model.scale.z = baseScale;
+
+              if (lightsRef.current) {
+                lightsRef.current.fill.color.set('#D1D5DB');
+                lightsRef.current.key.color.set('#F3F4F6');
+              }
+              break;
+            }
+
+            case 'tweaking': {
+              // Hyperactive erratic twitches, rapid snappy micro-rotations & frantic hops
+              const tweakPhase = Math.floor(time * 14) % 4;
+              const tweakTilt = tweakPhase === 0 ? 0.24 : tweakPhase === 1 ? -0.22 : tweakPhase === 2 ? 0.12 : -0.08;
+              model.position.x = (Math.sin(time * 28.0) > 0.6 ? 0.02 : -0.02) * Math.random();
+              model.position.y = baseY + Math.abs(Math.sin(time * 14.0)) * 0.08;
+              model.rotation.z = tweakTilt + Math.sin(time * 30.0) * 0.08;
+              model.rotation.x = Math.sin(time * 22.0) * 0.1;
+              model.rotation.y = THREE.MathUtils.lerp(model.rotation.y, mousePos.current.x * 0.6, 0.15);
+              // Snappy squish-and-stretch
+              model.scale.y = baseScale * (1 + (tweakPhase % 2 === 0 ? 0.1 : -0.08));
+              model.scale.x = baseScale * (1 + (tweakPhase % 2 === 0 ? -0.08 : 0.08));
+              model.scale.z = baseScale;
+
+              if (lightsRef.current) {
+                lightsRef.current.fill.color.set(tweakPhase % 2 === 0 ? '#FCD34D' : '#FF4D80');
+                lightsRef.current.key.color.set('#FFFFFF');
+              }
               break;
             }
 
@@ -287,6 +404,10 @@ export function CupidotBot({
               model.rotation.x = THREE.MathUtils.lerp(model.rotation.x, 0.12, 0.04);
               model.rotation.z = Math.sin(time * 0.8) * 0.02;
               model.scale.y = baseScale * (1 + Math.sin(time * 1.2) * 0.02);
+              if (lightsRef.current) {
+                lightsRef.current.fill.color.set('#9CA3AF');
+                lightsRef.current.key.color.set('#E5E7EB');
+              }
               break;
             }
 
@@ -296,6 +417,10 @@ export function CupidotBot({
               model.position.y = baseY + Math.abs(Math.sin(time * 7.0)) * 0.12;
               model.rotation.y = spinProgress;
               model.scale.setScalar(baseScale * (1 + Math.abs(Math.sin(time * 7.0)) * 0.05));
+              if (lightsRef.current) {
+                lightsRef.current.fill.color.set('#FCD34D');
+                lightsRef.current.key.color.set('#FFE082');
+              }
               break;
             }
 
@@ -314,6 +439,11 @@ export function CupidotBot({
               model.rotation.y = THREE.MathUtils.lerp(model.rotation.y, targetRotY, 0.08);
               model.rotation.x = THREE.MathUtils.lerp(model.rotation.x, targetRotX, 0.08);
               model.rotation.z = Math.sin(time * 1.4) * 0.025;
+
+              if (lightsRef.current) {
+                lightsRef.current.fill.color.set('#FFA8C5');
+                lightsRef.current.key.color.set('#FFF8F0');
+              }
               break;
             }
           }

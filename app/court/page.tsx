@@ -79,10 +79,14 @@ export default function CourtPage() {
       setVerdict(result);
       setDeliberating(false);
       sounds.playCelebration();
-      speakCupidot(`${result.verdictTitle}. The court finds: ${result.guiltyParty}. ${result.reasoning} Mandatory sentence: ${result.sentence}`, {
-        mood: 'talking',
-        onStart: () => setBotState('talking'),
-        onEnd: () => setBotState('celebration'),
+
+      const courtMood = result.guiltyParty === 'Both' ? 'sassy' : 'angry';
+      setBotState(courtMood);
+
+      speakCupidot(`Order in the court! ${result.verdictTitle}. The court finds: ${result.guiltyParty} guilty! ${result.reasoning} Mandatory sentence: ${result.sentence}`, {
+        mood: courtMood,
+        onStart: () => setBotState(courtMood),
+        onEnd: () => setTimeout(() => setBotState('sassy'), 2000),
       });
     }, 450);
   };
@@ -347,10 +351,12 @@ export default function CourtPage() {
                   className="btn btn-sm"
                   onClick={() => {
                     sounds.playPop();
-                    speakCupidot(`${verdict.verdictTitle}. The court finds: ${verdict.guiltyParty}. ${verdict.reasoning} Mandatory sentence: ${verdict.sentence}`, {
-                      mood: 'talking',
-                      onStart: () => setBotState('talking'),
-                      onEnd: () => setBotState('celebration'),
+                    const courtMood = verdict.guiltyParty === 'Both' ? 'sassy' : 'angry';
+                    setBotState(courtMood);
+                    speakCupidot(`Order in the court! ${verdict.verdictTitle}. The court finds: ${verdict.guiltyParty} guilty! ${verdict.reasoning} Mandatory sentence: ${verdict.sentence}`, {
+                      mood: courtMood,
+                      onStart: () => setBotState(courtMood),
+                      onEnd: () => setTimeout(() => setBotState('sassy'), 2000),
                     });
                   }}
                   style={{ background: '#FF4D80', color: '#FFF', fontSize: '12px', fontWeight: 800 }}

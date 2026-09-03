@@ -105,6 +105,9 @@ export function RomanticEmergencyModal({ isOpen, onClose, partnerA, partnerB }: 
           if (t <= 4 && t > 1) {
             sounds.playCountdownBeep(true);
           }
+          if (t === 5) {
+            speakCupidot("Hurry! Fuse is burning down!", { mood: 'shock' });
+          }
           if (t === 1) {
             setIsRunning(false);
             if (eventType === 'stare') {
@@ -207,7 +210,7 @@ export function RomanticEmergencyModal({ isOpen, onClose, partnerA, partnerB }: 
         {/* 3D Bot & Emergency Title Stage */}
         <div style={{ padding: '24px 24px 16px', background: 'linear-gradient(180deg, #FFF0F5 0%, #FFFFFF 100%)' }}>
           <div style={{ width: '120px', height: '120px', margin: '0 auto -10px' }}>
-            <CupidotBot state={completed ? 'celebration' : 'love'} scale={2.2} />
+            <CupidotBot state={completed ? 'celebration' : isRunning && timer <= 8 ? 'tweaking' : 'love'} scale={2.2} />
           </div>
 
           <h3 style={{ fontSize: '20px', fontWeight: 900, margin: '8px 0 4px', color: '#1E1B24' }}>

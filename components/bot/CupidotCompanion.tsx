@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CupidotBot, BotState } from './CupidotBot';
 import { getRandomCupidotThought, getPokedCupidotDilemma, CupidotDilemma } from '@/lib/cupidot';
 import { sounds } from '@/lib/sound';
 import { useCoupleProfile } from '@/lib/couple';
-import { speakCupidot, getStoredVoiceMode, setStoredVoiceMode, VoiceMode } from '@/lib/voice';
+import { speakCupidot, getStoredVoiceMode, setStoredVoiceMode, VoiceMode, VoiceMood } from '@/lib/voice';
 import { RomanticEmergencyModal } from './RomanticEmergencyModal';
 
 export function CupidotCompanion() {
@@ -40,18 +40,44 @@ export function CupidotCompanion() {
     }
   };
 
+  const pokeTimestampsRef = useRef<number[]>([]);
+
   const handlePoke = () => {
     sounds.playPop();
+    const now = Date.now();
+    pokeTimestampsRef.current = [...pokeTimestampsRef.current.filter((t: number) => now - t < 6000), now];
+
+    // Rapid poke tantrum
+    if (pokeTimestampsRef.current.length >= 3) {
+      setBotState('angry');
+      setPokedCount((prev) => prev + 1);
+      setIsOpen(true);
+      const angryLines = [
+        `Hey! Stop poking my nose! I am a sophisticated Cupid AI, not a squeaky stress ball! 😤💢`,
+        `Personal space violation! One more poke and I will report you to Judge Cupidot! 🔨😡`,
+        `Ouch! Do that again and I am assigning fifty relationship penalty chores to your record! 😤`,
+      ];
+      const line = angryLines[Math.floor(Math.random() * angryLines.length)];
+      speakCupidot(line, {
+        mood: 'angry',
+        onEnd: () => {
+          setBotState('pouty');
+          setTimeout(() => setBotState('idle'), 2500);
+        },
+      });
+      return;
+    }
+
     setBotState('love');
     const dilemma = getPokedCupidotDilemma(partnerA, partnerB);
     setActiveDilemma(dilemma);
     setPokedCount((prev) => prev + 1);
     setIsOpen(true);
-    speakCupidot(dilemma.question, { mood: 'talking' });
+    speakCupidot(dilemma.question, { mood: 'sassy' });
 
     setTimeout(() => {
       setBotState('happy');
-    }, 1200);
+    }, 1500);
   };
 
   return (
@@ -336,6 +362,53 @@ export function CupidotCompanion() {
                   </p>
                 </div>
               )}
+
+              {/* Emotion & Tone Tester Bar */}
+              <div style={{ marginBottom: '16px', background: '#FFFDF9', border: '1px dashed #FFD6E8', borderRadius: '14px', padding: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 800, color: '#FF4D80', textTransform: 'uppercase' }}>
+                    🎭 EMOTION &amp; TONE TESTER
+                  </span>
+                  <span style={{ fontSize: '10px', color: '#888' }}>Tap to hear &amp; see 3D reactions</span>
+                </div>
+                <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
+                  {[
+                    { state: 'angry' as BotState, mood: 'angry' as VoiceMood, label: 'Angry 😤', line: "Stop stealing the blanket! That is a Class One relationship felony! 😡" },
+                    { state: 'sassy' as BotState, mood: 'sassy' as VoiceMood, label: 'Sassy 💅', line: "Oh please! We both know you were the one who fell in love first. 😏" },
+                    { state: 'shock' as BotState, mood: 'shock' as VoiceMood, label: 'Shocked 😲', line: "Wait, you finished the midnight snack without saving me a bite?! 🍕😱" },
+                    { state: 'tweaking' as BotState, mood: 'tweaking' as VoiceMood, label: 'Tweaking ⚡', line: "Alert! Proximity magnetic overload! Mutual devotion is off the charts! 🤖✨" },
+                    { state: 'pouty' as BotState, mood: 'pouty' as VoiceMood, label: 'Pouty 🥺', line: "Hmph. Fine. You didn't reply to my voice note for fourteen minutes. 💔" },
+                    { state: 'love' as BotState, mood: 'love' as VoiceMood, label: 'Lovey 💖', line: "You two are the cutest humans on this entire planet. My circuits are melting. 🥰" },
+                    { state: 'celebration' as BotState, mood: 'celebration' as VoiceMood, label: 'Party 🥳', line: "Woohoo! Maximum romantic aura unlocked! Time to celebrate! 🎉" },
+                  ].map((item) => (
+                    <button
+                      key={item.state}
+                      onClick={() => {
+                        sounds.playPop();
+                        setBotState(item.state);
+                        speakCupidot(item.line, {
+                          mood: item.mood,
+                          onEnd: () => setTimeout(() => setBotState('happy'), 1500),
+                        });
+                      }}
+                      style={{
+                        padding: '5px 10px',
+                        borderRadius: '16px',
+                        border: botState === item.state ? '1.5px solid #FF4D80' : '1px solid #E5E0D6',
+                        background: botState === item.state ? '#FFF0F5' : '#FFF',
+                        color: botState === item.state ? '#FF4D80' : '#444',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               {/* Action: Poke Again */}
               <button

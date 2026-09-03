@@ -98,8 +98,8 @@ export default function DebatePage() {
       setTimeout(() => setConfettiActive(false), 2500);
 
       speakCupidot(`Debate Winner: ${result.winner}. ${result.analysis} Penalty decree: ${result.penalty}`, {
-        mood: 'talking',
-        onStart: () => setBotState('talking'),
+        mood: 'sassy',
+        onStart: () => setBotState('sassy'),
         onEnd: () => setBotState('celebration'),
       });
     }, 500);
@@ -297,8 +297,8 @@ export default function DebatePage() {
                   onClick={() => {
                     sounds.playPop();
                     speakCupidot(`Debate Winner: ${verdict.winner}. ${verdict.analysis} Penalty decree: ${verdict.penalty}`, {
-                      mood: 'talking',
-                      onStart: () => setBotState('talking'),
+                      mood: 'sassy',
+                      onStart: () => setBotState('sassy'),
                       onEnd: () => setBotState('celebration'),
                     });
                   }}
