@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect, useRef } from 'react';
 import { CupidotBot, BotState } from './CupidotBot';
 import { getRandomCupidotThought, getPokedCupidotDilemma, CupidotDilemma } from '@/lib/cupidot';
