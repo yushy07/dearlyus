@@ -12,7 +12,7 @@ export function CupidotCompanion() {
   const { partnerA, partnerB } = useCoupleProfile();
   const [isOpen, setIsOpen] = useState(false);
   const [botState, setBotState] = useState<BotState>('idle');
-  const [thought, setThought] = useState(getRandomCupidotThought());
+  const [thought, setThought] = useState('Cupidot is online and watching over you two ♡');
   const [activeDilemma, setActiveDilemma] = useState<CupidotDilemma | null>(null);
   const [pokedCount, setPokedCount] = useState(0);
   const [voiceMode, setVoiceMode] = useState<VoiceMode>('chirp');
@@ -20,6 +20,8 @@ export function CupidotCompanion() {
 
   useEffect(() => {
     setVoiceMode(getStoredVoiceMode());
+    // Pick initial random thought on client after hydration
+    setThought(getRandomCupidotThought());
   }, []);
 
   // Cycle cheeky thoughts every 8 seconds
@@ -100,6 +102,7 @@ export function CupidotCompanion() {
         {/* Cheeky Floating Thought Bubble */}
         {!isOpen && (
           <div
+            suppressHydrationWarning
             onClick={() => {
               sounds.playPop();
               setIsOpen(true);
