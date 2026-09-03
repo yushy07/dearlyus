@@ -14,7 +14,7 @@
     <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react" alt="React 19" /></a>
     <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript" alt="TypeScript" /></a>
     <a href="https://webrtc.org/"><img src="https://img.shields.io/badge/WebRTC-P2P_Sync-333333?style=for-the-badge&logo=webrtc" alt="WebRTC" /></a>
-    <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-FF4E78?style=for-the-badge" alt="License MIT" /></a>
+    <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-437EEB?style=for-the-badge&logo=apache" alt="License Apache 2.0" /></a>
   </p>
 
   <br/>
@@ -179,5 +179,7 @@ npm run build
 
 ## 📄 License & Attribution
 
-This project is licensed under the [MIT License](LICENSE).  
-Made with 💖 for couples making memories across any distance.
+Licensed under the [Apache License, Version 2.0](LICENSE).  
+Copyright © 2026 **Ayush Kant**. All rights reserved.
+
+Designed & engineered with 💖 for couples making memories across any distance.

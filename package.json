@@ -2,6 +2,8 @@
   "name": "dearly-us",
   "version": "1.0.0",
   "description": "Dearly Us — Made for the moments that belong to you two. Real-time interactive date night sanctuary & multiplayer photobooth web application for couples.",
+  "author": "Ayush Kant",
+  "license": "Apache-2.0",
   "private": true,
   "engines": {
     "node": ">=22.13.0"
