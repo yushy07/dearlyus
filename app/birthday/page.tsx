@@ -4,16 +4,29 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useCoupleProfile } from '@/lib/couple';
 import { CoupleNameBar } from '@/components/shared';
+import { QRCodeSVG } from '@/lib/qrcode';
 
 export default function BirthdayPage() {
   const { partnerA, partnerB } = useCoupleProfile();
   const [partnerName, setPartnerName] = useState(partnerB);
   const [customMsg, setCustomMsg] = useState('Happy Birthday my love! Even with miles between us, you are the closest thing to my heart.');
   const [revealed, setRevealed] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     setPartnerName(partnerB);
   }, [partnerB]);
+
+  const copyLink = async () => {
+    try {
+      const url = typeof window !== 'undefined' ? window.location.href : 'https://dearlyus.love/birthday';
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      alert('Gift link ready! You can share this page URL with them.');
+    }
+  };
 
   return (
     <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px' }}>
@@ -105,31 +118,35 @@ export default function BirthdayPage() {
                 &ldquo;{customMsg}&rdquo;
               </p>
 
-              {/* Heart QR Code Visual Mock */}
+              {/* Scannable Gift QR Code */}
               <div
                 style={{
-                  width: '160px',
-                  height: '160px',
+                  width: '180px',
                   margin: '0 auto 20px',
-                  background: 'var(--pink-tint)',
-                  border: '2px dashed var(--pink)',
+                  padding: '12px',
+                  background: '#FFFFFF',
+                  border: '2px solid var(--pink)',
                   borderRadius: '16px',
-                  display: 'grid',
-                  placeItems: 'center',
                   boxShadow: 'var(--shadow)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
                 }}
               >
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '36px' }}>💖</div>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--pink)', fontWeight: 700 }}>
-                    SCAN WITH CAMERA
-                  </span>
-                </div>
+                <QRCodeSVG
+                  text={typeof window !== 'undefined' ? window.location.href : 'https://dearlyus.love/birthday'}
+                  size={140}
+                  fgColor="#E11D48"
+                  bgColor="#FFFFFF"
+                />
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--pink)', fontWeight: 700, marginTop: '8px' }}>
+                  SCAN WITH CAMERA
+                </span>
               </div>
 
               <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-                <button className="btn btn-primary" onClick={() => alert('Gift link copied to clipboard!')}>
-                  Copy Gift Link 🔗
+                <button className="btn btn-primary" onClick={copyLink}>
+                  {copied ? '✓ Link Copied!' : 'Copy Gift Link 🔗'}
                 </button>
                 <button className="btn btn-ghost" onClick={() => setRevealed(false)}>
                   Edit Message ✏️

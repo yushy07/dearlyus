@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Ribbon, Navbar, Confetti } from '@/components/shared';
 import { sounds } from '@/lib/sound';
@@ -33,6 +33,25 @@ export default function BucketListPage() {
     { id: 12, title: 'Grocery shop together holding hands on a Tuesday', category: 'Reunion', icon: '🛒', completed: false },
   ]);
 
+  // Load from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('dearly_bucket_dates');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setDates(parsed);
+        }
+      }
+    } catch {}
+  }, []);
+
+  const saveDates = (items: BucketDate[]) => {
+    try {
+      localStorage.setItem('dearly_bucket_dates', JSON.stringify(items));
+    } catch {}
+  };
+
   const [selectedFilter, setSelectedFilter] = useState<'All' | 'Virtual' | 'Reunion' | 'Adventure' | 'Food'>('All');
   const [confettiActive, setConfettiActive] = useState(false);
   const [ideaModalOpen, setIdeaModalOpen] = useState(false);
@@ -57,6 +76,7 @@ export default function BucketListPage() {
       return d;
     });
     setDates(updated);
+    saveDates(updated);
   };
 
   const handleAskCupidot = () => {
@@ -81,7 +101,9 @@ export default function BucketListPage() {
       completed: false,
     };
 
-    setDates([newDate, ...dates]);
+    const updated = [newDate, ...dates];
+    setDates(updated);
+    saveDates(updated);
     setIdeaModalOpen(false);
   };
 

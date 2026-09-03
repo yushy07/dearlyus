@@ -15,6 +15,8 @@ export default function DrawPage() {
   const [brushSize, setBrushSize] = useState(4);
   const [prompt] = useState('Draw: Our Dream Sunset Date 🌅');
   const lastPosRef = useRef<{ x: number; y: number } | null>(null);
+  const lastBroadcastTimeRef = useRef<number>(0);
+  const [savedFeedback, setSavedFeedback] = useState(false);
 
   // Setup Canvas
   useEffect(() => {
@@ -93,17 +95,34 @@ export default function DrawPage() {
     ctx.lineJoin = 'round';
     ctx.stroke();
 
-    // Broadcast stroke to partner across P2P / BroadcastChannel
-    sendEvent('draw_line', {
-      fromX: lastPosRef.current.x,
-      fromY: lastPosRef.current.y,
-      toX: coords.x,
-      toY: coords.y,
-      color,
-      brushSize,
-    });
+    // Throttled network broadcast (~40ms) to avoid overwhelming connection
+    const now = Date.now();
+    if (now - lastBroadcastTimeRef.current >= 40) {
+      lastBroadcastTimeRef.current = now;
+      sendEvent('draw_line', {
+        fromX: lastPosRef.current.x,
+        fromY: lastPosRef.current.y,
+        toX: coords.x,
+        toY: coords.y,
+        color,
+        brushSize,
+      });
+    }
 
     lastPosRef.current = coords;
+  };
+
+  const saveDrawing = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    sounds.playCelebration();
+    const dataUrl = canvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.download = `dearly-us-drawing-${Date.now()}.png`;
+    a.href = dataUrl;
+    a.click();
+    setSavedFeedback(true);
+    setTimeout(() => setSavedFeedback(false), 2500);
   };
 
   const stopDraw = () => {
@@ -267,8 +286,8 @@ export default function DrawPage() {
             <span style={{ fontSize: '12px', color: 'var(--ink-soft)' }}>
               ✏️ Drawing with {color === '#FF7BA3' ? `${partnerA} (Pink)` : `${partnerB} (Blue)`} · Realtime P2P Synced
             </span>
-            <button className="btn btn-grad" onClick={() => alert('Drawing saved to your shared scrapbook!')}>
-              Save to Album 🖼️
+            <button className="btn btn-grad" onClick={saveDrawing}>
+              {savedFeedback ? '✓ Saved & Downloaded! 🖼️' : 'Save to Album 🖼️'}
             </button>
           </div>
         </div>

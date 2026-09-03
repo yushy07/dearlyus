@@ -78,11 +78,5 @@ export interface BlogPostData {
   relatedActivities: { title: string; href: string; icon: string }[];
 }
 
-export interface CoupleProfile {
-  nickname: string;
-  partnerName: string;
-  city1: string;
-  city2: string;
-  roomCode: string;
-  anniversaryDate?: string;
-}
+export type { CoupleProfile } from '@/lib/couple';
+

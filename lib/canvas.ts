@@ -14,7 +14,11 @@ export function exportPhotostripPNG({
   coupleName,
   roomCode,
 }: RenderStripOptions): Promise<string> {
-  return new Promise((resolve) => {
+  return new Promise(async (resolve) => {
+    if (typeof document === 'undefined') {
+      resolve('');
+      return;
+    }
     const canvas = document.createElement('canvas');
     canvas.width = 600;
     canvas.height = 1600;
@@ -25,7 +29,16 @@ export function exportPhotostripPNG({
     }
 
     // Background fill
-    ctx.fillStyle = style.bg.startsWith('linear') ? '#FFFFFF' : style.bg;
+    if (style.foilEffect === 'matte-foil') {
+      ctx.fillStyle = '#101216';
+    } else if (style.bg.startsWith('linear')) {
+      const grad = ctx.createLinearGradient(0, 0, 0, 1600);
+      grad.addColorStop(0, '#FFE4D6');
+      grad.addColorStop(1, '#FFD6E8');
+      ctx.fillStyle = grad;
+    } else {
+      ctx.fillStyle = style.bg;
+    }
     ctx.fillRect(0, 0, 600, 1600);
 
     // Exterior border
@@ -39,18 +52,55 @@ export function exportPhotostripPNG({
     ctx.textAlign = 'center';
     ctx.fillText('DEARLY US · 인생네컷', 300, 62);
 
+    // Load actual images
+    const loadImage = (src: string): Promise<HTMLImageElement> => {
+      return new Promise((res) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => res(img);
+        img.onerror = () => res(img);
+        img.src = src;
+      });
+    };
+
+    const loadedImages = await Promise.all(shots.map((s) => loadImage(s)));
+
     // 4 Photo Frames
     for (let i = 0; i < 4; i++) {
       const y = 85 + i * 348;
       ctx.fillStyle = '#FAF8F5';
       ctx.fillRect(42, y, 516, 320);
+
+      const img = loadedImages[i];
+      if (img && img.width > 0) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(42, y, 516, 320);
+        ctx.clip();
+        const imgRatio = img.width / img.height;
+        const frameRatio = 516 / 320;
+        let dw = 516;
+        let dh = 320;
+        let dx = 42;
+        let dy = y;
+        if (imgRatio > frameRatio) {
+          dw = 320 * imgRatio;
+          dx = 42 - (dw - 516) / 2;
+        } else {
+          dh = 516 / imgRatio;
+          dy = y - (dh - 320) / 2;
+        }
+        ctx.drawImage(img, dx, dy, dw, dh);
+        ctx.restore();
+      } else {
+        // Frame number fallback
+        ctx.fillStyle = '#8B8E98';
+        ctx.font = 'bold 13px monospace';
+        ctx.fillText(`0${i + 1} · ${coupleName.toUpperCase()}`, 300, y + 165);
+      }
+
       ctx.strokeStyle = style.border;
       ctx.strokeRect(42, y, 516, 320);
-
-      // Frame number & serial
-      ctx.fillStyle = '#8B8E98';
-      ctx.font = 'bold 13px monospace';
-      ctx.fillText(`0${i + 1} · ${coupleName.toUpperCase()}`, 300, y + 165);
     }
 
     // Footer Names & Date

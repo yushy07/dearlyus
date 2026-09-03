@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Ribbon, Navbar, Confetti, CoupleNameBar } from '@/components/shared';
 import { sounds } from '@/lib/sound';
@@ -56,6 +58,25 @@ export default function LetterPage() {
     },
   ]);
 
+  // Load saved vault from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('dearly_sealed_vault');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setVault(parsed);
+        }
+      }
+    } catch {}
+  }, []);
+
+  const saveVault = (capsules: SealedCapsule[]) => {
+    try {
+      localStorage.setItem('dearly_sealed_vault', JSON.stringify(capsules));
+    } catch {}
+  };
+
   const [sealedSuccessfully, setSealedSuccessfully] = useState(false);
 
   // MediaRecorder handlers
@@ -105,6 +126,11 @@ export default function LetterPage() {
 
   const deleteVoiceRecording = () => {
     sounds.playPop();
+    if (recordedAudioUrl) {
+      try {
+        URL.revokeObjectURL(recordedAudioUrl);
+      } catch {}
+    }
     setRecordedAudioUrl(null);
     setRecordSeconds(0);
   };
@@ -124,7 +150,9 @@ export default function LetterPage() {
       voiceDurationSec: recordSeconds > 0 ? recordSeconds : undefined,
     };
 
-    setVault([...vault, newCapsule]);
+    const updated = [...vault, newCapsule];
+    setVault(updated);
+    saveVault(updated);
     setSealedSuccessfully(true);
     sounds.playCelebration();
     setConfettiActive(true);

@@ -343,9 +343,23 @@ export default function FashionShowPage() {
                   Next Runway Round ▷
                 </button>
               ) : (
-                <Link href="/photobooth" className="btn btn-grad" style={{ padding: '12px 28px' }}>
-                  Celebrate in Photobooth 📸
-                </Link>
+                <>
+                  <button
+                    onClick={() => {
+                      sounds.playPop();
+                      setCurrentRoundIdx(0);
+                      setTotalRoundsWon({ me: 0, partner: 0 });
+                      setStage('STYLE');
+                    }}
+                    className="btn btn-ghost"
+                    style={{ padding: '12px 24px' }}
+                  >
+                    Restart Tour ↺
+                  </button>
+                  <Link href="/photobooth" className="btn btn-grad" style={{ padding: '12px 28px' }}>
+                    Celebrate in Photobooth 📸
+                  </Link>
+                </>
               )}
             </div>
           </div>

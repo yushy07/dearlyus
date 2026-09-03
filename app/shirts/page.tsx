@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Ribbon, Navbar, Confetti } from '@/components/shared';
 import { sounds } from '@/lib/sound';
+import { useCoupleProfile } from '@/lib/couple';
 
 const SHIRT_COLORS = [
   { id: 'vintage-white', name: 'Vintage Off-White', hex: '#F7F5F0', textHex: '#1E1E24' },
@@ -17,12 +18,17 @@ const SHIRT_COLORS = [
 const SHIRT_EMOJIS = ['🫰', '💖', '✨', '☕', '✈️', '🌏', '🍕', '🧸', '🌸', '💌', '🎬', '🍜'];
 
 export default function ShirtsStudioPage() {
+  const { partnerA, partnerB, cityA, cityB } = useCoupleProfile();
   const [selectedColor, setSelectedColor] = useState(SHIRT_COLORS[0]);
-  const [customText, setCustomText] = useState('CALGARY ♡ JAKARTA');
+  const [customText, setCustomText] = useState(`${cityA || partnerA} ♡ ${cityB || partnerB}`);
   const [placedStickers, setPlacedStickers] = useState<string[]>(['🫰', '✈️', '💖']);
   const [viewSide, setViewSide] = useState<'FRONT' | 'BACK'>('FRONT');
   const [saved, setSaved] = useState(false);
   const [confettiActive, setConfettiActive] = useState(false);
+
+  useEffect(() => {
+    setCustomText(`${cityA || partnerA} ♡ ${cityB || partnerB}`);
+  }, [cityA, cityB, partnerA, partnerB]);
 
   const addSticker = (s: string) => {
     if (placedStickers.length < 6) {
@@ -38,6 +44,79 @@ export default function ShirtsStudioPage() {
   const handleExportPNG = () => {
     sounds.playCelebration();
     setConfettiActive(true);
+
+    if (typeof document !== 'undefined') {
+      const canvas = document.createElement('canvas');
+      canvas.width = 800;
+      canvas.height = 900;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        // Background
+        ctx.fillStyle = '#FAF8F5';
+        ctx.fillRect(0, 0, 800, 900);
+
+        // Header
+        ctx.fillStyle = '#222328';
+        ctx.font = 'bold 26px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('DEARLY US · MATCHING COUPLE SHIRTS', 400, 60);
+
+        // Shirt Silhouette
+        ctx.fillStyle = selectedColor.hex;
+        ctx.strokeStyle = '#222328';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(280, 140);
+        ctx.lineTo(220, 200);
+        ctx.lineTo(160, 260);
+        ctx.lineTo(220, 310);
+        ctx.lineTo(260, 270);
+        ctx.lineTo(260, 740);
+        ctx.lineTo(540, 740);
+        ctx.lineTo(540, 270);
+        ctx.lineTo(580, 310);
+        ctx.lineTo(640, 260);
+        ctx.lineTo(580, 200);
+        ctx.lineTo(520, 140);
+        ctx.quadraticCurveTo(400, 200, 280, 140);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Collar
+        ctx.beginPath();
+        ctx.arc(400, 140, 55, 0, Math.PI);
+        ctx.stroke();
+
+        // Custom Text
+        ctx.fillStyle = selectedColor.textHex;
+        ctx.font = 'bold 22px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(customText.toUpperCase(), 400, 380);
+
+        ctx.font = '13px sans-serif';
+        ctx.fillText(`[ ${viewSide} VIEW ]`, 400, 420);
+
+        // Stickers
+        ctx.font = '36px sans-serif';
+        placedStickers.forEach((stk, idx) => {
+          const sx = 320 + (idx % 3) * 80;
+          const sy = 480 + Math.floor(idx / 3) * 70;
+          ctx.fillText(stk, sx, sy);
+        });
+
+        // Footer
+        ctx.fillStyle = '#8B8E98';
+        ctx.font = '13px monospace';
+        ctx.fillText(`DESIGNED BY ${partnerA.toUpperCase()} & ${partnerB.toUpperCase()}`, 400, 830);
+
+        const link = document.createElement('a');
+        link.download = `dearly-us-matching-shirt-${Date.now()}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      }
+    }
+
     setSaved(true);
     setTimeout(() => {
       setConfettiActive(false);

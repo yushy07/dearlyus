@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useCoupleProfile } from '@/lib/couple';
 import { CoupleNameBar } from '@/components/shared';
@@ -33,9 +33,31 @@ export default function FuturePage() {
   const [customGoal, setCustomGoal] = useState('');
   const [saved, setSaved] = useState(false);
 
+  useEffect(() => {
+    try {
+      const savedRaw = localStorage.getItem('dearly_future_vision_board');
+      if (savedRaw) {
+        const parsed = JSON.parse(savedRaw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setBoardItems(parsed);
+        }
+      }
+    } catch {}
+  }, []);
+
+  const saveBoard = (items: VisionItem[]) => {
+    try {
+      localStorage.setItem('dearly_future_vision_board', JSON.stringify(items));
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch {}
+  };
+
   const addItem = (item: VisionItem) => {
     if (!boardItems.find((b) => b.id === item.id)) {
-      setBoardItems([...boardItems, item]);
+      const next = [...boardItems, item];
+      setBoardItems(next);
+      saveBoard(next);
     }
   };
 
@@ -48,12 +70,16 @@ export default function FuturePage() {
       title: customGoal,
       emoji: '✨',
     };
-    setBoardItems([...boardItems, newItem]);
+    const next = [...boardItems, newItem];
+    setBoardItems(next);
+    saveBoard(next);
     setCustomGoal('');
   };
 
   const removeItem = (id: string) => {
-    setBoardItems(boardItems.filter((b) => b.id !== id));
+    const next = boardItems.filter((b) => b.id !== id);
+    setBoardItems(next);
+    saveBoard(next);
   };
 
   return (
@@ -152,7 +178,7 @@ export default function FuturePage() {
           </div>
 
           <div style={{ marginTop: '24px', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-            <button className="btn btn-grad" onClick={() => setSaved(true)}>
+            <button className="btn btn-grad" onClick={() => saveBoard(boardItems)}>
               {saved ? '✓ Saved to Shared Album!' : 'Save Vision Board 💾'}
             </button>
           </div>

@@ -14,8 +14,12 @@ interface RoomState {
   messages: RoomMessage[];
 }
 
-// In-memory transient room cache for signaling and cross-network message relay
-const rooms = new Map<string, RoomState>();
+// Global transient room cache for signaling and cross-network message relay across reloads
+declare global {
+  var __dearly_rooms: Map<string, RoomState> | undefined;
+}
+const rooms: Map<string, RoomState> =
+  globalThis.__dearly_rooms ?? (globalThis.__dearly_rooms = new Map());
 
 // Periodically prune inactive rooms older than 2 hours
 function cleanupInactiveRooms() {
@@ -30,10 +34,11 @@ function cleanupInactiveRooms() {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { code: string } }
+  context: { params: Promise<{ code: string }> | { code: string } }
 ) {
   cleanupInactiveRooms();
-  const roomCode = params.code?.toUpperCase() || 'LOVE';
+  const resolvedParams = await context.params;
+  const roomCode = resolvedParams.code?.toUpperCase() || 'LOVE';
   const url = new URL(request.url);
   const since = parseInt(url.searchParams.get('since') || '0', 10);
 
@@ -57,10 +62,11 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { code: string } }
+  context: { params: Promise<{ code: string }> | { code: string } }
 ) {
   cleanupInactiveRooms();
-  const roomCode = params.code?.toUpperCase() || 'LOVE';
+  const resolvedParams = await context.params;
+  const roomCode = resolvedParams.code?.toUpperCase() || 'LOVE';
 
   try {
     const body = await request.json();

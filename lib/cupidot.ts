@@ -370,12 +370,17 @@ export function judgeDebate(
 ): DebateVerdict {
   const lenA = argA.trim().length;
   const lenB = argB.trim().length;
+  const wordsA = argA.trim().split(/\s+/).filter(Boolean);
+  const wordsB = argB.trim().split(/\s+/).filter(Boolean);
+  const uniqueA = new Set(wordsA.map((w) => w.toLowerCase())).size;
+  const uniqueB = new Set(wordsB.map((w) => w.toLowerCase())).size;
 
-  let scoreA = Math.min(96, Math.max(68, 75 + Math.floor(lenA % 15)));
-  let scoreB = Math.min(96, Math.max(68, 73 + Math.floor(lenB % 17)));
+  // Calculate dynamic rhetorical scores based on argument depth, uniqueness, and emotion
+  let scoreA = Math.min(98, Math.max(72, 75 + Math.min(16, Math.floor(uniqueA * 1.4)) + (argA.includes('?') ? 2 : 0) + (argA.includes('!') ? 2 : 0)));
+  let scoreB = Math.min(98, Math.max(72, 75 + Math.min(16, Math.floor(uniqueB * 1.4)) + (argB.includes('?') ? 2 : 0) + (argB.includes('!') ? 2 : 0)));
 
-  if (lenA > lenB + 40) scoreA += 5;
-  if (lenB > lenA + 40) scoreB += 5;
+  if (lenA > lenB + 30) scoreA = Math.min(99, scoreA + 3);
+  if (lenB > lenA + 30) scoreB = Math.min(99, scoreB + 3);
 
   let winner = 'Dead Heat Draw';
   if (scoreA > scoreB) winner = nameA;

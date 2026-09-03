@@ -55,6 +55,25 @@ export default function TimezoneHubPage() {
     { id: '6', text: 'Framed Dearly Us photostrip to place on their nightstand', category: 'Keepsakes', packed: false },
   ]);
 
+  // Load saved packing list from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('dearly_timezone_packing');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setPackingList(parsed);
+        }
+      }
+    } catch {}
+  }, []);
+
+  const savePacking = (items: PackingItem[]) => {
+    try {
+      localStorage.setItem('dearly_timezone_packing', JSON.stringify(items));
+    } catch {}
+  };
+
   const [newItemText, setNewItemText] = useState('');
 
   // Live Time calculation
@@ -76,6 +95,8 @@ export default function TimezoneHubPage() {
           minutes: Math.floor((difference / 1000 / 60) % 60),
           seconds: Math.floor((difference / 1000) % 60),
         });
+      } else {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
       }
     };
     updateCountdown();
@@ -84,16 +105,20 @@ export default function TimezoneHubPage() {
   }, [reunionDate]);
 
   const togglePacked = (id: string) => {
-    setPackingList(packingList.map((item) => (item.id === id ? { ...item, packed: !item.packed } : item)));
+    const updated = packingList.map((item) => (item.id === id ? { ...item, packed: !item.packed } : item));
+    setPackingList(updated);
+    savePacking(updated);
   };
 
   const addPackingItem = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newItemText.trim()) return;
-    setPackingList([
+    const updated = [
       ...packingList,
       { id: Date.now().toString(), text: newItemText.trim(), category: 'Custom', packed: false },
-    ]);
+    ];
+    setPackingList(updated);
+    savePacking(updated);
     setNewItemText('');
   };
 

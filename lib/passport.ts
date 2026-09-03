@@ -299,11 +299,14 @@ export function getCoupleTicketProfile(): CoupleTicketProfile {
     const couple = getStoredCoupleProfile();
     const saved = localStorage.getItem('dearly_couple_ticket_profile');
     if (saved) {
+      const parsed = JSON.parse(saved);
       return {
         ...DEFAULT_PROFILE,
-        partner1: couple.partnerA,
-        partner2: couple.partnerB,
-        ...JSON.parse(saved),
+        originCity: couple.cityA || DEFAULT_PROFILE.originCity,
+        destinationCity: couple.cityB || DEFAULT_PROFILE.destinationCity,
+        ...parsed,
+        partner1: parsed.partner1 || couple.partnerA || DEFAULT_PROFILE.partner1,
+        partner2: parsed.partner2 || couple.partnerB || DEFAULT_PROFILE.partner2,
       };
     }
     

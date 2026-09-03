@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { CupidotBot, BotState } from '@/components/bot/CupidotBot';
 import { judgeCourtCase, CourtVerdict } from '@/lib/cupidot';
@@ -49,6 +49,12 @@ export default function CourtPage() {
   const [botState, setBotState] = useState<BotState>('idle');
   const [deliberating, setDeliberating] = useState(false);
 
+  useEffect(() => {
+    return () => {
+      stopCupidotSpeech();
+    };
+  }, []);
+
   const current = PRESET_CASES[caseIdx];
 
   const handleJudge = () => {
@@ -92,6 +98,7 @@ export default function CourtPage() {
   };
 
   const handleNextPreset = () => {
+    stopCupidotSpeech();
     sounds.playPop();
     setUseCustom(false);
     setCaseIdx((p) => (p + 1) % PRESET_CASES.length);

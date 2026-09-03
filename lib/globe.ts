@@ -44,27 +44,57 @@ export class InteractiveGlobe {
     this.initEvents();
   }
 
-  private initEvents() {
-    this.canvas.addEventListener('mousedown', (e) => {
+  private onMouseDown = (e: MouseEvent) => {
+    this.isDragging = true;
+    this.lastMouseX = e.clientX;
+    this.lastMouseY = e.clientY;
+  };
+
+  private onMouseMove = (e: MouseEvent) => {
+    if (!this.isDragging) return;
+    const dx = e.clientX - this.lastMouseX;
+    const dy = e.clientY - this.lastMouseY;
+    this.rotationY += dx * 0.008;
+    this.rotationX -= dy * 0.008;
+    this.rotationX = Math.max(-1.2, Math.min(1.2, this.rotationX));
+    this.lastMouseX = e.clientX;
+    this.lastMouseY = e.clientY;
+  };
+
+  private onMouseUp = () => {
+    this.isDragging = false;
+  };
+
+  private onTouchStart = (e: TouchEvent) => {
+    if (e.touches.length > 0) {
       this.isDragging = true;
-      this.lastMouseX = e.clientX;
-      this.lastMouseY = e.clientY;
-    });
+      this.lastMouseX = e.touches[0].clientX;
+      this.lastMouseY = e.touches[0].clientY;
+    }
+  };
 
-    window.addEventListener('mousemove', (e) => {
-      if (!this.isDragging) return;
-      const dx = e.clientX - this.lastMouseX;
-      const dy = e.clientY - this.lastMouseY;
-      this.rotationY += dx * 0.008;
-      this.rotationX -= dy * 0.008;
-      this.rotationX = Math.max(-1.2, Math.min(1.2, this.rotationX));
-      this.lastMouseX = e.clientX;
-      this.lastMouseY = e.clientY;
-    });
+  private onTouchMove = (e: TouchEvent) => {
+    if (!this.isDragging || e.touches.length === 0) return;
+    const dx = e.touches[0].clientX - this.lastMouseX;
+    const dy = e.touches[0].clientY - this.lastMouseY;
+    this.rotationY += dx * 0.008;
+    this.rotationX -= dy * 0.008;
+    this.rotationX = Math.max(-1.2, Math.min(1.2, this.rotationX));
+    this.lastMouseX = e.touches[0].clientX;
+    this.lastMouseY = e.touches[0].clientY;
+  };
 
-    window.addEventListener('mouseup', () => {
-      this.isDragging = false;
-    });
+  private onTouchEnd = () => {
+    this.isDragging = false;
+  };
+
+  private initEvents() {
+    this.canvas.addEventListener('mousedown', this.onMouseDown);
+    this.canvas.addEventListener('touchstart', this.onTouchStart, { passive: true });
+    window.addEventListener('mousemove', this.onMouseMove);
+    window.addEventListener('touchmove', this.onTouchMove, { passive: true });
+    window.addEventListener('mouseup', this.onMouseUp);
+    window.addEventListener('touchend', this.onTouchEnd);
   }
 
   public triggerHeartbeatPulse() {
@@ -243,6 +273,16 @@ export class InteractiveGlobe {
     if (this.animationId !== null) {
       cancelAnimationFrame(this.animationId);
       this.animationId = null;
+    }
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('mousemove', this.onMouseMove);
+      window.removeEventListener('touchmove', this.onTouchMove);
+      window.removeEventListener('mouseup', this.onMouseUp);
+      window.removeEventListener('touchend', this.onTouchEnd);
+    }
+    if (this.canvas) {
+      this.canvas.removeEventListener('mousedown', this.onMouseDown);
+      this.canvas.removeEventListener('touchstart', this.onTouchStart);
     }
   }
 }

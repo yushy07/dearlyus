@@ -82,6 +82,7 @@ export function encodeQRCode(text: string): boolean[][] {
   }
 
   const { size, dataBytes, ecBytes } = config;
+  const safeBytes = textBytes.length + 3 > dataBytes ? textBytes.slice(0, dataBytes - 3) : textBytes;
 
   const bits: number[] = [];
   const pushBits = (val: number, len: number) => {
@@ -91,10 +92,10 @@ export function encodeQRCode(text: string): boolean[][] {
   };
 
   pushBits(0b0100, 4); // Byte mode indicator
-  pushBits(textBytes.length, 8); // Character count
+  pushBits(safeBytes.length, 8); // Character count
 
-  for (let i = 0; i < textBytes.length; i++) {
-    pushBits(textBytes[i], 8);
+  for (let i = 0; i < safeBytes.length; i++) {
+    pushBits(safeBytes[i], 8);
   }
 
   // Terminator

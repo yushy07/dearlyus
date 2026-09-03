@@ -2,35 +2,32 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { sounds } from '@/lib/sound';
+import { useCoupleProfile } from '@/lib/couple';
+import { Confetti } from '@/components/shared/Confetti';
 
-interface Riddle {
-  riddle: string;
+interface RiddleItem {
+  question: string;
   hint: string;
   answer: string;
   explanation: string;
 }
 
-const RIDDLES: Riddle[] = [
+const RIDDLES: RiddleItem[] = [
   {
-    riddle: 'I have cities, but no houses. I have mountains, but no trees. I have water, but no fish. What am I?',
-    hint: 'Think about something couples use to measure the distance between them.',
-    answer: 'A Map',
-    explanation: 'A map shows cities, terrain, and oceans, but no physical objects!',
+    question: 'I have cities, but no houses. I have mountains, but no trees. I have water, but no fish. What am I?',
+    hint: 'Couples in long-distance love look at me often to track the miles between them.',
+    answer: 'A map',
+    explanation: 'A map depicts geography, borders, and oceans without physical people or structures!',
   },
   {
-    riddle: 'What travels around the entire world while staying in a single corner?',
-    hint: 'Something on a romantic handwritten love letter.',
-    answer: 'A Postage Stamp',
-    explanation: 'A stamp stays on the corner of the envelope while journeying across the world!',
+    question: 'What can travel around the world while staying in a corner?',
+    hint: 'It goes on romantic snail mail postcards and letters.',
+    answer: 'A postage stamp',
+    explanation: 'A postage stamp stays tucked in the corner of an envelope as it travels across oceans!',
   },
   {
-    riddle: 'The more you take, the more you leave behind. What are they?',
-    hint: 'Think about walking along the beach.',
-    answer: 'Footsteps',
-    explanation: 'Every step you take leaves another footprint behind!',
-  },
-  {
-    riddle: 'What comes once in a minute, twice in a moment, but never in a thousand years?',
+    question: 'What comes once in a minute, twice in a moment, but never in a thousand years?',
     hint: 'Look closely at the letters in the words.',
     answer: 'The letter M',
     explanation: 'The letter M appears 1 time in "minute", 2 times in "moment", 0 in "thousand years"!',
@@ -38,41 +35,100 @@ const RIDDLES: Riddle[] = [
 ];
 
 export default function RiddlePage() {
+  const { partnerA, partnerB } = useCoupleProfile();
   const [currentIdx, setCurrentIdx] = useState(0);
   const [showHint, setShowHint] = useState(false);
   const [userAnswer, setUserAnswer] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
   const [solved, setSolved] = useState(false);
   const [score, setScore] = useState(0);
+  const [confettiActive, setConfettiActive] = useState(false);
 
   const riddle = RIDDLES[currentIdx];
 
   const handleCheck = (e: React.FormEvent) => {
     e.preventDefault();
-    setSolved(true);
-    setScore((p) => p + 1);
+    if (solved) return;
+
+    const cleanUser = userAnswer.trim().toLowerCase().replace(/^(a|an|the)\s+/, '');
+    const cleanAns = riddle.answer.toLowerCase().replace(/^(a|an|the)\s+/, '');
+
+    const isCorrect =
+      cleanUser.length > 0 &&
+      (cleanAns.includes(cleanUser) ||
+        cleanUser.includes(cleanAns) ||
+        (cleanAns.includes('stamp') && cleanUser.includes('stamp')) ||
+        (cleanAns.includes('letter m') && (cleanUser === 'm' || cleanUser.includes('m'))));
+
+    if (isCorrect) {
+      setSolved(true);
+      setErrorMsg('');
+      setScore((p) => p + 1);
+      sounds.playCelebration();
+      setConfettiActive(true);
+      setTimeout(() => setConfettiActive(false), 3000);
+    } else {
+      setErrorMsg('Not quite! Check the hint below and try another guess 💭');
+      setShowHint(true);
+      sounds.playCountdownBeep(true);
+    }
   };
 
   const handleNext = () => {
+    sounds.playPop();
     setCurrentIdx((prev) => (prev + 1) % RIDDLES.length);
     setShowHint(false);
     setUserAnswer('');
+    setErrorMsg('');
     setSolved(false);
   };
 
   return (
-    <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px' }}>
+    <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px', color: 'var(--ink)' }}>
+      <Confetti active={confettiActive} />
+
       <header className="bar">
-        <div className="wrap">
-          <Link className="brand" href="/">
-            dearly us
-            <span className="dots">
-              <i className="p"></i>
-              <i className="b"></i>
+        <div className="wrap" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <Link className="brand" href="/" onClick={() => sounds.playPop()} aria-label="Dearly Us Home">
+              <span className="brand-emblem" aria-hidden="true">
+                <svg width="28" height="28" viewBox="0 0 128 128" fill="none">
+                  <rect width="128" height="128" rx="36" fill="#1C1924" />
+                  <path d="M64 77 C51 93 29 86 29 64 C29 45 48 38 64 58" stroke="#FF4E78" strokeWidth="12" strokeLinecap="round" />
+                  <path d="M64 58 C80 38 99 45 99 64 C99 86 77 93 64 77" stroke="#437EEB" strokeWidth="12" strokeLinecap="round" />
+                  <circle cx="64" cy="67" r="5" fill="#FFFFFF" />
+                </svg>
+              </span>
+              <span className="brand-dearly">Dearly</span>
+              <span className="brand-us">Us</span>
+              <span className="dots">
+                <i className="p"></i>
+                <i className="b"></i>
+              </span>
+            </Link>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '12px',
+                background: 'var(--paper-raised)',
+                padding: '4px 12px',
+                borderRadius: '20px',
+                border: '1px solid var(--line)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
+              <span>{partnerA} &amp; {partnerB}:</span> <b style={{ color: 'var(--pink)' }}>{score} solved</b>
             </span>
-          </Link>
-          <Link className="btn btn-ghost" href="/activity">
-            Activities ▷
-          </Link>
+
+            <Link className="btn btn-ghost" href="/activity" onClick={() => sounds.playPop()}>
+              Activities ▷
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -106,7 +162,7 @@ export default function RiddlePage() {
           </div>
 
           <h2 style={{ fontSize: '22px', fontWeight: 800, lineHeight: 1.4, marginBottom: '24px', textAlign: 'center' }}>
-            &ldquo;{riddle.riddle}&rdquo;
+            &ldquo;{riddle.question}&rdquo;
           </h2>
 
           {showHint && (
@@ -141,6 +197,11 @@ export default function RiddlePage() {
                   fontSize: '15px',
                 }}
               />
+              {errorMsg && (
+                <div style={{ color: '#d9486c', fontSize: '13.5px', fontWeight: 600, textAlign: 'center' }}>
+                  {errorMsg}
+                </div>
+              )}
               <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
                 <button type="submit" className="btn btn-grad" style={{ padding: '12px 28px' }}>
                   Submit Answer ▷

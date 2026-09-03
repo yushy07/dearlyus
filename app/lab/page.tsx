@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useCoupleProfile } from '@/lib/couple';
 import { CoupleNameBar } from '@/components/shared';
+import { sounds } from '@/lib/sound';
 
 export default function LabPage() {
   const { partnerA, partnerB } = useCoupleProfile();
@@ -19,10 +20,41 @@ export default function LabPage() {
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isRunning && seconds > 0) {
-      interval = setInterval(() => setSeconds((s) => s - 1), 1000);
+      interval = setInterval(() => {
+        setSeconds((s) => {
+          if (s <= 1) {
+            setIsRunning(false);
+            sounds.playCelebration();
+            return 0;
+          }
+          return s - 1;
+        });
+      }, 1000);
+    } else if (seconds === 0 && isRunning) {
+      setIsRunning(false);
     }
     return () => clearInterval(interval);
   }, [isRunning, seconds]);
+
+  useEffect(() => {
+    if (!isRunning || ambientSound === 'off') {
+      sounds.stopAllAmbience();
+      return;
+    }
+
+    sounds.stopAllAmbience();
+    if (ambientSound === 'rain') {
+      sounds.startRain(0.35);
+    } else if (ambientSound === 'cafe') {
+      sounds.startTokyoCafe(0.35);
+    } else if (ambientSound === 'lofi') {
+      sounds.startWarm(0.35);
+    }
+
+    return () => {
+      sounds.stopAllAmbience();
+    };
+  }, [ambientSound, isRunning]);
 
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
@@ -80,15 +112,37 @@ export default function LabPage() {
             {timeStr}
           </div>
 
+          {seconds === 0 && (
+            <div
+              style={{
+                marginBottom: '20px',
+                padding: '12px 18px',
+                background: 'var(--pink-tint)',
+                borderRadius: '10px',
+                color: 'var(--pink)',
+                fontWeight: 700,
+                fontSize: '14px',
+              }}
+            >
+              🎉 Focus session completed! Take a relaxing break together.
+            </div>
+          )}
+
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginBottom: '32px' }}>
             <button
               className="btn btn-grad"
               onClick={() => setIsRunning(!isRunning)}
               style={{ padding: '12px 32px', fontSize: '16px' }}
             >
-              {isRunning ? 'Pause Focus ⏸️' : 'Start Focus Session ▷'}
+              {isRunning ? 'Pause Focus ⏸️' : seconds === 0 ? 'Start New Session ▷' : 'Start Focus Session ▷'}
             </button>
-            <button className="btn btn-ghost" onClick={() => setSeconds(25 * 60)}>
+            <button
+              className="btn btn-ghost"
+              onClick={() => {
+                setIsRunning(false);
+                setSeconds(25 * 60);
+              }}
+            >
               Reset 25m
             </button>
           </div>

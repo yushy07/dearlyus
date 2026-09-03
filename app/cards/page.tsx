@@ -38,6 +38,7 @@ export default function CardsPage() {
   const card = deck[currentIdx] || deck[0];
 
   const handleNext = () => {
+    sounds.playPop();
     setCurrentIdx((prev) => (prev + 1) % deck.length);
     setFlipped(false);
     setMyAnswer('');
@@ -47,6 +48,7 @@ export default function CardsPage() {
   };
 
   const handleReveal = () => {
+    if (revealed) return;
     setRevealed(true);
     sounds.playCelebration();
     setPartnerAnswer(

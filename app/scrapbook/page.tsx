@@ -20,7 +20,11 @@ interface ScrapbookItem {
 function sanitizeSafeImageUrl(url?: string): string {
   if (!url) return '/photos/frame1.webp';
   const trimmed = url.trim();
-  if (trimmed.startsWith('/photos/') || trimmed.startsWith('data:image/') || (trimmed.startsWith('https://') && !trimmed.includes('javascript:'))) {
+  const lower = trimmed.toLowerCase();
+  if (lower.startsWith('/photos/') || (lower.startsWith('data:image/') && !lower.includes('svg+xml') && !lower.includes('html'))) {
+    return encodeURI(trimmed);
+  }
+  if ((lower.startsWith('https://') || lower.startsWith('http://')) && !lower.includes('javascript:')) {
     return encodeURI(trimmed);
   }
   return '/photos/frame1.webp';
@@ -38,8 +42,49 @@ export default function ScrapbookPage() {
   ]);
 
   const [activeItem, setActiveItem] = useState<string | null>(null);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const dragStartRef = React.useRef<{ mouseX: number; mouseY: number; itemX: number; itemY: number } | null>(null);
   const [newNoteText, setNewNoteText] = useState('');
   const [exported, setExported] = useState(false);
+
+  const handlePointerDown = (e: React.PointerEvent, item: ScrapbookItem) => {
+    setActiveItem(item.id);
+    setDraggingId(item.id);
+    dragStartRef.current = {
+      mouseX: e.clientX,
+      mouseY: e.clientY,
+      itemX: item.x,
+      itemY: item.y,
+    };
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent, id: string) => {
+    if (draggingId !== id || !dragStartRef.current) return;
+    const dx = e.clientX - dragStartRef.current.mouseX;
+    const dy = e.clientY - dragStartRef.current.mouseY;
+    setItems((prev) =>
+      prev.map((it) =>
+        it.id === id
+          ? {
+              ...it,
+              x: Math.max(10, Math.min(680, dragStartRef.current!.itemX + dx)),
+              y: Math.max(10, Math.min(480, dragStartRef.current!.itemY + dy)),
+            }
+          : it
+      )
+    );
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (draggingId) {
+      setDraggingId(null);
+      dragStartRef.current = null;
+      try {
+        (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+      } catch {}
+    }
+  };
 
   const addStickyNote = (e: React.FormEvent) => {
     e.preventDefault();
@@ -177,15 +222,21 @@ export default function ScrapbookPage() {
             <div
               key={item.id}
               onClick={() => setActiveItem(item.id)}
+              onPointerDown={(e) => handlePointerDown(e, item)}
+              onPointerMove={(e) => handlePointerMove(e, item.id)}
+              onPointerUp={handlePointerUp}
+              onPointerCancel={handlePointerUp}
               className="card-3d"
               style={{
                 position: 'absolute',
                 top: `${item.y}px`,
                 left: `${item.x}px`,
                 transform: `rotate(${item.rotation}deg) translateZ(${activeItem === item.id ? 24 : 8}px)`,
-                cursor: 'move',
+                cursor: 'grab',
                 zIndex: activeItem === item.id ? 10 : 2,
-                transition: 'all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)',
+                transition: draggingId === item.id ? 'none' : 'all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)',
+                touchAction: 'none',
+                userSelect: 'none',
               }}
             >
               {/* Pushpin at top */}

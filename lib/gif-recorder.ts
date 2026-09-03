@@ -39,12 +39,18 @@ export async function createAnimatedPhotostripVideo(
     )
   );
 
+  if (typeof window === 'undefined' || typeof MediaRecorder === 'undefined') {
+    throw new Error('Video recording is not supported in this browser environment. Please use Chrome, Edge, or Safari 14.1+.');
+  }
+
   const stream = canvas.captureStream(30);
-  const recorder = new MediaRecorder(stream, {
-    mimeType: MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
-      ? 'video/webm;codecs=vp9'
-      : 'video/webm',
-  });
+  const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+    ? 'video/webm;codecs=vp9'
+    : MediaRecorder.isTypeSupported('video/webm')
+    ? 'video/webm'
+    : 'video/mp4';
+
+  const recorder = new MediaRecorder(stream, { mimeType });
 
   const chunks: Blob[] = [];
   recorder.ondataavailable = (e) => {
@@ -103,11 +109,17 @@ export async function createAnimatedPhotostripVideo(
  * Downloads the animated clip to the user's device
  */
 export async function downloadAnimatedStripVideo(frames: string[], filename?: string, options?: GifOptions) {
-  const blob = await createAnimatedPhotostripVideo(frames, options);
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename || `dearly-us-photostrip-live-${Date.now()}.webm`;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 2000);
+  try {
+    const blob = await createAnimatedPhotostripVideo(frames, options);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename || `dearly-us-photostrip-live-${Date.now()}.webm`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  } catch (err: any) {
+    if (typeof window !== 'undefined') {
+      alert(err?.message || 'Video export could not be completed on this browser.');
+    }
+  }
 }

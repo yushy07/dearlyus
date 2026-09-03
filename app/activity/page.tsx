@@ -1,10 +1,28 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { ShinyText, SpotlightCard, GlowBadge, ScrollProgress, ScrollReveal } from '@/components/ui';
+import { useCoupleProfile } from '@/lib/couple';
+import { sounds } from '@/lib/sound';
+
+const CATEGORIES = [
+  { id: 'all', label: '✨ All Dates', count: '22' },
+  { id: 'duels', label: '🎮 Games & Duels', count: '8' },
+  { id: 'quizzes', label: '💬 Talk & Quizzes', count: '5' },
+  { id: 'keepsakes', label: '📸 Photo & Keepsakes', count: '6' },
+  { id: 'travel', label: '✈️ Distance & Travel', count: '3' },
+];
 
 export default function ActivityPage() {
+  const { partnerA, partnerB } = useCoupleProfile();
+  const [selectedCategory, setSelectedCategory] = useState<'all' | 'duels' | 'keepsakes' | 'quizzes' | 'travel'>('all');
+
+  const handleSelectCategory = (catId: 'all' | 'duels' | 'keepsakes' | 'quizzes' | 'travel') => {
+    sounds.playPop();
+    setSelectedCategory(catId);
+  };
+
   return (
     <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '60px' }}>
       <ScrollProgress />
@@ -34,6 +52,7 @@ export default function ActivityPage() {
         >
           <Link
             href="/"
+            onClick={() => sounds.playPop()}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -52,6 +71,7 @@ export default function ActivityPage() {
           </Link>
           <Link
             href="/profile"
+            onClick={() => sounds.playPop()}
             style={{
               width: '38px',
               height: '38px',
@@ -76,7 +96,7 @@ export default function ActivityPage() {
         <ScrollReveal animation="fade-up">
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '0 4px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <GlowBadge text="17 Realtime Dates Live" size="sm" />
+              <GlowBadge text="22 Realtime Dates Live" size="sm" />
             </div>
             <h1
               style={{
@@ -87,14 +107,51 @@ export default function ActivityPage() {
                 lineHeight: 1.1,
               }}
             >
-              Pick an <span style={{ color: 'var(--pink)' }}>activity</span> to do{' '}
-              <span style={{ color: 'var(--blue)' }}>together</span>.
+              Pick an <span style={{ color: 'var(--pink)' }}>activity</span> for{' '}
+              <span style={{ color: 'var(--blue)' }}>{partnerA} &amp; {partnerB}</span>.
             </h1>
             <p style={{ color: 'var(--ink-soft)', fontSize: '15px' }}>
               Realtime games &amp; dates for two screens in two places — played in one shared room, at the same second.
             </p>
           </div>
         </ScrollReveal>
+
+        {/* Category Filter Pills */}
+        <div
+          style={{
+            display: 'flex',
+            gap: '8px',
+            overflowX: 'auto',
+            padding: '4px 2px',
+            scrollbarWidth: 'none',
+          }}
+        >
+          {CATEGORIES.map((cat) => {
+            const active = selectedCategory === cat.id;
+            return (
+              <button
+                key={cat.id}
+                onClick={() => handleSelectCategory(cat.id as any)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '20px',
+                  border: active ? '1px solid var(--pink)' : '1px solid var(--line)',
+                  background: active ? 'linear-gradient(135deg, var(--pink), var(--blue))' : '#FFFFFF',
+                  color: active ? '#FFFFFF' : 'var(--ink)',
+                  fontSize: '13px',
+                  fontWeight: active ? 700 : 500,
+                  whiteSpace: 'nowrap',
+                  cursor: 'pointer',
+                  boxShadow: active ? '0 4px 12px rgba(255, 78, 120, 0.25)' : 'var(--shadow-soft)',
+                  transition: 'all 0.15s ease',
+                  flexShrink: 0,
+                }}
+              >
+                {cat.label} <span style={{ opacity: 0.8, fontSize: '11px' }}>({cat.count})</span>
+              </button>
+            );
+          })}
+        </div>
 
         {/* Featured Date Passport Banner */}
         <Link
@@ -228,6 +285,7 @@ export default function ActivityPage() {
               title: 'Know Me Quiz',
               badge: '★',
               desc: 'guess each other, score at the end',
+              category: 'quizzes',
               icon: (
                 <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
                   <path d="M10 7a3.5 3.5 0 013.6 3.6c0 2.6-3.6 3.4-3.6 6" stroke="#FF7BA3" strokeWidth="2.4" strokeLinecap="round" />
@@ -241,6 +299,7 @@ export default function ActivityPage() {
               title: 'Date Host',
               badge: '★ Live',
               desc: 'third-wheel host reacts & adapts questions',
+              category: 'quizzes',
               icon: (
                 <span style={{ fontSize: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   🎙️
@@ -252,6 +311,7 @@ export default function ActivityPage() {
               title: 'Truth or Dare',
               badge: 'New',
               desc: 'lose the minigame, pick your fate',
+              category: 'duels',
               icon: (
                 <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
                   <rect x="4" y="10" width="17" height="17" rx="3" stroke="#17181C" strokeWidth="2.4" />
@@ -269,6 +329,7 @@ export default function ActivityPage() {
               title: 'Honest Cards',
               badge: 'New',
               desc: 'the questions you keep avoiding',
+              category: 'quizzes',
               icon: (
                 <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
                   <rect x="4" y="8" width="14" height="20" rx="2.5" transform="rotate(-8 4 8)" stroke="#5FA0FF" strokeWidth="2.4" />
@@ -282,6 +343,7 @@ export default function ActivityPage() {
               title: 'IQ Duel',
               badge: 'New',
               desc: 'same questions, head to head',
+              category: 'duels',
               icon: (
                 <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
                   <rect x="4" y="4" width="11" height="11" rx="2" stroke="#FF7BA3" strokeWidth="2.4" />
@@ -296,6 +358,7 @@ export default function ActivityPage() {
               title: 'Riddle Night',
               badge: 'New',
               desc: 'famous riddles, talk it out',
+              category: 'duels',
               icon: (
                 <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
                   <path d="M13 5a6 6 0 016.2 6.2c0 4.4-6.2 5.8-6.2 10.2" stroke="#FF7BA3" strokeWidth="2.4" strokeLinecap="round" />
@@ -309,6 +372,7 @@ export default function ActivityPage() {
               title: 'The Lab',
               badge: 'New',
               desc: 'math & science, versus or co-op',
+              category: 'duels',
               icon: (
                 <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
                   <path d="M14 5h6M15 5v8l7 12a2.5 2.5 0 01-2.2 3.8H11.2A2.5 2.5 0 019 25l7-12V5" stroke="#17181C" strokeWidth="2.4" strokeLinejoin="round" />
@@ -321,7 +385,8 @@ export default function ActivityPage() {
             {
               href: '/arcade',
               title: 'Arcade',
-              desc: 'your face, ten tiny games',
+              desc: 'tiny retro tap games',
+              category: 'duels',
               icon: (
                 <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
                   <rect x="4" y="7" width="26" height="17" rx="3" stroke="#17181C" strokeWidth="2.4" />
@@ -337,6 +402,7 @@ export default function ActivityPage() {
               href: '/debate',
               title: 'Debate',
               desc: 'argue it out, AI judges',
+              category: 'duels',
               icon: (
                 <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
                   <rect x="3" y="5" width="17" height="13" rx="3" stroke="#FF7BA3" strokeWidth="2.4" />
@@ -350,6 +416,7 @@ export default function ActivityPage() {
               href: '/draw',
               title: 'Draw Together',
               desc: 'same prompt, two canvases',
+              category: 'keepsakes',
               icon: (
                 <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
                   <rect x="4" y="4" width="26" height="26" rx="3" stroke="#17181C" strokeWidth="2.4" />
@@ -362,6 +429,7 @@ export default function ActivityPage() {
               href: '/court',
               title: 'Couples Court',
               desc: 'plead your case, get a verdict',
+              category: 'duels',
               icon: (
                 <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
                   <path d="M17 5v22" stroke="#17181C" strokeWidth="2.4" strokeLinecap="round" />
@@ -377,6 +445,7 @@ export default function ActivityPage() {
               title: 'Love Forecast',
               badge: '🌦️ New',
               desc: 'daily romantic weather & keepsake card',
+              category: 'travel',
               icon: (
                 <span style={{ fontSize: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   🌦️
@@ -387,6 +456,7 @@ export default function ActivityPage() {
               href: '/hunt',
               title: 'Snap Hunt',
               desc: 'race to find it, snap it',
+              category: 'duels',
               icon: (
                 <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
                   <circle cx="15" cy="15" r="9" stroke="#FF7BA3" strokeWidth="2.4" />
@@ -400,6 +470,7 @@ export default function ActivityPage() {
               title: 'Love Match',
               badge: 'New',
               desc: 'same personality test, one score',
+              category: 'quizzes',
               icon: (
                 <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
                   <path d="M13 25S4 19.4 4 13.6A4.2 4.2 0 0111.6 11" stroke="#FF7BA3" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
@@ -413,6 +484,7 @@ export default function ActivityPage() {
               title: 'Our Future',
               badge: 'New',
               desc: 'design it together — vision board',
+              category: 'keepsakes',
               icon: (
                 <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
                   <circle cx="17" cy="19" r="6" stroke="#FF7BA3" strokeWidth="2.4" />
@@ -427,6 +499,7 @@ export default function ActivityPage() {
               title: 'Birthday Gift',
               badge: 'New',
               desc: 'gift page sealed in heart QR',
+              category: 'keepsakes',
               icon: (
                 <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
                   <rect x="6" y="14" width="22" height="14" rx="2" stroke="#17181C" strokeWidth="2.4" />
@@ -436,426 +509,207 @@ export default function ActivityPage() {
                 </svg>
               ),
             },
-          ].map((card, idx) => (
-            <Link
-              key={idx}
-              href={card.href}
-              className="act"
-              style={{
-                borderRadius: '14px',
-                padding: '18px 16px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '10px',
-                boxShadow: 'var(--shadow-soft)',
-              }}
-            >
-              <div
+          ]
+            .filter((card) => selectedCategory === 'all' || card.category === selectedCategory)
+            .map((card, idx) => (
+              <Link
+                key={idx}
+                href={card.href}
+                onClick={() => sounds.playPop()}
+                className="act"
                 style={{
-                  width: '42px',
-                  height: '42px',
+                  borderRadius: '14px',
+                  padding: '18px 16px',
                   display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderRadius: '12px',
-                  background: 'var(--paper)',
+                  flexDirection: 'column',
+                  gap: '10px',
+                  boxShadow: 'var(--shadow-soft)',
                 }}
               >
-                {card.icon}
-              </div>
-              <h3 style={{ fontSize: '16px', fontWeight: 800, margin: 0 }}>
-                {card.title}{' '}
-                {card.badge && (
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: '9px',
-                      fontWeight: 700,
-                      letterSpacing: '.1em',
-                      textTransform: 'uppercase',
-                      padding: '2px 6px',
-                      borderRadius: '4px',
-                      color: '#fff',
-                      background: 'linear-gradient(100deg, var(--pink), var(--blue))',
-                    }}
-                  >
-                    {card.badge}
-                  </span>
-                )}
-              </h3>
-              <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--ink-soft)' }}>{card.desc}</p>
-            </Link>
-          ))}
+                <div
+                  style={{
+                    width: '42px',
+                    height: '42px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: '12px',
+                    background: 'var(--paper)',
+                  }}
+                >
+                  {card.icon}
+                </div>
+                <h3 style={{ fontSize: '16px', fontWeight: 800, margin: 0 }}>
+                  {card.title}{' '}
+                  {card.badge && (
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: '9px',
+                        fontWeight: 700,
+                        letterSpacing: '.1em',
+                        textTransform: 'uppercase',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        color: '#fff',
+                        background: 'linear-gradient(100deg, var(--pink), var(--blue))',
+                      }}
+                    >
+                      {card.badge}
+                    </span>
+                  )}
+                </h3>
+                <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--ink-soft)' }}>{card.desc}</p>
+              </Link>
+            ))}
         </div>
 
         {/* Section: More */}
-        <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: '11px',
-            fontWeight: 700,
-            letterSpacing: '.16em',
-            textTransform: 'uppercase',
-            color: 'var(--ink-soft)',
-            padding: '0 4px',
-            marginTop: '10px',
-          }}
-        >
-          More
-        </span>
-
-        <div style={{ display: 'grid', gap: '12px' }}>
-          <Link
-            href="/scrapbook"
-            className="act"
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: '16px',
-              padding: '18px 20px',
-              borderRadius: '14px',
-            }}
-          >
-            <div
+        {(selectedCategory === 'all' || ['keepsakes', 'duels', 'travel'].includes(selectedCategory)) && (
+          <>
+            <span
               style={{
-                width: '42px',
-                height: '42px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: '12px',
-                background: 'var(--paper)',
-                flex: 'none',
+                fontFamily: 'var(--font-mono)',
+                fontSize: '11px',
+                fontWeight: 700,
+                letterSpacing: '.16em',
+                textTransform: 'uppercase',
+                color: 'var(--ink-soft)',
+                padding: '0 4px',
+                marginTop: '10px',
               }}
             >
-              <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
-                <rect x="5" y="5" width="24" height="24" rx="2" stroke="#17181C" strokeWidth="2.4" />
-                <path d="M11 3v5" stroke="#FF7BA3" strokeWidth="2.4" strokeLinecap="round" />
-                <rect x="10" y="11" width="7" height="11" rx="1" stroke="#5FA0FF" strokeWidth="2.4" />
-                <path d="M20 14h5M20 19h4M20 24h6" stroke="#FF7BA3" strokeWidth="2.4" strokeLinecap="round" />
-              </svg>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-              <h3 style={{ fontSize: '16px', fontWeight: 800, margin: 0 }}>
-                Digital Scrapbook{' '}
-                <span
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '9px',
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    color: '#fff',
-                    background: 'linear-gradient(100deg, var(--pink), var(--blue))',
-                  }}
-                >
-                  New
-                </span>
-              </h3>
-              <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--ink-soft)' }}>
-                your photobooth strips on paper — tape them down, write notes
-              </p>
-            </div>
-            <span style={{ marginLeft: 'auto', fontSize: '18px', color: 'var(--ink-soft)' }}>▷</span>
-          </Link>
+              More Experiences
+            </span>
 
-          <Link
-            href="/letter"
-            className="act"
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: '16px',
-              padding: '18px 20px',
-              borderRadius: '14px',
-            }}
-          >
-            <div
-              style={{
-                width: '42px',
-                height: '42px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: '12px',
-                background: 'var(--paper)',
-                flex: 'none',
-              }}
-            >
-              <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
-                <rect x="4" y="8" width="26" height="18" rx="2" stroke="#17181C" strokeWidth="2.4" />
-                <path d="M4 10l13 9 13-9" stroke="#5FA0FF" strokeWidth="2.4" strokeLinejoin="round" />
-                <circle cx="27" cy="8" r="4.5" fill="#FFF" stroke="#FF7BA3" strokeWidth="2.2" />
-                <path d="M27 6v2.2l1.5 1" stroke="#FF7BA3" strokeWidth="2" strokeLinecap="round" />
-              </svg>
+            <div style={{ display: 'grid', gap: '12px' }}>
+              {[
+                {
+                  href: '/scrapbook',
+                  title: 'Digital Scrapbook',
+                  badge: 'New',
+                  category: 'keepsakes',
+                  desc: 'your photobooth strips on paper — tape them down, write notes',
+                  icon: (
+                    <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
+                      <rect x="5" y="5" width="24" height="24" rx="2" stroke="#17181C" strokeWidth="2.4" />
+                      <path d="M11 3v5" stroke="#FF7BA3" strokeWidth="2.4" strokeLinecap="round" />
+                      <rect x="10" y="11" width="7" height="11" rx="1" stroke="#5FA0FF" strokeWidth="2.4" />
+                      <path d="M20 14h5M20 19h4M20 24h6" stroke="#FF7BA3" strokeWidth="2.4" strokeLinecap="round" />
+                    </svg>
+                  ),
+                },
+                {
+                  href: '/letter',
+                  title: 'Letters to the Future',
+                  badge: 'New',
+                  category: 'keepsakes',
+                  desc: 'write now, delivered years from now to both of you',
+                  icon: (
+                    <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
+                      <rect x="4" y="8" width="26" height="18" rx="2" stroke="#17181C" strokeWidth="2.4" />
+                      <path d="M4 10l13 9 13-9" stroke="#5FA0FF" strokeWidth="2.4" strokeLinejoin="round" />
+                      <circle cx="27" cy="8" r="4.5" fill="#FFF" stroke="#FF7BA3" strokeWidth="2.2" />
+                      <path d="M27 6v2.2l1.5 1" stroke="#FF7BA3" strokeWidth="2" strokeLinecap="round" />
+                    </svg>
+                  ),
+                },
+                {
+                  href: '/fashion',
+                  title: 'Fashion Show',
+                  badge: 'New',
+                  category: 'duels',
+                  desc: 'same brief & twist, AI stylist scores the runway',
+                  icon: <span style={{ fontSize: '24px' }}>👗</span>,
+                },
+                {
+                  href: '/shirts',
+                  title: 'Matching Shirts',
+                  badge: 'New',
+                  category: 'keepsakes',
+                  desc: 'design matching couple outfits & download free mockups',
+                  icon: <span style={{ fontSize: '24px' }}>👕</span>,
+                },
+                {
+                  href: '/timezone',
+                  title: 'Timezone & Reunion Hub',
+                  badge: 'New',
+                  category: 'travel',
+                  desc: 'daylight horizon, golden overlap hours & airport countdown',
+                  icon: <span style={{ fontSize: '24px' }}>🌍</span>,
+                },
+                {
+                  href: '/bucket',
+                  title: '100 Dates Bucket List',
+                  badge: 'New',
+                  category: 'travel',
+                  desc: 'scratch off milestones from virtual dates to airport hugs',
+                  icon: <span style={{ fontSize: '24px' }}>🎯</span>,
+                },
+                {
+                  href: '/date',
+                  title: 'Date Night Planner',
+                  badge: 'New',
+                  category: 'travel',
+                  desc: 'custom multi-game schedules, ambient soundscapes & cooking',
+                  icon: <span style={{ fontSize: '24px' }}>🌙</span>,
+                },
+              ]
+                .filter((item) => selectedCategory === 'all' || item.category === selectedCategory)
+                .map((item, idx) => (
+                  <Link
+                    key={idx}
+                    href={item.href}
+                    onClick={() => sounds.playPop()}
+                    className="act"
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: '16px',
+                      padding: '18px 20px',
+                      borderRadius: '14px',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '42px',
+                        height: '42px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: '12px',
+                        background: 'var(--paper)',
+                        flex: 'none',
+                      }}
+                    >
+                      {item.icon}
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <h3 style={{ fontSize: '16px', fontWeight: 800, margin: 0 }}>
+                        {item.title}{' '}
+                        {item.badge && (
+                          <span
+                            style={{
+                              fontFamily: 'var(--font-mono)',
+                              fontSize: '9px',
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              color: '#fff',
+                              background: 'linear-gradient(100deg, var(--pink), var(--blue))',
+                            }}
+                          >
+                            {item.badge}
+                          </span>
+                        )}
+                      </h3>
+                      <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--ink-soft)' }}>{item.desc}</p>
+                    </div>
+                    <span style={{ marginLeft: 'auto', fontSize: '18px', color: 'var(--ink-soft)' }}>▷</span>
+                  </Link>
+                ))}
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-              <h3 style={{ fontSize: '16px', fontWeight: 800, margin: 0 }}>
-                Letters to the Future{' '}
-                <span
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '9px',
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    color: '#fff',
-                    background: 'linear-gradient(100deg, var(--pink), var(--blue))',
-                  }}
-                >
-                  New
-                </span>
-              </h3>
-              <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--ink-soft)' }}>
-                write now, delivered years from now to both of you
-              </p>
-            </div>
-            <span style={{ marginLeft: 'auto', fontSize: '18px', color: 'var(--ink-soft)' }}>▷</span>
-          </Link>
-
-          <Link
-            href="/fashion"
-            className="act"
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: '16px',
-              padding: '18px 20px',
-              borderRadius: '14px',
-            }}
-          >
-            <div
-              style={{
-                width: '42px',
-                height: '42px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: '12px',
-                background: 'var(--paper)',
-                fontSize: '24px',
-                flex: 'none',
-              }}
-            >
-              👗
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-              <h3 style={{ fontSize: '16px', fontWeight: 800, margin: 0 }}>
-                Fashion Show{' '}
-                <span
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '9px',
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    color: '#fff',
-                    background: 'linear-gradient(100deg, var(--pink), var(--blue))',
-                  }}
-                >
-                  New
-                </span>
-              </h3>
-              <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--ink-soft)' }}>
-                same brief &amp; twist, AI stylist scores the runway
-              </p>
-            </div>
-            <span style={{ marginLeft: 'auto', fontSize: '18px', color: 'var(--ink-soft)' }}>▷</span>
-          </Link>
-
-          <Link
-            href="/shirts"
-            className="act"
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: '16px',
-              padding: '18px 20px',
-              borderRadius: '14px',
-            }}
-          >
-            <div
-              style={{
-                width: '42px',
-                height: '42px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: '12px',
-                background: 'var(--paper)',
-                fontSize: '24px',
-                flex: 'none',
-              }}
-            >
-              👕
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-              <h3 style={{ fontSize: '16px', fontWeight: 800, margin: 0 }}>
-                Matching Shirts{' '}
-                <span
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '9px',
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    color: '#fff',
-                    background: 'linear-gradient(100deg, var(--pink), var(--blue))',
-                  }}
-                >
-                  New
-                </span>
-              </h3>
-              <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--ink-soft)' }}>
-                design matching couple outfits &amp; download free mockups
-              </p>
-            </div>
-            <span style={{ marginLeft: 'auto', fontSize: '18px', color: 'var(--ink-soft)' }}>▷</span>
-          </Link>
-
-          <Link
-            href="/timezone"
-            className="act"
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: '16px',
-              padding: '18px 20px',
-              borderRadius: '14px',
-            }}
-          >
-            <div
-              style={{
-                width: '42px',
-                height: '42px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: '12px',
-                background: 'var(--paper)',
-                fontSize: '24px',
-                flex: 'none',
-              }}
-            >
-              🌍
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-              <h3 style={{ fontSize: '16px', fontWeight: 800, margin: 0 }}>
-                Timezone &amp; Reunion Hub{' '}
-                <span
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '9px',
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    color: '#fff',
-                    background: 'linear-gradient(100deg, var(--pink), var(--blue))',
-                  }}
-                >
-                  New
-                </span>
-              </h3>
-              <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--ink-soft)' }}>
-                daylight horizon, golden overlap hours &amp; airport countdown
-              </p>
-            </div>
-            <span style={{ marginLeft: 'auto', fontSize: '18px', color: 'var(--ink-soft)' }}>▷</span>
-          </Link>
-
-          <Link
-            href="/bucket"
-            className="act"
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: '16px',
-              padding: '18px 20px',
-              borderRadius: '14px',
-            }}
-          >
-            <div
-              style={{
-                width: '42px',
-                height: '42px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: '12px',
-                background: 'var(--paper)',
-                fontSize: '24px',
-                flex: 'none',
-              }}
-            >
-              🎯
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-              <h3 style={{ fontSize: '16px', fontWeight: 800, margin: 0 }}>
-                100 Dates Bucket List{' '}
-                <span
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '9px',
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    color: '#fff',
-                    background: 'linear-gradient(100deg, var(--pink), var(--blue))',
-                  }}
-                >
-                  New
-                </span>
-              </h3>
-              <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--ink-soft)' }}>
-                scratch off milestones from virtual dates to airport hugs
-              </p>
-            </div>
-            <span style={{ marginLeft: 'auto', fontSize: '18px', color: 'var(--ink-soft)' }}>▷</span>
-          </Link>
-
-          <Link
-            href="/date"
-            className="act"
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: '16px',
-              padding: '18px 20px',
-              borderRadius: '14px',
-            }}
-          >
-            <div
-              style={{
-                width: '42px',
-                height: '42px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: '12px',
-                background: 'var(--paper)',
-                fontSize: '24px',
-                flex: 'none',
-              }}
-            >
-              🌙
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-              <h3 style={{ fontSize: '16px', fontWeight: 800, margin: 0 }}>
-                Date Night Planner{' '}
-                <span
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '9px',
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    color: '#fff',
-                    background: 'linear-gradient(100deg, var(--pink), var(--blue))',
-                  }}
-                >
-                  New
-                </span>
-              </h3>
-              <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--ink-soft)' }}>
-                custom multi-game schedules, ambient soundscapes &amp; cooking
-              </p>
-            </div>
-            <span style={{ marginLeft: 'auto', fontSize: '18px', color: 'var(--ink-soft)' }}>▷</span>
-          </Link>
-        </div>
+          </>
+        )}
 
         {/* Footer info */}
         <div style={{ textAlign: 'center', color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)', fontSize: '12px', marginTop: '20px' }}>

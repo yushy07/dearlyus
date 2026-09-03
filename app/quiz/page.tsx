@@ -106,7 +106,7 @@ export default function QuizPage() {
   };
 
   const handleReveal = (broadcast = true) => {
-    if (partnerAPick === null || partnerBPick === null) return;
+    if (revealed || partnerAPick === null || partnerBPick === null) return;
     if (broadcast) {
       sendEvent('quiz_reveal', {});
     }

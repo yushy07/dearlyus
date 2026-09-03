@@ -75,6 +75,12 @@ export function useCoupleProfile() {
     setProfile(getStoredCoupleProfile());
 
     const handleUpdate = (e: any) => {
+      if (e.type === 'storage') {
+        if (e.key === null || e.key === STORAGE_KEY) {
+          setProfile(getStoredCoupleProfile());
+        }
+        return;
+      }
       if (e.detail) setProfile(e.detail);
       else setProfile(getStoredCoupleProfile());
     };

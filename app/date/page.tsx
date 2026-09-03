@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { PREMADE_DATE_PLANS } from '@/data';
 import { Ribbon, Navbar } from '@/components/shared';
 import { sounds } from '@/lib/sound';
+import { useCoupleProfile } from '@/lib/couple';
 
 interface RecipeStep {
   stepNum: number;
@@ -14,6 +15,7 @@ interface RecipeStep {
 }
 
 export default function DateNightPlannerPage() {
+  const { partnerA, partnerB, cityA, cityB } = useCoupleProfile();
   const [selectedMood, setSelectedMood] = useState<'romantic' | 'playful' | 'chill'>('romantic');
   const plan = PREMADE_DATE_PLANS[selectedMood];
 
@@ -29,10 +31,10 @@ export default function DateNightPlannerPage() {
   const [stepSecondsLeft, setStepSecondsLeft] = useState(180);
 
   const recipeSteps: RecipeStep[] = [
-    { stepNum: 1, title: 'Prep Ingredients & Boil Water', durationSec: 180, instruction: 'Fill pot with water, add 1 tbsp salt. Mince 3 cloves of garlic on camera together!' },
+    { stepNum: 1, title: 'Prep Ingredients & Boil Water', durationSec: 180, instruction: `Fill pot with water, add 1 tbsp salt. ${partnerA} and ${partnerB} mince 3 cloves of garlic on camera together!` },
     { stepNum: 2, title: 'Cook Pasta & Sizzle Garlic', durationSec: 480, instruction: 'Drop pasta in boiling water. Sizzle garlic in olive oil on medium heat until fragrant.' },
     { stepNum: 3, title: 'Whisk Sauce & Combine', durationSec: 180, instruction: 'Whisk 2 egg yolks with parmesan and black pepper. Toss hot drained pasta into the pan with sauce!' },
-    { stepNum: 4, title: 'Plate, Pour Drinks & Rate Look', durationSec: 120, instruction: 'Plate your dishes, hold them up to the webcam, and take a 4-cut photobooth victory strip!' },
+    { stepNum: 4, title: 'Plate, Pour Drinks & Rate Look', durationSec: 120, instruction: `Plate your dishes, hold them up to the webcam, and take a 4-cut photobooth victory strip!` },
   ];
 
   // Cooking Timer interval
@@ -51,19 +53,41 @@ export default function DateNightPlannerPage() {
     };
   }, [timerRunning, stepSecondsLeft]);
 
+  // Clean up ambient soundscapes on unmount
+  useEffect(() => {
+    return () => {
+      sounds.stopAllAmbience();
+    };
+  }, []);
+
   const toggleRain = () => {
+    sounds.playPop();
     const next = !rainActive;
     setRainActive(next);
     sounds.toggleRainSound(next);
   };
 
   const toggleFire = () => {
+    sounds.playPop();
     const next = !fireActive;
     setFireActive(next);
     sounds.toggleFireplaceSound(next);
   };
 
+  const startCookingStep = (idx: number) => {
+    sounds.playCountdownBeep(true);
+    setCurrentStepIdx(idx);
+    setStepSecondsLeft(recipeSteps[idx].durationSec);
+    setTimerRunning(true);
+  };
+
+  const toggleTimer = () => {
+    sounds.playPop();
+    setTimerRunning((p) => !p);
+  };
+
   const nextCookingStep = () => {
+    sounds.playPop();
     if (currentStepIdx < recipeSteps.length - 1) {
       const nextIdx = currentStepIdx + 1;
       setCurrentStepIdx(nextIdx);
@@ -81,7 +105,7 @@ export default function DateNightPlannerPage() {
   return (
     <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px', color: 'var(--ink)' }}>
       {/* Ribbon */}
-      <Ribbon text={<>🌙 Date Night Generator · <b>Curated Schedules, Ambient Soundscapes &amp; Cooking Sync</b></>} />
+      <Ribbon text={<>🌙 Date Night Generator · <b>Curated Schedules for {partnerA} &amp; {partnerB}</b></>} />
 
       {/* Top Navbar */}
       <Navbar
@@ -111,8 +135,8 @@ export default function DateNightPlannerPage() {
           <h1 style={{ fontSize: 'clamp(28px, 5vw, 44px)', fontWeight: 800, margin: '8px 0' }}>
             Never Ask <span className="grad">&ldquo;What should we do?&rdquo;</span> Again.
           </h1>
-          <p style={{ color: 'var(--ink-soft)', fontSize: '16px', maxWidth: '54ch', margin: '0 auto' }}>
-            Pick tonight&apos;s mood and time limit. Dearly Us builds a seamless itinerary of synced games, prompts, and photobooth milestones.
+          <p style={{ color: 'var(--ink-soft)', fontSize: '16px', maxWidth: '58ch', margin: '0 auto' }}>
+            Parallel dining &amp; activities for <b>{partnerA} ({cityA})</b> and <b>{partnerB} ({cityB})</b>. Seamless itinerary of synced games, prompts, and photobooth milestones.
           </p>
         </div>
 
@@ -120,6 +144,7 @@ export default function DateNightPlannerPage() {
         <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '32px', flexWrap: 'wrap' }}>
           <button
             onClick={() => {
+              sounds.playPop();
               setCookingMode(false);
               setSelectedMood('romantic');
             }}
@@ -130,6 +155,7 @@ export default function DateNightPlannerPage() {
           </button>
           <button
             onClick={() => {
+              sounds.playPop();
               setCookingMode(false);
               setSelectedMood('playful');
             }}
@@ -140,6 +166,7 @@ export default function DateNightPlannerPage() {
           </button>
           <button
             onClick={() => {
+              sounds.playPop();
               setCookingMode(false);
               setSelectedMood('chill');
             }}
@@ -149,7 +176,10 @@ export default function DateNightPlannerPage() {
             ☕ Chill &amp; Cozy
           </button>
           <button
-            onClick={() => setCookingMode(true)}
+            onClick={() => {
+              sounds.playPop();
+              setCookingMode(true);
+            }}
             className={`btn ${cookingMode ? 'btn-primary' : 'btn-ghost'}`}
             style={{ padding: '10px 20px', borderRadius: '10px', background: cookingMode ? 'var(--pink)' : undefined, color: cookingMode ? '#fff' : undefined }}
           >

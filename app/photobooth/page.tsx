@@ -357,22 +357,26 @@ export default function PhotoboothPage() {
           ctx.shadowColor = '#FF4500';
           ctx.shadowBlur = 6;
           ctx.textAlign = 'right';
-          ctx.fillText("'26  9  3", 42 + 516 - 16, y + 320 - 16);
+          const now = new Date();
+          const yy = now.getFullYear().toString().slice(-2);
+          const mm = now.getMonth() + 1;
+          const dd = now.getDate();
+          ctx.fillText(`'${yy}  ${mm}  ${dd}`, 42 + 516 - 16, y + 320 - 16);
           ctx.restore();
         }
 
         ctx.restore();
+      } else {
+        // Frame placeholder when no image is present
+        ctx.fillStyle = '#8B8E98';
+        ctx.font = 'bold 13px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(`0${i + 1} · ${nickname.toUpperCase()} ♡ ${partnerName.toUpperCase()}`, 300, y + 165);
       }
 
       ctx.strokeStyle = selectedStyle.border;
       ctx.lineWidth = 1.5;
       ctx.strokeRect(42, y, 516, 320);
-
-      // Frame number tag
-      ctx.fillStyle = '#8B8E98';
-      ctx.font = 'bold 13px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText(`0${i + 1} · ${nickname.toUpperCase()} ♡ ${partnerName.toUpperCase()}`, 300, y + 165);
     }
 
     // Bake Placed Stickers onto Canvas

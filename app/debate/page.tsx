@@ -8,7 +8,7 @@ import { sounds } from '@/lib/sound';
 import { Confetti } from '@/components/shared/Confetti';
 import { CoupleNameBar } from '@/components/shared';
 import { useCoupleProfile } from '@/lib/couple';
-import { speakCupidot } from '@/lib/voice';
+import { speakCupidot, stopCupidotSpeech } from '@/lib/voice';
 
 interface DebateTopicItem {
   topic: string;
@@ -55,6 +55,12 @@ export default function DebatePage() {
   useEffect(() => {
     setActiveSpeaker(partnerA);
   }, [partnerA]);
+
+  useEffect(() => {
+    return () => {
+      stopCupidotSpeech();
+    };
+  }, []);
 
   const current = DEBATE_TOPICS[topicIndex];
 
@@ -106,6 +112,7 @@ export default function DebatePage() {
   };
 
   const nextTopic = () => {
+    stopCupidotSpeech();
     sounds.playPop();
     setTopicIndex((prev) => (prev + 1) % DEBATE_TOPICS.length);
     setDebating(false);

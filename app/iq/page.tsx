@@ -2,6 +2,9 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { sounds } from '@/lib/sound';
+import { useCoupleProfile } from '@/lib/couple';
+import { Confetti } from '@/components/shared/Confetti';
 
 interface IQQuestion {
   title: string;
@@ -19,8 +22,8 @@ const IQ_PUZZLES: IQQuestion[] = [
   },
   {
     title: 'Logical Deduction: If all Roses are Flowers, and some Flowers fade quickly, then:',
-    pattern: ['All roses fade quickly', 'No roses fade quickly', 'Some roses may fade quickly', 'None of the above'],
-    options: ['Option 1', 'Option 2', 'Option 3', 'Option 4'],
+    pattern: ['🌹 Premise 1: All Roses are Flowers', '🥀 Premise 2: Some Flowers fade quickly', '❓ Deduction: What must be true?'],
+    options: ['All roses fade quickly', 'No roses fade quickly', 'Some roses may fade quickly', 'None of the above'],
     correctIndex: 2,
   },
   {
@@ -32,17 +35,23 @@ const IQ_PUZZLES: IQQuestion[] = [
 ];
 
 export default function IQPage() {
+  const { partnerA, partnerB } = useCoupleProfile();
   const [qIndex, setQIndex] = useState(0);
   const [selectedOpt, setSelectedOpt] = useState<number | null>(null);
   const [score, setScore] = useState(0);
   const [finished, setFinished] = useState(false);
+  const [confettiActive, setConfettiActive] = useState(false);
 
   const puzzle = IQ_PUZZLES[qIndex];
 
   const handlePick = (index: number) => {
+    if (selectedOpt !== null) return;
     setSelectedOpt(index);
+    sounds.playPop();
+
     if (index === puzzle.correctIndex) {
       setScore((p) => p + 1);
+      sounds.playCountdownBeep(true);
     }
     setTimeout(() => {
       if (qIndex + 1 < IQ_PUZZLES.length) {
@@ -50,24 +59,67 @@ export default function IQPage() {
         setSelectedOpt(null);
       } else {
         setFinished(true);
+        sounds.playCelebration();
+        setConfettiActive(true);
+        setTimeout(() => setConfettiActive(false), 3500);
       }
     }, 600);
   };
 
+  const handlePlayAgain = () => {
+    sounds.playPop();
+    setQIndex(0);
+    setSelectedOpt(null);
+    setScore(0);
+    setFinished(false);
+  };
+
   return (
-    <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px' }}>
+    <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px', color: 'var(--ink)' }}>
+      <Confetti active={confettiActive} />
+
       <header className="bar">
-        <div className="wrap">
-          <Link className="brand" href="/">
-            dearly us
-            <span className="dots">
-              <i className="p"></i>
-              <i className="b"></i>
+        <div className="wrap" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <Link className="brand" href="/" onClick={() => sounds.playPop()} aria-label="Dearly Us Home">
+              <span className="brand-emblem" aria-hidden="true">
+                <svg width="28" height="28" viewBox="0 0 128 128" fill="none">
+                  <rect width="128" height="128" rx="36" fill="#1C1924" />
+                  <path d="M64 77 C51 93 29 86 29 64 C29 45 48 38 64 58" stroke="#FF4E78" strokeWidth="12" strokeLinecap="round" />
+                  <path d="M64 58 C80 38 99 45 99 64 C99 86 77 93 64 77" stroke="#437EEB" strokeWidth="12" strokeLinecap="round" />
+                  <circle cx="64" cy="67" r="5" fill="#FFFFFF" />
+                </svg>
+              </span>
+              <span className="brand-dearly">Dearly</span>
+              <span className="brand-us">Us</span>
+              <span className="dots">
+                <i className="p"></i>
+                <i className="b"></i>
+              </span>
+            </Link>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '12px',
+                background: 'var(--paper-raised)',
+                padding: '4px 12px',
+                borderRadius: '20px',
+                border: '1px solid var(--line)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
+              <span>{partnerA} vs {partnerB}</span> · <b style={{ color: 'var(--pink)' }}>{finished ? 'Finished' : `Q${qIndex + 1}/${IQ_PUZZLES.length}`}</b>
             </span>
-          </Link>
-          <Link className="btn btn-ghost" href="/activity">
-            Activities ▷
-          </Link>
+
+            <Link className="btn btn-ghost" href="/activity" onClick={() => sounds.playPop()}>
+              Activities ▷
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -163,7 +215,7 @@ export default function IQPage() {
                 margin: '10px 0',
               }}
             >
-              IQ 132 · Genius Match
+              IQ {100 + score * 12} · {score === 3 ? 'Genius Synergy 🌟' : score === 2 ? 'Brilliant Minds 💡' : score === 1 ? 'Sharp Duo ⚡' : 'Playful Cadets 💌'}
             </div>
             <p style={{ color: 'var(--ink-soft)', marginBottom: '24px' }}>
               You solved {score} out of {IQ_PUZZLES.length} puzzles correctly with lightning speed.
@@ -171,11 +223,7 @@ export default function IQPage() {
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
               <button
                 className="btn btn-grad"
-                onClick={() => {
-                  setQIndex(0);
-                  setScore(0);
-                  setFinished(false);
-                }}
+                onClick={handlePlayAgain}
               >
                 Play Again ↺
               </button>

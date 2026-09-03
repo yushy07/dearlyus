@@ -55,7 +55,7 @@ export function usePassport() {
 
   const unlockedCount = unlockedIds.length;
   const totalCount = PASSPORT_STAMPS.length;
-  const progressPercent = Math.round((unlockedCount / totalCount) * 100);
+  const progressPercent = totalCount > 0 ? Math.round((unlockedCount / totalCount) * 100) : 0;
 
   const getRankTier = () => {
     if (unlockedCount >= 12) return '👑 Eternal Soulmates (Grandmaster)';

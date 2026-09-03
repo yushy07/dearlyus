@@ -61,6 +61,8 @@ export default function MatchPage() {
   const [partner2Picks, setPartner2Picks] = useState<number[]>([]);
   const [activePartner, setActivePartner] = useState<1 | 2>(1);
   const [calculated, setCalculated] = useState(false);
+  const [matchScore, setMatchScore] = useState(94);
+  const [subScores, setSubScores] = useState({ intimacy: 96, banter: 94, future: 95 });
 
   const handlePick = (optionIndex: number) => {
     if (activePartner === 1) {
@@ -78,17 +80,19 @@ export default function MatchPage() {
       if (qIndex + 1 < QUESTIONS.length) {
         setQIndex(qIndex + 1);
       } else {
+        let matches = 0;
+        for (let i = 0; i < QUESTIONS.length; i++) {
+          if (partner1Picks[i] === nextPicks[i]) matches += 1;
+        }
+        const finalScore = Math.min(100, 88 + matches * 3);
+        const intimacy = Math.min(100, 90 + (partner1Picks[0] === nextPicks[0] ? 8 : 2) + (partner1Picks[2] === nextPicks[2] ? 2 : 0));
+        const banter = Math.min(100, 89 + (partner1Picks[1] === nextPicks[1] ? 8 : 3));
+        const future = Math.min(100, 91 + (partner1Picks[3] === nextPicks[3] ? 8 : 2));
+        setMatchScore(finalScore);
+        setSubScores({ intimacy, banter, future });
         setCalculated(true);
       }
     }
-  };
-
-  const calculateScore = () => {
-    let matches = 0;
-    for (let i = 0; i < QUESTIONS.length; i++) {
-      if (partner1Picks[i] === partner2Picks[i]) matches += 1;
-    }
-    return 88 + matches * 3;
   };
 
   return (
@@ -199,7 +203,7 @@ export default function MatchPage() {
                 color: 'transparent',
               }}
             >
-              {calculateScore()}% Match
+              {matchScore}% Match
             </div>
 
             <div
@@ -213,17 +217,17 @@ export default function MatchPage() {
             >
               <div style={{ background: 'var(--paper)', padding: '14px', borderRadius: '10px', border: '1px solid var(--line)' }}>
                 <strong style={{ display: 'block', fontSize: '13px', color: 'var(--pink)' }}>Intimacy &amp; Care</strong>
-                <div style={{ fontSize: '20px', fontWeight: 800 }}>98%</div>
+                <div style={{ fontSize: '20px', fontWeight: 800 }}>{subScores.intimacy}%</div>
                 <small style={{ color: 'var(--ink-soft)' }}>Exceptional warmth</small>
               </div>
               <div style={{ background: 'var(--paper)', padding: '14px', borderRadius: '10px', border: '1px solid var(--line)' }}>
                 <strong style={{ display: 'block', fontSize: '13px', color: 'var(--blue)' }}>Banter &amp; Play</strong>
-                <div style={{ fontSize: '20px', fontWeight: 800 }}>95%</div>
+                <div style={{ fontSize: '20px', fontWeight: 800 }}>{subScores.banter}%</div>
                 <small style={{ color: 'var(--ink-soft)' }}>Endless laughter</small>
               </div>
               <div style={{ background: 'var(--paper)', padding: '14px', borderRadius: '10px', border: '1px solid var(--line)' }}>
                 <strong style={{ display: 'block', fontSize: '13px', color: '#7a4dd6' }}>Future Alignment</strong>
-                <div style={{ fontSize: '20px', fontWeight: 800 }}>96%</div>
+                <div style={{ fontSize: '20px', fontWeight: 800 }}>{subScores.future}%</div>
                 <small style={{ color: 'var(--ink-soft)' }}>Shared life goals</small>
               </div>
             </div>

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { CupidotBot, BotState } from '@/components/bot/CupidotBot';
 import { generateLoveForecast, LoveForecast } from '@/lib/cupidot';
 import { sounds } from '@/lib/sound';
-import { speakCupidot } from '@/lib/voice';
+import { speakCupidot, stopCupidotSpeech } from '@/lib/voice';
 import { CoupleNameBar, Confetti } from '@/components/shared';
 import { GlowBadge } from '@/components/ui';
 import { useCoupleProfile } from '@/lib/couple';
@@ -17,6 +17,12 @@ export default function ForecastPage() {
   const [confettiActive, setConfettiActive] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  useEffect(() => {
+    return () => {
+      stopCupidotSpeech();
+    };
+  }, []);
 
   useEffect(() => {
     const f = generateLoveForecast(partnerA, partnerB, cityA || 'Calgary', cityB || 'Jakarta');
