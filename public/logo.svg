@@ -82,9 +82,8 @@
           font-family="Outfit, Pretendard, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" 
           font-size="44" 
           font-weight="800" 
-          fill="#1C1924" 
           letter-spacing="-0.035em">
-      Dearly <tspan fill="url(#dearly-rose)">Us</tspan>
+      <tspan fill="url(#dearly-blue)">Dearly</tspan> <tspan fill="url(#dearly-rose)">Us</tspan>
     </text>
 
     <!-- Presence Connect Dots -->
@@ -94,9 +93,9 @@
     <!-- Tagline Ribbon -->
     <text x="2" y="86" 
           font-family="Pretendard, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" 
-          font-size="14" 
+          font-size="14.5" 
           font-weight="600" 
-          fill="#6A6576" 
+          fill="url(#dearly-blue)" 
           letter-spacing="0.005em">
       Made for the moments that belong to you two.
     </text>
