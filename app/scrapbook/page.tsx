@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Ribbon, Navbar, CoupleNameBar } from '@/components/shared';
@@ -8,16 +10,26 @@ interface ScrapbookItem {
   id: string;
   type: 'polaroid' | 'ticket' | 'note' | 'sticker';
   content: string;
+  imageUrl?: string;
   sub?: string;
   x: number;
   y: number;
   rotation: number;
 }
 
+function sanitizeSafeImageUrl(url?: string): string {
+  if (!url) return '/photos/frame1.webp';
+  const trimmed = url.trim();
+  if (trimmed.startsWith('/photos/') || trimmed.startsWith('data:image/') || (trimmed.startsWith('https://') && !trimmed.includes('javascript:'))) {
+    return encodeURI(trimmed);
+  }
+  return '/photos/frame1.webp';
+}
+
 export default function ScrapbookPage() {
   const { partnerA, partnerB } = useCoupleProfile();
   const [items, setItems] = useState<ScrapbookItem[]>([
-    { id: '1', type: 'polaroid', content: '/photos/frame1.webp', sub: 'Tokyo Station · Aug 2026', x: 40, y: 30, rotation: -4 },
+    { id: '1', type: 'polaroid', content: 'Tokyo Station Photo', imageUrl: '/photos/frame1.webp', sub: 'Tokyo Station · Aug 2026', x: 40, y: 30, rotation: -4 },
     { id: '2', type: 'ticket', content: 'REUNION PASS ♡ TOKYO', sub: 'Countdown to our next visit', x: 380, y: 50, rotation: 3 },
     { id: '3', type: 'note', content: '“The time difference feels like nothing when we talk until sunrise.”', sub: `${partnerA} ♡ ${partnerB}`, x: 60, y: 320, rotation: 2 },
     { id: '4', type: 'sticker', content: '💖', x: 260, y: 220, rotation: 12 },
@@ -206,7 +218,7 @@ export default function ScrapbookPage() {
                   }}
                 >
                   <div style={{ width: '100%', height: '150px', background: '#2B231E', borderRadius: '2px', overflow: 'hidden', marginBottom: '8px' }}>
-                    <img src={item.content} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img src={sanitizeSafeImageUrl(item.imageUrl)} alt={item.sub || 'Polaroid frame'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   </div>
                   <div style={{ fontFamily: 'var(--font-serif)', fontSize: '12px', color: '#5A4E45', textAlign: 'center' }}>
                     {item.sub}
