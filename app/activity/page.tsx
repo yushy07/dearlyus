@@ -373,6 +373,17 @@ export default function ActivityPage() {
               ),
             },
             {
+              href: '/forecast',
+              title: 'Love Forecast',
+              badge: '🌦️ New',
+              desc: 'daily romantic weather & keepsake card',
+              icon: (
+                <span style={{ fontSize: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  🌦️
+                </span>
+              ),
+            },
+            {
               href: '/hunt',
               title: 'Snap Hunt',
               desc: 'race to find it, snap it',

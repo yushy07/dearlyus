@@ -1,10 +1,10 @@
-'use client';
-
 import React, { useState, useEffect } from 'react';
 import { CupidotBot, BotState } from './CupidotBot';
 import { getRandomCupidotThought, getPokedCupidotDilemma, CupidotDilemma } from '@/lib/cupidot';
 import { sounds } from '@/lib/sound';
 import { useCoupleProfile } from '@/lib/couple';
+import { speakCupidot, getStoredVoiceMode, setStoredVoiceMode, VoiceMode } from '@/lib/voice';
+import { RomanticEmergencyModal } from './RomanticEmergencyModal';
 
 export function CupidotCompanion() {
   const { partnerA, partnerB } = useCoupleProfile();
@@ -13,6 +13,12 @@ export function CupidotCompanion() {
   const [thought, setThought] = useState(getRandomCupidotThought());
   const [activeDilemma, setActiveDilemma] = useState<CupidotDilemma | null>(null);
   const [pokedCount, setPokedCount] = useState(0);
+  const [voiceMode, setVoiceMode] = useState<VoiceMode>('chirp');
+  const [emergencyOpen, setEmergencyOpen] = useState(false);
+
+  useEffect(() => {
+    setVoiceMode(getStoredVoiceMode());
+  }, []);
 
   // Cycle cheeky thoughts every 8 seconds
   useEffect(() => {
@@ -22,6 +28,18 @@ export function CupidotCompanion() {
     return () => clearInterval(timer);
   }, []);
 
+  const toggleVoiceMode = () => {
+    sounds.playTick();
+    const modes: VoiceMode[] = ['chirp', 'speech', 'mute'];
+    const nextIdx = (modes.indexOf(voiceMode) + 1) % modes.length;
+    const nextMode = modes[nextIdx];
+    setVoiceMode(nextMode);
+    setStoredVoiceMode(nextMode);
+    if (nextMode !== 'mute') {
+      speakCupidot("Voice updated!", { mood: 'happy' });
+    }
+  };
+
   const handlePoke = () => {
     sounds.playPop();
     setBotState('love');
@@ -29,6 +47,7 @@ export function CupidotCompanion() {
     setActiveDilemma(dilemma);
     setPokedCount((prev) => prev + 1);
     setIsOpen(true);
+    speakCupidot(dilemma.question, { mood: 'talking' });
 
     setTimeout(() => {
       setBotState('happy');
@@ -196,6 +215,54 @@ export function CupidotCompanion() {
                 Autonomous on-device heuristic engine · Active when Gemini rests
               </p>
 
+              {/* Quick Controls Bar: Voice & Emergency */}
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '10px' }}>
+                <button
+                  onClick={toggleVoiceMode}
+                  style={{
+                    background: '#FFF',
+                    border: '1px solid rgba(255, 77, 128, 0.25)',
+                    borderRadius: '20px',
+                    padding: '4px 10px',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    color: voiceMode === 'mute' ? '#888' : '#FF4D80',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                  }}
+                  title="Toggle Cupidot Voice Mode"
+                >
+                  {voiceMode === 'chirp' ? '🐥 Cute Chirps' : voiceMode === 'speech' ? '🗣️ Read Aloud' : '🔇 Muted'}
+                </button>
+
+                <button
+                  onClick={() => {
+                    sounds.playPop();
+                    setIsOpen(false);
+                    setEmergencyOpen(true);
+                  }}
+                  style={{
+                    background: 'linear-gradient(135deg, #FF4D80, #FF758C)',
+                    color: '#FFF',
+                    border: 'none',
+                    borderRadius: '20px',
+                    padding: '4px 12px',
+                    fontSize: '11px',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    boxShadow: '0 2px 8px rgba(255, 77, 128, 0.3)',
+                  }}
+                >
+                  <span>🚨</span>
+                  <span>Emergency Roulette</span>
+                </button>
+              </div>
+
               <button
                 onClick={() => {
                   sounds.playPop();
@@ -291,10 +358,41 @@ export function CupidotCompanion() {
                 <span>🌶️</span>
                 <span>{activeDilemma ? 'Poke Again for Another Dilemma' : 'Poke Cupidot for a Cheeky Dilemma 🌶️'}</span>
               </button>
+
+              <button
+                onClick={() => {
+                  sounds.playPop();
+                  setIsOpen(false);
+                  setEmergencyOpen(true);
+                }}
+                className="btn btn-ghost"
+                style={{
+                  width: '100%',
+                  marginTop: '8px',
+                  fontSize: '12px',
+                  color: '#FF4D80',
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                }}
+              >
+                <span>🚨</span>
+                <span>Trigger Romantic Emergency Alert</span>
+              </button>
             </div>
           </div>
         </div>
       )}
+
+      {/* Spontaneous Romantic Emergency Modal */}
+      <RomanticEmergencyModal
+        isOpen={emergencyOpen}
+        onClose={() => setEmergencyOpen(false)}
+        partnerA={partnerA}
+        partnerB={partnerB}
+      />
     </>
   );
 }

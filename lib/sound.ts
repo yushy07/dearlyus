@@ -359,6 +359,10 @@ class SoundManager {
     });
   }
 
+  public playChoiceLock() {
+    this.playLock();
+  }
+
   // 4. Harmonic chime sparkle on answer reveal / card match
   public playChime() {
     const ctx = this.getContext();
@@ -956,6 +960,104 @@ class SoundManager {
     } catch {}
   }
 
+  // Mechanical Music Box Synthesizer
+  private musicBoxTimers: NodeJS.Timeout[] = [];
+
+  public playMusicBoxWindup() {
+    const ctx = this.getContext();
+    if (!ctx) return;
+    try {
+      const now = ctx.currentTime;
+      for (let i = 0; i < 3; i++) {
+        const click = ctx.createOscillator();
+        const clickGain = ctx.createGain();
+        click.type = 'triangle';
+        click.frequency.setValueAtTime(1600 + i * 120, now + i * 0.08);
+        click.frequency.exponentialRampToValueAtTime(300, now + i * 0.08 + 0.02);
+        clickGain.gain.setValueAtTime(0.08, now + i * 0.08);
+        clickGain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.025);
+        click.connect(clickGain);
+        clickGain.connect(ctx.destination);
+        click.start(now + i * 0.08);
+        click.stop(now + i * 0.08 + 0.03);
+      }
+    } catch {}
+  }
+
+  public playMusicBoxTine(freq: number, startTime = 0) {
+    const ctx = this.getContext();
+    if (!ctx) return;
+    try {
+      const now = ctx.currentTime + startTime;
+
+      // Fundamental tine
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(freq, now);
+
+      // Metallic high-harmonic overtone (chime sheen)
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(freq * 2.76, now);
+
+      // Volume envelope: instant ping, long crystal decay
+      gain1.gain.setValueAtTime(0.0001, now);
+      gain1.gain.linearRampToValueAtTime(0.12, now + 0.004);
+      gain1.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
+
+      gain2.gain.setValueAtTime(0.0001, now);
+      gain2.gain.linearRampToValueAtTime(0.035, now + 0.002);
+      gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+
+      osc1.start(now);
+      osc1.stop(now + 1.25);
+      osc2.start(now);
+      osc2.stop(now + 0.4);
+    } catch {}
+  }
+
+  public playMusicBoxMelody() {
+    this.stopMusicBox();
+    this.playMusicBoxWindup();
+
+    // Romantic Music Box Lullaby (Canon in C arpeggio)
+    const melody = [
+      { f: 523.25, d: 320 }, // C5
+      { f: 659.25, d: 290 }, // E5
+      { f: 783.99, d: 290 }, // G5
+      { f: 1046.5, d: 340 }, // C6
+      { f: 987.77, d: 280 }, // B5
+      { f: 783.99, d: 280 }, // G5
+      { f: 880.00, d: 320 }, // A5
+      { f: 698.46, d: 290 }, // F5
+      { f: 783.99, d: 340 }, // G5
+      { f: 659.25, d: 300 }, // E5
+      { f: 587.33, d: 320 }, // D5
+      { f: 523.25, d: 800 }, // C5 final ring
+    ];
+
+    let currentDelay = 320; // after wind-up clicks
+    melody.forEach((note) => {
+      const timer = setTimeout(() => {
+        this.playMusicBoxTine(note.f);
+      }, currentDelay);
+      this.musicBoxTimers.push(timer);
+      currentDelay += note.d;
+    });
+  }
+
+  public stopMusicBox() {
+    this.musicBoxTimers.forEach((t) => clearTimeout(t));
+    this.musicBoxTimers = [];
+  }
+
   public stopAllAmbience() {
     this.stopWarm();
     this.stopRain();
@@ -964,6 +1066,7 @@ class SoundManager {
     this.stopPiano();
     this.stopVinyl();
     this.stopLofiChords();
+    this.stopMusicBox();
   }
 }
 

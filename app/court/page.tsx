@@ -7,6 +7,7 @@ import { judgeCourtCase, CourtVerdict } from '@/lib/cupidot';
 import { sounds } from '@/lib/sound';
 import { CoupleNameBar } from '@/components/shared';
 import { useCoupleProfile } from '@/lib/couple';
+import { speakCupidot, stopCupidotSpeech } from '@/lib/voice';
 
 interface CaseExample {
   title: string;
@@ -78,8 +79,11 @@ export default function CourtPage() {
       setVerdict(result);
       setDeliberating(false);
       sounds.playCelebration();
-      setBotState(result.guiltyParty === 'Both' ? 'celebration' : 'talking');
-      setTimeout(() => setBotState('happy'), 2400);
+      speakCupidot(`${result.verdictTitle}. The court finds: ${result.guiltyParty}. ${result.reasoning} Mandatory sentence: ${result.sentence}`, {
+        mood: 'talking',
+        onStart: () => setBotState('talking'),
+        onEnd: () => setBotState('celebration'),
+      });
     }, 450);
   };
 
@@ -336,6 +340,23 @@ export default function CourtPage() {
                 <div style={{ fontSize: '14px', fontWeight: 700, color: '#17181C', lineHeight: 1.4 }}>
                   {verdict.sentence}
                 </div>
+              </div>
+
+              <div style={{ marginTop: '14px', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                <button
+                  className="btn btn-sm"
+                  onClick={() => {
+                    sounds.playPop();
+                    speakCupidot(`${verdict.verdictTitle}. The court finds: ${verdict.guiltyParty}. ${verdict.reasoning} Mandatory sentence: ${verdict.sentence}`, {
+                      mood: 'talking',
+                      onStart: () => setBotState('talking'),
+                      onEnd: () => setBotState('celebration'),
+                    });
+                  }}
+                  style={{ background: '#FF4D80', color: '#FFF', fontSize: '12px', fontWeight: 800 }}
+                >
+                  🔊 Hear Judge Cupidot Speak
+                </button>
               </div>
             </div>
           )}

@@ -35,6 +35,7 @@ export function WaxSealEnvelope({
 
     setTimeout(() => {
       setIsOpen(true);
+      sounds.playMusicBoxMelody();
       onOpen?.();
     }, 850);
   };
@@ -217,23 +218,48 @@ export function WaxSealEnvelope({
             position: 'relative',
           }}
         >
-          {/* Top Wax Seal Remnant Badge */}
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              background: '#FFF0F3',
-              color: '#C93B6B',
-              padding: '4px 12px',
-              borderRadius: '999px',
-              fontFamily: 'var(--font-mono)',
-              fontSize: '11px',
-              fontWeight: 800,
-              marginBottom: '20px',
-            }}
-          >
-            ✓ SEAL BROKEN · SEALED IN THE VAULT
+          {/* Top Wax Seal Remnant Badge & Music Box Control */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '8px' }}>
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: '#FFF0F3',
+                color: '#C93B6B',
+                padding: '4px 12px',
+                borderRadius: '999px',
+                fontFamily: 'var(--font-mono)',
+                fontSize: '11px',
+                fontWeight: 800,
+              }}
+            >
+              ✓ SEAL BROKEN · SEALED IN THE VAULT
+            </div>
+
+            <button
+              onClick={() => {
+                sounds.playMusicBoxMelody();
+              }}
+              style={{
+                background: '#FFF9EB',
+                border: '1px solid #FCD34D',
+                color: '#92400E',
+                padding: '4px 10px',
+                borderRadius: '999px',
+                fontFamily: 'var(--font-mono)',
+                fontSize: '11px',
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+              }}
+              title="Replay Music Box Lullaby"
+            >
+              <span>🎵</span>
+              <span>Replay Music Box Chimes</span>
+            </button>
           </div>
 
           {letterContent}

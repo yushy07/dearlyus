@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Ribbon, Navbar, Confetti, CoupleNameBar } from '@/components/shared';
 import { sounds } from '@/lib/sound';
 import { WaxSealEnvelope, ScrollProgress, ScrollReveal, GlowBadge } from '@/components/ui';
@@ -11,6 +11,8 @@ interface SealedCapsule {
   unlockDate: string;
   content: string;
   stamp: string;
+  voiceNoteUrl?: string;
+  voiceDurationSec?: number;
 }
 
 export default function LetterPage() {
@@ -23,6 +25,16 @@ export default function LetterPage() {
   const [stamp, setStamp] = useState('🌸');
   const [confettiActive, setConfettiActive] = useState(false);
   const [activeCapsule, setActiveCapsule] = useState<SealedCapsule | null>(null);
+
+  // Audio Recording State
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordedAudioUrl, setRecordedAudioUrl] = useState<string | null>(null);
+  const [recordSeconds, setRecordSeconds] = useState(0);
+  const [isPlayingVoice, setIsPlayingVoice] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const recordTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
 
   // Vault state
   const [vault, setVault] = useState<SealedCapsule[]>([
@@ -46,6 +58,57 @@ export default function LetterPage() {
 
   const [sealedSuccessfully, setSealedSuccessfully] = useState(false);
 
+  // MediaRecorder handlers
+  const startVoiceRecording = async () => {
+    try {
+      sounds.playPop();
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert('Audio recording is not supported in this browser environment.');
+        return;
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunksRef.current = [];
+      const recorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = recorder;
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+
+      recorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const audioUrl = URL.createObjectURL(audioBlob);
+        setRecordedAudioUrl(audioUrl);
+        stream.getTracks().forEach((track) => track.stop());
+      };
+
+      recorder.start();
+      setIsRecording(true);
+      setRecordSeconds(0);
+
+      recordTimerRef.current = setInterval(() => {
+        setRecordSeconds((s) => s + 1);
+      }, 1000);
+    } catch (err) {
+      alert('Please allow microphone access to record your voice note.');
+    }
+  };
+
+  const stopVoiceRecording = () => {
+    sounds.playPop();
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      if (recordTimerRef.current) clearInterval(recordTimerRef.current);
+    }
+  };
+
+  const deleteVoiceRecording = () => {
+    sounds.playPop();
+    setRecordedAudioUrl(null);
+    setRecordSeconds(0);
+  };
+
   const handleSeal = (e: React.FormEvent) => {
     e.preventDefault();
     if (!letterContent.trim() || !letterTitle.trim()) return;
@@ -57,6 +120,8 @@ export default function LetterPage() {
       unlockDate,
       content: letterContent,
       stamp,
+      voiceNoteUrl: recordedAudioUrl || undefined,
+      voiceDurationSec: recordSeconds > 0 ? recordSeconds : undefined,
     };
 
     setVault([...vault, newCapsule]);
@@ -180,6 +245,81 @@ export default function LetterPage() {
               />
             </div>
 
+            {/* Voice Note Whisper Recording Box */}
+            <div
+              style={{
+                background: '#FFFDF9',
+                border: '1.5px dashed #E5D5C5',
+                borderRadius: '14px',
+                padding: '16px 20px',
+                marginTop: '10px',
+                marginBottom: '10px',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '18px' }}>🎙️</span>
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: 800, color: '#2B231E' }}>
+                      Whisper Inscription (Voice Note)
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--ink-soft)' }}>
+                      Inscribe your real voice inside the wax-sealed time capsule
+                    </div>
+                  </div>
+                </div>
+
+                {recordedAudioUrl && (
+                  <button
+                    type="button"
+                    onClick={deleteVoiceRecording}
+                    style={{ background: 'transparent', border: 'none', color: '#D93838', fontSize: '12px', cursor: 'pointer', fontWeight: 700 }}
+                  >
+                    🗑️ Retake
+                  </button>
+                )}
+              </div>
+
+              {!recordedAudioUrl ? (
+                <div>
+                  {!isRecording ? (
+                    <button
+                      type="button"
+                      onClick={startVoiceRecording}
+                      className="btn btn-sm"
+                      style={{ background: '#FF4D80', color: '#FFF', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                    >
+                      <span>🔴</span>
+                      <span>Record Voice Whisper</span>
+                    </button>
+                  ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: '#D93838', fontWeight: 800, fontSize: '13px' }}>
+                        <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#D93838', animation: 'gl-pulse 1s infinite' }} />
+                        <span>Recording Whisper... {recordSeconds}s</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={stopVoiceRecording}
+                        className="btn btn-sm"
+                        style={{ background: '#1E1B24', color: '#FFF' }}
+                      >
+                        ⏹️ Stop & Inscribe
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: '#F9F4EE', padding: '10px 14px', borderRadius: '10px' }}>
+                  <span style={{ fontSize: '16px' }}>📼</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#4A3E34' }}>
+                    Voice Whisper Inscribed ({recordSeconds}s)
+                  </span>
+                  <audio controls src={recordedAudioUrl} style={{ height: '32px', flex: 1, maxWidth: '260px' }} />
+                </div>
+              )}
+            </div>
+
             <button type="submit" className="btn btn-primary" style={{ padding: '14px', fontSize: '15px', justifyContent: 'center' }}>
               🔒 Seal Envelope into Time Capsule Vault
             </button>
@@ -227,6 +367,43 @@ export default function LetterPage() {
                     ? activeCapsule.content
                     : `If you are reading this, every late-night flight, every airport hug, and every time zone hour was worth it.\nI loved you across the miles, and I love you even more today right next to you.\n\nForever yours,\n${partnerA} ♡`}
                 </p>
+
+                {(activeCapsule?.voiceNoteUrl || (!activeCapsule && recordedAudioUrl)) && (
+                  <div
+                    style={{
+                      marginTop: '24px',
+                      padding: '16px 20px',
+                      borderRadius: '14px',
+                      background: 'linear-gradient(135deg, #2B231E 0%, #1A1412 100%)',
+                      color: '#FFF8F0',
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '16px',
+                      flexWrap: 'wrap',
+                    }}
+                  >
+                    <div style={{ fontSize: '28px', animation: isPlayingVoice ? 'spin 3s linear infinite' : 'none' }}>
+                      📼
+                    </div>
+                    <div style={{ flex: 1, minWidth: '180px' }}>
+                      <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: '#FFB899', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        AUTHENTIC WHISPER RECORDING
+                      </div>
+                      <div style={{ fontSize: '14px', fontWeight: 800, marginTop: '2px' }}>
+                        Inscribed Voice Note from {activeCapsule ? activeCapsule.author : partnerA}
+                      </div>
+                    </div>
+                    <audio
+                      controls
+                      src={activeCapsule ? activeCapsule.voiceNoteUrl : (recordedAudioUrl || undefined)}
+                      onPlay={() => setIsPlayingVoice(true)}
+                      onPause={() => setIsPlayingVoice(false)}
+                      onEnded={() => setIsPlayingVoice(false)}
+                      style={{ height: '36px', maxWidth: '240px' }}
+                    />
+                  </div>
+                )}
               </div>
             }
           />
@@ -267,7 +444,14 @@ export default function LetterPage() {
                   </span>
                 </div>
                 <h4 style={{ fontSize: '16px', fontWeight: 800, margin: '4px 0' }}>{capsule.title}</h4>
-                <div style={{ fontSize: '12px', color: 'var(--ink-soft)' }}>Written by: {capsule.author}</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', color: 'var(--ink-soft)' }}>
+                  <span>Written by: {capsule.author}</span>
+                  {capsule.voiceNoteUrl && (
+                    <span style={{ color: '#D97706', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                      🎙️ Whisper Voice
+                    </span>
+                  )}
+                </div>
               </div>
             ))}
           </div>

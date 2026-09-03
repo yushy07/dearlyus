@@ -519,3 +519,87 @@ export function generateCupidotCaption(nameA = 'Partner 1', nameB = 'Partner 2')
   ];
   return captions[Math.floor(Math.random() * captions.length)];
 }
+
+// ---------------------------------------------------------------------------
+// 🌦️ CUPIDOT'S DAILY LOVE FORECAST & WEATHER REPORT
+// ---------------------------------------------------------------------------
+
+export interface LoveForecast {
+  dateString: string;
+  sweetnessPressure: number; // 85 - 99%
+  stolenHoodieProbability: number; // 70 - 98%
+  laughterPrecipitation: number; // 80 - 100%
+  chemistryHeatIndex: string;
+  windDirection: string;
+  headline: string;
+  severeWeatherWarning: string;
+  partnerANote: string;
+  partnerBNote: string;
+  cupidotPrescription: string;
+}
+
+export function generateLoveForecast(
+  nameA = 'Partner 1',
+  nameB = 'Partner 2',
+  cityA = 'Here',
+  cityB = 'There'
+): LoveForecast {
+  const today = new Date();
+  const dateString = today.toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  // Deterministic seed based on date string and names
+  let seed = 0;
+  const seedString = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}-${nameA}-${nameB}`;
+  for (let i = 0; i < seedString.length; i++) {
+    seed = (seed * 31 + seedString.charCodeAt(i)) % 10000;
+  }
+
+  const sweetnessPressure = 88 + (seed % 11);
+  const stolenHoodieProbability = 75 + ((seed * 3) % 24);
+  const laughterPrecipitation = 82 + ((seed * 7) % 18);
+
+  const HEADLINES = [
+    `Scattered showers of late-night laughing fits with heavy FaceTime highs across ${cityA} & ${cityB} 🌦️`,
+    `Unprecedented romantic atmospheric pressure detected between ${nameA} and ${nameB} 💖`,
+    `Warm emotional air currents colliding: 99% probability of sudden "I miss you" voice notes 💌`,
+    `High-pressure intimacy system parked over ${cityA} & ${cityB}. Visibility: 100% pure devotion ✨`,
+    `Severe sweetness watch in effect: Extended smiling at phone screens guaranteed today 📱`,
+  ];
+
+  const WARNINGS = [
+    `⚠️ SEVERE WEATHER ALERT: 94% chance of stolen oversized hoodies and long-distance yearning tonight.`,
+    `⚠️ ROMANTIC GALE WARNING: High-velocity butterflies detected in the chest cavity whenever ${nameA} calls ${nameB}.`,
+    `⚠️ ADVISORY: Prolonged eye contact through the webcam will cause uncontrollable smiling fits.`,
+    `⚠️ CRITICAL RADAR UPDATE: Extreme magnetic attraction causing spontaneous flight booking urges.`,
+  ];
+
+  const PRESCRIPTIONS = [
+    `Cupidot prescribes: Minimum of 1 spontaneous voice note whisper and 2 forehead kisses sent via emoji before sleep.`,
+    `Cupidot prescribes: Mandatory late-night music-sharing session with at least one embarrassing confession.`,
+    `Cupidot prescribes: Order each other surprise delivery boba or midnight snacks across the timezone gap.`,
+    `Cupidot prescribes: Hold each other's gaze on camera for 20 seconds without speaking.`,
+  ];
+
+  const headline = HEADLINES[seed % HEADLINES.length];
+  const severeWeatherWarning = WARNINGS[(seed * 2) % WARNINGS.length];
+  const cupidotPrescription = PRESCRIPTIONS[(seed * 3) % PRESCRIPTIONS.length];
+
+  return {
+    dateString,
+    sweetnessPressure,
+    stolenHoodieProbability,
+    laughterPrecipitation,
+    chemistryHeatIndex: `${95 + (seed % 10)}°F Romantic Chemistry`,
+    windDirection: `${cityA} ➡️ ${cityB} (Gusts of 45 mph Affection)`,
+    headline,
+    severeWeatherWarning,
+    partnerANote: `${nameA}'s mood radar: 100% receptive to romantic surprises and sweet compliments.`,
+    partnerBNote: `${nameB}'s mood radar: Ready to melt at the sound of ${nameA}'s laugh.`,
+    cupidotPrescription,
+  };
+}

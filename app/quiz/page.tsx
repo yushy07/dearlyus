@@ -9,9 +9,10 @@ import { sounds } from '@/lib/sound';
 import { downloadReceiptPNG, DateReceiptData } from '@/lib/receipt-canvas';
 import { ThermalReceiptModal } from '@/components/shared/ThermalReceiptModal';
 import { useCoupleProfile } from '@/lib/couple';
+import { useRoomSync } from '@/lib/room';
 
 export default function QuizPage() {
-  const { partnerA, partnerB } = useCoupleProfile();
+  const { partnerA, partnerB, roomCode } = useCoupleProfile();
   const [allPacks, setAllPacks] = useState<QuizPack[]>(QUIZ_PACKS);
   const [selectedPack, setSelectedPack] = useState<QuizPack>(QUIZ_PACKS[0]);
   const [currentQIndex, setCurrentQIndex] = useState(0);
@@ -57,7 +58,28 @@ export default function QuizPage() {
   const [adaptiveQueue, setAdaptiveQueue] = useState<QuizQuestion[]>([]);
   const [hostCommentary, setHostCommentary] = useState<string | null>(null);
 
-  const handleNext = () => {
+  // WebRTC & BroadcastChannel Live Room Sync
+  const { sendEvent, partnerOnline } = useRoomSync({
+    roomCode: roomCode || 'LOVE',
+    senderName: partnerA,
+    onMessage: (event) => {
+      if (event.type === 'quiz_pick') {
+        const { partner, choice } = event.payload;
+        sounds.playChoiceLock();
+        if (partner === 'A') setPartnerAPick(choice);
+        else if (partner === 'B') setPartnerBPick(choice);
+      } else if (event.type === 'quiz_reveal') {
+        handleReveal(false);
+      } else if (event.type === 'quiz_next') {
+        handleNext(false);
+      }
+    },
+  });
+
+  const handleNext = (broadcast = true) => {
+    if (broadcast) {
+      sendEvent('quiz_next', {});
+    }
     if (adaptiveQueue.length > 0) {
       const nextAdaptive = adaptiveQueue[0];
       setAdaptiveQueue(adaptiveQueue.slice(1));
@@ -83,8 +105,11 @@ export default function QuizPage() {
     }
   };
 
-  const handleReveal = () => {
+  const handleReveal = (broadcast = true) => {
     if (partnerAPick === null || partnerBPick === null) return;
+    if (broadcast) {
+      sendEvent('quiz_reveal', {});
+    }
     setRevealed(true);
     if (partnerAPick === partnerBPick) {
       setMatches((prev) => prev + 1);
@@ -199,7 +224,40 @@ export default function QuizPage() {
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '860px' }}>
         {/* Title */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <CoupleNameBar />
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap' }}>
+            <CoupleNameBar />
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: partnerOnline ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                color: partnerOnline ? '#059669' : '#D97706',
+                border: `1px solid ${partnerOnline ? '#A7F3D0' : '#FDE68A'}`,
+                padding: '4px 12px',
+                borderRadius: '999px',
+                fontSize: '11px',
+                fontFamily: 'var(--font-mono)',
+                fontWeight: 800,
+              }}
+            >
+              <span
+                style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  background: partnerOnline ? '#10B981' : '#F59E0B',
+                  animation: 'gl-pulse 1.5s infinite',
+                }}
+              />
+              <span>
+                {partnerOnline
+                  ? `ROOM ${roomCode || 'LOVE'} · LIVE SYNCED`
+                  : `ROOM ${roomCode || 'LOVE'} · WAITING FOR ${partnerB}`}
+              </span>
+            </div>
+          </div>
+
           <h1 style={{ fontSize: 'clamp(28px, 4.5vw, 42px)', marginBottom: '10px' }}>
             Lock in privately, <span className="grad">reveal together</span>.
           </h1>
@@ -270,7 +328,13 @@ export default function QuizPage() {
                   {currentQ.options.map((opt, idx) => (
                     <button
                       key={idx}
-                      onClick={() => !revealed && setPartnerAPick(idx)}
+                      onClick={() => {
+                        if (!revealed) {
+                          setPartnerAPick(idx);
+                          sounds.playChoiceLock();
+                          sendEvent('quiz_pick', { partner: 'A', choice: idx });
+                        }
+                      }}
                       disabled={revealed}
                       style={{
                         textAlign: 'left',
@@ -302,7 +366,13 @@ export default function QuizPage() {
                   {currentQ.options.map((opt, idx) => (
                     <button
                       key={idx}
-                      onClick={() => !revealed && setPartnerBPick(idx)}
+                      onClick={() => {
+                        if (!revealed) {
+                          setPartnerBPick(idx);
+                          sounds.playChoiceLock();
+                          sendEvent('quiz_pick', { partner: 'B', choice: idx });
+                        }
+                      }}
                       disabled={revealed}
                       style={{
                         textAlign: 'left',
@@ -327,7 +397,7 @@ export default function QuizPage() {
             <div style={{ textAlign: 'center', paddingTop: '12px' }}>
               {!revealed ? (
                 <button
-                  onClick={handleReveal}
+                  onClick={() => handleReveal(true)}
                   disabled={partnerAPick === null || partnerBPick === null}
                   className="btn btn-primary"
                   style={{ padding: '12px 36px', fontSize: '15px', opacity: partnerAPick !== null && partnerBPick !== null ? 1 : 0.5 }}
@@ -378,7 +448,7 @@ export default function QuizPage() {
                     </div>
                   )}
                   <br />
-                  <button onClick={handleNext} className="btn btn-grad" style={{ padding: '12px 36px', fontSize: '15px' }}>
+                  <button onClick={() => handleNext(true)} className="btn btn-grad" style={{ padding: '12px 36px', fontSize: '15px' }}>
                     {currentQIndex + 1 < selectedPack.questions.length ? 'Next Question ▷' : 'View Final Results 🏆'}
                   </button>
                 </div>

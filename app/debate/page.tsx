@@ -8,6 +8,7 @@ import { sounds } from '@/lib/sound';
 import { Confetti } from '@/components/shared/Confetti';
 import { CoupleNameBar } from '@/components/shared';
 import { useCoupleProfile } from '@/lib/couple';
+import { speakCupidot } from '@/lib/voice';
 
 interface DebateTopicItem {
   topic: string;
@@ -96,8 +97,11 @@ export default function DebatePage() {
       setConfettiActive(true);
       setTimeout(() => setConfettiActive(false), 2500);
 
-      setBotState(result.winner === 'Dead Heat Draw' ? 'love' : 'celebration');
-      setTimeout(() => setBotState('happy'), 2400);
+      speakCupidot(`Debate Winner: ${result.winner}. ${result.analysis} Penalty decree: ${result.penalty}`, {
+        mood: 'talking',
+        onStart: () => setBotState('talking'),
+        onEnd: () => setBotState('celebration'),
+      });
     }, 500);
   };
 
@@ -285,6 +289,23 @@ export default function DebatePage() {
                 <div style={{ fontSize: '14px', fontWeight: 700, color: '#17181C', lineHeight: 1.4 }}>
                   {verdict.penalty}
                 </div>
+              </div>
+
+              <div style={{ marginTop: '14px', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                <button
+                  className="btn btn-sm"
+                  onClick={() => {
+                    sounds.playPop();
+                    speakCupidot(`Debate Winner: ${verdict.winner}. ${verdict.analysis} Penalty decree: ${verdict.penalty}`, {
+                      mood: 'talking',
+                      onStart: () => setBotState('talking'),
+                      onEnd: () => setBotState('celebration'),
+                    });
+                  }}
+                  style={{ background: '#FF4D80', color: '#FFF', fontSize: '12px', fontWeight: 800 }}
+                >
+                  🔊 Hear Arbiter Proclamation
+                </button>
               </div>
             </div>
           )}
