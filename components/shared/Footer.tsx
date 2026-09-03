@@ -55,7 +55,8 @@ export function Footer() {
                     <circle cx="64" cy="67" r="5" fill="#FFFFFF" />
                   </svg>
                 </span>
-                <span>Dearly Us</span>
+                <span className="brand-dearly">Dearly</span>
+                <span className="brand-us">Us</span>
                 <span className="dots" style={{ marginLeft: '4px' }}>
                   <i className="p" style={{ display: 'inline-block', width: '7px', height: '7px', borderRadius: '50%', background: 'var(--pink)', marginRight: '3px' }}></i>
                   <i className="b" style={{ display: 'inline-block', width: '7px', height: '7px', borderRadius: '50%', background: 'var(--blue)' }}></i>
@@ -77,7 +78,7 @@ export function Footer() {
             </div>
 
             <p style={{ fontSize: '14.5px', color: 'var(--ink-soft)', lineHeight: 1.6 }}>
-              Made for the moments that belong to you two. Zero lag, shared photobooth strips, interactive duels, and memory keepsakes across any timezone.
+              <span style={{ color: 'var(--blue)', fontWeight: 700 }}>Made for the moments that belong to you two.</span> Zero lag, shared photobooth strips, interactive duels, and memory keepsakes across any timezone.
             </p>
           </div>
 
@@ -291,7 +292,7 @@ export function Footer() {
           }}
         >
           <div>
-            © {new Date().getFullYear()} <b>Dearly Us</b>. Made for the moments that belong to you two.
+            © {new Date().getFullYear()} <b className="brand-dearly">Dearly</b> <b className="brand-us">Us</b>. <span style={{ color: 'var(--blue)', fontWeight: 600 }}>Made for the moments that belong to you two.</span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>

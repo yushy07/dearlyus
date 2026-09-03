@@ -178,8 +178,21 @@ button {
   font-weight: 800;
   font-size: 22px;
   letter-spacing: -.03em;
-  color: var(--ink);
+  color: var(--blue);
   text-decoration: none;
+}
+
+.brand-dearly {
+  color: var(--blue);
+}
+
+.brand-us {
+  color: var(--pink);
+}
+
+.brand-tagline {
+  color: var(--blue);
+  font-weight: 600;
 }
 
 .brand-emblem {

@@ -7,15 +7,15 @@
   <circle cx="920" cy="320" r="220" fill="#437EEB" fill-opacity="0.10" filter="blur(60px)"/>
 
   <!-- Logo -->
-  <text x="80" y="110" font-family="Pretendard, -apple-system, sans-serif" font-weight="900" font-size="44" fill="#1C1924" letter-spacing="-0.04em">dearly us</text>
+  <text x="80" y="110" font-family="Pretendard, -apple-system, sans-serif" font-weight="900" font-size="44" letter-spacing="-0.04em"><tspan fill="#437EEB">dearly</tspan> <tspan fill="#FF4E78">us</tspan></text>
   <circle cx="280" cy="84" r="7" fill="#FF4E78"/>
   <circle cx="298" cy="84" r="7" fill="#437EEB"/>
 
   <!-- Tagline -->
-  <text x="80" y="220" font-family="Pretendard, -apple-system, sans-serif" font-weight="900" font-size="52" fill="#1C1924" letter-spacing="-0.03em">
+  <text x="80" y="220" font-family="Pretendard, -apple-system, sans-serif" font-weight="900" font-size="52" fill="#437EEB" letter-spacing="-0.03em">
     Made for the moments that
   </text>
-  <text x="80" y="285" font-family="Pretendard, -apple-system, sans-serif" font-weight="900" font-size="52" fill="#FF4E78" letter-spacing="-0.03em">
+  <text x="80" y="285" font-family="Pretendard, -apple-system, sans-serif" font-weight="900" font-size="52" fill="#437EEB" letter-spacing="-0.03em">
     belong to you two.
   </text>
 

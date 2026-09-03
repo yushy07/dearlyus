@@ -467,7 +467,8 @@ export default function PhotoboothPage() {
                 <circle cx="64" cy="67" r="5" fill="#FFFFFF" />
               </svg>
             </span>
-            <span>Dearly Us</span>
+            <span className="brand-dearly">Dearly</span>
+            <span className="brand-us">Us</span>
             <span className="dots">
               <i className="p"></i>
               <i className="b"></i>

@@ -344,7 +344,8 @@ export default function HomePage() {
                 <circle cx="64" cy="67" r="5" fill="#FFFFFF" />
               </svg>
             </span>
-            <span>Dearly Us</span>
+            <span className="brand-dearly">Dearly</span>
+            <span className="brand-us">Us</span>
             <span className="dots">
               <i className="p"></i>
               <i className="b"></i>
@@ -460,7 +461,7 @@ export default function HomePage() {
               Belong to <span className="pink">You</span> <span className="blue">Two</span>.
             </h1>
             <p className="lede">
-              Made for the moments that belong to you two. A realtime sanctuary for couples bridging distance with 35+ interactive games, authentic Korean Life4Cuts photostrips, 3D memory vaults, and intimate keepsakes.
+              <span style={{ color: 'var(--blue)', fontWeight: 700 }}>Made for the moments that belong to you two.</span> A realtime sanctuary for couples bridging distance with 35+ interactive games, authentic Korean Life4Cuts photostrips, 3D memory vaults, and intimate keepsakes.
             </p>
             <div className="cta-row">
               <Link className="btn btn-grad btn-3d" href="/activity">

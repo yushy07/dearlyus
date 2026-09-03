@@ -2,7 +2,7 @@
 
   <img src="public/logo.svg" alt="Dearly Us Logo" width="460" />
 
-  <h3>Made for the moments that belong to you two.</h3>
+  <h3><span style="color: #437EEB;">Made for the moments that belong to you two.</span></h3>
 
   <p>
     An intimate realtime date night sanctuary for couples separated by distance or sharing screens together.<br/>
