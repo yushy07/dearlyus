@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { Footer } from '@/components/shared/Footer';
+import { AuthButton } from '@/components/shared/AuthButton';
 import { ShinyText, AuroraBackground, SpotlightCard, MagnetButton, ScrollProgress, ScrollReveal, Floating3D, GlowBadge } from '@/components/ui';
 import { sounds } from '@/lib/sound';
 import { useCoupleProfile } from '@/lib/couple';
@@ -12,7 +13,6 @@ export default function HomePage() {
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
   const [roomCode, setRoomCode] = useState<string[]>([]);
   const [copied, setCopied] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
   const [nickname, setNickname] = useState(partnerA);
   const [partnerName, setPartnerName] = useState(partnerB);
 
@@ -393,22 +393,7 @@ export default function HomePage() {
                 />
               </svg>
             </Link>
-            <button
-              className="nav-profile"
-              onClick={() => setProfileOpen(true)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2" />
-                <path
-                  d="M4 21c0-4 3.6-6.5 8-6.5S20 17 20 21"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
-              Profile
-            </button>
+            <AuthButton />
             <Link className="btn btn-grad cta-nav" href="/activity">
               Browse activities <span className="arr">▷</span>
             </Link>
@@ -1808,122 +1793,6 @@ export default function HomePage() {
 
       {/* Footer */}
       <Footer />
-
-      {/* Profile Modal */}
-      {profileOpen && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 100,
-            background: 'rgba(23,24,28,0.5)',
-            backdropFilter: 'blur(6px)',
-            display: 'grid',
-            placeItems: 'center',
-            padding: '20px',
-          }}
-          onClick={() => setProfileOpen(false)}
-        >
-          <div
-            style={{
-              width: 'min(440px, 100%)',
-              background: '#fff',
-              borderRadius: '16px',
-              padding: '28px',
-              boxShadow: 'var(--shadow-lg)',
-              border: '1px solid var(--line)',
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-              <h3 style={{ fontSize: '20px', fontWeight: 800 }}>Your Dearly Us Profile</h3>
-              <button
-                onClick={() => setProfileOpen(false)}
-                style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }}
-              >
-                ✕
-              </button>
-            </div>
-
-            <div style={{ display: 'flex', gap: '14px', alignItems: 'center', marginBottom: '20px' }}>
-              <div
-                style={{
-                  width: '56px',
-                  height: '56px',
-                  borderRadius: '50%',
-                  background: 'var(--pink-tint)',
-                  border: '2px solid var(--pink)',
-                  display: 'grid',
-                  placeItems: 'center',
-                  fontSize: '24px',
-                }}
-              >
-                🌸
-              </div>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: '16px' }}>{nickname} &amp; {partnerName}</div>
-                <div style={{ fontSize: '12px', color: 'var(--ink-soft)' }}>Connected Room: <b>{roomCode.join('')}</b></div>
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gap: '12px', marginBottom: '22px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '4px', textTransform: 'uppercase' }}>
-                  Your Nickname
-                </label>
-                <input
-                  type="text"
-                  value={nickname}
-                  onChange={(e) => setNickname(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px 12px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--line)',
-                    fontFamily: 'inherit',
-                  }}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '4px', textTransform: 'uppercase' }}>
-                  Partner&apos;s Nickname
-                </label>
-                <input
-                  type="text"
-                  value={partnerName}
-                  onChange={(e) => setPartnerName(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px 12px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--line)',
-                    fontFamily: 'inherit',
-                  }}
-                />
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button
-                className="btn btn-grad"
-                style={{ flex: 1, justifyContent: 'center' }}
-                onClick={() => setProfileOpen(false)}
-              >
-                Save Profile
-              </button>
-              <Link
-                href="/photobooth"
-                className="btn btn-ghost"
-                style={{ flex: 1, justifyContent: 'center' }}
-                onClick={() => setProfileOpen(false)}
-              >
-                Open Booth 📸
-              </Link>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

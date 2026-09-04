@@ -76,7 +76,7 @@ export default function PrivacyPage() {
             <div style={{ fontSize: '28px', marginBottom: '10px' }}>🚫</div>
             <div style={{ fontWeight: 800, fontSize: '16px', color: 'var(--ink)', marginBottom: '6px' }}>Optional Account</div>
             <div style={{ fontSize: '13.5px', color: 'var(--ink-soft)', lineHeight: 1.5 }}>
-              You can browse without an account. Google sign-in is used when you want a profile and shared live-room activities.
+              You can browse without an account. Google is the only sign-in method offered when you want a profile, a private couple space, saved keepsakes, and shared live-room activities. Dearly Us never receives or stores your Google password.
             </div>
           </div>
         </div>
@@ -110,6 +110,9 @@ export default function PrivacyPage() {
               </li>
               <li>
                 <b>Shared Room Events:</b> your room code, account identifier, display name, and interaction events needed to synchronize an activity are stored in Supabase. Photos and camera feeds are not included.
+              </li>
+              <li>
+                <b>Account &amp; Couple Space:</b> your Google account identifier, email, display name, profile photo URL, city, timezone, couple membership, private invite status, and saved keepsake references are stored in Supabase so your space can follow you across devices.
               </li>
             </ul>
           </section>
