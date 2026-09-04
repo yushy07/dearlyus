@@ -58,9 +58,9 @@ export default function PrivacyPage() {
         >
           <div style={{ background: '#FFFFFF', border: '1px solid var(--line)', borderRadius: '16px', padding: '22px', boxShadow: 'var(--shadow-soft)' }}>
             <div style={{ fontSize: '28px', marginBottom: '10px' }}>🛡️</div>
-            <div style={{ fontWeight: 800, fontSize: '16px', color: 'var(--ink)', marginBottom: '6px' }}>Zero Server Video</div>
+            <div style={{ fontWeight: 800, fontSize: '16px', color: 'var(--ink)', marginBottom: '6px' }}>Your Camera Stays Local</div>
             <div style={{ fontSize: '13.5px', color: 'var(--ink-soft)', lineHeight: 1.5 }}>
-              Webcam video feeds are transmitted peer-to-peer (P2P). No server ever records, relays, or stores your live video.
+              The photobooth uses your device camera locally. Dearly Us does not upload, record, or relay camera video.
             </div>
           </div>
 
@@ -74,9 +74,9 @@ export default function PrivacyPage() {
 
           <div style={{ background: '#FFFFFF', border: '1px solid var(--line)', borderRadius: '16px', padding: '22px', boxShadow: 'var(--shadow-soft)' }}>
             <div style={{ fontSize: '28px', marginBottom: '10px' }}>🚫</div>
-            <div style={{ fontWeight: 800, fontSize: '16px', color: 'var(--ink)', marginBottom: '6px' }}>Zero Account Required</div>
+            <div style={{ fontWeight: 800, fontSize: '16px', color: 'var(--ink)', marginBottom: '6px' }}>Optional Account</div>
             <div style={{ fontSize: '13.5px', color: 'var(--ink-soft)', lineHeight: 1.5 }}>
-              No passwords, emails, or personal tracking required. Join instantly with a 5-letter private room code.
+              You can browse without an account. Google sign-in is used when you want a profile and shared live-room activities.
             </div>
           </div>
         </div>
@@ -103,13 +103,13 @@ export default function PrivacyPage() {
             </p>
             <ul style={{ paddingLeft: '20px', margin: '0 0 12px' }}>
               <li>
-                <b>Ephemeral Room Codes:</b> 5-character identifiers (e.g. <code>KX7RM</code>) used to pair two devices in real-time.
+                <b>Room Codes:</b> private 8–16 character identifiers used to pair signed-in devices for shared activities.
               </li>
               <li>
                 <b>Local Device Storage:</b> Your couple nicknames (e.g. &ldquo;Mia &amp; Alex&rdquo;), custom passport stamps, soundscape volume preferences, and saved custom quiz packs are stored locally in your web browser&rsquo;s <code>localStorage</code>. This data never leaves your device.
               </li>
               <li>
-                <b>WebRTC Signaling:</b> Temporary session negotiation metadata (SDP offers/answers and ICE candidates) is passed securely through memory relays and automatically purged immediately upon connection.
+                <b>Shared Room Events:</b> your room code, account identifier, display name, and interaction events needed to synchronize an activity are stored in Supabase. Photos and camera feeds are not included.
               </li>
             </ul>
           </section>
@@ -131,7 +131,7 @@ export default function PrivacyPage() {
               <span>3.</span> Third-Party Services &amp; AI Features
             </h2>
             <p style={{ margin: '0 0 12px' }}>
-              Certain interactive activities (such as dynamic questions in the Know Me Quiz or the Third Wheel Date Host) utilize large language model APIs to provide adaptive questions. These queries only receive category tags (e.g., &ldquo;Travel &amp; Adventures&rdquo;) and never include your personal images, webcam frames, or sensitive identifying data.
+              AI-powered follow-ups are optional and off by default. If you turn them on in Know Me Quiz, Honest Cards, or the Third Wheel Date Host, the answers and names you enter for that round are sent to Google Gemini to generate the next question. We never send personal images, webcam frames, or camera streams. You can turn AI follow-ups off at any time; the activities continue using on-device questions.
             </p>
           </section>
 

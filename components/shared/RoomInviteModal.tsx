@@ -26,7 +26,7 @@ export function RoomInviteModal({
 
   if (!isOpen) return null;
 
-  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://dearlyus.love';
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
   const joinUrl = `${origin}/${activitySlug}?room=${roomCode}`;
 
   const handleCopyLink = () => {

@@ -2,11 +2,13 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Ribbon, Navbar, CoupleNameBar } from '@/components/shared';
+import { Ribbon, Navbar, CoupleNameBar, AiConsentToggle } from '@/components/shared';
 import { sounds } from '@/lib/sound';
 import { SwipeDeck, GlowBadge, ScrollProgress, ScrollReveal } from '@/components/ui';
 import { ScratchOffCard } from '@/components/cards/ScratchOffCard';
 import { useCoupleProfile } from '@/lib/couple';
+import { useAiConsent } from '@/lib/ai-consent';
+import { generateAdaptiveQuestion } from '@/lib/gemini';
 
 interface Card {
   tier: string;
@@ -25,6 +27,7 @@ const INITIAL_DECK: Card[] = [
 
 export default function CardsPage() {
   const { partnerA, partnerB } = useCoupleProfile();
+  const { hasAiConsent } = useAiConsent();
   const [deck, setDeck] = useState<Card[]>(INITIAL_DECK);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -66,18 +69,16 @@ export default function CardsPage() {
     setSessionHistory(updatedHistory);
 
     // Fetch dynamic adaptive follow-up card connecting multi-round threads
-    fetch('/api/questions/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+    if (!hasAiConsent) return;
+
+    void generateAdaptiveQuestion({
         partnerA: { name: partnerA, answer: myAnswer || 'Loving our late night talks' },
         partnerB: { name: partnerB, answer: 'Feeling closest when we plan our future' },
         mode: 'cards',
         mood: 'deep',
+        aiConsent: true,
         history: updatedHistory,
-      }),
     })
-      .then((res) => res.json())
       .then((data: any) => {
         if (data?.question) {
           const newCard: Card = {
@@ -118,6 +119,7 @@ export default function CardsPage() {
       />
 
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '720px' }}>
+        <div style={{ marginBottom: '18px' }}><AiConsentToggle /></div>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <CoupleNameBar />
           <h1 style={{ fontSize: 'clamp(28px, 4vw, 42px)', marginBottom: '10px' }}>

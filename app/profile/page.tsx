@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useCoupleProfile } from '@/lib/couple';
 import { sounds } from '@/lib/sound';
 import { CoupleNameBar } from '@/components/shared';
+import { getSupabase } from '@/lib/supabase';
 
 export default function ProfilePage() {
   const { partnerA, partnerB, cityA, cityB, roomCode: storedRoom, updateProfile } = useCoupleProfile();
@@ -14,6 +15,8 @@ export default function ProfilePage() {
   const [partnerCity, setPartnerCity] = useState(cityB);
   const [roomCode, setRoomCode] = useState(storedRoom);
   const [savedMessage, setSavedMessage] = useState(false);
+  const [accountEmail, setAccountEmail] = useState<string | null>(null);
+  const [isSigningIn, setIsSigningIn] = useState(false);
 
   useEffect(() => {
     setUserName(partnerA);
@@ -23,15 +26,48 @@ export default function ProfilePage() {
     setRoomCode(storedRoom);
   }, [partnerA, partnerB, cityA, cityB, storedRoom]);
 
-  const handleSave = () => {
+  useEffect(() => {
+    const supabase = getSupabase();
+    if (!supabase) return;
+    supabase.auth.getUser().then(async ({ data }) => {
+      if (!data.user) return;
+      setAccountEmail(data.user.email ?? null);
+      const { data: profile } = await supabase.from('profiles').select('display_name, city').eq('id', data.user.id).maybeSingle();
+      if (profile) {
+        setUserName(profile.display_name || partnerA);
+        setUserCity(profile.city || cityA);
+      }
+    });
+  }, []);
+
+  const signInWithGoogle = async () => {
+    const supabase = getSupabase();
+    if (!supabase) return;
+    setIsSigningIn(true);
+    await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${window.location.origin}/auth/callback` } });
+    setIsSigningIn(false);
+  };
+
+  const handleSave = async () => {
+    const safeRoomCode = (roomCode || crypto.randomUUID().replace(/-/g, '').slice(0, 12)).toUpperCase();
+    if (!/^[A-Z0-9]{8,16}$/.test(safeRoomCode)) {
+      setSavedMessage(false);
+      return;
+    }
     sounds.playCelebration();
     updateProfile({
       partnerA: userName,
       partnerB: partnerName,
       cityA: userCity,
       cityB: partnerCity,
-      roomCode,
+      roomCode: safeRoomCode,
     });
+    const supabase = getSupabase();
+    const { data: auth } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
+    if (supabase && auth.user) {
+      await supabase.from('profiles').upsert({ id: auth.user.id, display_name: userName.trim(), city: userCity.trim() });
+    }
+    setRoomCode(safeRoomCode);
     setSavedMessage(true);
     setTimeout(() => setSavedMessage(false), 3000);
   };
@@ -65,8 +101,13 @@ export default function ProfilePage() {
             {userName} &amp; {partnerName}&apos;s <span className="grad">Space</span>
           </h1>
           <p style={{ color: 'var(--ink-soft)', fontSize: '16px' }}>
-            Connected room: <b>{roomCode}</b> · {userCity} ✈️ {partnerCity}
+            {accountEmail ? `Signed in as ${accountEmail} · ` : 'Sign in to keep your profile across devices · '}Connected room: <b>{roomCode || 'Choose one below'}</b>
           </p>
+          {!accountEmail && (
+            <button className="btn btn-primary" onClick={signInWithGoogle} disabled={isSigningIn} style={{ marginTop: '12px' }}>
+              {isSigningIn ? 'Opening Google…' : 'Continue with Google'}
+            </button>
+          )}
         </div>
 
         {/* Profile Card */}
@@ -130,7 +171,10 @@ export default function ProfilePage() {
               <input
                 type="text"
                 value={roomCode}
-                onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+                onChange={(e) => setRoomCode(e.target.value.replace(/[^a-z0-9]/gi, '').toUpperCase())}
+                minLength={8}
+                maxLength={16}
+                placeholder="8–16 chars"
                 style={{ fontFamily: 'var(--font-mono)', fontWeight: 800, fontSize: '16px', padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--line)', width: '120px' }}
               />
             </div>

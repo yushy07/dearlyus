@@ -12,6 +12,7 @@ import { PassportBookletCover } from './_components/PassportBookletCover';
 import { StampCard } from './_components/StampCard';
 import { TicketEditorModal } from './_components/TicketEditorModal';
 import { RoomInviteModal } from '@/components/shared/RoomInviteModal';
+import { useCoupleProfile } from '@/lib/couple';
 
 interface ConfettiPiece {
   id: string;
@@ -44,18 +45,14 @@ export default function PassportPage() {
   const [animatingStampId, setAnimatingStampId] = useState<string | null>(null);
   const [isEditingTicket, setIsEditingTicket] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
-  const [roomCode, setRoomCode] = useState('KX7RM');
+  const { roomCode: savedRoomCode } = useCoupleProfile();
+  const [roomCode, setRoomCode] = useState('');
   const [copiedLink, setCopiedLink] = useState(false);
   const [confetti, setConfetti] = useState<ConfettiPiece[]>([]);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const savedRoom = localStorage.getItem('dearly_room_code') || 'KX7RM';
-        setRoomCode(savedRoom);
-      } catch {}
-    }
-  }, []);
+    if (savedRoomCode) setRoomCode(savedRoomCode);
+  }, [savedRoomCode]);
 
   const triggerConfettiCelebration = () => {
     const chars = ['🌸', '💖', '⭐', '✨', '🎀', '💌', '🌟'];

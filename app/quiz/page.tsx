@@ -4,15 +4,18 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { QUIZ_PACKS } from '@/data';
 import { QuizPack, QuizQuestion } from '@/types';
-import { Ribbon, Navbar, Confetti, CoupleNameBar } from '@/components/shared';
+import { Ribbon, Navbar, Confetti, CoupleNameBar, AiConsentToggle } from '@/components/shared';
 import { sounds } from '@/lib/sound';
 import { downloadReceiptPNG, DateReceiptData } from '@/lib/receipt-canvas';
 import { ThermalReceiptModal } from '@/components/shared/ThermalReceiptModal';
 import { useCoupleProfile } from '@/lib/couple';
 import { useRoomSync } from '@/lib/room';
+import { useAiConsent } from '@/lib/ai-consent';
+import { generateAdaptiveQuestion } from '@/lib/gemini';
 
 export default function QuizPage() {
   const { partnerA, partnerB, roomCode } = useCoupleProfile();
+  const { hasAiConsent } = useAiConsent();
   const [allPacks, setAllPacks] = useState<QuizPack[]>(QUIZ_PACKS);
   const [selectedPack, setSelectedPack] = useState<QuizPack>(QUIZ_PACKS[0]);
   const [currentQIndex, setCurrentQIndex] = useState(0);
@@ -58,7 +61,7 @@ export default function QuizPage() {
   const [adaptiveQueue, setAdaptiveQueue] = useState<QuizQuestion[]>([]);
   const [hostCommentary, setHostCommentary] = useState<string | null>(null);
 
-  // WebRTC & BroadcastChannel Live Room Sync
+  // Supabase live room sync
   const { sendEvent, partnerOnline } = useRoomSync({
     roomCode: roomCode || 'LOVE',
     senderName: partnerA,
@@ -128,17 +131,15 @@ export default function QuizPage() {
     const updatedHistory = [...sessionHistory, currentRoundData];
     setSessionHistory(updatedHistory);
 
-    fetch('/api/questions/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+    if (!hasAiConsent) return;
+
+    void generateAdaptiveQuestion({
         partnerA: { name: partnerA, answer: currentQ.options[partnerAPick] },
         partnerB: { name: partnerB, answer: currentQ.options[partnerBPick] },
         mode: 'quiz',
+        aiConsent: true,
         history: updatedHistory,
-      }),
     })
-      .then((res) => res.json())
       .then((data: any) => {
         if (data?.question && Array.isArray(data.options)) {
           setAdaptiveQueue([
@@ -222,6 +223,7 @@ export default function QuizPage() {
       />
 
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '860px' }}>
+        <div style={{ maxWidth: '620px', margin: '0 auto 18px' }}><AiConsentToggle /></div>
         {/* Title */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap' }}>
@@ -483,7 +485,7 @@ export default function QuizPage() {
                 onClick={() => {
                   sounds.playPop();
                   setReceiptModalData({
-                    roomCode: 'KX7RM',
+                    roomCode: roomCode || 'PRIVATE',
                     date: new Date().toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }),
                     partnerA,
                     partnerB,

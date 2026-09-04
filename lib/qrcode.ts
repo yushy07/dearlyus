@@ -249,7 +249,7 @@ export function QRCodeSVG({
     try {
       return encodeQRCode(text);
     } catch {
-      return encodeQRCode('https://dearlyus.love');
+      return encodeQRCode('http://localhost:3000');
     }
   }, [text]);
 

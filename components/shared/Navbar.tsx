@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import { AuthButton } from './AuthButton';
 
 interface NavbarProps {
   roomCode?: string;
@@ -70,9 +71,12 @@ export function Navbar({ roomCode, rightAction }: NavbarProps) {
           )}
 
           {rightAction ?? (
-            <Link className="btn btn-primary" href="/activity" style={{ fontSize: '13px', padding: '6px 14px' }}>
-              All Activities ▷
-            </Link>
+            <>
+              <AuthButton />
+              <Link className="btn btn-primary" href="/activity" style={{ fontSize: '13px', padding: '6px 14px' }}>
+                All Activities ▷
+              </Link>
+            </>
           )}
         </div>
       </div>

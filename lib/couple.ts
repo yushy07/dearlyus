@@ -23,7 +23,6 @@ export const DEFAULT_COUPLE: CoupleProfile = {
   partnerB: 'Alex',
   cityA: 'Calgary',
   cityB: 'Jakarta',
-  roomCode: 'KX7RM',
 };
 
 const STORAGE_KEY = 'dearly_couple_profile';
@@ -40,6 +39,7 @@ export function getStoredCoupleProfile(): CoupleProfile {
           partnerB: parsed.partnerB?.trim() || DEFAULT_COUPLE.partnerB,
           cityA: parsed.cityA?.trim() || DEFAULT_COUPLE.cityA,
           cityB: parsed.cityB?.trim() || DEFAULT_COUPLE.cityB,
+          roomCode: parsed.roomCode?.trim().toUpperCase().match(/^[A-Z0-9]{8,16}$/) ? parsed.roomCode.trim().toUpperCase() : undefined,
         };
       }
     }
@@ -72,7 +72,13 @@ export function useCoupleProfile() {
   const [profile, setProfile] = useState<CoupleProfile>(DEFAULT_COUPLE);
 
   useEffect(() => {
-    setProfile(getStoredCoupleProfile());
+    const stored = getStoredCoupleProfile();
+    const invitedRoom = new URLSearchParams(window.location.search).get('room')?.replace(/[^a-z0-9]/gi, '').toUpperCase();
+    if (invitedRoom && invitedRoom.length >= 8) {
+      setProfile(saveStoredCoupleProfile({ roomCode: invitedRoom }));
+    } else {
+      setProfile(stored);
+    }
 
     const handleUpdate = (e: any) => {
       if (e.type === 'storage') {
@@ -103,7 +109,7 @@ export function useCoupleProfile() {
     partnerB: profile.partnerB || 'Partner 2',
     cityA: profile.cityA || 'City 1',
     cityB: profile.cityB || 'City 2',
-    roomCode: profile.roomCode || 'KX7RM',
+    roomCode: profile.roomCode || '',
     updateProfile,
   };
 }

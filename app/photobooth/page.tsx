@@ -82,12 +82,12 @@ export default function PhotoboothPage() {
   >('BOOTH');
 
   // Room config
-  const [roomCode, setRoomCode] = useState('KX7RM');
+  const [roomCode, setRoomCode] = useState('');
   const [selectedStyle, setSelectedStyle] = useState(ROOM_STYLES[0]);
   const [selectedLayout, setSelectedLayout] = useState(LAYOUTS[0]);
   const [isGroupMode, setIsGroupMode] = useState(false);
   const [isSoloMode, setIsSoloMode] = useState(false);
-  const { partnerA, partnerB, cityA, cityB } = useCoupleProfile();
+  const { partnerA, partnerB, cityA, cityB, roomCode: savedRoomCode } = useCoupleProfile();
   const [nickname, setNickname] = useState(partnerA);
   const [partnerName, setPartnerName] = useState(partnerB);
   const [coupleName, setCoupleName] = useState(`${partnerA} ♡ ${partnerB}`);
@@ -98,6 +98,10 @@ export default function PhotoboothPage() {
     setPartnerName(partnerB);
     setCoupleName(`${partnerA} ♡ ${partnerB}`);
   }, [partnerA, partnerB]);
+
+  useEffect(() => {
+    if (savedRoomCode) setRoomCode(savedRoomCode);
+  }, [savedRoomCode]);
 
   // Booth camera & feed state
   const [feedMode, setFeedMode] = useState<'simulated' | 'webcam'>('simulated');

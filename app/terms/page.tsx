@@ -96,7 +96,7 @@ export default function TermsPage() {
             </p>
             <ul style={{ paddingLeft: '20px', margin: '0 0 12px' }}>
               <li>Harass, abuse, or record another person without their informed consent.</li>
-              <li>Attempt to disrupt our WebRTC relays, reverse-engineer socket protocols, or overload server infrastructure.</li>
+              <li>Attempt to disrupt shared-room services, reverse-engineer service protocols, or overload server infrastructure.</li>
               <li>Use the service to distribute malicious scripts, unsolicited spam, or abusive media.</li>
             </ul>
           </section>
@@ -127,7 +127,7 @@ export default function TermsPage() {
               6. Disclaimer &amp; Limitation of Liability
             </h2>
             <p style={{ margin: '0 0 12px' }}>
-              Dearly Us is provided on an &ldquo;AS IS&rdquo; and &ldquo;AS AVAILABLE&rdquo; basis without warranties of any kind. While we design for 99.9% uptime and ultra-low WebRTC latency, we cannot guarantee uninterrupted service across all global ISPs, network firewalls, or hardware configurations.
+              Dearly Us is provided on an &ldquo;AS IS&rdquo; and &ldquo;AS AVAILABLE&rdquo; basis without warranties of any kind. We cannot guarantee uninterrupted service across all global networks, browsers, or hardware configurations.
             </p>
           </section>
 

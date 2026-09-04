@@ -28,7 +28,7 @@ export default function DrawPage() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }, []);
 
-  // WebRTC & BroadcastChannel Live Room Sync
+  // Supabase live room sync
   const handleRemoteMessage = useCallback((event: any) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -284,7 +284,7 @@ export default function DrawPage() {
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', flexWrap: 'wrap', gap: '10px' }}>
             <span style={{ fontSize: '12px', color: 'var(--ink-soft)' }}>
-              ✏️ Drawing with {color === '#FF7BA3' ? `${partnerA} (Pink)` : `${partnerB} (Blue)`} · Realtime P2P Synced
+              ✏️ Drawing with {color === '#FF7BA3' ? `${partnerA} (Pink)` : `${partnerB} (Blue)`} · Realtime synced
             </span>
             <button className="btn btn-grad" onClick={saveDrawing}>
               {savedFeedback ? '✓ Saved & Downloaded! 🖼️' : 'Save to Album 🖼️'}

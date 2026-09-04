@@ -194,7 +194,7 @@ export function downloadReceiptPNG(data: DateReceiptData, filename?: string) {
   const canvas = document.createElement('canvas');
   drawReceiptToCanvas(canvas, data);
   const link = document.createElement('a');
-  link.download = filename || `dearly-us-date-receipt-${data.roomCode || 'KX7RM'}.png`;
+  link.download = filename || `dearly-us-date-receipt-${data.roomCode || 'PRIVATE'}.png`;
   link.href = canvas.toDataURL('image/png');
   document.body.appendChild(link);
   link.click();

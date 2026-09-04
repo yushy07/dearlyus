@@ -13,7 +13,7 @@
     <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-15%2B-black?style=for-the-badge&logo=next.js" alt="Next.js" /></a>
     <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react" alt="React 19" /></a>
     <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript" alt="TypeScript" /></a>
-    <a href="https://webrtc.org/"><img src="https://img.shields.io/badge/WebRTC-P2P_Sync-333333?style=for-the-badge&logo=webrtc" alt="WebRTC" /></a>
+    <a href="https://supabase.com/"><img src="https://img.shields.io/badge/Supabase-Realtime-3ECF8E?style=for-the-badge&logo=supabase" alt="Supabase" /></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-437EEB?style=for-the-badge&logo=apache" alt="License Apache 2.0" /></a>
   </p>
 
@@ -29,8 +29,8 @@
 
 Long distance dates often default to muted video calls or passive movie streaming. **Dearly Us** transforms screen-time into genuine connection:
 
-- **Instant 1-Tap Connection**: No passwords, no credit cards, zero sign-up. Just share a private 5-letter room code (e.g., `KX7RM`).
-- **Privacy by Design**: Live video feeds run peer-to-peer (WebRTC) between you and your partner. Your videos and photobooth cuts are never stored on cloud servers.
+- **Shared rooms with Google sign-in**: Create a profile, share a private 8–16 character room code, and join each other from anywhere.
+- **Privacy by Design**: Camera feeds and rendered photostrips stay on the device. Shared activity events are protected by Supabase row-level security.
 - **Physical & Digital Keepsakes**: Export high-resolution 300 DPI *인생네컷* photostrips, printable thermal receipts of your quiz lore, phone wallpapers, and digital time capsule envelopes.
 
 ---
@@ -73,7 +73,7 @@ Long distance dates often default to muted video calls or passive movie streamin
 
 ### 🧠 2. Adaptive Couple Quiz Engine (`/quiz`)
 - **Double-Blind Lock-in**: Neither partner can peek at their partner's answer until both have clicked submit.
-- **Sub-Second Adaptive AI**: Instant contextual question generation with offline-ready hand-crafted fallback packs.
+- **Adaptive AI with consent**: Contextual question generation is only enabled after an in-product consent choice.
 - **Vintage Thermal Date Lore Receipts**: Renders dot-matrix style thermal receipts summarizing your answers, match %, and couple lore for 1-click download.
 
 ### 🌍 3. Interactive 3D Earth Globe & Clock Sync (`/timezone`)
@@ -116,11 +116,11 @@ Long distance dates often default to muted video calls or passive movie streamin
 | **`/future`** | 3-year vision board planner with custom milestones. |
 | **`/riddle`** | Co-op brain teasers and riddle night puzzles. |
 | **`/iq`** | Head-to-head timed logic and spatial pattern duel. |
-| **`/profile`** | Couple settings (names, cities, room code `KX7RM`, saved album). |
+| **`/profile`** | Google-backed profile, names, cities, and private room code. |
 | **`/creators`** | Creator community & date night video submission showcase. |
 | **`/blog`** | Editorial blog with LDR date guides, ideas, and relationship advice. |
 | **`/blog/:slug`** | Dynamic editorial article reader with scroll progress. |
-| **`/privacy`** | Transparent privacy policy & WebRTC security pledge. |
+| **`/privacy`** | Transparent privacy policy and shared-room data disclosure. |
 | **`/terms`** | Terms of service and user conduct guidelines. |
 | **`/api/config`** | Realtime room config & status API endpoint. |
 | **`/api/stats`** | Live global stats endpoint. |

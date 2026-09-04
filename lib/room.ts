@@ -1,153 +1,64 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { getSupabase } from './supabase';
 
-export interface RoomEvent<T = any> {
-  id: string;
-  sender: string;
-  type: string;
-  payload: T;
-  timestamp: number;
-}
+export interface RoomEvent<T = any> { id: string; sender: string; type: string; payload: T; timestamp: number; }
+export interface UseRoomSyncOptions { roomCode: string; senderName: string; onMessage?: (event: RoomEvent) => void; pollingIntervalMs?: number; }
+const normalizeCode = (code: string) => code.trim().toUpperCase();
 
-export interface UseRoomSyncOptions {
-  roomCode: string;
-  senderName: string;
-  onMessage?: (event: RoomEvent) => void;
-  pollingIntervalMs?: number;
-}
-
-export function useRoomSync({
-  roomCode,
-  senderName,
-  onMessage,
-  pollingIntervalMs = 650,
-}: UseRoomSyncOptions) {
+export function useRoomSync({ roomCode, senderName, onMessage }: UseRoomSyncOptions) {
   const [isConnected, setIsConnected] = useState(false);
   const [partnerOnline, setPartnerOnline] = useState(false);
   const [lastEvent, setLastEvent] = useState<RoomEvent | null>(null);
-
-  const broadcastChannelRef = useRef<BroadcastChannel | null>(null);
-  const seenMessageIdsRef = useRef<Set<string>>(new Set());
-  const lastTimestampRef = useRef<number>(0);
-  const pollTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const roomId = useRef<string | null>(null);
+  const userId = useRef<string | null>(null);
+  const seenIds = useRef(new Set<string>());
   const onMessageRef = useRef(onMessage);
   onMessageRef.current = onMessage;
 
-  const normalizedCode = (roomCode || 'LOVE').toUpperCase();
-
-  // Process inbound event and prevent echo or duplicates
-  const handleInboundEvent = useCallback((event: RoomEvent) => {
-    if (!event || !event.id) return;
-    if (event.sender === senderName) return; // ignore self-echoes
-    if (seenMessageIdsRef.current.has(event.id)) return;
-
-    seenMessageIdsRef.current.add(event.id);
-    // Keep set bounded
-    if (seenMessageIdsRef.current.size > 200) {
-      const arr = Array.from(seenMessageIdsRef.current).slice(100);
-      seenMessageIdsRef.current = new Set(arr);
-    }
-
-    setPartnerOnline(true);
-    setLastEvent(event);
-    onMessageRef.current?.(event);
+  const receive = useCallback((event: RoomEvent) => {
+    if (!event.id || event.sender === userId.current || seenIds.current.has(event.id)) return;
+    seenIds.current.add(event.id);
+    setPartnerOnline(true); setLastEvent(event); onMessageRef.current?.(event);
   }, [senderName]);
 
-  // Send an event via both BroadcastChannel (0ms local) and API relay (remote)
-  const sendEvent = useCallback(
-    async (type: string, payload: any) => {
-      const event: RoomEvent = {
-        id: `${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-        sender: senderName,
-        type,
-        payload,
-        timestamp: Date.now(),
-      };
+  const sendEvent = useCallback(async (type: string, payload: unknown) => {
+    const supabase = getSupabase();
+    if (!supabase || !roomId.current || !userId.current) return null;
+    const event: RoomEvent = { id: crypto.randomUUID(), sender: senderName, type, payload, timestamp: Date.now() };
+    seenIds.current.add(event.id);
+    const { error } = await supabase.from('room_events').insert({
+      id: event.id, room_id: roomId.current, sender_id: userId.current, event_type: type, payload,
+      created_at: new Date(event.timestamp).toISOString(),
+    });
+    return error ? null : event;
+  }, [senderName]);
 
-      seenMessageIdsRef.current.add(event.id);
-
-      // 1. BroadcastChannel for local tabs
-      if (broadcastChannelRef.current) {
-        try {
-          broadcastChannelRef.current.postMessage(event);
-        } catch {}
-      }
-
-      // 2. Cross-device API relay
-      try {
-        await fetch(`/api/room/${normalizedCode}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(event),
-        });
-      } catch {}
-
-      return event;
-    },
-    [normalizedCode, senderName]
-  );
-
-  // Setup BroadcastChannel and Polling Relay
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    setIsConnected(true);
-    lastTimestampRef.current = Date.now() - 5000;
-
-    // 1. Local BroadcastChannel
-    if ('BroadcastChannel' in window) {
-      try {
-        const channel = new BroadcastChannel(`dearly_room_${normalizedCode}`);
-        channel.onmessage = (ev) => {
-          if (ev.data) handleInboundEvent(ev.data);
-        };
-        broadcastChannelRef.current = channel;
-      } catch {}
-    }
-
-    // 2. Announce presence
-    sendEvent('presence_ping', { status: 'online' });
-
-    // 3. Remote Relay Polling
-    let isMounted = true;
-    const pollRelay = async () => {
-      if (!isMounted) return;
-      try {
-        const res = await fetch(`/api/room/${normalizedCode}?since=${lastTimestampRef.current}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.messages && Array.isArray(data.messages)) {
-            data.messages.forEach((msg: RoomEvent) => {
-              if (msg.timestamp > lastTimestampRef.current) {
-                lastTimestampRef.current = msg.timestamp;
-              }
-              handleInboundEvent(msg);
-            });
-          }
-        }
-      } catch {}
-      if (isMounted) {
-        pollTimerRef.current = setTimeout(pollRelay, pollingIntervalMs);
+    const code = normalizeCode(roomCode); const supabase = getSupabase();
+    if (!supabase || !code) return;
+    let channel: ReturnType<typeof supabase.channel> | null = null; let active = true;
+    const start = async () => {
+      const { data: auth } = await supabase.auth.getUser();
+      if (!auth.user || !active) return;
+      userId.current = auth.user.id;
+      const joined = await supabase.rpc('join_room_by_code', { room_code: code });
+      if (joined.error) {
+        const created = await supabase.rpc('create_room', { room_code: code });
+        if (created.error) return;
       }
+      const { data: room } = await supabase.from('rooms').select('id').eq('code', code).single();
+      if (!room?.id || !active) return;
+      roomId.current = room.id;
+      const { data: history } = await supabase.from('room_events').select('id, event_type, payload, created_at, sender_id').eq('room_id', room.id).order('created_at', { ascending: false }).limit(30);
+      history?.reverse().forEach((row: any) => receive({ id: row.id, sender: row.sender_id, type: row.event_type, payload: row.payload, timestamp: new Date(row.created_at).getTime() }));
+      channel = supabase.channel(`room:${room.id}`).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'room_events', filter: `room_id=eq.${room.id}` }, (change: any) => {
+        const row = change.new; receive({ id: row.id, sender: row.sender_id, type: row.event_type, payload: row.payload, timestamp: new Date(row.created_at).getTime() });
+      }).subscribe((status) => setIsConnected(status === 'SUBSCRIBED'));
     };
-
-    pollRelay();
-
-    return () => {
-      isMounted = false;
-      if (pollTimerRef.current) clearTimeout(pollTimerRef.current);
-      if (broadcastChannelRef.current) {
-        broadcastChannelRef.current.close();
-        broadcastChannelRef.current = null;
-      }
-    };
-  }, [normalizedCode, handleInboundEvent, pollingIntervalMs, sendEvent]);
-
-  return {
-    isConnected,
-    partnerOnline,
-    lastEvent,
-    sendEvent,
-  };
+    start();
+    return () => { active = false; if (channel) supabase.removeChannel(channel); roomId.current = null; };
+  }, [roomCode, receive]);
+  return { isConnected, partnerOnline, lastEvent, sendEvent };
 }

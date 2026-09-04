@@ -8,9 +8,9 @@ import { sounds } from '@/lib/sound';
 import { useCoupleProfile } from '@/lib/couple';
 
 export default function HomePage() {
-  const { partnerA, partnerB, cityA, cityB } = useCoupleProfile();
+  const { partnerA, partnerB, cityA, cityB, roomCode: savedRoomCode } = useCoupleProfile();
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
-  const [roomCode, setRoomCode] = useState(['K', 'X', '7', 'R', 'M']);
+  const [roomCode, setRoomCode] = useState<string[]>([]);
   const [copied, setCopied] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [nickname, setNickname] = useState(partnerA);
@@ -20,6 +20,10 @@ export default function HomePage() {
     setNickname(partnerA);
     setPartnerName(partnerB);
   }, [partnerA, partnerB]);
+
+  useEffect(() => {
+    if (savedRoomCode) setRoomCode(savedRoomCode.split(''));
+  }, [savedRoomCode]);
 
   // Hero photobooth machine state
   const [litFrames, setLitFrames] = useState<boolean[]>([false, false, false, false]);
@@ -640,7 +644,7 @@ export default function HomePage() {
                       <img className="shot" src="/photos/frame4.webp" width="503" height="377" alt="Photobooth shot 4" />
                     </div>
                     <div className="serial">
-                      dearly us · <b>KX7RM</b>
+                      dearly us · <b>{roomCode.join('') || 'YOUR ROOM'}</b>
                     </div>
                   </div>
 

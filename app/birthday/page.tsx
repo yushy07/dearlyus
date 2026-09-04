@@ -19,7 +19,7 @@ export default function BirthdayPage() {
 
   const copyLink = async () => {
     try {
-      const url = typeof window !== 'undefined' ? window.location.href : 'https://dearlyus.love/birthday';
+      const url = typeof window !== 'undefined' ? window.location.href : 'http://localhost:3000/birthday';
       await navigator.clipboard.writeText(url);
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
@@ -134,7 +134,7 @@ export default function BirthdayPage() {
                 }}
               >
                 <QRCodeSVG
-                  text={typeof window !== 'undefined' ? window.location.href : 'https://dearlyus.love/birthday'}
+                  text={typeof window !== 'undefined' ? window.location.href : 'http://localhost:3000/birthday'}
                   size={140}
                   fgColor="#E11D48"
                   bgColor="#FFFFFF"

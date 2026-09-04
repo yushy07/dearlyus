@@ -2,12 +2,14 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Ribbon, Navbar, Confetti, CoupleNameBar } from '@/components/shared';
+import { Ribbon, Navbar, Confetti, CoupleNameBar, AiConsentToggle } from '@/components/shared';
 import { sounds } from '@/lib/sound';
 import { downloadReceiptPNG, DateReceiptData } from '@/lib/receipt-canvas';
 import { ThermalReceiptModal } from '@/components/shared/ThermalReceiptModal';
 import { CupidotBot, BotState } from '@/components/bot/CupidotBot';
 import { useCoupleProfile } from '@/lib/couple';
+import { useAiConsent } from '@/lib/ai-consent';
+import { generateAdaptiveQuestion } from '@/lib/gemini';
 
 interface HostScenario {
   id: number;
@@ -47,7 +49,8 @@ export default function DateHostPage() {
   const [partnerAPick, setPartnerAPick] = useState<number | null>(null);
   const [partnerBPick, setPartnerBPick] = useState<number | null>(null);
   const [revealed, setRevealed] = useState(false);
-  const { partnerA, partnerB } = useCoupleProfile();
+  const { partnerA, partnerB, roomCode } = useCoupleProfile();
+  const { hasAiConsent } = useAiConsent();
   const [hostCommentary, setHostCommentary] = useState<string | null>(null);
   const [confettiActive, setConfettiActive] = useState(false);
   const [totalRounds, setTotalRounds] = useState(1);
@@ -82,18 +85,16 @@ export default function DateHostPage() {
     setSessionHistory(updatedHistory);
 
     // Background pre-fetch next tailored dilemma based on accumulated multi-round threads
-    fetch('/api/questions/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+    if (!hasAiConsent) return;
+
+    void generateAdaptiveQuestion({
         partnerA: { name: partnerA, answer: scenario.options[partnerAPick] },
         partnerB: { name: partnerB, answer: scenario.options[partnerBPick] },
         mode: 'host',
         mood: 'playful',
+        aiConsent: true,
         history: updatedHistory,
-      }),
     })
-      .then((res) => res.json())
       .then((data: any) => {
         if (data?.question && Array.isArray(data.options)) {
           const nextScenario: HostScenario = {
@@ -148,6 +149,7 @@ export default function DateHostPage() {
       />
 
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '880px' }}>
+        <div style={{ maxWidth: '620px', margin: '0 auto 18px' }}><AiConsentToggle /></div>
         {/* 3D Cupidot Mascot Host */}
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <div style={{ width: '190px', height: '190px', margin: '0 auto -12px' }}>
@@ -331,7 +333,7 @@ export default function DateHostPage() {
                     onClick={() => {
                       sounds.playPop();
                       setReceiptModalData({
-                        roomCode: 'KX7RM',
+                        roomCode: roomCode || 'PRIVATE',
                         date: new Date().toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }),
                         partnerA,
                         partnerB,

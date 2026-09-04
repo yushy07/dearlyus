@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.SITE_URL ?? 'https://dearlyus.love'),
+  metadataBase: new URL(process.env.SITE_URL ?? 'http://localhost:3000'),
   title: 'Dearly Us ♡ — Made for the moments that belong to you two.',
   description:
     'Dearly Us is the realtime date night sanctuary and photobooth studio for couples separated by distance. 35+ interactive games, authentic Korean 인생네컷 photostrips, 3D memory vaults, and intimate keepsakes.',
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     title: 'Dearly Us ♡ — Made for the moments that belong to you two.',
     description:
       'A realtime date sanctuary for couples — authentic Korean Life4Cuts photostrips, 3D memory vaults, interactive duels, and 35+ activities for two screens across any distance.',
-    url: 'https://dearlyus.love/',
+    url: '/',
     siteName: 'Dearly Us',
     images: [
       {
@@ -49,12 +49,6 @@ export const metadata: Metadata = {
       'Korean Life4Cuts photobooth, IQ Duel, couple quiz, debates, drawing, arcade, and memory keepsakes — a realtime date platform for two screens across any timezone.',
     images: ['/og.svg'],
   },
-  manifest: '/manifest.json',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'black-translucent',
-    title: 'Dearly Us',
-  },
 };
 
 import { AudioPlayer } from '@/components/shared/AudioPlayer';
@@ -70,11 +64,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#1C1924" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <link rel="apple-touch-icon" href="/favicon.svg" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
