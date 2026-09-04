@@ -3,16 +3,36 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getSupabase } from './supabase';
 
-export interface RoomEvent<T = any> { id: string; sender: string; type: string; payload: T; timestamp: number; }
-export interface UseRoomSyncOptions { roomCode: string; senderName: string; onMessage?: (event: RoomEvent) => void; pollingIntervalMs?: number; }
+export interface RoomEvent<T = any> {
+  id: string;
+  sender: string;
+  type: string;
+  payload: T;
+  timestamp: number;
+  sequence?: number;
+}
+
+export type RoomConnectionState = 'idle' | 'connecting' | 'synchronized' | 'reconnecting' | 'unavailable';
+
+export interface UseRoomSyncOptions {
+  roomCode: string;
+  senderName: string;
+  onMessage?: (event: RoomEvent) => void;
+  interaction?: 'idle' | 'ready' | 'choosing' | 'writing' | 'drawing';
+  pollingIntervalMs?: number;
+}
+
 const normalizeCode = (code: string) => code.trim().toUpperCase();
 
-export function useRoomSync({ roomCode, senderName, onMessage }: UseRoomSyncOptions) {
-  const [isConnected, setIsConnected] = useState(false);
+export function useRoomSync({ roomCode, senderName, onMessage, interaction = 'idle' }: UseRoomSyncOptions) {
+  const [connectionState, setConnectionState] = useState<RoomConnectionState>('idle');
   const [partnerOnline, setPartnerOnline] = useState(false);
   const [lastEvent, setLastEvent] = useState<RoomEvent | null>(null);
   const roomId = useRef<string | null>(null);
+  const sessionId = useRef<string | null>(null);
   const userId = useRef<string | null>(null);
+  const revision = useRef<number | null>(null);
+  const lastSequence = useRef(0);
   const seenIds = useRef(new Set<string>());
   const onMessageRef = useRef(onMessage);
   onMessageRef.current = onMessage;
@@ -20,45 +40,137 @@ export function useRoomSync({ roomCode, senderName, onMessage }: UseRoomSyncOpti
   const receive = useCallback((event: RoomEvent) => {
     if (!event.id || event.sender === userId.current || seenIds.current.has(event.id)) return;
     seenIds.current.add(event.id);
-    setPartnerOnline(true); setLastEvent(event); onMessageRef.current?.(event);
-  }, [senderName]);
+    if (event.sequence) lastSequence.current = Math.max(lastSequence.current, event.sequence);
+    setLastEvent(event);
+    onMessageRef.current?.(event);
+  }, []);
 
   const sendEvent = useCallback(async (type: string, payload: unknown) => {
     const supabase = getSupabase();
-    if (!supabase || !roomId.current || !userId.current) return null;
-    const event: RoomEvent = { id: crypto.randomUUID(), sender: senderName, type, payload, timestamp: Date.now() };
-    seenIds.current.add(event.id);
-    const { error } = await supabase.from('room_events').insert({
-      id: event.id, room_id: roomId.current, sender_id: userId.current, event_type: type, payload,
-      created_at: new Date(event.timestamp).toISOString(),
+    if (!supabase || !roomId.current || !sessionId.current || !userId.current) return null;
+    const eventId = crypto.randomUUID();
+    const { data, error } = await supabase.rpc('append_activity_event', {
+      target_session_id: sessionId.current,
+      event_id: eventId,
+      event_name: type,
+      event_payload: payload ?? {},
+      expected_revision: null,
+      client_time: new Date().toISOString(),
     });
-    return error ? null : event;
-  }, [senderName]);
+    if (error || !data?.accepted) return null;
+    seenIds.current.add(eventId);
+    revision.current = Number(data.revision);
+    lastSequence.current = Number(data.sequence);
+    return { id: eventId, sender: userId.current, type, payload, timestamp: Date.now(), sequence: Number(data.sequence) } as RoomEvent;
+  }, []);
 
   useEffect(() => {
-    const code = normalizeCode(roomCode); const supabase = getSupabase();
-    if (!supabase || !code) return;
-    let channel: ReturnType<typeof supabase.channel> | null = null; let active = true;
+    const code = normalizeCode(roomCode);
+    const supabase = getSupabase();
+    if (!supabase || !code) {
+      setConnectionState('idle');
+      return;
+    }
+
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let active = true;
+    setConnectionState('connecting');
+
     const start = async () => {
       const { data: auth } = await supabase.auth.getUser();
-      if (!auth.user || !active) return;
-      userId.current = auth.user.id;
-      const joined = await supabase.rpc('join_room_by_code', { room_code: code });
-      if (joined.error) {
-        const created = await supabase.rpc('create_room', { room_code: code });
-        if (created.error) return;
+      if (!auth.user || !active) {
+        setConnectionState('unavailable');
+        return;
       }
-      const { data: room } = await supabase.from('rooms').select('id').eq('code', code).single();
-      if (!room?.id || !active) return;
-      roomId.current = room.id;
-      const { data: history } = await supabase.from('room_events').select('id, event_type, payload, created_at, sender_id').eq('room_id', room.id).order('created_at', { ascending: false }).limit(30);
-      history?.reverse().forEach((row: any) => receive({ id: row.id, sender: row.sender_id, type: row.event_type, payload: row.payload, timestamp: new Date(row.created_at).getTime() }));
-      channel = supabase.channel(`room:${room.id}`).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'room_events', filter: `room_id=eq.${room.id}` }, (change: any) => {
-        const row = change.new; receive({ id: row.id, sender: row.sender_id, type: row.event_type, payload: row.payload, timestamp: new Date(row.created_at).getTime() });
-      }).subscribe((status) => setIsConnected(status === 'SUBSCRIBED'));
+
+      userId.current = auth.user.id;
+      const { data: joined, error: joinError } = await supabase.rpc('join_date_room', { room_code: code });
+      if (joinError || !joined?.id || !active) {
+        setConnectionState('unavailable');
+        return;
+      }
+
+      roomId.current = joined.id;
+      sessionId.current = joined.currentSessionId || null;
+
+      if (sessionId.current) {
+        const { data: recovery } = await supabase.rpc('get_session_recovery', {
+          target_session_id: sessionId.current,
+          after_sequence: 0,
+        });
+        if (recovery && active) {
+          revision.current = Number(recovery.revision ?? 0);
+          lastSequence.current = Number(recovery.lastSequence ?? 0);
+          const events = Array.isArray(recovery.events) ? recovery.events : [];
+          events.forEach((event: any) => receive({
+            id: event.id,
+            sender: event.senderId,
+            type: event.type,
+            payload: event.payload,
+            timestamp: new Date(event.createdAt).getTime(),
+            sequence: Number(event.sequence),
+          }));
+        }
+      }
+
+      channel = supabase
+        .channel(`room:${joined.id}`, { config: { presence: { key: auth.user.id } } })
+        .on('presence', { event: 'sync' }, () => {
+          if (!channel || !active) return;
+          const state = channel.presenceState() as Record<string, Array<{ userId?: string }>>;
+          const onlineIds = Object.values(state).flat().map((presence) => presence.userId).filter(Boolean);
+          setPartnerOnline(onlineIds.some((id) => id !== auth.user!.id));
+        })
+        .on('postgres_changes', {
+          event: 'INSERT', schema: 'public', table: 'room_events', filter: `room_id=eq.${joined.id}`,
+        }, (change: any) => {
+          const row = change.new;
+          if (sessionId.current && row.session_id && row.session_id !== sessionId.current) return;
+          receive({
+            id: row.id,
+            sender: row.sender_id,
+            type: row.event_type,
+            payload: row.payload,
+            timestamp: new Date(row.created_at).getTime(),
+            sequence: row.sequence ? Number(row.sequence) : undefined,
+          });
+        })
+        .subscribe(async (status) => {
+          if (!active || !channel) return;
+          if (status === 'SUBSCRIBED') {
+            await channel.track({
+              userId: auth.user!.id,
+              displayName: senderName.slice(0, 60),
+              roomId: joined.id,
+              interaction,
+              joinedAt: new Date().toISOString(),
+            });
+            setConnectionState('synchronized');
+          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            setConnectionState('reconnecting');
+          } else if (status === 'CLOSED') {
+            setConnectionState('unavailable');
+          }
+        });
     };
-    start();
-    return () => { active = false; if (channel) supabase.removeChannel(channel); roomId.current = null; };
-  }, [roomCode, receive]);
-  return { isConnected, partnerOnline, lastEvent, sendEvent };
+
+    void start();
+    return () => {
+      active = false;
+      setPartnerOnline(false);
+      setConnectionState('idle');
+      if (channel) void supabase.removeChannel(channel);
+      roomId.current = null;
+      sessionId.current = null;
+      userId.current = null;
+    };
+  }, [interaction, receive, roomCode, senderName]);
+
+  return {
+    isConnected: connectionState === 'synchronized',
+    connectionState,
+    partnerOnline,
+    lastEvent,
+    sendEvent,
+  };
 }

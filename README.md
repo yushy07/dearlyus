@@ -29,8 +29,8 @@
 
 Long distance dates often default to muted video calls or passive movie streaming. **Dearly Us** transforms screen-time into genuine connection:
 
-- **Shared rooms with Google sign-in**: Create a profile, share a private 8–16 character room code, and join each other from anywhere.
-- **Privacy by Design**: Camera feeds and rendered photostrips stay on the device. Shared activity events are protected by Supabase row-level security.
+- **Shared rooms with Google sign-in**: Create a profile, connect exactly one partner, and meet in a couple-authorized date-night lobby from any supported device.
+- **Privacy by Design**: Camera feeds stay on the device. Shared activity events and deliberately saved keepsakes are protected by Supabase row-level security and private Storage policies.
 - **Physical & Digital Keepsakes**: Export high-resolution 300 DPI *인생네컷* photostrips, printable thermal receipts of your quiz lore, phone wallpapers, and digital time capsule envelopes.
 
 ---
@@ -85,7 +85,7 @@ Long distance dates often default to muted video calls or passive movie streamin
 
 ---
 
-## 🎮 Complete 35-Route Directory
+## 🎮 Application Route Directory
 
 | Route | Feature & Activity |
 | :--- | :--- |
@@ -117,6 +117,10 @@ Long distance dates often default to muted video calls or passive movie streamin
 | **`/riddle`** | Co-op brain teasers and riddle night puzzles. |
 | **`/iq`** | Head-to-head timed logic and spatial pattern duel. |
 | **`/profile`** | Google-backed profile, names, cities, and private room code. |
+| **`/login`** | Google-only sign-in with safe return-path handling. |
+| **`/auth/callback`** | Supabase OAuth callback and automatic profile bootstrap. |
+| **`/invite/:token`** | Minimal invite preview, confirmation, and protected couple connection. |
+| **`/room/:code`** | Couple-authorized date-night lobby with Presence and readiness. |
 | **`/creators`** | Creator community & date night video submission showcase. |
 | **`/blog`** | Editorial blog with LDR date guides, ideas, and relationship advice. |
 | **`/blog/:slug`** | Dynamic editorial article reader with scroll progress. |
@@ -124,6 +128,23 @@ Long distance dates often default to muted video calls or passive movie streamin
 | **`/terms`** | Terms of service and user conduct guidelines. |
 | **`/api/config`** | Realtime room config & status API endpoint. |
 | **`/api/stats`** | Live global stats endpoint. |
+
+---
+
+## 🗂️ Project Structure
+
+| Directory | Purpose |
+| :--- | :--- |
+| **`app/`** | Routes, pages, and activity experiences. |
+| **`components/`** | Shared interface components. |
+| **`lib/`** | Authentication, couple, room, activity-session, and Supabase clients. |
+| **`data/`** | Curated local prompts and content packs. |
+| **`db/`** / **`drizzle/`** | Application schema definitions and generated SQL history. |
+| **`supabase/`** | Live backend migrations and Edge Functions. |
+| **`public/`** | Versioned static images, audio, fonts, and models used by the site. |
+| **`docs/`** | Product and engineering roadmaps. |
+
+Generated builds, local Supabase state, environment files, editor caches, and test reports are excluded through `.gitignore`.
 
 ---
 

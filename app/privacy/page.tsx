@@ -66,9 +66,9 @@ export default function PrivacyPage() {
 
           <div style={{ background: '#FFFFFF', border: '1px solid var(--line)', borderRadius: '16px', padding: '22px', boxShadow: 'var(--shadow-soft)' }}>
             <div style={{ fontSize: '28px', marginBottom: '10px' }}>🎨</div>
-            <div style={{ fontWeight: 800, fontSize: '16px', color: 'var(--ink)', marginBottom: '6px' }}>Client-Side Strips</div>
+            <div style={{ fontWeight: 800, fontSize: '16px', color: 'var(--ink)', marginBottom: '6px' }}>Local by Default</div>
             <div style={{ fontSize: '13.5px', color: 'var(--ink-soft)', lineHeight: 1.5 }}>
-              Photostrips and thermal receipts are rendered directly on your local device canvas without uploading to a cloud storage bucket.
+              Photostrips and receipts are created on your device. They are uploaded only when you explicitly save one to your private couple space.
             </div>
           </div>
 
@@ -109,10 +109,13 @@ export default function PrivacyPage() {
                 <b>Local Device Storage:</b> Your couple nicknames (e.g. &ldquo;Mia &amp; Alex&rdquo;), custom passport stamps, soundscape volume preferences, and saved custom quiz packs are stored locally in your web browser&rsquo;s <code>localStorage</code>. This data never leaves your device.
               </li>
               <li>
-                <b>Shared Room Events:</b> your room code, account identifier, display name, and interaction events needed to synchronize an activity are stored in Supabase. Photos and camera feeds are not included.
+                <b>Shared Room Events:</b> your room code, account identifier, display name, ready state, activity answers, drawings, and other interaction events needed to synchronize and recover a date are stored in Supabase. Camera feeds are never included.
               </li>
               <li>
                 <b>Account &amp; Couple Space:</b> your Google account identifier, email, display name, profile photo URL, city, timezone, couple membership, private invite status, and saved keepsake references are stored in Supabase so your space can follow you across devices.
+              </li>
+              <li>
+                <b>Private Saves:</b> when you deliberately save a keepsake, drawing, or photostrip, that file is uploaded to private couple storage. Access is restricted to the two members of that couple space.
               </li>
             </ul>
           </section>
@@ -125,7 +128,7 @@ export default function PrivacyPage() {
               You retain <b>100% ownership and copyright</b> of all photographs, photostrip cuts, recordings, and drawings created on Dearly Us.
             </p>
             <p style={{ margin: 0 }}>
-              When you download a photostrip or thermal date lore receipt, the file is exported as an image directly from your browser memory. We do not maintain a cloud gallery or server archive of your photobooth photos.
+              When you download a photostrip or thermal date lore receipt, the file is exported directly from your browser. Dearly Us does not upload it automatically. If you choose &ldquo;Save to Our Space,&rdquo; the selected file is stored in your private couple library so you and your connected partner can revisit it.
             </p>
           </section>
 

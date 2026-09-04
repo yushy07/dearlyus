@@ -1757,7 +1757,7 @@ export default function HomePage() {
                   },
                   {
                     q: 'How does a realtime online date work?',
-                    a: 'One partner opens a room and sends the 5-letter code; the other joins from anywhere in the world. You see each other\'s live presence cursors, lock in answers privately, and reveal at the exact same second — with shared countdowns that fire simultaneously on both screens.',
+                    a: 'One partner opens a room and shares its private code; the other joins from anywhere in the world. You can see when your person arrives, lock answers privately, and reveal together with server-synchronized activity state.',
                   },
                   {
                     q: 'Do we need to install an app?',

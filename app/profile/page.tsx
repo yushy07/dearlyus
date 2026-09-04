@@ -9,7 +9,7 @@ import { getSupabase } from '@/lib/supabase';
 import { useCoupleProfile } from '@/lib/couple';
 import {
   type AccountProfile, type CoupleSpace, type Keepsake,
-  createCoupleSpace, joinCoupleSpace, loadAccount, profileFromUser,
+  createCoupleSpace, createDateRoom, joinCoupleSpace, loadAccount, profileFromUser,
   regenerateInvite, rotateRoom, saveAccountProfile,
 } from '@/lib/account';
 import styles from './profile.module.css';
@@ -142,8 +142,16 @@ export default function ProfilePage() {
 
   const copyInvite = async () => {
     if (!space?.invite) return;
-    await navigator.clipboard.writeText(`${window.location.origin}/profile?invite=${space.invite.code}`);
+    await navigator.clipboard.writeText(`${window.location.origin}/invite/${space.invite.code}`);
     setNotice({ kind: 'success', text: 'Private invite link copied. Send it only to your person.' });
+  };
+
+  const openDateNight = async () => {
+    await run('room', async () => {
+      const room = await createDateRoom();
+      updateProfile({ roomCode: room.code });
+      router.push(`/room/${room.code}`);
+    });
   };
 
   const signOut = async () => {
@@ -231,7 +239,7 @@ export default function ProfilePage() {
                 <div className={styles.person}><div className={styles.personAvatar}>{partner ? <Avatar url={partner.avatarUrl} name={partner.displayName} /> : '?'}</div><strong>{partner?.displayName || 'Your person'}</strong><small>{partner?.city || 'Invite pending'}</small></div>
               </div>
               {!partner && <div className={styles.waiting}><div className={styles.miniLabel}>Private invitation · valid for 7 days</div><div className={styles.code} style={{ margin: '11px 0' }}>{space.invite?.code || 'GENERATE'}</div><div className={styles.choiceRow}><button className="btn btn-primary" onClick={copyInvite} disabled={!space.invite}>Copy invite link</button><button className="btn btn-ghost" disabled={Boolean(busy)} onClick={() => updateSpace('invite', regenerateInvite, 'A fresh private invitation is ready.')}>{busy === 'invite' ? 'Refreshing…' : 'Make a fresh invite'}</button></div></div>}
-              {partner && <div className={styles.choiceRow}><Link className="btn btn-primary" href="/activity">Open date night ▷</Link></div>}
+              {partner && <div className={styles.choiceRow}><button className="btn btn-primary" onClick={openDateNight} disabled={Boolean(busy)}>{busy === 'room' ? 'Opening your lobby…' : 'Start or continue date night ▷'}</button><Link className="btn btn-ghost" href="/activity">Browse activities</Link></div>}
             </div>}
           </section>
         </div>

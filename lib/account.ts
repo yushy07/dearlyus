@@ -39,6 +39,24 @@ export interface Keepsake {
   createdAt: string;
 }
 
+export interface DateRoomMember {
+  userId: string;
+  displayName: string;
+  avatarUrl: string | null;
+  ready: boolean;
+}
+
+export interface DateRoom {
+  id: string;
+  code: string;
+  coupleId: string;
+  status: 'lobby' | 'active' | 'paused' | 'completed' | 'expired' | 'cancelled';
+  currentSessionId: string | null;
+  expiresAt: string;
+  lastActivityAt: string;
+  members: DateRoomMember[];
+}
+
 export function profileFromUser(user: User): AccountProfile {
   const metadata = user.user_metadata ?? {};
   return {
@@ -126,3 +144,34 @@ export const createCoupleSpace = (name: string) => runSpaceRpc('create_couple_sp
 export const joinCoupleSpace = (code: string) => runSpaceRpc('join_couple_by_invite', { invite_code: code });
 export const regenerateInvite = () => runSpaceRpc('regenerate_couple_invite');
 export const rotateRoom = () => runSpaceRpc('rotate_couple_room');
+
+async function runRoomRpc(name: string, params?: Record<string, unknown>) {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Supabase is not configured.');
+  const { data, error } = await supabase.rpc(name, params);
+  if (error) throw error;
+  return data as DateRoom;
+}
+
+export const createDateRoom = () => runRoomRpc('create_date_room');
+export const joinDateRoom = (code: string) => runRoomRpc('join_date_room', { room_code: code });
+export const setDateRoomReady = (code: string, ready: boolean) => runRoomRpc('set_room_ready', { room_code: code, is_ready: ready });
+export const leaveDateRoom = async (code: string) => {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Supabase is not configured.');
+  const { error } = await supabase.rpc('leave_date_room', { room_code: code });
+  if (error) throw error;
+};
+export const rotateDateRoomCode = (code: string) => runRoomRpc('rotate_date_room_code', { room_code: code });
+
+export async function startDateActivity(code: string, activityType: string, snapshot: Record<string, unknown> = {}) {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Supabase is not configured.');
+  const { data, error } = await supabase.rpc('start_activity', {
+    room_code: code,
+    selected_activity: activityType,
+    initial_snapshot: snapshot,
+  });
+  if (error) throw error;
+  return data as { room: DateRoom; sessionId: string; activityType: string; revision: number };
+}
