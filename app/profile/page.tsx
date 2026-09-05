@@ -81,7 +81,6 @@ export default function ProfilePage() {
     savePreferences,
     removeKeepsake,
     exportSpaceData,
-    disconnectSpace,
   } = useCoupleSpace();
 
   const [displayName, setDisplayName] = useState('');
@@ -280,19 +279,6 @@ export default function ProfilePage() {
       setNotice({ kind: 'success', text: 'Data export downloaded successfully.' });
     } catch {
       setNotice({ kind: 'error', text: 'Could not export space data.' });
-    }
-  };
-
-  const handleDisconnectSpace = async () => {
-    setBusy('disconnect');
-    try {
-      await disconnectSpace();
-      setDisconnectModalOpen(false);
-      setNotice({ kind: 'success', text: 'Disconnected from couple space.' });
-    } catch {
-      setNotice({ kind: 'error', text: 'Failed to disconnect space.' });
-    } finally {
-      setBusy('');
     }
   };
 
@@ -988,7 +974,7 @@ export default function ProfilePage() {
                 <div className={styles.settingsCopy}>
                   <strong>Couple space separation</strong>
                   <p style={{ color: '#9d1738' }}>
-                    Disconnect from this couple space. Your personal account and history will be preserved, but the shared connection will be severed.
+                    Separation is a protected account action. Request it and we will confirm the effect on your shared history before anything changes.
                   </p>
                 </div>
                 <button
@@ -996,7 +982,7 @@ export default function ProfilePage() {
                   onClick={() => setDisconnectModalOpen(true)}
                   style={{ color: '#9d1738', borderColor: '#fca5a5' }}
                 >
-                  Disconnect space
+                  Request separation
                 </button>
               </div>
             )}
@@ -1054,20 +1040,19 @@ export default function ProfilePage() {
               Disconnect couple space?
             </h3>
             <p style={{ fontSize: '13.5px', color: 'var(--ink-soft)', lineHeight: 1.55 }}>
-              Are you sure you want to disconnect from <strong>{space?.name}</strong>? You will leave the space and your person will need to send a new invitation if you wish to reconnect later.
+              Separation from <strong>{space?.name}</strong> is not performed in the browser. Send a request first; the final protected process will explain what happens to shared history before it changes anything.
             </p>
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '24px' }}>
               <button className="btn btn-ghost" onClick={() => setDisconnectModalOpen(false)}>
                 Cancel
               </button>
-              <button
+              <a
                 className="btn btn-primary"
-                onClick={handleDisconnectSpace}
-                disabled={busy === 'disconnect'}
+                href="mailto:hello@dearlyus.love?subject=Dearly%20Us%20couple%20space%20separation%20request"
                 style={{ background: '#9d1738', borderColor: '#9d1738' }}
               >
-                {busy === 'disconnect' ? 'Disconnecting…' : 'Yes, disconnect space'}
-              </button>
+                Request separation
+              </a>
             </div>
           </div>
         </div>

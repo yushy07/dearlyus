@@ -309,20 +309,11 @@ export function ActivitySessionProvider({
       const result = await rpcAppendActivityEvent(activeSessionId, type, payload, revision || undefined);
       if (!result.accepted) return null;
 
-      const createdEvent: ActivityEvent = {
-        id: crypto.randomUUID(),
-        sequence: result.sequence,
-        schemaVersion: 1,
-        senderId: user.id,
-        type,
-        payload,
-        clientCreatedAt: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-      };
-
       setRevision(result.revision);
-      dispatchEvent(createdEvent);
-      return createdEvent;
+      // The database owns event IDs and ordering. Re-fetch instead of inventing a
+      // client event, which previously allowed one action to be delivered twice.
+      await recover(lastSequenceRef.current);
+      return null;
     } catch (err) {
       console.error('Failed to append activity event:', err);
       return null;
@@ -412,4 +403,3 @@ export function useActivitySession() {
   const context = useContext(ActivitySessionContext);
   return context || defaultActivitySessionValue;
 }
-

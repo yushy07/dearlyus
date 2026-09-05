@@ -40,7 +40,7 @@ export interface QuizSnapshot {
 export type QuizEvent =
   | { type: 'quiz_start'; payload: { packId: string; packTitle: string; totalRounds: number; questions?: QuizQuestionData[] } }
   | { type: 'answer_locked'; payload: { roundNumber: number; locked: boolean } }
-  | { type: 'answers_revealed'; payload: { roundNumber: number; answers: Array<{ userId: string; answer: number | string; lockedAt: string }> } }
+  | { type: 'answers_revealed'; payload: { roundNumber: number } }
   | { type: 'quiz_next'; payload: { nextRound: number } }
   | { type: 'gentle_skip'; payload: { roundNumber: number; skippedAt: string } }
   | { type: 'reaction_sent'; payload: { emoji: string; roundNumber?: number } };
@@ -107,29 +107,9 @@ export const quizActivityAdapter: RealtimeActivityAdapter<QuizSnapshot, QuizEven
       }
 
       case 'answers_revealed': {
-        const answers = event.payload.answers || [];
-        const ansA = answers[0]?.answer;
-        const ansB = answers[1]?.answer;
-        const isMatch = answers.length >= 2 && ansA !== undefined && ansA === ansB;
-
-        const currentQ = snapshot.questions?.[snapshot.currentRound] || {
-          q: `Question ${snapshot.currentRound + 1}`,
-          options: [],
-        };
-
-        const newRecord: QuizRoundRecord = {
-          roundIndex: snapshot.currentRound,
-          question: currentQ,
-          answers,
-          isMatch: Boolean(isMatch),
-          skipped: false,
-        };
-
         return {
           ...snapshot,
           status: 'revealed',
-          matches: isMatch ? snapshot.matches + 1 : snapshot.matches,
-          history: [...snapshot.history.filter((h) => h.roundIndex !== snapshot.currentRound), newRecord],
         };
       }
 

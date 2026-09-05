@@ -52,10 +52,16 @@ export function usePrivateAnswers({ roundNumber, onBothLocked, onReveal, onSkip 
             onBothLocked?.();
           }
         } else if (event.type === 'answers_revealed') {
-          const answers = (payload.answers as Array<{ userId: string; answer: unknown; lockedAt: string }>) || [];
-          setRevealed(true);
-          setRevealedAnswers(answers);
-          onReveal?.(answers);
+          // This event is only a signal. Answers never travel through room_events.
+          // Each participant retrieves sealed answers from the protected RPC instead.
+          if (!sessionId) return;
+          void revealPrivateAnswers(sessionId, roundNumber).then((result) => {
+            setRevealed(true);
+            setRevealedAnswers(result.answers);
+            onReveal?.(result.answers);
+          }).catch(() => {
+            // A stale or forged signal cannot reveal anything; the server remains authoritative.
+          });
         } else if (event.type === 'gentle_skip') {
           setIsSkipped(true);
           onSkip?.();
@@ -66,7 +72,7 @@ export function usePrivateAnswers({ roundNumber, onBothLocked, onReveal, onSkip 
     return () => {
       unregister();
     };
-  }, [registerEventHandler, roundNumber, user?.id, isLocked, onBothLocked, onReveal, onSkip]);
+  }, [registerEventHandler, roundNumber, sessionId, user?.id, isLocked, onBothLocked, onReveal, onSkip]);
 
   // Submit private answer to server (sealed until reveal)
   const lock = useCallback(
@@ -114,10 +120,10 @@ export function usePrivateAnswers({ roundNumber, onBothLocked, onReveal, onSkip 
       setRevealedAnswers(result.answers);
       onReveal?.(result.answers);
 
-      // Broadcast single server event so both clients reveal simultaneously
+      // Broadcast only that the sealed answers are ready. The answer values remain
+      // inside the protected RPC response and are never included in room_events.
       await sendEvent('answers_revealed', {
         roundNumber,
-        answers: result.answers,
       });
 
       return result.answers;

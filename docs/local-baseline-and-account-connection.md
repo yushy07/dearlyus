@@ -85,7 +85,7 @@ export const ACTIVITY_ERROR_CODES = {
 
 ---
 
-## 4. Two-Browser Reference Behavior
+## 4. Two-Browser Reference Behavior (test script; not yet a recorded test result)
 
 ### Quiz
 1. Both browsers join the couple's active room via `join_date_room`.
@@ -128,6 +128,18 @@ export const ACTIVITY_ERROR_CODES = {
 ---
 
 ## 7. Delivery Checklist
+
+Status rule: “Implemented locally” means source code exists. “Locally tested” requires a current recorded run. “Deployed” and “Live verified” require the live Supabase phase; local migration or function files do not count as either.
+
+### Required current local test record
+
+- [ ] Quiz: two separate accounts lock, reveal, advance, refresh, and reconnect without exposing an answer in a room event.
+- [ ] Draw Together: two separate accounts exchange strokes, clear together, reconnect, and save a keepsake.
+- [ ] Account connection: first account creates Our Space; second account accepts an invite after Google sign-in; both see the connected state.
+- [ ] Lobby: both accounts see presence, toggle ready, start the same activity, leave, and resume.
+- [ ] Accessibility: keyboard-only pass for the lobby, secret answer seal, invite, and separation-request dialogs.
+
+Until these are checked with dates and test accounts, the related “Locally tested” and “Live verified” cells below remain pending despite older wording in this historical snapshot.
 
 | Item | Implemented locally | Locally tested | Deployed to live Supabase | Live verified |
 | --- | --- | --- | --- | --- |

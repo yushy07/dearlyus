@@ -8,18 +8,17 @@ export function CoupleNameBar() {
   const { partnerA, partnerB, cityA, cityB, updateProfile } = useCoupleProfile();
   const [editing, setEditing] = useState(false);
   const [nameA, setNameA] = useState(partnerA);
-  const [nameB, setNameB] = useState(partnerB);
 
   const handleOpen = () => {
     sounds.playPop();
     setNameA(partnerA);
-    setNameB(partnerB);
     setEditing(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     sounds.playCelebration();
-    updateProfile({ partnerA: nameA, partnerB: nameB });
+    // A person may update their own profile only. Their partner controls theirs.
+    await updateProfile({ partnerA: nameA });
     setEditing(false);
   };
 
@@ -87,7 +86,7 @@ export function CoupleNameBar() {
             </div>
 
             <p style={{ fontSize: '13px', color: 'var(--ink-soft)', marginBottom: '18px', lineHeight: 1.4 }}>
-              Enter your real names so Cupidot, the quizzes, court trials, and photostrips are 100% personalized to you two!
+              Update your own display name. Your person's name comes from their profile, so neither of you can overwrite the other.
             </p>
 
             <div style={{ display: 'grid', gap: '14px', marginBottom: '20px' }}>
@@ -104,18 +103,6 @@ export function CoupleNameBar() {
                 />
               </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 800, color: 'var(--blue)', textTransform: 'uppercase', marginBottom: '4px' }}>
-                  Player 2 Name:
-                </label>
-                <input
-                  type="text"
-                  value={nameB}
-                  onChange={(e) => setNameB(e.target.value)}
-                  placeholder="e.g. David"
-                  style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--line)', fontSize: '14px' }}
-                />
-              </div>
             </div>
 
             <div style={{ display: 'flex', gap: '8px' }}>

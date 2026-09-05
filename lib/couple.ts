@@ -8,7 +8,8 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
 
 export interface CoupleProfile {
   partnerA: string;
@@ -69,26 +70,27 @@ export function saveStoredCoupleProfile(updates: Partial<CoupleProfile>): Couple
  * React hook that subscribes to couple name updates across any page/modal
  */
 export function useCoupleProfile() {
-  const [profile, setProfile] = useState<CoupleProfile>(DEFAULT_COUPLE);
+  const { profile, partner, space, saveProfile } = useCoupleSpace();
+  const [localProfile, setLocalProfile] = useState<CoupleProfile>(DEFAULT_COUPLE);
 
   useEffect(() => {
     const stored = getStoredCoupleProfile();
     const invitedRoom = new URLSearchParams(window.location.search).get('room')?.replace(/[^a-z0-9]/gi, '').toUpperCase();
     if (invitedRoom && invitedRoom.length >= 8) {
-      setProfile(saveStoredCoupleProfile({ roomCode: invitedRoom }));
+      setLocalProfile(saveStoredCoupleProfile({ roomCode: invitedRoom }));
     } else {
-      setProfile(stored);
+      setLocalProfile(stored);
     }
 
     const handleUpdate = (e: any) => {
       if (e.type === 'storage') {
         if (e.key === null || e.key === STORAGE_KEY) {
-          setProfile(getStoredCoupleProfile());
+          setLocalProfile(getStoredCoupleProfile());
         }
         return;
       }
-      if (e.detail) setProfile(e.detail);
-      else setProfile(getStoredCoupleProfile());
+      if (e.detail) setLocalProfile(e.detail);
+      else setLocalProfile(getStoredCoupleProfile());
     };
 
     window.addEventListener('dearly_couple_profile_updated', handleUpdate);
@@ -99,17 +101,26 @@ export function useCoupleProfile() {
     };
   }, []);
 
-  const updateProfile = (updates: Partial<CoupleProfile>) => {
+  const updateProfile = async (updates: Partial<CoupleProfile>) => {
     const updated = saveStoredCoupleProfile(updates);
-    setProfile(updated);
+    setLocalProfile(updated);
+    if (profile && updates.partnerA?.trim()) {
+      await saveProfile({
+        displayName: updates.partnerA.trim(),
+        city: profile.city,
+        timezone: profile.timezone,
+      });
+    }
   };
 
-  return {
-    partnerA: profile.partnerA || 'Partner 1',
-    partnerB: profile.partnerB || 'Partner 2',
-    cityA: profile.cityA || 'City 1',
-    cityB: profile.cityB || 'City 2',
-    roomCode: profile.roomCode || '',
+  return useMemo(() => ({
+    // Signed-in experiences read the shared couple context. The local record is
+    // retained only as a solo/demo fallback for routes opened without a space.
+    partnerA: profile?.displayName || localProfile.partnerA || 'Partner 1',
+    partnerB: partner?.displayName || localProfile.partnerB || 'Partner 2',
+    cityA: profile?.city || localProfile.cityA || 'City 1',
+    cityB: partner?.city || localProfile.cityB || 'City 2',
+    roomCode: space?.activeRoomCode || localProfile.roomCode || '',
     updateProfile,
-  };
+  }), [profile, partner, space, localProfile, updateProfile]);
 }

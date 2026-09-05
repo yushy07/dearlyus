@@ -20,7 +20,6 @@ import {
   saveSharedPreferences as rpcSaveSharedPreferences,
   deleteKeepsake as rpcDeleteKeepsake,
 } from '@/lib/account';
-import { saveStoredCoupleProfile } from '@/lib/couple';
 
 export interface CoupleSpaceContextValue {
   profile: AccountProfile | null;
@@ -43,7 +42,6 @@ export interface CoupleSpaceContextValue {
   savePreferences: (prefs: Omit<SharedPreferences, 'updatedAt'>) => Promise<SharedPreferences>;
   removeKeepsake: (id: string) => Promise<void>;
   exportSpaceData: () => Promise<string>;
-  disconnectSpace: () => Promise<void>;
 }
 
 const CoupleSpaceContext = createContext<CoupleSpaceContextValue | null>(null);
@@ -57,18 +55,6 @@ export function CoupleSpaceProvider({ children }: { children: React.ReactNode })
   const [preferences, setPreferences] = useState<SharedPreferences | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const syncLegacyCouple = useCallback((p: AccountProfile | null, s: CoupleSpace | null) => {
-    if (!p) return;
-    const partnerMember = s?.members.find((m) => m.id !== p.id);
-    saveStoredCoupleProfile({
-      partnerA: p.displayName || 'You',
-      cityA: p.city || '',
-      partnerB: partnerMember?.displayName || 'Your person',
-      cityB: partnerMember?.city || '',
-      roomCode: s?.activeRoomCode || undefined,
-    });
-  }, []);
 
   const refresh = useCallback(async () => {
     if (!user) {
@@ -89,7 +75,6 @@ export function CoupleSpaceProvider({ children }: { children: React.ReactNode })
       setKeepsakes(account.keepsakes);
       setMilestones(account.milestones);
       setPreferences(account.preferences);
-      syncLegacyCouple(account.profile, account.space);
     } catch (err: any) {
       const fallback = profileFromUser(user);
       setProfile(fallback);
@@ -97,7 +82,7 @@ export function CoupleSpaceProvider({ children }: { children: React.ReactNode })
     } finally {
       setLoading(false);
     }
-  }, [user, syncLegacyCouple]);
+  }, [user]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -142,14 +127,12 @@ export function CoupleSpaceProvider({ children }: { children: React.ReactNode })
   const createSpaceHandler = async (name: string) => {
     const nextSpace = await rpcCreateCoupleSpace(name);
     setSpace(nextSpace);
-    syncLegacyCouple(profile, nextSpace);
     return nextSpace;
   };
 
   const joinSpaceHandler = async (code: string) => {
     const nextSpace = await rpcJoinCoupleSpace(code);
     setSpace(nextSpace);
-    syncLegacyCouple(profile, nextSpace);
     return nextSpace;
   };
 
@@ -168,7 +151,6 @@ export function CoupleSpaceProvider({ children }: { children: React.ReactNode })
   const rotateRoomHandler = async () => {
     const nextSpace = await rpcRotateRoom();
     setSpace(nextSpace);
-    syncLegacyCouple(profile, nextSpace);
     return nextSpace;
   };
 
@@ -199,15 +181,6 @@ export function CoupleSpaceProvider({ children }: { children: React.ReactNode })
       })),
     };
     return JSON.stringify(exportData, null, 2);
-  };
-
-  const disconnectSpaceHandler = async () => {
-    if (!supabase || !space?.id) return;
-    // Leave membership cleanly
-    const { error: leaveErr } = await supabase.from('couple_members').delete().eq('couple_id', space.id).eq('user_id', user!.id);
-    if (leaveErr) throw leaveErr;
-    setSpace(null);
-    await refresh();
   };
 
   const partner = useMemo(() => {
@@ -244,7 +217,6 @@ export function CoupleSpaceProvider({ children }: { children: React.ReactNode })
       savePreferences: savePreferencesHandler,
       removeKeepsake: removeKeepsakeHandler,
       exportSpaceData: exportSpaceDataHandler,
-      disconnectSpace: disconnectSpaceHandler,
     }),
     [
       profile,
