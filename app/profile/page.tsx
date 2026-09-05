@@ -8,9 +8,9 @@ import { Navbar, AiConsentToggle } from '@/components/shared';
 import { getSupabase } from '@/lib/supabase';
 import { useCoupleProfile } from '@/lib/couple';
 import {
-  type AccountProfile, type CoupleSpace, type Keepsake,
+  type AccountProfile, type CoupleSpace, type Keepsake, type RelationshipMilestone, type SharedPreferences,
   createCoupleSpace, createDateRoom, joinCoupleSpace, loadAccount, profileFromUser,
-  regenerateInvite, rotateRoom, saveAccountProfile,
+  deleteKeepsake, regenerateInvite, revokeInvite, rotateRoom, saveAccountProfile, saveSharedPreferences,
 } from '@/lib/account';
 import styles from './profile.module.css';
 
@@ -42,6 +42,8 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<AccountProfile | null>(null);
   const [space, setSpace] = useState<CoupleSpace | null>(null);
   const [keepsakes, setKeepsakes] = useState<Keepsake[]>([]);
+  const [milestones, setMilestones] = useState<RelationshipMilestone[]>([]);
+  const [preferences, setPreferences] = useState<SharedPreferences>({ preferredMood: 'playful', defaultDurationMinutes: 30, ambientAudioEnabled: false, reducedMotion: false, updatedAt: null });
   const [displayName, setDisplayName] = useState('');
   const [city, setCity] = useState('');
   const [timezone, setTimezone] = useState('');
@@ -70,6 +72,8 @@ export default function ProfilePage() {
     setTimezone(account.profile.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone);
     setSpace(account.space);
     setKeepsakes(account.keepsakes);
+    setMilestones(account.milestones);
+    if (account.preferences) setPreferences(account.preferences);
     syncLocalCouple(account.profile, account.space);
   }, [syncLocalCouple]);
 
@@ -104,6 +108,19 @@ export default function ProfilePage() {
       }
     });
   }, [refresh, router]);
+
+  useEffect(() => {
+    const supabase = getSupabase();
+    if (!supabase || !user || !space?.id) return;
+    const channel = supabase.channel(`space:${space.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'couple_members', filter: `couple_id=eq.${space.id}` }, () => { void refresh(user); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'couple_invites', filter: `couple_id=eq.${space.id}` }, () => { void refresh(user); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'keepsakes', filter: `couple_id=eq.${space.id}` }, () => { void refresh(user); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'relationship_milestones', filter: `couple_id=eq.${space.id}` }, () => { void refresh(user); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'shared_preferences', filter: `couple_id=eq.${space.id}` }, () => { void refresh(user); })
+      .subscribe();
+    return () => { void supabase.removeChannel(channel); };
+  }, [refresh, space?.id, user]);
 
   const run = async (label: string, action: () => Promise<void>, success?: string) => {
     setBusy(label);
@@ -159,6 +176,26 @@ export default function ProfilePage() {
     if (!supabase) return;
     await supabase.auth.signOut();
     router.replace('/');
+  };
+
+  const removeKeepsake = async (id: string) => {
+    if (!user) return;
+    await run(`keepsake-${id}`, async () => {
+      await deleteKeepsake(id);
+      await refresh(user);
+    }, 'Keepsake removed from your shared shelf.');
+  };
+
+  const savePreferences = async () => {
+    await run('preferences', async () => {
+      const saved = await saveSharedPreferences({
+        preferredMood: preferences.preferredMood,
+        defaultDurationMinutes: preferences.defaultDurationMinutes,
+        ambientAudioEnabled: preferences.ambientAudioEnabled,
+        reducedMotion: preferences.reducedMotion,
+      });
+      setPreferences(saved);
+    }, 'Your shared date-night preferences are saved.');
   };
 
   const currentTime = useMemo(() => {
@@ -238,7 +275,7 @@ export default function ProfilePage() {
                 <div className={styles.connection} />
                 <div className={styles.person}><div className={styles.personAvatar}>{partner ? <Avatar url={partner.avatarUrl} name={partner.displayName} /> : '?'}</div><strong>{partner?.displayName || 'Your person'}</strong><small>{partner?.city || 'Invite pending'}</small></div>
               </div>
-              {!partner && <div className={styles.waiting}><div className={styles.miniLabel}>Private invitation · valid for 7 days</div><div className={styles.code} style={{ margin: '11px 0' }}>{space.invite?.code || 'GENERATE'}</div><div className={styles.choiceRow}><button className="btn btn-primary" onClick={copyInvite} disabled={!space.invite}>Copy invite link</button><button className="btn btn-ghost" disabled={Boolean(busy)} onClick={() => updateSpace('invite', regenerateInvite, 'A fresh private invitation is ready.')}>{busy === 'invite' ? 'Refreshing…' : 'Make a fresh invite'}</button></div></div>}
+              {!partner && <div className={styles.waiting}><div className={styles.miniLabel}>Private invitation · valid for 7 days</div><div className={styles.code} style={{ margin: '11px 0' }}>{space.invite?.code || 'NO ACTIVE INVITE'}</div><div className={styles.choiceRow}><button className="btn btn-primary" onClick={copyInvite} disabled={!space.invite}>Copy invite link</button><button className="btn btn-ghost" disabled={Boolean(busy)} onClick={() => updateSpace('invite', regenerateInvite, 'A fresh private invitation is ready.')}>{busy === 'invite' ? 'Refreshing…' : 'Make a fresh invite'}</button>{space.invite && <button className="btn btn-ghost" disabled={Boolean(busy)} onClick={() => updateSpace('revoke', revokeInvite, 'The invitation was revoked.')}>{busy === 'revoke' ? 'Revoking…' : 'Revoke invite'}</button>}</div></div>}
               {partner && <div className={styles.choiceRow}><button className="btn btn-primary" onClick={openDateNight} disabled={Boolean(busy)}>{busy === 'room' ? 'Opening your lobby…' : 'Start or continue date night ▷'}</button><Link className="btn btn-ghost" href="/activity">Browse activities</Link></div>}
             </div>}
           </section>
@@ -251,12 +288,15 @@ export default function ProfilePage() {
 
         <section className={styles.card}>
           <div className={styles.sectionHead}><div><h2>Memory shelf</h2><p>Real keepsakes saved by you and your person will live here.</p></div><Link className="btn btn-ghost" href="/photobooth">Take a strip 📸</Link></div>
-          <div className={styles.shelfGrid}>{keepsakes.length ? keepsakes.map((item) => <Link key={item.id} className={styles.keepsake} href={item.activityPath || '#'}><div className={styles.keepsakePreview} style={item.previewUrl ? { backgroundImage: `url(${item.previewUrl})` } : undefined}>{item.previewUrl ? null : KEEPSAKE_ICONS[item.kind]}</div><div className={styles.keepsakeBody}><strong>{item.title}</strong><small>{new Date(item.createdAt).toLocaleDateString()}</small></div></Link>) : <div className={styles.emptyShelf}><div className={styles.emptyIcon}>💌</div><h3>Your first keepsake is waiting for you.</h3><p>Take a photostrip, collect a passport stamp, or finish a date-night activity to begin your shared shelf.</p><div className={styles.choiceRow} style={{ justifyContent: 'center' }}><Link className="btn btn-primary" href="/photobooth">Open photobooth</Link><Link className="btn btn-ghost" href="/passport">Open passport</Link><Link className="btn btn-ghost" href="/activity">Browse dates</Link></div></div>}</div>
+          <div className={styles.shelfGrid}>{keepsakes.length ? keepsakes.map((item) => <article key={item.id} className={styles.keepsake}><Link href={item.activityPath || '/profile'}><div className={styles.keepsakePreview} style={item.previewUrl ? { backgroundImage: `url(${item.previewUrl})` } : undefined}>{item.previewUrl ? null : KEEPSAKE_ICONS[item.kind]}</div><div className={styles.keepsakeBody}><strong>{item.title}</strong><small>{new Date(item.createdAt).toLocaleDateString()}</small>{item.caption && <p>{item.caption}</p>}</div></Link><button className={styles.keepsakeDelete} onClick={() => removeKeepsake(item.id)} disabled={busy === `keepsake-${item.id}`}>Remove</button></article>) : <div className={styles.emptyShelf}><div className={styles.emptyIcon}>💌</div><h3>Your first keepsake is waiting for you.</h3><p>Take a photostrip, collect a passport stamp, or finish a date-night activity to begin your shared shelf.</p><div className={styles.choiceRow} style={{ justifyContent: 'center' }}><Link className="btn btn-primary" href="/photobooth">Open photobooth</Link><Link className="btn btn-ghost" href="/passport">Open passport</Link><Link className="btn btn-ghost" href="/activity">Browse dates</Link></div></div>}</div>
         </section>
+
+        {milestones.length > 0 && <section className={styles.card}><div className={styles.sectionHead}><div><h2>Relationship constellation</h2><p>The moments you deliberately chose to keep.</p></div></div><div className={styles.milestoneList}>{milestones.slice(0, 8).map((milestone) => <div className={styles.milestone} key={milestone.id}><span>✦</span><div><strong>{milestone.title}</strong><small>{new Date(milestone.occurredAt).toLocaleDateString()}</small></div></div>)}</div></section>}
 
         <section className={styles.card}>
           <div className={styles.sectionHead}><div><h2>Privacy & settings</h2><p>Quiet controls for your private space.</p></div></div>
           <div className={styles.settingsRow}><div className={styles.settingsCopy}><strong>AI-powered follow-ups</strong><p>Choose whether your entered names and answers can be sent to Google Gemini for personalised questions. Camera feeds and photos are never included.</p></div><div style={{ maxWidth: 360 }}><AiConsentToggle /></div></div>
+          {space && <div className={styles.settingsRow}><div className={styles.settingsCopy}><strong>Shared date-night defaults</strong><p>These choices follow your couple space to the lobby on every device.</p></div><div className={styles.preferenceControls}><select value={preferences.preferredMood} onChange={(event) => setPreferences((value) => ({ ...value, preferredMood: event.target.value as SharedPreferences['preferredMood'] }))}><option value="playful">Playful</option><option value="romantic">Romantic</option><option value="deep">Deep</option><option value="cozy">Cozy</option></select><select value={preferences.defaultDurationMinutes} onChange={(event) => setPreferences((value) => ({ ...value, defaultDurationMinutes: Number(event.target.value) as SharedPreferences['defaultDurationMinutes'] }))}><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="45">45 minutes</option><option value="60">60 minutes</option><option value="90">90 minutes</option></select><label><input type="checkbox" checked={preferences.ambientAudioEnabled} onChange={(event) => setPreferences((value) => ({ ...value, ambientAudioEnabled: event.target.checked }))} /> Ambient audio</label><button className="btn btn-ghost" onClick={savePreferences} disabled={busy === 'preferences'}>{busy === 'preferences' ? 'Saving…' : 'Save defaults'}</button></div></div>}
           <div className={styles.settingsRow}><div className={styles.settingsCopy}><strong>Your data</strong><p>Read what is stored locally, what is saved in Supabase, and how shared-room events work.</p></div><Link className="btn btn-ghost" href="/privacy">Privacy policy</Link></div>
           <div className={styles.settingsRow}><div className={styles.settingsCopy}><strong>Account controls</strong><p>Sign out on this device or request permanent deletion of your account and shared data.</p></div><div className={styles.actions}><a className="btn btn-ghost" href="mailto:hello@dearlyus.love?subject=Delete%20my%20Dearly%20Us%20account">Request deletion</a><button className="btn btn-ghost" onClick={signOut}>Sign out</button></div></div>
         </section>

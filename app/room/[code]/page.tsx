@@ -4,10 +4,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
-import { Navbar } from '@/components/shared';
+import { AiConsentToggle, Navbar } from '@/components/shared';
 import { useCoupleProfile } from '@/lib/couple';
+import { QRCodeSVG } from '@/lib/qrcode';
 import { getSupabase } from '@/lib/supabase';
-import { type DateRoom, joinDateRoom, leaveDateRoom, setDateRoomReady, startDateActivity } from '@/lib/account';
+import { type DateRoom, joinDateRoom, leaveDateRoom, loadSharedPreferences, saveSharedPreferences, setDateRoomReady, startDateActivity } from '@/lib/account';
 import { useRoomSync } from '@/lib/room';
 import styles from './room.module.css';
 
@@ -30,6 +31,9 @@ export default function RoomLobbyPage() {
   const [selected, setSelected] = useState<(typeof ACTIVITIES)[number]['id']>('quiz');
   const [mood, setMood] = useState('playful');
   const [duration, setDuration] = useState(30);
+  const [ambientAudio, setAmbientAudio] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
@@ -64,7 +68,12 @@ export default function RoomLobbyPage() {
       }
       setUser(data.user);
       try {
-        const nextRoom = await refresh();
+        const [nextRoom, savedPreferences] = await Promise.all([refresh(), loadSharedPreferences()]);
+        if (savedPreferences) {
+          setMood(savedPreferences.preferredMood);
+          setDuration(savedPreferences.defaultDurationMinutes);
+          setAmbientAudio(savedPreferences.ambientAudioEnabled);
+        }
         channel = supabase.channel(`lobby:${nextRoom.id}`)
           .on('postgres_changes', { event: '*', schema: 'public', table: 'room_members', filter: `room_id=eq.${nextRoom.id}` }, () => { void refresh(); })
           .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `id=eq.${nextRoom.id}` }, () => { void refresh(); })
@@ -99,7 +108,8 @@ export default function RoomLobbyPage() {
     if (!bothReady) return;
     setBusy('start'); setError('');
     try {
-      const result = await startDateActivity(code, selected, { mood, durationMinutes: duration });
+      await saveSharedPreferences({ preferredMood: mood as 'playful' | 'romantic' | 'deep' | 'cozy', defaultDurationMinutes: duration as 15 | 30 | 45 | 60 | 90, ambientAudioEnabled: ambientAudio, reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches });
+      const result = await startDateActivity(code, selected, { mood, durationMinutes: duration, ambientAudioEnabled: ambientAudio });
       router.push(`/${result.activityType}?room=${encodeURIComponent(code)}&session=${result.sessionId}`);
     } catch { setError('The activity could not start. Refresh the lobby and try again.'); setBusy(''); }
   };
@@ -113,9 +123,16 @@ export default function RoomLobbyPage() {
   if (error && !room) return <main className={styles.loading}><div><h1>Room unavailable</h1><p>{error}</p><Link className="btn btn-primary" href="/profile">Return to Our Space</Link></div></main>;
   if (!room || !user) return null;
 
+  const roomUrl = typeof window === 'undefined' ? '' : `${window.location.origin}/room/${room.code}`;
+  const copyRoomLink = async () => {
+    await navigator.clipboard.writeText(roomUrl);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1800);
+  };
+
   return (
     <div className={styles.page}>
-      <Navbar roomCode={room.code} rightAction={<button className="btn btn-ghost" onClick={leave} disabled={Boolean(busy)}>Leave lobby</button>} />
+      <Navbar roomCode={room.code} rightAction={<div className={styles.navActions}><button className="btn btn-ghost" onClick={() => setShareOpen((value) => !value)}>Share room</button><button className="btn btn-ghost" onClick={leave} disabled={Boolean(busy)}>Leave lobby</button></div>} />
       <header className={styles.hero}>
         <div className={styles.eyebrow}>Date Night Lobby · Room {room.code}</div>
         <h1>Meet me in the middle.</h1>
@@ -123,6 +140,7 @@ export default function RoomLobbyPage() {
       </header>
       <main className={styles.content}>
         {error && <div className={styles.error} role="alert">{error}</div>}
+        {shareOpen && <section className={styles.shareCard}><div><div className={styles.eyebrow}>Private room link</div><h2>Bring your person into the lobby.</h2><p>Only the partner already connected to this couple space can enter—even if somebody else learns the code.</p><div className={styles.actions}><button className="btn btn-primary" onClick={copyRoomLink}>{copied ? 'Copied ✓' : 'Copy private link'}</button><button className="btn btn-ghost" onClick={() => navigator.share ? navigator.share({ title: 'Dearly Us date night', text: `Meet me in room ${room.code}`, url: roomUrl }) : copyRoomLink()}>Share</button></div></div><div className={styles.qr}><QRCodeSVG text={roomUrl} size={150} fgColor="#1C1924" bgColor="#FFFFFF" /></div></section>}
         <section className={styles.connectionCard}>
           <div className={styles.person}><div className={styles.avatar}>{ownMember?.avatarUrl ? <img src={ownMember.avatarUrl} alt="" /> : initials(ownMember?.displayName || partnerA)}</div><strong>{ownMember?.displayName || 'You'}</strong><span>{ownMember?.ready ? 'Ready ♡' : 'Getting cozy'}</span></div>
           <div className={`${styles.pulse} ${partnerOnline ? styles.pulseLive : ''}`}><i /><span>{partnerOnline ? 'Together' : 'Connecting'}</span><i /></div>
@@ -135,7 +153,9 @@ export default function RoomLobbyPage() {
           <div className={styles.preferences}>
             <label>Mood<select value={mood} onChange={(event) => setMood(event.target.value)}><option value="playful">Playful</option><option value="romantic">Romantic</option><option value="deep">Deep</option><option value="cozy">Cozy</option></select></label>
             <label>Time together<select value={duration} onChange={(event) => setDuration(Number(event.target.value))}><option value={15}>15 minutes</option><option value={30}>30 minutes</option><option value={45}>45 minutes</option><option value={60}>60 minutes</option><option value={90}>90 minutes</option></select></label>
+            <label className={styles.checkPreference}><input type="checkbox" checked={ambientAudio} onChange={(event) => setAmbientAudio(event.target.checked)} /> Add ambient audio</label>
           </div>
+          <div className={styles.consent}><strong>Cupidot consent for this device</strong><AiConsentToggle /></div>
           <div className={styles.actions}><button className="btn btn-ghost" onClick={toggleReady} disabled={Boolean(busy)}>{ownMember?.ready ? 'I need a moment' : 'I’m ready ♡'}</button><button className="btn btn-primary" onClick={start} disabled={!bothReady || Boolean(busy)}>{busy === 'start' ? 'Starting together…' : bothReady ? `Start ${ACTIVITIES.find((item) => item.id === selected)?.name} →` : 'Waiting for both hearts'}</button></div>
         </section>
       </main>

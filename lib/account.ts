@@ -37,6 +37,25 @@ export interface Keepsake {
   previewUrl: string | null;
   activityPath: string | null;
   createdAt: string;
+  caption: string | null;
+  storageBucket: string | null;
+  storagePath: string | null;
+}
+
+export interface RelationshipMilestone {
+  id: string;
+  kind: string;
+  title: string;
+  occurredAt: string;
+  metadata: Record<string, unknown>;
+}
+
+export interface SharedPreferences {
+  preferredMood: 'playful' | 'romantic' | 'deep' | 'cozy';
+  defaultDurationMinutes: 15 | 30 | 45 | 60 | 90;
+  ambientAudioEnabled: boolean;
+  reducedMotion: boolean;
+  updatedAt: string | null;
 }
 
 export interface DateRoomMember {
@@ -98,22 +117,44 @@ export async function loadAccount(user: User) {
   if (space?.id) {
     const { data: keepsakeData, error: keepsakeError } = await supabase
       .from('keepsakes')
-      .select('id, kind, title, preview_url, activity_path, created_at')
+      .select('id, kind, title, preview_url, activity_path, created_at, caption, storage_bucket, storage_path')
       .eq('couple_id', space.id)
       .order('created_at', { ascending: false })
       .limit(12);
     if (keepsakeError) throw keepsakeError;
-    keepsakes = (keepsakeData ?? []).map((item) => ({
+    keepsakes = await Promise.all((keepsakeData ?? []).map(async (item) => {
+      let previewUrl = item.preview_url;
+      if (!previewUrl && item.storage_bucket && item.storage_path) {
+        const { data: signed } = await supabase.storage.from(item.storage_bucket).createSignedUrl(item.storage_path, 3600);
+        previewUrl = signed?.signedUrl ?? null;
+      }
+      return {
       id: item.id,
       kind: item.kind,
       title: item.title,
-      previewUrl: item.preview_url,
+      previewUrl,
       activityPath: item.activity_path,
       createdAt: item.created_at,
-    }));
+      caption: item.caption,
+      storageBucket: item.storage_bucket,
+      storagePath: item.storage_path,
+    }; }));
   }
 
-  return { profile, space, keepsakes };
+  let preferences: SharedPreferences | null = null;
+  let milestones: RelationshipMilestone[] = [];
+  if (space?.id) {
+    const [{ data: preferenceData, error: preferenceError }, { data: milestoneData, error: milestoneError }] = await Promise.all([
+      supabase.rpc('get_shared_preferences'),
+      supabase.from('relationship_milestones').select('id, kind, title, occurred_at, metadata').eq('couple_id', space.id).order('occurred_at', { ascending: false }).limit(20),
+    ]);
+    if (preferenceError) throw preferenceError;
+    if (milestoneError) throw milestoneError;
+    preferences = preferenceData as SharedPreferences | null;
+    milestones = (milestoneData ?? []).map((item) => ({ id: item.id, kind: item.kind, title: item.title, occurredAt: item.occurred_at, metadata: item.metadata ?? {} }));
+  }
+
+  return { profile, space, keepsakes, preferences, milestones };
 }
 
 export async function saveAccountProfile(user: User, input: Pick<AccountProfile, 'displayName' | 'city' | 'timezone'>) {
@@ -143,7 +184,70 @@ async function runSpaceRpc(name: string, params?: Record<string, string>) {
 export const createCoupleSpace = (name: string) => runSpaceRpc('create_couple_space', { space_name: name });
 export const joinCoupleSpace = (code: string) => runSpaceRpc('join_couple_by_invite', { invite_code: code });
 export const regenerateInvite = () => runSpaceRpc('regenerate_couple_invite');
+export const revokeInvite = () => runSpaceRpc('revoke_couple_invite');
 export const rotateRoom = () => runSpaceRpc('rotate_couple_room');
+
+export async function saveSharedPreferences(preferences: Omit<SharedPreferences, 'updatedAt'>) {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Supabase is not configured.');
+  const { data, error } = await supabase.rpc('save_shared_preferences', { preferences });
+  if (error) throw error;
+  return data as SharedPreferences;
+}
+
+export async function loadSharedPreferences() {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Supabase is not configured.');
+  const { data, error } = await supabase.rpc('get_shared_preferences');
+  if (error) throw error;
+  return data as SharedPreferences | null;
+}
+
+export async function uploadKeepsake(input: {
+  coupleId: string;
+  kind: Keepsake['kind'];
+  title: string;
+  file?: File | Blob;
+  activityPath?: string;
+  sessionId?: string;
+  caption?: string;
+  metadata?: Record<string, unknown>;
+}) {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Supabase is not configured.');
+  let bucket: string | null = null;
+  let path: string | null = null;
+  if (input.file) {
+    bucket = input.kind === 'photostrip' ? 'couple-photostrips' : input.kind === 'activity' ? 'couple-drawings' : 'couple-keepsakes';
+    const extension = input.file.type === 'image/webp' ? 'webp' : input.file.type === 'application/pdf' ? 'pdf' : input.file.type === 'image/jpeg' ? 'jpg' : 'png';
+    path = `${input.coupleId}/${crypto.randomUUID()}.${extension}`;
+    const { error: uploadError } = await supabase.storage.from(bucket).upload(path, input.file, { contentType: input.file.type, upsert: false });
+    if (uploadError) throw uploadError;
+  }
+  const { data, error } = await supabase.rpc('finalize_keepsake', {
+    keepsake_kind: input.kind,
+    keepsake_title: input.title,
+    target_bucket: bucket,
+    target_path: path,
+    source_activity_path: input.activityPath ?? null,
+    source_session_id: input.sessionId ?? null,
+    keepsake_caption: input.caption ?? null,
+    keepsake_metadata: input.metadata ?? {},
+  });
+  if (error) {
+    if (bucket && path) await supabase.storage.from(bucket).remove([path]);
+    throw error;
+  }
+  return data as Pick<Keepsake, 'id' | 'kind' | 'title' | 'activityPath' | 'createdAt'>;
+}
+
+export async function deleteKeepsake(id: string) {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Supabase is not configured.');
+  const { data, error } = await supabase.rpc('delete_keepsake', { target_keepsake_id: id });
+  if (error) throw error;
+  return data as { deleted: boolean; id: string };
+}
 
 async function runRoomRpc(name: string, params?: Record<string, unknown>) {
   const supabase = getSupabase();
