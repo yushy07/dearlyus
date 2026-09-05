@@ -3,7 +3,7 @@
 import type { User } from '@supabase/supabase-js';
 import { getSupabase } from './supabase';
 import type { AccountLifecycleStatus, AccountProfile, CoupleSpace, DateRoom, Keepsake, KeepsakeStatus } from './domain';
-export type { AccountProfile, CoupleInvitation, CoupleSpace, DateRoom, DateRoomMember, Keepsake } from './domain';
+export type { AccountProfile, CoupleInvitation, CoupleInvitePreview, CoupleSpace, DateRoom, DateRoomMember, Keepsake } from './domain';
 
 export interface RelationshipMilestone {
   id: string;
@@ -228,3 +228,39 @@ export async function startDateActivity(code: string, activityType: string, snap
   if (error) throw error;
   return data as { room: DateRoom; sessionId: string; activityType: string; revision: number };
 }
+
+export async function saveDateNightCapsule(coupleId: string, payload: Record<string, unknown>) {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Supabase is not configured.');
+  const { data, error } = await supabase.rpc('save_date_night_capsule', {
+    target_couple_id: coupleId,
+    capsule_payload: payload,
+  });
+  if (error) throw error;
+  return data as { success: boolean; keepsake: Keepsake };
+}
+
+export async function recordRitualEntry(coupleId: string, ritualKey: string, payload: Record<string, unknown>) {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Supabase is not configured.');
+  const { data, error } = await supabase.rpc('record_ritual_entry', {
+    target_couple_id: coupleId,
+    ritual_key: ritualKey,
+    entry_payload: payload,
+  });
+  if (error) throw error;
+  return data as { success: boolean; ritualKey: string };
+}
+
+export async function saveScheduledDate(coupleId: string, scheduledDate: string, title = 'Our Next Date Night') {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Supabase is not configured.');
+  const { data, error } = await supabase.rpc('save_scheduled_date', {
+    target_couple_id: coupleId,
+    scheduled_date: scheduledDate,
+    title,
+  });
+  if (error) throw error;
+  return data as { success: boolean; scheduledAt: string; title: string };
+}
+

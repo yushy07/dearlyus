@@ -24,7 +24,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const nextPath = useMemo(() => {
     const requested = searchParams.get('next');
-    return requested?.startsWith('/') && !requested.startsWith('//') ? requested : '/profile';
+    return requested?.startsWith('/') && !requested.startsWith('//') ? requested : '/our-space';
   }, [searchParams]);
 
   useEffect(() => {

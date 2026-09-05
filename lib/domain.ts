@@ -1,6 +1,15 @@
 export type AccountLifecycleStatus = 'active' | 'suspended' | 'deletion_requested' | 'deleted';
 export type CoupleRole = 'owner' | 'partner';
 export type InviteStatus = 'active' | 'accepted' | 'revoked' | 'expired';
+export type InviteViewState =
+  | 'pending'
+  | 'accepted'
+  | 'expired'
+  | 'revoked'
+  | 'already_used'
+  | 'couple_full'
+  | 'self_invite'
+  | 'already_connected';
 export type RoomStatus = 'lobby' | 'active' | 'paused' | 'completed' | 'expired' | 'cancelled';
 export type ActivityStatus = 'preparing' | 'active' | 'waiting' | 'revealing' | 'paused' | 'completed' | 'abandoned';
 export type KeepsakeStatus = 'draft' | 'finalized' | 'deleted';
@@ -30,6 +39,15 @@ export interface CoupleInvitation {
   expiresAt: string;
   acceptedAt: string | null;
   revokedAt: string | null;
+}
+
+export interface CoupleInvitePreview {
+  code: string;
+  spaceName: string;
+  inviterName: string;
+  expiresAt: string;
+  state?: InviteViewState;
+  isSelfInvite?: boolean;
 }
 
 export interface CoupleSpace {
@@ -116,4 +134,6 @@ export interface Keepsake {
   caption: string | null;
   storageBucket: string | null;
   storagePath: string | null;
+  metadata?: Record<string, unknown> | null;
+  publicUrl?: string | null;
 }

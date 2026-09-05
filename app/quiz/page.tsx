@@ -1,32 +1,40 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { QUIZ_PACKS } from '@/data';
 import { QuizPack, QuizQuestion } from '@/types';
-import { Ribbon, Navbar, Confetti, CoupleNameBar, AiConsentToggle } from '@/components/shared';
+import { Ribbon, Navbar, Confetti, CoupleNameBar, AiConsentToggle, SecretAnswerSeal } from '@/components/shared';
 import { sounds } from '@/lib/sound';
 import { downloadReceiptPNG, DateReceiptData } from '@/lib/receipt-canvas';
 import { ThermalReceiptModal } from '@/components/shared/ThermalReceiptModal';
 import { useCoupleProfile } from '@/lib/couple';
-import { useRoomSync } from '@/lib/room';
 import { useAiConsent } from '@/lib/ai-consent';
 import { generateAdaptiveQuestion } from '@/lib/gemini';
+import { useActivitySession } from '@/contexts/ActivitySessionContext';
+import { useSupabaseSession } from '@/contexts/SupabaseSessionContext';
+import { usePrivateAnswers } from '@/hooks/usePrivateAnswers';
+import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
+import { quizActivityAdapter } from '@/lib/activity-adapters/quiz';
 
 export default function QuizPage() {
   const { partnerA, partnerB, roomCode } = useCoupleProfile();
+  const { user } = useSupabaseSession();
   const { hasAiConsent } = useAiConsent();
+  const { session, sessionId, sendEvent, registerEventHandler, completeActivity } = useActivitySession();
+  const { saveKeepsake, saving: keepsakeSaving } = useKeepsakeWriter();
+
   const [allPacks, setAllPacks] = useState<QuizPack[]>(QUIZ_PACKS);
   const [selectedPack, setSelectedPack] = useState<QuizPack>(QUIZ_PACKS[0]);
   const [currentQIndex, setCurrentQIndex] = useState(0);
-  const [partnerAPick, setPartnerAPick] = useState<number | null>(null);
-  const [partnerBPick, setPartnerBPick] = useState<number | null>(null);
-  const [revealed, setRevealed] = useState(false);
+  const [myDraftChoice, setMyDraftChoice] = useState<number | null>(null);
+
   const [matches, setMatches] = useState<number>(0);
   const [finished, setFinished] = useState(false);
   const [confettiActive, setConfettiActive] = useState(false);
   const [receiptModalData, setReceiptModalData] = useState<DateReceiptData | null>(null);
   const [sessionHistory, setSessionHistory] = useState<Array<{ question: string; answerA: string; answerB: string }>>([]);
+  const [keepsakeSaved, setKeepsakeSaved] = useState(false);
 
   // Custom Lore Quiz Creator Modal State
   const [creatorOpen, setCreatorOpen] = useState(false);
@@ -45,7 +53,10 @@ export default function QuizPage() {
     },
   ]);
 
-  // Load any saved custom packs from localStorage
+  const [adaptiveQueue, setAdaptiveQueue] = useState<QuizQuestion[]>([]);
+  const [hostCommentary, setHostCommentary] = useState<string | null>(null);
+
+  // Load custom packs from localStorage
   useEffect(() => {
     try {
       const saved = localStorage.getItem('dearly_custom_quiz_packs');
@@ -56,234 +67,271 @@ export default function QuizPage() {
     } catch {}
   }, []);
 
-  const currentQ = selectedPack.questions[currentQIndex];
+  const currentQ = selectedPack.questions[currentQIndex] || selectedPack.questions[0];
 
-  const [adaptiveQueue, setAdaptiveQueue] = useState<QuizQuestion[]>([]);
-  const [hostCommentary, setHostCommentary] = useState<string | null>(null);
-
-  // Supabase live room sync
-  const { sendEvent, partnerOnline } = useRoomSync({
-    roomCode: roomCode || 'LOVE',
-    senderName: partnerA,
-    onMessage: (event) => {
-      if (event.type === 'quiz_pick') {
-        const { partner, choice } = event.payload;
-        sounds.playChoiceLock();
-        if (partner === 'A') setPartnerAPick(choice);
-        else if (partner === 'B') setPartnerBPick(choice);
-      } else if (event.type === 'quiz_reveal') {
-        handleReveal(false);
-      } else if (event.type === 'quiz_next') {
-        handleNext(false);
+  // Section 7: Secret Until Together hook for the active round
+  const {
+    isLocked,
+    partnerLocked,
+    bothLocked,
+    revealed,
+    revealedAnswers,
+    isSkipped,
+    lock,
+    reveal,
+    skip,
+    setPartnerLocked,
+    setBothLocked,
+  } = usePrivateAnswers({
+    roundNumber: currentQIndex,
+    onBothLocked: () => {
+      sounds.playChime();
+    },
+    onReveal: (answers) => {
+      // Check if answers match
+      if (answers.length >= 2) {
+        const ans0 = answers[0].answer;
+        const ans1 = answers[1].answer;
+        if (ans0 !== undefined && ans0 === ans1) {
+          setMatches((prev) => prev + 1);
+          sounds.playCelebration();
+        } else {
+          sounds.playCountdownBeep(true);
+        }
       }
+
+      // Record history
+      const qText = currentQ.q.replace(/\{partnerA\}/g, partnerA).replace(/\{partnerB\}/g, partnerB);
+      const textA = currentQ.options[Number(answers[0]?.answer ?? myDraftChoice)] || String(answers[0]?.answer ?? '');
+      const textB = currentQ.options[Number(answers[1]?.answer)] || String(answers[1]?.answer ?? '');
+
+      setSessionHistory((prev) => [...prev, { question: qText, answerA: textA, answerB: textB }]);
+
+      // AI adaptive question generation if consented
+      if (hasAiConsent && myDraftChoice !== null) {
+        void generateAdaptiveQuestion({
+          partnerA: { name: partnerA, answer: textA },
+          partnerB: { name: partnerB, answer: textB },
+          mode: 'quiz',
+          aiConsent: true,
+          history: [...sessionHistory, { question: qText, answerA: textA, answerB: textB }],
+        })
+          .then((data: any) => {
+            if (data?.question && Array.isArray(data.options)) {
+              setAdaptiveQueue([
+                {
+                  q: data.question,
+                  options: data.options,
+                  honestAnswerIndex: 0,
+                },
+              ]);
+              if (data.commentary) {
+                setHostCommentary(data.commentary);
+              }
+            }
+          })
+          .catch(() => {});
+      }
+    },
+    onSkip: () => {
+      sounds.playPop();
     },
   });
 
-  const handleNext = (broadcast = true) => {
+  // Reset local draft choice on new question
+  useEffect(() => {
+    setMyDraftChoice(null);
+  }, [currentQIndex]);
+
+  // Realtime synchronization for next question and quiz events
+  useEffect(() => {
+    const unregister = registerEventHandler((event) => {
+      if (event.type === 'quiz_next') {
+        const payload = (event.payload as Record<string, unknown>) || {};
+        const nextIdx = Number(payload.nextRound ?? currentQIndex + 1);
+        advanceToQuestion(nextIdx, false);
+      }
+    });
+    return () => {
+      unregister();
+    };
+  }, [registerEventHandler, currentQIndex]);
+
+  const advanceToQuestion = useCallback((nextIdx: number, broadcast = true) => {
     if (broadcast) {
-      sendEvent('quiz_next', {});
+      void sendEvent('quiz_next', { nextRound: nextIdx });
     }
+
     if (adaptiveQueue.length > 0) {
       const nextAdaptive = adaptiveQueue[0];
-      setAdaptiveQueue(adaptiveQueue.slice(1));
+      setAdaptiveQueue((prev) => prev.slice(1));
       const updatedQuestions = [...selectedPack.questions];
-      updatedQuestions.splice(currentQIndex + 1, 0, nextAdaptive);
-      setSelectedPack({ ...selectedPack, questions: updatedQuestions });
-      setCurrentQIndex(currentQIndex + 1);
-      setPartnerAPick(null);
-      setPartnerBPick(null);
-      setRevealed(false);
+      updatedQuestions.splice(nextIdx, 0, nextAdaptive);
+      setSelectedPack((prev) => ({ ...prev, questions: updatedQuestions }));
+      setCurrentQIndex(nextIdx);
       setHostCommentary(null);
-    } else if (currentQIndex + 1 < selectedPack.questions.length) {
-      setCurrentQIndex(currentQIndex + 1);
-      setPartnerAPick(null);
-      setPartnerBPick(null);
-      setRevealed(false);
+    } else if (nextIdx < selectedPack.questions.length) {
+      setCurrentQIndex(nextIdx);
       setHostCommentary(null);
     } else {
       setFinished(true);
       sounds.playCelebration();
       setConfettiActive(true);
       setTimeout(() => setConfettiActive(false), 4000);
+
+      // Complete session
+      void completeActivity({
+        packId: selectedPack.id,
+        packName: selectedPack.name,
+        matches,
+        total: selectedPack.questions.length,
+        history: sessionHistory,
+      });
     }
+  }, [adaptiveQueue, selectedPack, currentQIndex, matches, sessionHistory, sendEvent, completeActivity]);
+
+  const handleNext = () => {
+    advanceToQuestion(currentQIndex + 1, true);
   };
 
-  const handleReveal = (broadcast = true) => {
-    if (revealed || partnerAPick === null || partnerBPick === null) return;
-    if (broadcast) {
-      sendEvent('quiz_reveal', {});
+  const handleSaveKeepsake = async () => {
+    if (keepsakeSaved || keepsakeSaving) return;
+    try {
+      const draft = quizActivityAdapter.buildKeepsake?.({
+        activityType: 'quiz',
+        completed: true,
+        summary: {
+          packTitle: selectedPack.name,
+          matches,
+          totalRounds: selectedPack.questions.length,
+          history: sessionHistory.map((h, i) => ({
+            roundIndex: i,
+            question: { q: h.question, options: [] },
+            answers: [],
+            isMatch: h.answerA === h.answerB,
+          })),
+        },
+      });
+
+      if (draft) {
+        await saveKeepsake({
+          kind: 'activity',
+          title: draft.title,
+          activityPath: '/quiz',
+          caption: `${matches} matches on ${selectedPack.name}`,
+          metadata: draft.metadata,
+        });
+        setKeepsakeSaved(true);
+        sounds.playCelebration();
+      }
+    } catch (err) {
+      console.error('Failed to save keepsake:', err);
     }
-    setRevealed(true);
-    if (partnerAPick === partnerBPick) {
-      setMatches((prev) => prev + 1);
-      sounds.playCelebration();
-    } else {
-      sounds.playCountdownBeep(true);
-    }
-
-    // Parallel background pre-fetch for next adaptive question with thread connection
-    const currentQ = selectedPack.questions[currentQIndex];
-    const currentRoundData = {
-      question: currentQ.q,
-      answerA: currentQ.options[partnerAPick],
-      answerB: currentQ.options[partnerBPick],
-    };
-    const updatedHistory = [...sessionHistory, currentRoundData];
-    setSessionHistory(updatedHistory);
-
-    if (!hasAiConsent) return;
-
-    void generateAdaptiveQuestion({
-        partnerA: { name: partnerA, answer: currentQ.options[partnerAPick] },
-        partnerB: { name: partnerB, answer: currentQ.options[partnerBPick] },
-        mode: 'quiz',
-        aiConsent: true,
-        history: updatedHistory,
-    })
-      .then((data: any) => {
-        if (data?.question && Array.isArray(data.options)) {
-          setAdaptiveQueue([
-            {
-              q: data.question,
-              options: data.options,
-              honestAnswerIndex: 0,
-            },
-          ]);
-          if (data.commentary) {
-            setHostCommentary(data.commentary);
-          }
-        }
-      })
-      .catch(() => {});
   };
 
   const restartQuiz = (pack: QuizPack) => {
     setSelectedPack(pack);
     setCurrentQIndex(0);
-    setPartnerAPick(null);
-    setPartnerBPick(null);
-    setRevealed(false);
+    setMyDraftChoice(null);
     setMatches(0);
     setFinished(false);
     setAdaptiveQueue([]);
     setHostCommentary(null);
     setSessionHistory([]);
+    setKeepsakeSaved(false);
+    void sendEvent('quiz_start', {
+      packId: pack.id,
+      packTitle: pack.name,
+      totalRounds: pack.questions.length,
+    });
   };
 
-  // Add question to custom builder
-  const addQuestionDraft = () => {
-    setCustomQuestions([
-      ...customQuestions,
-      {
-        q: 'New Question: What was our favorite memory from this trip?',
-        options: ['Walking by the river at dusk 🌅', 'Singing karaoke until 3am 🎤', 'The cozy coffee shop we found ☕', 'Just talking in the hotel room 💌'],
-        honestAnswerIndex: 0,
-      },
-    ]);
+  // Single-device simulation helper for local testing
+  const simulatePartnerLock = () => {
+    setPartnerLocked(true);
+    if (isLocked) setBothLocked(true);
   };
-
-  // Save custom quiz pack
-  const saveCustomPack = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newPackTitle.trim() || customQuestions.length === 0) return;
-
-    const newPack: QuizPack = {
-      id: `custom-${Date.now()}`,
-      name: newPackTitle,
-      badge: '★ Custom Lore',
-      description: newPackDesc,
-      questions: customQuestions,
-    };
-
-    const updated = [...allPacks, newPack];
-    setAllPacks(updated);
-    setSelectedPack(newPack);
-    restartQuiz(newPack);
-    setCreatorOpen(false);
-
-    try {
-      const existingCustom = JSON.parse(localStorage.getItem('dearly_custom_quiz_packs') || '[]');
-      localStorage.setItem('dearly_custom_quiz_packs', JSON.stringify([...existingCustom, newPack]));
-    } catch {}
-  };
-
-  const matchPercent = Math.round((matches / selectedPack.questions.length) * 100);
 
   return (
-    <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px' }}>
-      <Ribbon text={<>❓ Know Me Quiz · <b>How Well Do You Know Each Other?</b> · Double-Blind Reveal</>} />
+    <div style={{ minHeight: '100vh', background: 'var(--paper)', display: 'flex', flexDirection: 'column' }}>
+      <Ribbon />
+      <Navbar />
+      <CoupleNameBar />
       <Confetti active={confettiActive} />
 
-      <Navbar
-        rightAction={
-          <button onClick={() => setCreatorOpen(true)} className="btn btn-primary" style={{ padding: '6px 14px', fontSize: '13px' }}>
-            + Create &ldquo;Our Lore&rdquo; Quiz
-          </button>
-        }
-      />
+      <main style={{ flex: 1, maxWidth: '860px', margin: '0 auto', width: '100%', padding: '32px 16px 80px' }}>
+        {/* Navigation Breadcrumb */}
+        <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Link
+            href="/arcade"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              color: 'var(--ink-soft)',
+              fontSize: '13.5px',
+              fontWeight: 600,
+              textDecoration: 'none',
+            }}
+          >
+            ‹ Back to Date Arcade
+          </Link>
 
-      <main className="wrap" style={{ paddingTop: '36px', maxWidth: '860px' }}>
-        <div style={{ maxWidth: '620px', margin: '0 auto 18px' }}><AiConsentToggle /></div>
-        {/* Title */}
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap' }}>
-            <CoupleNameBar />
+          <button
+            onClick={() => setCreatorOpen(true)}
+            className="btn btn-outline"
+            style={{ padding: '6px 14px', fontSize: '13px', borderRadius: '8px' }}
+          >
+            ✨ Create Custom Lore Pack
+          </button>
+        </div>
+
+        {/* Hero Header */}
+        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+            <span className="badge hot">Room-Aware Realtime</span>
             <div
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
-                background: partnerOnline ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
-                color: partnerOnline ? '#059669' : '#D97706',
-                border: `1px solid ${partnerOnline ? '#A7F3D0' : '#FDE68A'}`,
-                padding: '4px 12px',
+                padding: '4px 10px',
                 borderRadius: '999px',
+                background: sessionId ? 'rgba(16, 185, 129, 0.12)' : 'rgba(245, 158, 11, 0.12)',
+                border: sessionId ? '1px solid #10B981' : '1px solid #F59E0B',
                 fontSize: '11px',
-                fontFamily: 'var(--font-mono)',
-                fontWeight: 800,
+                fontWeight: 700,
+                color: sessionId ? '#065F46' : '#92400E',
               }}
             >
-              <span
-                style={{
-                  width: '8px',
-                  height: '8px',
-                  borderRadius: '50%',
-                  background: partnerOnline ? '#10B981' : '#F59E0B',
-                  animation: 'gl-pulse 1.5s infinite',
-                }}
-              />
-              <span>
-                {partnerOnline
-                  ? `ROOM ${roomCode || 'LOVE'} · LIVE SYNCED`
-                  : `ROOM ${roomCode || 'LOVE'} · WAITING FOR ${partnerB}`}
-              </span>
+              <span>{sessionId ? '● SERVER-SEALED SESSION' : '○ LOCAL / SOLO SESSION'}</span>
             </div>
           </div>
 
-          <h1 style={{ fontSize: 'clamp(28px, 4.5vw, 42px)', marginBottom: '10px' }}>
+          <h1 style={{ fontSize: 'clamp(28px, 4.5vw, 40px)', fontWeight: 800, marginBottom: '8px', letterSpacing: '-0.02em' }}>
             Lock in privately, <span className="grad">reveal together</span>.
           </h1>
-          <p style={{ color: 'var(--ink-soft)', fontSize: '16px' }}>
-            {partnerA} and {partnerB} lock in secret answers, then reveal together to test your couple telepathy!
+          <p style={{ color: 'var(--ink-soft)', fontSize: '15px', maxWidth: '560px', margin: '0 auto' }}>
+            {partnerA} and {partnerB} seal hidden choices server-side. Neither answer is revealed until both are locked in.
           </p>
         </div>
 
         {/* Pack Selector Chips */}
-        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '28px' }}>
+        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '28px' }}>
           {allPacks.map((pack) => (
             <button
               key={pack.id}
               onClick={() => restartQuiz(pack)}
               style={{
                 padding: '8px 16px',
-                borderRadius: '8px',
+                borderRadius: '999px',
                 border: selectedPack.id === pack.id ? '2px solid var(--pink)' : '1px solid var(--line)',
                 background: selectedPack.id === pack.id ? '#FFF' : 'var(--paper-raised)',
                 color: 'var(--ink)',
                 fontWeight: 700,
                 fontSize: '13px',
                 cursor: 'pointer',
-                boxShadow: selectedPack.id === pack.id ? 'var(--shadow)' : 'none',
+                boxShadow: selectedPack.id === pack.id ? '0 4px 12px rgba(225,29,72,0.15)' : 'none',
               }}
             >
               {pack.name} {pack.badge && <span className="badge hot" style={{ marginLeft: '4px' }}>{pack.badge}</span>}
@@ -292,358 +340,296 @@ export default function QuizPage() {
         </div>
 
         {!finished ? (
-          <div
-            style={{
-              background: '#FFFFFF',
-              border: '1px solid var(--line)',
-              borderRadius: '20px',
-              padding: '36px 32px',
-              boxShadow: 'var(--shadow-lg)',
-            }}
-          >
-            {/* Header / Progress */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <span className="badge" style={{ background: '#F4F5F7', color: 'var(--ink-soft)', fontWeight: 800 }}>
+          <div>
+            {/* Progress & Stats Bar */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', padding: '0 4px' }}>
+              <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--ink-soft)' }}>
                 Question {currentQIndex + 1} of {selectedPack.questions.length}
               </span>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--pink)', fontWeight: 800 }}>
+              <span style={{ fontSize: '13px', fontWeight: 800, color: '#BE123C' }}>
                 Matches: {matches} 💖
               </span>
             </div>
 
             {/* Question Text */}
-            <h2 style={{ fontSize: 'clamp(20px, 3vw, 26px)', fontWeight: 800, marginBottom: '24px', textAlign: 'center' }}>
+            <h2 style={{ fontSize: 'clamp(20px, 3.2vw, 24px)', fontWeight: 800, marginBottom: '24px', textAlign: 'center', color: '#1F2937' }}>
               {currentQ.q.replace(/\{partnerA\}/g, partnerA).replace(/\{partnerB\}/g, partnerB)}
             </h2>
 
-            {/* Double-Blind Dual Player Pick Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '28px' }}>
-              {/* Partner A */}
-              <div style={{ background: '#FFF5F8', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,123,163,0.3)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <span style={{ fontWeight: 800, fontSize: '14px', color: 'var(--pink)' }}>🌸 {partnerA}</span>
-                  <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--ink-soft)' }}>
-                    {partnerAPick !== null ? '🔒 Locked in' : 'Thinking...'}
-                  </span>
-                </div>
-                <div style={{ display: 'grid', gap: '8px' }}>
-                  {currentQ.options.map((opt, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => {
-                        if (!revealed) {
-                          setPartnerAPick(idx);
-                          sounds.playChoiceLock();
-                          sendEvent('quiz_pick', { partner: 'A', choice: idx });
-                        }
-                      }}
-                      disabled={revealed}
-                      style={{
-                        textAlign: 'left',
-                        padding: '10px 14px',
-                        borderRadius: '8px',
-                        border: partnerAPick === idx ? '2px solid var(--pink)' : '1px solid #FFD6E8',
-                        background: partnerAPick === idx ? '#FFF' : 'rgba(255,255,255,0.6)',
-                        color: 'var(--ink)',
-                        fontSize: '13.5px',
-                        fontWeight: partnerAPick === idx ? 700 : 500,
-                        cursor: revealed ? 'default' : 'pointer',
-                      }}
-                    >
-                      {opt.replace(/\{partnerA\}/g, partnerA).replace(/\{partnerB\}/g, partnerB)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Partner B */}
-              <div style={{ background: '#F0F7FF', padding: '20px', borderRadius: '16px', border: '1px solid rgba(95,160,255,0.3)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <span style={{ fontWeight: 800, fontSize: '14px', color: 'var(--blue)' }}>💙 {partnerB}</span>
-                  <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--ink-soft)' }}>
-                    {partnerBPick !== null ? '🔒 Locked in' : 'Thinking...'}
-                  </span>
-                </div>
-                <div style={{ display: 'grid', gap: '8px' }}>
-                  {currentQ.options.map((opt, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => {
-                        if (!revealed) {
-                          setPartnerBPick(idx);
-                          sounds.playChoiceLock();
-                          sendEvent('quiz_pick', { partner: 'B', choice: idx });
-                        }
-                      }}
-                      disabled={revealed}
-                      style={{
-                        textAlign: 'left',
-                        padding: '10px 14px',
-                        borderRadius: '8px',
-                        border: partnerBPick === idx ? '2px solid var(--blue)' : '1px solid #D6E8FF',
-                        background: partnerBPick === idx ? '#FFF' : 'rgba(255,255,255,0.6)',
-                        color: 'var(--ink)',
-                        fontSize: '13.5px',
-                        fontWeight: partnerBPick === idx ? 700 : 500,
-                        cursor: revealed ? 'default' : 'pointer',
-                      }}
-                    >
-                      {opt.replace(/\{partnerA\}/g, partnerA).replace(/\{partnerB\}/g, partnerB)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Action Bar */}
-            <div style={{ textAlign: 'center', paddingTop: '12px' }}>
-              {!revealed ? (
-                <button
-                  onClick={() => handleReveal(true)}
-                  disabled={partnerAPick === null || partnerBPick === null}
-                  className="btn btn-primary"
-                  style={{ padding: '12px 36px', fontSize: '15px', opacity: partnerAPick !== null && partnerBPick !== null ? 1 : 0.5 }}
-                >
-                  Flip &amp; Reveal Answers 🔍
-                </button>
-              ) : (
-                <div style={{ animation: 'gl-rise 0.25s ease' }}>
-                  <div
+            {/* Section 7: SecretAnswerSeal Component */}
+            <SecretAnswerSeal
+              roundNumber={currentQIndex + 1}
+              isLocked={isLocked}
+              partnerLocked={partnerLocked}
+              bothLocked={bothLocked}
+              revealed={revealed}
+              isSkipped={isSkipped}
+              myDraftAnswer={myDraftChoice !== null ? currentQ.options[myDraftChoice] : null}
+              revealedAnswers={revealedAnswers}
+              partnerName={partnerB || 'Partner'}
+              myName={partnerA || 'You'}
+              currentUserId={user?.id}
+              canLock={myDraftChoice !== null}
+              formatAnswer={(ans) => {
+                if (typeof ans === 'number' && currentQ.options[ans]) {
+                  return currentQ.options[ans];
+                }
+                return String(ans ?? '');
+              }}
+              onLock={async () => {
+                if (myDraftChoice !== null) {
+                  await lock(myDraftChoice);
+                }
+              }}
+              onReveal={async () => {
+                await reveal();
+              }}
+              onSkip={async () => {
+                await skip();
+              }}
+              onReaction={(emoji) => {
+                void sendEvent('reaction_sent', { emoji, roundNumber: currentQIndex });
+              }}
+            >
+              {/* Child: Drafting Choice List */}
+              <div style={{ display: 'grid', gap: '10px' }}>
+                {currentQ.options.map((opt, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      setMyDraftChoice(idx);
+                      sounds.playPop();
+                    }}
                     style={{
-                      padding: '14px 20px',
+                      textAlign: 'left',
+                      padding: '14px 18px',
                       borderRadius: '12px',
-                      marginBottom: '16px',
-                      background: partnerAPick === partnerBPick ? '#E6F9F0' : '#FFF0F0',
-                      color: partnerAPick === partnerBPick ? '#0A7D4D' : '#D93838',
-                      fontWeight: 800,
-                      fontSize: '16px',
+                      border: myDraftChoice === idx ? '2px solid #E11D48' : '1px solid rgba(244,114,182,0.3)',
+                      background: myDraftChoice === idx ? '#FFF5F8' : 'rgba(255, 255, 255, 0.7)',
+                      color: '#1F2937',
+                      fontSize: '14px',
+                      fontWeight: myDraftChoice === idx ? 700 : 500,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      boxShadow: myDraftChoice === idx ? '0 4px 12px rgba(225,29,72,0.12)' : 'none',
                     }}
                   >
-                    {partnerAPick === partnerBPick
-                      ? '✨ PERFECT MATCH! You both picked the exact same thing!'
-                      : `💔 Clashing picks! ${partnerA} chose "${currentQ.options[partnerAPick!].replace(/\{partnerA\}/g, partnerA).replace(/\{partnerB\}/g, partnerB)}" while ${partnerB} guessed "${currentQ.options[partnerBPick!].replace(/\{partnerA\}/g, partnerA).replace(/\{partnerB\}/g, partnerB)}".`}
-                  </div>
-                  {hostCommentary && (
-                    <div
-                      style={{
-                        padding: '12px 18px',
-                        borderRadius: '14px',
-                        background: 'linear-gradient(135deg, #FFF5F8 0%, #FFFFFF 100%)',
-                        border: '1.5px solid rgba(255, 77, 128, 0.25)',
-                        fontSize: '13px',
-                        color: 'var(--ink)',
-                        marginBottom: '16px',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        boxShadow: '0 4px 14px rgba(255, 77, 128, 0.08)',
-                        textAlign: 'left',
-                      }}
-                    >
-                      <span style={{ fontSize: '20px' }}>ʚ🤖💘ɞ</span>
-                      <div>
-                        <div style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', fontWeight: 800, color: '#FF4D80', textTransform: 'uppercase' }}>
-                          CUPIDOT&apos;S CHEEKY VERDICT
-                        </div>
-                        <span style={{ fontStyle: 'italic', fontWeight: 600 }}>&ldquo;{hostCommentary}&rdquo;</span>
-                      </div>
-                    </div>
-                  )}
-                  <br />
-                  <button onClick={() => handleNext(true)} className="btn btn-grad" style={{ padding: '12px 36px', fontSize: '15px' }}>
-                    {currentQIndex + 1 < selectedPack.questions.length ? 'Next Question ▷' : 'View Final Results 🏆'}
+                    <span style={{ marginRight: '10px', color: myDraftChoice === idx ? '#BE123C' : '#9CA3AF' }}>
+                      {myDraftChoice === idx ? '●' : '○'}
+                    </span>
+                    {opt.replace(/\{partnerA\}/g, partnerA).replace(/\{partnerB\}/g, partnerB)}
                   </button>
-                </div>
-              )}
-            </div>
+                ))}
+              </div>
+            </SecretAnswerSeal>
+
+            {/* Next Question Navigation Bar */}
+            {(revealed || isSkipped) && (
+              <div style={{ textAlign: 'center', marginTop: '24px', animation: 'unfoldIn 0.3s ease' }}>
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  className="btn btn-primary"
+                  style={{
+                    padding: '12px 36px',
+                    fontSize: '15px',
+                    fontWeight: 700,
+                    borderRadius: '999px',
+                    background: 'linear-gradient(135deg, #BE123C, #E11D48)',
+                  }}
+                >
+                  {currentQIndex + 1 < selectedPack.questions.length ? 'Next Question →' : 'See Our Couple Score ✨'}
+                </button>
+              </div>
+            )}
+
+            {/* Local play simulation helper */}
+            {!sessionId && !partnerLocked && isLocked && (
+              <div style={{ textAlign: 'center', marginTop: '16px' }}>
+                <button
+                  type="button"
+                  onClick={simulatePartnerLock}
+                  style={{
+                    background: 'transparent',
+                    border: '1px dashed #F59E0B',
+                    color: '#B45309',
+                    borderRadius: '999px',
+                    padding: '4px 12px',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  [Solo Testing: Simulate {partnerB} Locking Answer]
+                </button>
+              </div>
+            )}
+
+            {hostCommentary && (
+              <div
+                style={{
+                  marginTop: '24px',
+                  padding: '14px 18px',
+                  borderRadius: '12px',
+                  background: '#FFF9E6',
+                  border: '1px solid #FFE58F',
+                  color: '#7D5A00',
+                  fontSize: '13px',
+                }}
+              >
+                ✨ <strong>AI Host:</strong> {hostCommentary}
+              </div>
+            )}
           </div>
         ) : (
-          /* Final Match Scorecard */
+          /* Finished Screen */
           <div
             style={{
               background: '#FFFFFF',
               border: '1px solid var(--line)',
-              borderRadius: '20px',
-              padding: '48px 36px',
+              borderRadius: '24px',
+              padding: '48px 32px',
               textAlign: 'center',
               boxShadow: 'var(--shadow-lg)',
             }}
           >
-            <span style={{ fontSize: '54px', display: 'block', marginBottom: '12px' }}>
-              {matchPercent >= 80 ? '💖' : matchPercent >= 50 ? '🥰' : '😜'}
-            </span>
-            <span className="eyebrow">{selectedPack.name} Complete</span>
-            <h2 style={{ fontSize: '38px', fontWeight: 800, margin: '8px 0 16px' }}>
-              Compatibility Score: <span className="grad">{matchPercent}%</span>
+            <div style={{ fontSize: '54px', marginBottom: '12px' }}>🏆</div>
+            <h2 style={{ fontSize: '32px', fontWeight: 800, marginBottom: '8px' }}>
+              Quiz Finished!
             </h2>
-            <p style={{ color: 'var(--ink-soft)', fontSize: '16px', maxWidth: '48ch', margin: '0 auto 28px' }}>
-              You matched on <b>{matches}</b> out of <b>{selectedPack.questions.length}</b> questions!
+            <p style={{ fontSize: '18px', color: 'var(--ink-soft)', marginBottom: '24px' }}>
+              You two achieved <strong>{matches} out of {selectedPack.questions.length}</strong> telepathic matches!
             </p>
 
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '24px' }}>
               <button
+                type="button"
+                onClick={handleSaveKeepsake}
+                disabled={keepsakeSaved || keepsakeSaving}
+                className="btn btn-primary"
+                style={{ padding: '12px 28px', fontSize: '14px', borderRadius: '999px' }}
+              >
+                {keepsakeSaved ? '✨ Saved to Keepsakes Shelf!' : keepsakeSaving ? 'Saving...' : '💾 Save to Our Keepsakes'}
+              </button>
+
+              <button
+                type="button"
                 onClick={() => {
-                  sounds.playPop();
                   setReceiptModalData({
-                    roomCode: roomCode || 'PRIVATE',
-                    date: new Date().toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }),
+                    roomCode: roomCode || 'LOVE',
+                    date: new Date().toLocaleDateString(),
                     partnerA,
                     partnerB,
-                    items: selectedPack.questions.map((q, i) => ({
-                      number: `0${i + 1}`,
-                      topic: q.q,
-                      answerA: q.options[0],
-                      answerB: q.options[1] || q.options[0],
-                      syncPercent: i < matches ? 100 : 50,
+                    items: sessionHistory.map((h, idx) => ({
+                      number: `#${String(idx + 1).padStart(2, '0')}`,
+                      topic: h.question.slice(0, 24),
+                      answerA: h.answerA,
+                      answerB: h.answerB,
+                      syncPercent: h.answerA === h.answerB ? 100 : 0,
                     })),
-                    overallSync: matchPercent,
-                    hostVerdict: matchPercent >= 80 ? 'Exceptional soulmate-level alignment!' : 'Playful chemistry with great inside jokes.',
+                    overallSync: Math.round((matches / Math.max(1, selectedPack.questions.length)) * 100),
+                    hostVerdict:
+                      matches >= selectedPack.questions.length / 2
+                        ? 'Telepathic Soul Resonance 💖'
+                        : 'Distinct and Beautiful Minds 🌿',
                   });
                 }}
-                className="btn btn-primary"
-                style={{ padding: '12px 28px' }}
+                className="btn btn-outline"
+                style={{ padding: '12px 24px', fontSize: '14px', borderRadius: '999px' }}
               >
-                Print Date Lore Receipt 🧾
+                🖨️ Thermal Receipt
               </button>
-              <button onClick={() => restartQuiz(selectedPack)} className="btn btn-ghost" style={{ padding: '12px 24px' }}>
-                Play Again 🔄
+
+              <button
+                type="button"
+                onClick={() => restartQuiz(selectedPack)}
+                className="btn btn-outline"
+                style={{ padding: '12px 24px', fontSize: '14px', borderRadius: '999px' }}
+              >
+                🔄 Play Again
               </button>
-              <button onClick={() => setCreatorOpen(true)} className="btn btn-ghost" style={{ padding: '12px 24px' }}>
-                + Build Lore Pack
-              </button>
-              <Link href="/photobooth" className="btn btn-grad" style={{ padding: '12px 24px' }}>
-                Celebrate in Photobooth 📸
-              </Link>
             </div>
           </div>
         )}
 
-        {/* Custom Lore Quiz Creator Modal */}
-        {creatorOpen && (
+        <div style={{ textAlign: 'center', marginTop: '36px' }}>
+          <AiConsentToggle />
+        </div>
+      </main>
+
+      {/* Custom Pack Builder Modal */}
+      {creatorOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.5)',
+            backdropFilter: 'blur(6px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '20px',
+          }}
+        >
           <div
             style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 100,
-              background: 'rgba(23,24,28,0.5)',
-              backdropFilter: 'blur(6px)',
-              display: 'grid',
-              placeItems: 'center',
-              padding: '20px',
+              background: '#FFF',
+              borderRadius: '20px',
+              padding: '28px',
+              maxWidth: '540px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
             }}
-            onClick={() => setCreatorOpen(false)}
           >
-            <div
-              style={{
-                width: 'min(640px, 100%)',
-                maxHeight: '90vh',
-                overflowY: 'auto',
-                background: '#fff',
-                borderRadius: '20px',
-                padding: '32px',
-                boxShadow: 'var(--shadow-lg)',
-                border: '1px solid var(--line)',
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <div>
-                  <span className="badge hot">Private Question Builder</span>
-                  <h3 style={{ fontSize: '22px', fontWeight: 800, marginTop: '4px' }}>Create &ldquo;Our Lore&rdquo; Quiz</h3>
-                </div>
-                <button
-                  onClick={() => setCreatorOpen(false)}
-                  style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }}
-                >
-                  ✕
-                </button>
-              </div>
-
-              <form onSubmit={saveCustomPack} style={{ display: 'grid', gap: '16px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>
-                    Quiz Pack Title:
-                  </label>
-                  <input
-                    type="text"
-                    value={newPackTitle}
-                    onChange={(e) => setNewPackTitle(e.target.value)}
-                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--line)', fontSize: '14px' }}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>
-                    Description / Lore Summary:
-                  </label>
-                  <input
-                    type="text"
-                    value={newPackDesc}
-                    onChange={(e) => setNewPackDesc(e.target.value)}
-                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--line)', fontSize: '14px' }}
-                  />
-                </div>
-
-                {/* Questions List */}
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 800 }}>Custom Questions ({customQuestions.length})</span>
-                    <button type="button" onClick={addQuestionDraft} className="btn btn-ghost" style={{ padding: '4px 10px', fontSize: '12px' }}>
-                      + Add Question
-                    </button>
-                  </div>
-
-                  <div style={{ display: 'grid', gap: '12px' }}>
-                    {customQuestions.map((q, qIdx) => (
-                      <div key={qIdx} style={{ background: 'var(--paper)', padding: '14px', borderRadius: '10px', border: '1px solid var(--line)' }}>
-                        <input
-                          type="text"
-                          value={q.q}
-                          onChange={(e) => {
-                            const updated = [...customQuestions];
-                            updated[qIdx].q = e.target.value;
-                            setCustomQuestions(updated);
-                          }}
-                          style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--line)', marginBottom: '8px', fontWeight: 700, fontSize: '13px' }}
-                        />
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
-                          {q.options.map((opt, optIdx) => (
-                            <input
-                              key={optIdx}
-                              type="text"
-                              value={opt}
-                              onChange={(e) => {
-                                const updated = [...customQuestions];
-                                updated[qIdx].options[optIdx] = e.target.value;
-                                setCustomQuestions(updated);
-                              }}
-                              style={{ padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--line)', fontSize: '12px' }}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <button type="submit" className="btn btn-primary" style={{ padding: '12px', fontSize: '14px', marginTop: '10px' }}>
-                  Save &amp; Play Custom Pack ▷
-                </button>
-              </form>
+            <h3 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '12px' }}>Create Lore Pack</h3>
+            <input
+              type="text"
+              value={newPackTitle}
+              onChange={(e) => setNewPackTitle(e.target.value)}
+              placeholder="Pack Title"
+              style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--line)', marginBottom: '12px' }}
+            />
+            <textarea
+              value={newPackDesc}
+              onChange={(e) => setNewPackDesc(e.target.value)}
+              placeholder="Pack Description"
+              style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--line)', marginBottom: '16px' }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+              <button onClick={() => setCreatorOpen(false)} className="btn btn-outline">Close</button>
+              <button
+                onClick={() => {
+                  const newPack: QuizPack = {
+                    id: `custom-${Date.now()}`,
+                    name: newPackTitle,
+                    badge: 'Custom',
+                    description: newPackDesc,
+                    questions: customQuestions,
+                  };
+                  const updated = [...allPacks, newPack];
+                  setAllPacks(updated);
+                  localStorage.setItem('dearly_custom_quiz_packs', JSON.stringify(updated.filter((p) => p.id.startsWith('custom-'))));
+                  setCreatorOpen(false);
+                  restartQuiz(newPack);
+                }}
+                className="btn btn-primary"
+              >
+                Save &amp; Play
+              </button>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Thermal Receipt Date Lore Modal with Paper Tear Audio */}
-        {receiptModalData && (
-          <ThermalReceiptModal
-            isOpen={Boolean(receiptModalData)}
-            onClose={() => setReceiptModalData(null)}
-            data={receiptModalData}
-          />
-        )}
-      </main>
+      {receiptModalData && (
+        <ThermalReceiptModal
+          isOpen={Boolean(receiptModalData)}
+          data={receiptModalData}
+          onClose={() => setReceiptModalData(null)}
+        />
+      )}
     </div>
   );
 }

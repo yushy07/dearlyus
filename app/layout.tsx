@@ -52,6 +52,7 @@ export const metadata: Metadata = {
 };
 
 import { GlobalExperience } from '@/components/shared/GlobalExperience';
+import { AppProviders } from '@/components/providers/AppProviders';
 
 export default function RootLayout({
   children,
@@ -98,8 +99,10 @@ export default function RootLayout({
         />
       </head>
       <body suppressHydrationWarning>
-        {children}
-        <GlobalExperience />
+        <AppProviders>
+          {children}
+          <GlobalExperience />
+        </AppProviders>
       </body>
     </html>
   );

@@ -70,7 +70,7 @@ export default function ActivityPage() {
             </span>
           </Link>
           <Link
-            href="/profile"
+            href="/our-space"
             onClick={() => sounds.playPop()}
             style={{
               width: '38px',

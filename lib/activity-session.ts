@@ -8,12 +8,43 @@ export interface SessionRecovery<TSnapshot = Record<string, unknown>> extends Ac
   events: ActivityEvent[];
 }
 
-export interface ActivityAdapter<TSnapshot extends Record<string, unknown> = Record<string, unknown>> {
-  activityType: string;
-  schemaVersion: number;
-  createInitialSnapshot(options?: Record<string, unknown>): TSnapshot;
-  acceptsEvent(type: string): boolean;
-}
+export const ACTIVITY_EVENT_NAMES = {
+  quiz: ['quiz_pick', 'quiz_reveal', 'quiz_next'],
+  draw: ['draw_line', 'draw_clear'],
+  shared: ['reaction_sent', 'timer_started', 'music_changed', 'gentle_skip'],
+} as const;
+
+export const ACTIVITY_ERROR_CODES = {
+  authRequired: 'AUTH_REQUIRED',
+  roomUnavailable: 'ROOM_UNAVAILABLE',
+  roomForbidden: 'ROOM_FORBIDDEN',
+  sessionUnavailable: 'SESSION_UNAVAILABLE',
+  invalidEvent: 'INVALID_EVENT',
+  invalidTransition: 'INVALID_TRANSITION',
+  revisionConflict: 'REVISION_CONFLICT',
+  eventGap: 'EVENT_GAP',
+  answerAlreadyLocked: 'ANSWER_ALREADY_LOCKED',
+  revealNotReady: 'REVEAL_NOT_READY',
+} as const;
+
+export type {
+  StartActivityInput,
+  ValidationResult,
+  ActivityResult,
+  KeepsakeDraft,
+  RealtimeActivityEvent,
+  RealtimeActivityAdapter,
+} from './activity-adapters/types';
+import type {
+  StartActivityInput,
+  ValidationResult,
+  ActivityResult,
+  KeepsakeDraft,
+  RealtimeActivityEvent,
+  RealtimeActivityAdapter,
+} from './activity-adapters/types';
+
+export type ActivityAdapter<TSnapshot = any> = RealtimeActivityAdapter<TSnapshot>;
 
 const eventPrefixes: Record<string, string[]> = {
   quiz: ['quiz_'], draw: ['draw_'], cards: ['cards_'], host: ['host_'], match: ['match_'],
@@ -23,15 +54,26 @@ const eventPrefixes: Record<string, string[]> = {
 
 export function createActivityAdapter(activityType: string): ActivityAdapter {
   const prefixes = eventPrefixes[activityType] ?? [`${activityType}_`];
+  const acceptsEvent = (type: string) => prefixes.some((prefix) => type.startsWith(prefix)) || (ACTIVITY_EVENT_NAMES.shared as readonly string[]).includes(type);
   return {
     activityType,
     schemaVersion: 1,
-    createInitialSnapshot: (options = {}) => ({ activityType, schemaVersion: 1, ...options }),
-    acceptsEvent: (type) => prefixes.some((prefix) => type.startsWith(prefix)) || ['reaction_sent', 'timer_started', 'music_changed', 'gentle_skip'].includes(type),
+    createInitialSnapshot: (input) => ({ activityType, schemaVersion: 1, ...input.options }),
+    validateEvent: (event) => acceptsEvent(event.type)
+      ? { valid: true }
+      : { valid: false, code: ACTIVITY_ERROR_CODES.invalidEvent, message: `Event ${event.type} is not allowed for ${activityType}.` },
+    reduce: (snapshot) => snapshot,
+    canTransition: (_snapshot, action, userId) => Boolean(userId && acceptsEvent(action)),
+    summarize: (snapshot) => ({ activityType, completed: snapshot.status === 'completed', summary: snapshot }),
   };
 }
 
-export const activityAdapters = Object.fromEntries(Object.keys(eventPrefixes).map((type) => [type, createActivityAdapter(type)]));
+import { allActivityAdapters } from './activity-adapters';
+
+export const activityAdapters: Record<string, RealtimeActivityAdapter> = {
+  ...Object.fromEntries(Object.keys(eventPrefixes).map((type) => [type, createActivityAdapter(type)])),
+  ...allActivityAdapters,
+};
 
 export async function recoverActivitySession<TSnapshot extends Record<string, unknown>>(sessionId: string, afterSequence = 0) {
   const supabase = getSupabase();

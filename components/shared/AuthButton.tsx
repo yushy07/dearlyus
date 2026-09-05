@@ -1,39 +1,140 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { getSupabase } from '@/lib/supabase';
+import { useSupabaseSession } from '@/contexts/SupabaseSessionContext';
+import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
 
 export function AuthButton() {
-  const [account, setAccount] = useState<{ name: string; avatar: string | null } | null>(null);
+  const { user, loading: authLoading } = useSupabaseSession();
+  const { profile, space, partner, partnerConnected } = useCoupleSpace();
 
-  useEffect(() => {
-    const supabase = getSupabase();
-    if (!supabase) return;
-    const showUser = (user?: { email?: string; user_metadata?: Record<string, unknown> } | null) => {
-      if (!user) return setAccount(null);
-      const metadata = user.user_metadata ?? {};
-      setAccount({
-        name: String(metadata.full_name || metadata.name || user.email || 'My Space'),
-        avatar: (metadata.avatar_url || metadata.picture || null) as string | null,
-      });
-    };
-    supabase.auth.getUser().then(({ data }) => showUser(data.user));
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => showUser(session?.user));
-    return () => listener.subscription.unsubscribe();
-  }, []);
-
-  if (account) {
-    const initials = account.name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase();
+  if (authLoading) {
     return (
-      <Link className="btn btn-ghost" href="/profile" style={{ fontSize: '13px', padding: '5px 11px 5px 6px', gap: '7px' }} aria-label="Open My Space">
-        <span style={{ width: 25, height: 25, borderRadius: '50%', display: 'grid', placeItems: 'center', overflow: 'hidden', color: '#fff', fontSize: 9, fontWeight: 900, background: 'linear-gradient(135deg, var(--pink), var(--blue))' }}>
-          {account.avatar ? <img src={account.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initials}
-        </span>
-        My Space
+      <span
+        style={{
+          fontSize: '12px',
+          color: 'var(--ink-soft)',
+          padding: '6px 12px',
+        }}
+      >
+        Checking…
+      </span>
+    );
+  }
+
+  // 1. Signed Out
+  if (!user) {
+    return (
+      <Link className="btn btn-ghost" href="/login" style={{ fontSize: '13px', padding: '6px 14px' }}>
+        Sign in with Google
       </Link>
     );
   }
 
-  return <Link className="btn btn-ghost" href="/login" style={{ fontSize: '13px', padding: '6px 12px' }}>Sign in with Google</Link>;
+  const displayName = profile?.displayName || user.user_metadata?.full_name || user.email || 'You';
+  const avatar = profile?.avatarUrl || user.user_metadata?.avatar_url || null;
+  const initials = displayName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part: string) => part[0])
+    .join('')
+    .toUpperCase() || '♡';
+
+  // 2. Signed In but Unpaired
+  if (!space || !partnerConnected) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <Link
+          className="btn btn-ghost"
+          href="/our-space"
+          style={{ fontSize: '13px', padding: '5px 11px 5px 6px', gap: '7px' }}
+          aria-label="Open My Space"
+        >
+          <span
+            style={{
+              width: 25,
+              height: 25,
+              borderRadius: '50%',
+              display: 'grid',
+              placeItems: 'center',
+              overflow: 'hidden',
+              color: '#fff',
+              fontSize: 9,
+              fontWeight: 900,
+              background: 'linear-gradient(135deg, var(--pink), var(--blue))',
+            }}
+          >
+            {avatar ? <img src={avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initials}
+          </span>
+          My Space
+        </Link>
+        <Link
+          href="/our-space"
+          className="btn"
+          style={{
+            fontSize: '12px',
+            padding: '5px 10px',
+            borderRadius: '999px',
+            background: 'var(--pink-tint)',
+            color: 'var(--pink)',
+            border: '1px dashed var(--pink)',
+            fontWeight: 700,
+          }}
+          title="Invite your person to connect"
+        >
+          + Connect your person
+        </Link>
+      </div>
+    );
+  }
+
+  // 3. Paired State
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <Link
+        className="btn btn-ghost"
+        href="/our-space"
+        style={{ fontSize: '13px', padding: '5px 11px 5px 6px', gap: '7px' }}
+        aria-label="Open Our Space"
+      >
+        <span
+          style={{
+            width: 25,
+            height: 25,
+            borderRadius: '50%',
+            display: 'grid',
+            placeItems: 'center',
+            overflow: 'hidden',
+            color: '#fff',
+            fontSize: 9,
+            fontWeight: 900,
+            background: 'linear-gradient(135deg, var(--pink), var(--blue))',
+          }}
+        >
+          {avatar ? <img src={avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initials}
+        </span>
+        <span>Our Space</span>
+        {partner && (
+          <span
+            style={{
+              fontSize: '11px',
+              padding: '2px 7px',
+              borderRadius: '999px',
+              background: 'rgba(16, 185, 129, 0.12)',
+              color: '#10B981',
+              fontWeight: 700,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+            }}
+          >
+            <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#10B981' }} />
+            {partner.displayName}
+          </span>
+        )}
+      </Link>
+    </div>
+  );
 }

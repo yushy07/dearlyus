@@ -31,7 +31,7 @@ export default function AuthCallbackPage() {
 
       const requested = sessionStorage.getItem('dearly_auth_return_to');
       sessionStorage.removeItem('dearly_auth_return_to');
-      const nextPath = requested?.startsWith('/') && !requested.startsWith('//') ? requested : '/profile';
+      const nextPath = requested?.startsWith('/') && !requested.startsWith('//') ? requested : '/our-space';
       router.replace(nextPath);
     });
   }, [router]);

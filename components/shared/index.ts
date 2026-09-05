@@ -6,3 +6,6 @@ export * from './AudioPlayer';
 export * from './CoupleNameBar';
 export * from './AiConsentToggle';
 export * from './AuthButton';
+export * from './TogetherPulse';
+export * from './ConnectionRibbon';
+export * from './SecretAnswerSeal';
