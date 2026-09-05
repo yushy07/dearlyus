@@ -1,24 +1,10 @@
 'use client';
 
 import { getSupabase } from './supabase';
+import type { ActivityEvent, ActivitySession } from './domain';
+export type { ActivityEvent, ActivitySession } from './domain';
 
-export interface ActivityEvent<T = unknown> {
-  id: string;
-  sequence: number;
-  senderId: string;
-  type: string;
-  payload: T;
-  createdAt: string;
-}
-
-export interface SessionRecovery<TSnapshot = Record<string, unknown>> {
-  sessionId: string;
-  activityType: string;
-  status: 'preparing' | 'active' | 'waiting' | 'revealing' | 'completed' | 'abandoned';
-  roundNumber: number;
-  snapshot: TSnapshot;
-  revision: number;
-  lastSequence: number;
+export interface SessionRecovery<TSnapshot = Record<string, unknown>> extends ActivitySession<TSnapshot> {
   events: ActivityEvent[];
 }
 
@@ -96,4 +82,15 @@ export async function completeActivitySession(sessionId: string, snapshot: Recor
   const { data, error } = await supabase.rpc('complete_activity', { target_session_id: sessionId, result_snapshot: snapshot });
   if (error) throw error;
   return data as { completed: boolean };
+}
+
+export async function setActivityPaused(sessionId: string, paused: boolean) {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Supabase is not configured.');
+  const { data, error } = await supabase.rpc('set_activity_paused', {
+    target_session_id: sessionId,
+    is_paused: paused,
+  });
+  if (error) throw error;
+  return data as SessionRecovery;
 }

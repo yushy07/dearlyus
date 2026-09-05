@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getSupabase } from './supabase';
+import type { PresenceState } from './domain';
 
 export interface RoomEvent<T = any> {
   id: string;
@@ -23,6 +24,16 @@ export interface UseRoomSyncOptions {
 }
 
 const normalizeCode = (code: string) => code.trim().toUpperCase();
+const tabId = crypto.randomUUID();
+
+function getDeviceId() {
+  const key = 'dearly-us-device-id';
+  const existing = window.localStorage.getItem(key);
+  if (existing) return existing;
+  const created = crypto.randomUUID();
+  window.localStorage.setItem(key, created);
+  return created;
+}
 
 export function useRoomSync({ roomCode, senderName, onMessage, interaction = 'idle' }: UseRoomSyncOptions) {
   const [connectionState, setConnectionState] = useState<RoomConnectionState>('idle');
@@ -117,7 +128,7 @@ export function useRoomSync({ roomCode, senderName, onMessage, interaction = 'id
         .channel(`room:${joined.id}`, { config: { presence: { key: auth.user.id } } })
         .on('presence', { event: 'sync' }, () => {
           if (!channel || !active) return;
-          const state = channel.presenceState() as Record<string, Array<{ userId?: string }>>;
+          const state = channel.presenceState() as Record<string, PresenceState[]>;
           const onlineIds = Object.values(state).flat().map((presence) => presence.userId).filter(Boolean);
           setPartnerOnline(onlineIds.some((id) => id !== auth.user!.id));
         })
@@ -138,13 +149,17 @@ export function useRoomSync({ roomCode, senderName, onMessage, interaction = 'id
         .subscribe(async (status) => {
           if (!active || !channel) return;
           if (status === 'SUBSCRIBED') {
+            const now = new Date().toISOString();
             await channel.track({
               userId: auth.user!.id,
               displayName: senderName.slice(0, 60),
               roomId: joined.id,
+              deviceId: getDeviceId(),
+              tabId,
               interaction,
-              joinedAt: new Date().toISOString(),
-            });
+              onlineAt: now,
+              lastActiveAt: now,
+            } satisfies PresenceState);
             setConnectionState('synchronized');
           } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
             setConnectionState('reconnecting');

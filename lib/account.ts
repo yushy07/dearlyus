@@ -2,45 +2,8 @@
 
 import type { User } from '@supabase/supabase-js';
 import { getSupabase } from './supabase';
-
-export interface AccountProfile {
-  id: string;
-  displayName: string;
-  city: string;
-  timezone: string;
-  avatarUrl: string | null;
-  onboardingCompleted: boolean;
-}
-
-export interface SpaceMember {
-  id: string;
-  displayName: string;
-  city: string;
-  timezone: string;
-  avatarUrl: string | null;
-  role: 'owner' | 'partner';
-}
-
-export interface CoupleSpace {
-  id: string;
-  name: string;
-  createdBy: string;
-  activeRoomCode: string | null;
-  members: SpaceMember[];
-  invite: { code: string; expiresAt: string } | null;
-}
-
-export interface Keepsake {
-  id: string;
-  kind: 'photostrip' | 'passport' | 'receipt' | 'letter' | 'scrapbook' | 'activity';
-  title: string;
-  previewUrl: string | null;
-  activityPath: string | null;
-  createdAt: string;
-  caption: string | null;
-  storageBucket: string | null;
-  storagePath: string | null;
-}
+import type { AccountLifecycleStatus, AccountProfile, CoupleSpace, DateRoom, Keepsake, KeepsakeStatus } from './domain';
+export type { AccountProfile, CoupleInvitation, CoupleSpace, DateRoom, DateRoomMember, Keepsake } from './domain';
 
 export interface RelationshipMilestone {
   id: string;
@@ -58,24 +21,6 @@ export interface SharedPreferences {
   updatedAt: string | null;
 }
 
-export interface DateRoomMember {
-  userId: string;
-  displayName: string;
-  avatarUrl: string | null;
-  ready: boolean;
-}
-
-export interface DateRoom {
-  id: string;
-  code: string;
-  coupleId: string;
-  status: 'lobby' | 'active' | 'paused' | 'completed' | 'expired' | 'cancelled';
-  currentSessionId: string | null;
-  expiresAt: string;
-  lastActivityAt: string;
-  members: DateRoomMember[];
-}
-
 export function profileFromUser(user: User): AccountProfile {
   const metadata = user.user_metadata ?? {};
   return {
@@ -85,6 +30,7 @@ export function profileFromUser(user: User): AccountProfile {
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
     avatarUrl: (metadata.avatar_url || metadata.picture || null) as string | null,
     onboardingCompleted: false,
+    accountStatus: 'active',
   };
 }
 
@@ -94,7 +40,7 @@ export async function loadAccount(user: User) {
 
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, display_name, city, timezone, avatar_url, onboarding_completed')
+    .select('id, display_name, city, timezone, avatar_url, onboarding_completed, account_status')
     .eq('id', user.id)
     .maybeSingle();
   if (error) throw error;
@@ -107,6 +53,7 @@ export async function loadAccount(user: User) {
     timezone: data.timezone || fallback.timezone,
     avatarUrl: data.avatar_url || fallback.avatarUrl,
     onboardingCompleted: Boolean(data.onboarding_completed),
+    accountStatus: (data.account_status || 'active') as AccountLifecycleStatus,
   } : fallback;
 
   const { data: spaceData, error: spaceError } = await supabase.rpc('get_my_space');
@@ -117,7 +64,7 @@ export async function loadAccount(user: User) {
   if (space?.id) {
     const { data: keepsakeData, error: keepsakeError } = await supabase
       .from('keepsakes')
-      .select('id, kind, title, preview_url, activity_path, created_at, caption, storage_bucket, storage_path')
+      .select('id, kind, status, title, preview_url, activity_path, created_at, finalized_at, caption, storage_bucket, storage_path')
       .eq('couple_id', space.id)
       .order('created_at', { ascending: false })
       .limit(12);
@@ -131,10 +78,12 @@ export async function loadAccount(user: User) {
       return {
       id: item.id,
       kind: item.kind,
+      status: item.status as KeepsakeStatus,
       title: item.title,
       previewUrl,
       activityPath: item.activity_path,
       createdAt: item.created_at,
+      finalizedAt: item.finalized_at,
       caption: item.caption,
       storageBucket: item.storage_bucket,
       storagePath: item.storage_path,
