@@ -265,7 +265,7 @@ export function ActivitySessionProvider({
     if (!supabase || !room?.id) return;
 
     const transientChannel = supabase.channel(`room-transient:${room.id}`, {
-      config: { broadcast: { self: false } },
+      config: { private: true, broadcast: { self: false } },
     });
 
     transientChannel

@@ -93,7 +93,7 @@ export class SupabaseActivityTransport implements ActivityTransport {
     // Listen to ephemeral transient broadcasts (cursors, presence)
     this.transientChannel = supabase
       .channel(`room-transient:${this.roomId}`, {
-        config: { broadcast: { self: false } },
+        config: { private: true, broadcast: { self: false } },
       })
       .on('broadcast', { event: '*' }, (message: any) => {
         const { event, payload } = message;

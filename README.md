@@ -139,8 +139,8 @@ Long distance dates often default to muted video calls or passive movie streamin
 | **`components/`** | Shared interface components. |
 | **`lib/`** | Authentication, couple, room, activity-session, and Supabase clients. |
 | **`data/`** | Curated local prompts and content packs. |
-| **`db/`** / **`drizzle/`** | Application schema definitions and generated SQL history. |
-| **`supabase/`** | Live backend migrations and Edge Functions. |
+| **`db/`** | Retained application schema definitions for reference. |
+| **`supabase/`** | Live Supabase integration references and Edge Functions. |
 | **`public/`** | Versioned static images, audio, fonts, and models used by the site. |
 | **`docs/`** | Product and engineering roadmaps. |
 

@@ -76,7 +76,7 @@ export function PresenceProvider({ children }: { children: React.ReactNode }) {
     setConnectionState('connecting');
 
     const channel = supabase.channel(`presence:room:${room.id}`, {
-      config: { presence: { key: user.id } },
+      config: { private: true, presence: { key: user.id } },
     });
     channelRef.current = channel;
 
