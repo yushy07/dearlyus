@@ -14,6 +14,7 @@ import { generateAdaptiveQuestion } from '@/lib/gemini';
 import { useActivitySession } from '@/contexts/ActivitySessionContext';
 import { useSupabaseSession } from '@/contexts/SupabaseSessionContext';
 import { usePrivateAnswers } from '@/hooks/usePrivateAnswers';
+import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
 import { quizActivityAdapter } from '@/lib/activity-adapters/quiz';
 
@@ -23,6 +24,16 @@ export default function QuizPage() {
   const { hasAiConsent } = useAiConsent();
   const { session, sessionId, sendEvent, registerEventHandler, completeActivity } = useActivitySession();
   const { saveKeepsake, saving: keepsakeSaving } = useKeepsakeWriter();
+  const localRuntime = useActivityRuntime({
+    sessionId: sessionId || `mock-quiz-${roomCode || 'local'}`,
+    activityType: 'quiz',
+    userId: user?.id,
+    roomId: roomCode || 'local',
+    transportMode: 'mock',
+    enabled: !sessionId,
+    initialOptions: { packId: QUIZ_PACKS[0].id, packTitle: QUIZ_PACKS[0].name, totalRounds: QUIZ_PACKS[0].questions.length, questions: QUIZ_PACKS[0].questions },
+  });
+  const activitySendEvent = sessionId ? sendEvent : localRuntime.sendEvent;
 
   const [allPacks, setAllPacks] = useState<QuizPack[]>(QUIZ_PACKS);
   const [selectedPack, setSelectedPack] = useState<QuizPack>(QUIZ_PACKS[0]);
@@ -136,6 +147,12 @@ export default function QuizPage() {
     onSkip: () => {
       sounds.playPop();
     },
+    localRuntime: sessionId ? null : {
+      currentUserId: localRuntime.currentUserId,
+      privateVault: localRuntime.privateVault,
+      sendEvent: localRuntime.sendEvent,
+      lastEvent: localRuntime.lastEvent,
+    },
   });
 
   // Reset local draft choice on new question
@@ -159,7 +176,7 @@ export default function QuizPage() {
 
   const advanceToQuestion = useCallback((nextIdx: number, broadcast = true) => {
     if (broadcast) {
-      void sendEvent('quiz_next', { nextRound: nextIdx });
+      void activitySendEvent('quiz_next', { nextRound: nextIdx });
     }
 
     if (adaptiveQueue.length > 0) {
@@ -188,7 +205,7 @@ export default function QuizPage() {
         history: sessionHistory,
       });
     }
-  }, [adaptiveQueue, selectedPack, currentQIndex, matches, sessionHistory, sendEvent, completeActivity]);
+  }, [adaptiveQueue, selectedPack, currentQIndex, matches, sessionHistory, activitySendEvent, completeActivity]);
 
   const handleNext = () => {
     advanceToQuestion(currentQIndex + 1, true);
@@ -239,7 +256,7 @@ export default function QuizPage() {
     setHostCommentary(null);
     setSessionHistory([]);
     setKeepsakeSaved(false);
-    void sendEvent('quiz_start', {
+    void activitySendEvent('quiz_start', {
       packId: pack.id,
       packTitle: pack.name,
       totalRounds: pack.questions.length,
@@ -388,7 +405,7 @@ export default function QuizPage() {
                 await skip();
               }}
               onReaction={(emoji) => {
-                void sendEvent('reaction_sent', { emoji, roundNumber: currentQIndex });
+                void activitySendEvent('reaction_sent', { emoji, roundNumber: currentQIndex });
               }}
             >
               {/* Child: Drafting Choice List */}

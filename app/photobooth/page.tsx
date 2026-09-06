@@ -19,6 +19,7 @@ import { RoomInviteModal } from '@/components/shared/RoomInviteModal';
 import { CoupleNameBar } from '@/components/shared/CoupleNameBar';
 import { getCupidotPoseIdea, generateCupidotCaption, PoseIdea } from '@/lib/cupidot';
 import { useCoupleProfile } from '@/lib/couple';
+import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 
 export interface PlacedSticker {
   id: string;
@@ -88,6 +89,13 @@ export default function PhotoboothPage() {
   const [isGroupMode, setIsGroupMode] = useState(false);
   const [isSoloMode, setIsSoloMode] = useState(false);
   const { partnerA, partnerB, cityA, cityB, roomCode: savedRoomCode } = useCoupleProfile();
+  const activityRuntime = useActivityRuntime({
+    sessionId: `mock-photobooth-${savedRoomCode || 'local'}`,
+    activityType: 'photobooth',
+    roomId: savedRoomCode || 'local',
+    transportMode: 'mock',
+    initialOptions: { filter: COLOR_FILTERS[0].id, frameStyle: LAYOUTS[0].id },
+  });
   const [nickname, setNickname] = useState(partnerA);
   const [partnerName, setPartnerName] = useState(partnerB);
   const [coupleName, setCoupleName] = useState(`${partnerA} ♡ ${partnerB}`);
@@ -171,6 +179,7 @@ export default function PhotoboothPage() {
   // Capture sequence
   const startCaptureSequence = () => {
     if (isShooting) return;
+    void activityRuntime.sendEvent('photo_start_countdown', {});
     setIsShooting(true);
     setCurrentShotIdx(0);
     const newShots: string[] = [];
@@ -179,6 +188,7 @@ export default function PhotoboothPage() {
       if (idx >= selectedLayout.cuts) {
         setIsShooting(false);
         setScene('EDIT');
+        void activityRuntime.sendEvent('photo_finish', {});
         return;
       }
 
@@ -189,17 +199,20 @@ export default function PhotoboothPage() {
       setTimeout(() => {
         setCountdown(2);
         sounds.playCountdownBeep(false);
+        void activityRuntime.sendEvent('photo_tick', { seconds: 2 });
       }, 900);
 
       setTimeout(() => {
         setCountdown(1);
         sounds.playCountdownBeep(false);
+        void activityRuntime.sendEvent('photo_tick', { seconds: 1 });
       }, 1800);
 
       setTimeout(() => {
         setCountdown(null);
         setFlashing(true);
         sounds.playShutter();
+        void activityRuntime.sendEvent('photo_shutter', { shot: idx + 1 });
         setTimeout(() => setFlashing(false), 320);
 
         if (feedMode === 'webcam' && videoRef.current && canvasRef.current) {
@@ -889,7 +902,10 @@ export default function PhotoboothPage() {
                   {AR_FILTERS.slice(0, 4).map((f) => (
                     <button
                       key={f.id}
-                      onClick={() => setSelectedArFilter(f)}
+                      onClick={() => {
+                        setSelectedArFilter(f);
+                        void activityRuntime.sendEvent('photo_filter', { filter: f.id });
+                      }}
                       style={{
                         padding: '4px 8px',
                         borderRadius: '6px',
@@ -1048,7 +1064,10 @@ export default function PhotoboothPage() {
                 {COLOR_FILTERS.map((cf) => (
                   <div
                     key={cf.id}
-                    onClick={() => setSelectedColorFilter(cf)}
+                    onClick={() => {
+                      setSelectedColorFilter(cf);
+                      void activityRuntime.sendEvent('photo_filter', { filter: cf.id });
+                    }}
                     style={{
                       border: selectedColorFilter.id === cf.id ? '2px solid var(--pink)' : '1px solid var(--line)',
                       borderRadius: '8px',

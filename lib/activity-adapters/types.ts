@@ -1,5 +1,16 @@
 'use client';
 
+import type { ActivityDefinition } from './template';
+
+export type {
+  StandardSessionState,
+  StandardRecoveryState,
+  StandardEventMetadata,
+  StandardActivityEvent,
+  ActivityDefinition,
+} from './template';
+export { createAdapterFromDefinition } from './template';
+
 export interface StartActivityInput {
   roomCode: string;
   userId: string;
@@ -27,6 +38,13 @@ export interface KeepsakeDraft {
 export interface RealtimeActivityEvent<TPayload = unknown> {
   type: string;
   payload: TPayload;
+  id?: string;
+  sequence?: number;
+  schemaVersion?: number;
+  senderId?: string;
+  createdAt?: string;
+  activityType?: string;
+  clientCreatedAt?: string | null;
 }
 
 export interface RealtimeActivityAdapter<
@@ -35,6 +53,7 @@ export interface RealtimeActivityAdapter<
 > {
   activityType: string;
   schemaVersion: number;
+  definition?: ActivityDefinition<any, any>;
   createInitialSnapshot(input: StartActivityInput): TSnapshot;
   validateEvent(event: TEvent): ValidationResult;
   reduce(snapshot: TSnapshot, event: TEvent): TSnapshot;

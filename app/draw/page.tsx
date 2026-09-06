@@ -8,6 +8,7 @@ import { sounds } from '@/lib/sound';
 import { useActivitySession } from '@/contexts/ActivitySessionContext';
 import { useSupabaseSession } from '@/contexts/SupabaseSessionContext';
 import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
+import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 import type { StrokeBatch, StrokePoint } from '@/lib/activity-adapters/draw';
 
 const COLOR_PALETTE = [
@@ -26,6 +27,17 @@ export default function DrawPage() {
   const { sessionId, sendEvent, sendTransient, registerEventHandler, registerTransientHandler, recover } =
     useActivitySession();
   const { saveKeepsake, saving: keepsakeSaving } = useKeepsakeWriter();
+  const localRuntime = useActivityRuntime({
+    sessionId: sessionId || `mock-draw-${roomCode || 'local'}`,
+    activityType: 'draw',
+    userId: user?.id,
+    roomId: roomCode || 'local',
+    transportMode: 'mock',
+    enabled: !sessionId,
+    initialOptions: { prompt: 'Draw: Our Dream Sunset Date 🌅' },
+  });
+  const activitySendEvent = sessionId ? sendEvent : localRuntime.sendEvent;
+  const activitySendTransient = sessionId ? sendTransient : localRuntime.sendTransient;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -102,6 +114,18 @@ export default function DrawPage() {
     };
   }, [registerEventHandler, renderStrokeBatch, initCanvas]);
 
+  useEffect(() => {
+    if (sessionId || !localRuntime.lastEvent) return;
+    const event = localRuntime.lastEvent;
+    if (event.type === 'draw_batch') {
+      const batch = event.payload as StrokeBatch;
+      // The local artist has already painted this batch with zero latency.
+      // Render only a partner's durable batch when the mock bus echoes it back.
+      if (batch.userId !== localRuntime.currentUserId) renderStrokeBatch(batch);
+    }
+    if (event.type === 'draw_clear') initCanvas();
+  }, [sessionId, localRuntime.lastEvent, localRuntime.currentUserId, renderStrokeBatch, initCanvas]);
+
   // Listen to transient cursor broadcasts (strictly ephemeral WebSocket, no DB rows)
   useEffect(() => {
     const unregister = registerTransientHandler('pointer_move', (payload: any) => {
@@ -126,6 +150,15 @@ export default function DrawPage() {
     };
   }, [registerTransientHandler, user?.id, partnerB]);
 
+  useEffect(() => {
+    if (sessionId) return;
+    return localRuntime.subscribeTransient('pointer_move', (payload: any) => {
+      if (payload && payload.userId !== localRuntime.currentUserId) {
+        setPartnerCursor({ x: payload.x, y: payload.y, userName: payload.userName || partnerB || 'Partner', color: payload.color || '#F59E0B', visible: true });
+      }
+    });
+  }, [sessionId, localRuntime, partnerB]);
+
   const getCanvasCoords = (clientX: number, clientY: number): StrokePoint => {
     const canvas = canvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
@@ -149,7 +182,7 @@ export default function DrawPage() {
     const coords = getCanvasCoords(clientX, clientY);
 
     // Broadcast transient cursor coordinate to partner (ephemeral Realtime channel)
-    sendTransient('pointer_move', {
+    activitySendTransient('pointer_move', {
       x: coords.x,
       y: coords.y,
       userId: user?.id,
@@ -189,7 +222,7 @@ export default function DrawPage() {
 
     const batch: StrokeBatch = {
       id: crypto.randomUUID(),
-      userId: user?.id || 'local',
+      userId: user?.id || localRuntime.currentUserId,
       sequence: strokeSequenceRef.current,
       color,
       brushSize,
@@ -197,7 +230,7 @@ export default function DrawPage() {
       timestamp: new Date().toISOString(),
     };
 
-    void sendEvent('draw_batch', batch);
+    void activitySendEvent('draw_batch', batch);
     // Keep last point as starting point for smooth continuity
     const lastPoint = currentPointsRef.current[currentPointsRef.current.length - 1];
     currentPointsRef.current = [lastPoint];
@@ -215,7 +248,7 @@ export default function DrawPage() {
   const clearCanvas = () => {
     sounds.playPop();
     initCanvas();
-    void sendEvent('draw_clear', { clearedAt: new Date().toISOString(), userId: user?.id });
+    void activitySendEvent('draw_clear', { clearedAt: new Date().toISOString(), userId: user?.id || localRuntime.currentUserId });
   };
 
   const downloadDrawing = () => {

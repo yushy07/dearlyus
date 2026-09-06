@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Ribbon, Navbar, Confetti, CoupleNameBar, AiConsentToggle } from '@/components/shared';
 import { sounds } from '@/lib/sound';
@@ -10,6 +10,7 @@ import { CupidotBot, BotState } from '@/components/bot/CupidotBot';
 import { useCoupleProfile } from '@/lib/couple';
 import { useAiConsent } from '@/lib/ai-consent';
 import { generateAdaptiveQuestion } from '@/lib/gemini';
+import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 
 interface HostScenario {
   id: number;
@@ -50,6 +51,13 @@ export default function DateHostPage() {
   const [partnerBPick, setPartnerBPick] = useState<number | null>(null);
   const [revealed, setRevealed] = useState(false);
   const { partnerA, partnerB, roomCode } = useCoupleProfile();
+  const runtime = useActivityRuntime({
+    sessionId: `mock-host-${roomCode || 'local'}`,
+    activityType: 'host',
+    roomId: roomCode || 'local',
+    transportMode: 'mock',
+    initialOptions: { theme: 'Third Wheel' },
+  });
   const { hasAiConsent } = useAiConsent();
   const [hostCommentary, setHostCommentary] = useState<string | null>(null);
   const [confettiActive, setConfettiActive] = useState(false);
@@ -60,9 +68,15 @@ export default function DateHostPage() {
 
   const scenario = scenarios[currentIdx] || scenarios[0];
 
+  useEffect(() => {
+    const index = Number((runtime.snapshot as { promptIndex?: number }).promptIndex);
+    if (Number.isFinite(index) && index < scenarios.length) setCurrentIdx(index);
+  }, [runtime.snapshot, scenarios.length]);
+
   const handleReveal = () => {
     if (partnerAPick === null || partnerBPick === null) return;
     setRevealed(true);
+    void runtime.sendEvent('host_speaker_switch', { activeSpeaker: partnerB });
 
     if (partnerAPick === partnerBPick) {
       sounds.playCelebration();
@@ -116,7 +130,7 @@ export default function DateHostPage() {
 
   const handleNext = () => {
     if (currentIdx + 1 < scenarios.length) {
-      setCurrentIdx(currentIdx + 1);
+      void runtime.sendEvent('host_prompt_change', { promptIndex: currentIdx + 1 });
       setPartnerAPick(null);
       setPartnerBPick(null);
       setRevealed(false);

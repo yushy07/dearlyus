@@ -13,6 +13,7 @@ import { StampCard } from './_components/StampCard';
 import { TicketEditorModal } from './_components/TicketEditorModal';
 import { RoomInviteModal } from '@/components/shared/RoomInviteModal';
 import { useCoupleProfile } from '@/lib/couple';
+import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 
 interface ConfettiPiece {
   id: string;
@@ -46,6 +47,12 @@ export default function PassportPage() {
   const [isEditingTicket, setIsEditingTicket] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const { roomCode: savedRoomCode } = useCoupleProfile();
+  const runtime = useActivityRuntime({
+    sessionId: `mock-passport-${savedRoomCode || 'local'}`,
+    activityType: 'passport',
+    roomId: savedRoomCode || 'local',
+    transportMode: 'mock',
+  });
   const [roomCode, setRoomCode] = useState('');
   const [copiedLink, setCopiedLink] = useState(false);
   const [confetti, setConfetti] = useState<ConfettiPiece[]>([]);
@@ -81,6 +88,7 @@ export default function PassportPage() {
       setTempNoteText(stampNotes[stamp.id] || stamp.defaultMemory);
     } else {
       unlockStamp(stamp.id);
+      void runtime.sendEvent('passport_stamp_add', { stampId: stamp.id });
       sounds.playSparkleReaction('💖');
     }
   };
@@ -88,6 +96,7 @@ export default function PassportPage() {
   const handleSaveNote = (stampId: string) => {
     sounds.playPop();
     updateNote(stampId, tempNoteText);
+    void runtime.sendEvent('scrapbook_entry_add', { stampId });
     setEditingNoteId(null);
   };
 

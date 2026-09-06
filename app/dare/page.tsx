@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { sounds } from '@/lib/sound';
 import { useCoupleProfile } from '@/lib/couple';
+import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 import { Confetti } from '@/components/shared/Confetti';
 
 const MINIGAMES = [
@@ -77,7 +78,13 @@ function DiceFace({ val }: { val: number }) {
 }
 
 export default function DarePage() {
-  const { partnerA, partnerB } = useCoupleProfile();
+  const { partnerA, partnerB, roomCode } = useCoupleProfile();
+  const runtime = useActivityRuntime({
+    sessionId: `mock-dare-${roomCode || 'local'}`,
+    activityType: 'dare',
+    roomId: roomCode || 'local',
+    transportMode: 'mock',
+  });
   const [selectedGame, setSelectedGame] = useState(MINIGAMES[0]);
   const [gameState, setGameState] = useState<'idle' | 'playing' | 'result'>('idle');
   const [tapCount, setTapCount] = useState(0);
@@ -119,6 +126,7 @@ export default function DarePage() {
   }, []);
 
   const handleStartRound = () => {
+    void runtime.sendEvent('dare_accept', {});
     clearTimers();
     sounds.playPop();
     setGameState('playing');
@@ -214,6 +222,7 @@ export default function DarePage() {
       setReactionStage('early');
       setPartnerLoser(partnerA);
       setGameState('result');
+      void runtime.sendEvent('dare_complete', {});
       sounds.playCountdownBeep(false);
       return;
     }
@@ -222,6 +231,7 @@ export default function DarePage() {
       setReactionMs(ms);
       setReactionStage('clicked');
       setGameState('result');
+      void runtime.sendEvent('dare_complete', {});
       setPartnerLoser(ms < 320 ? partnerB : partnerA);
       sounds.playCelebration();
     }
@@ -231,6 +241,7 @@ export default function DarePage() {
     clearTimers();
     setTimerRunning(false);
     setGameState('result');
+    void runtime.sendEvent('dare_complete', {});
     const diff = Math.abs(5.0 - timerStopSec);
     setPartnerLoser(diff < 0.28 ? partnerB : partnerA);
     sounds.playCelebration();
@@ -241,6 +252,7 @@ export default function DarePage() {
     const pPick = opts[Math.floor(Math.random() * opts.length)];
     setRpsResults({ you: pick, partner: pPick });
     setGameState('result');
+    void runtime.sendEvent('dare_complete', {});
     sounds.playCelebration();
 
     if (pick === pPick) {

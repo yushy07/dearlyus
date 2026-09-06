@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Ribbon, Navbar, CoupleNameBar } from '@/components/shared';
 import { sounds } from '@/lib/sound';
 import { useCoupleProfile } from '@/lib/couple';
+import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 
 interface ScrapbookItem {
   id: string;
@@ -31,6 +32,13 @@ function sanitizeSafeImageUrl(url?: string): string {
 }
 
 export default function ScrapbookPage() {
+  const { roomCode } = useCoupleProfile();
+  const runtime = useActivityRuntime({
+    sessionId: `mock-scrapbook-${roomCode || 'local'}`,
+    activityType: 'scrapbook',
+    roomId: roomCode || 'local',
+    transportMode: 'mock',
+  });
   const { partnerA, partnerB } = useCoupleProfile();
   const [items, setItems] = useState<ScrapbookItem[]>([
     { id: '1', type: 'polaroid', content: 'Tokyo Station Photo', imageUrl: '/photos/frame1.webp', sub: 'Tokyo Station · Aug 2026', x: 40, y: 30, rotation: -4 },
@@ -78,7 +86,8 @@ export default function ScrapbookPage() {
 
   const handlePointerUp = (e: React.PointerEvent) => {
     if (draggingId) {
-      setDraggingId(null);
+    setDraggingId(null);
+    void runtime.sendEvent('scrapbook_entry_add', { itemId: activeItem });
       dragStartRef.current = null;
       try {
         (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);

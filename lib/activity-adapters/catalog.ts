@@ -6,7 +6,13 @@ import type {
   ValidationResult,
   ActivityResult,
   KeepsakeDraft,
+  RealtimeActivityEvent,
 } from './types';
+import {
+  type ActivityDefinition,
+  type StandardSessionState,
+  createAdapterFromDefinition,
+} from './template';
 
 // ==========================================
 // 1. CARDS ADAPTER
@@ -15,6 +21,7 @@ export interface CardsSnapshot {
   [key: string]: unknown;
   activityType: 'cards';
   schemaVersion: number;
+  status: StandardSessionState;
   deckId: string;
   cardIndex: number;
   flipped: boolean;
@@ -22,14 +29,32 @@ export interface CardsSnapshot {
   completed: boolean;
 }
 
-export const cardsActivityAdapter: RealtimeActivityAdapter<CardsSnapshot> = {
+export const CARDS_DURABLE_EVENTS = [
+  'cards_draw',
+  'cards_flip',
+  'cards_next',
+  'cards_scratch',
+  'gentle_skip',
+] as const;
+
+export const CARDS_TRANSIENT_EVENTS = [
+  'cards_scratch_pos',
+] as const;
+
+export const cardsActivityDefinition: ActivityDefinition<CardsSnapshot, RealtimeActivityEvent> = {
   activityType: 'cards',
   schemaVersion: 1,
-  createInitialSnapshot(input: StartActivityInput): CardsSnapshot {
+  durableEvents: CARDS_DURABLE_EVENTS,
+  transientEvents: CARDS_TRANSIENT_EVENTS,
+  privateFields: [],
+  reconnectBehavior: 'loading_snapshot',
+
+  initialSnapshot(input: StartActivityInput): CardsSnapshot {
     const opts = input.options || {};
     return {
       activityType: 'cards',
       schemaVersion: 1,
+      status: 'active',
       deckId: String(opts.deckId || 'deep-water'),
       cardIndex: Number(opts.cardIndex || 0),
       flipped: false,
@@ -37,12 +62,13 @@ export const cardsActivityAdapter: RealtimeActivityAdapter<CardsSnapshot> = {
       completed: false,
     };
   },
+
   validateEvent(event): ValidationResult {
-    const allowed = ['cards_draw', 'cards_flip', 'cards_next', 'cards_scratch', 'gentle_skip'];
-    return allowed.includes(event.type)
+    return CARDS_DURABLE_EVENTS.includes(event.type as any)
       ? { valid: true }
       : { valid: false, code: 'INVALID_EVENT', message: `Event ${event.type} not allowed for cards.` };
   },
+
   reduce(snapshot: CardsSnapshot, event): CardsSnapshot {
     switch (event.type) {
       case 'cards_flip':
@@ -50,9 +76,15 @@ export const cardsActivityAdapter: RealtimeActivityAdapter<CardsSnapshot> = {
       case 'cards_scratch':
         return { ...snapshot, flipped: true };
       case 'cards_next': {
-        const nextIdx = (snapshot.cardIndex + 1);
+        const nextIdx = snapshot.cardIndex + 1;
         const isDone = nextIdx >= snapshot.totalCards;
-        return { ...snapshot, cardIndex: nextIdx, flipped: false, completed: isDone };
+        return {
+          ...snapshot,
+          cardIndex: nextIdx,
+          flipped: false,
+          status: isDone ? 'completed' : 'active',
+          completed: isDone,
+        };
       }
       case 'gentle_skip':
         return { ...snapshot, cardIndex: snapshot.cardIndex + 1, flipped: false };
@@ -60,9 +92,11 @@ export const cardsActivityAdapter: RealtimeActivityAdapter<CardsSnapshot> = {
         return snapshot;
     }
   },
-  canTransition(snapshot, action, userId): boolean {
+
+  transitionRules(_snapshot, _action, userId): boolean {
     return Boolean(userId);
   },
+
   summarize(snapshot: CardsSnapshot): ActivityResult {
     return {
       activityType: 'cards',
@@ -70,6 +104,7 @@ export const cardsActivityAdapter: RealtimeActivityAdapter<CardsSnapshot> = {
       summary: { deckId: snapshot.deckId, cardsExplored: snapshot.cardIndex, totalCards: snapshot.totalCards },
     };
   },
+
   buildKeepsake(result: ActivityResult): KeepsakeDraft | null {
     const sum = result.summary as { deckId: string; cardsExplored: number };
     return {
@@ -80,6 +115,9 @@ export const cardsActivityAdapter: RealtimeActivityAdapter<CardsSnapshot> = {
   },
 };
 
+export const cardsActivityAdapter: RealtimeActivityAdapter<CardsSnapshot> =
+  createAdapterFromDefinition(cardsActivityDefinition);
+
 // ==========================================
 // 2. HOST MODE ADAPTER
 // ==========================================
@@ -87,6 +125,7 @@ export interface HostSnapshot {
   [key: string]: unknown;
   activityType: 'host';
   schemaVersion: number;
+  status: StandardSessionState;
   promptIndex: number;
   activeSpeaker: string;
   theme: string;
@@ -94,14 +133,31 @@ export interface HostSnapshot {
   completed: boolean;
 }
 
-export const hostActivityAdapter: RealtimeActivityAdapter<HostSnapshot> = {
+export const HOST_DURABLE_EVENTS = [
+  'host_prompt_change',
+  'host_speaker_switch',
+  'host_commentary',
+  'host_finish',
+] as const;
+
+export const HOST_TRANSIENT_EVENTS = [
+  'host_typing_presence',
+] as const;
+
+export const hostActivityDefinition: ActivityDefinition<HostSnapshot, RealtimeActivityEvent> = {
   activityType: 'host',
   schemaVersion: 1,
-  createInitialSnapshot(input: StartActivityInput): HostSnapshot {
+  durableEvents: HOST_DURABLE_EVENTS,
+  transientEvents: HOST_TRANSIENT_EVENTS,
+  privateFields: [],
+  reconnectBehavior: 'loading_snapshot',
+
+  initialSnapshot(input: StartActivityInput): HostSnapshot {
     const opts = input.options || {};
     return {
       activityType: 'host',
       schemaVersion: 1,
+      status: 'active',
       promptIndex: Number(opts.promptIndex || 0),
       activeSpeaker: String(opts.activeSpeaker || input.userId),
       theme: String(opts.theme || 'Romantic Intimacy'),
@@ -109,12 +165,13 @@ export const hostActivityAdapter: RealtimeActivityAdapter<HostSnapshot> = {
       completed: false,
     };
   },
+
   validateEvent(event): ValidationResult {
-    const allowed = ['host_prompt_change', 'host_speaker_switch', 'host_commentary', 'host_finish'];
-    return allowed.includes(event.type)
+    return HOST_DURABLE_EVENTS.includes(event.type as any)
       ? { valid: true }
       : { valid: false, code: 'INVALID_EVENT', message: `Event ${event.type} not allowed for host.` };
   },
+
   reduce(snapshot: HostSnapshot, event): HostSnapshot {
     switch (event.type) {
       case 'host_prompt_change': {
@@ -130,14 +187,16 @@ export const hostActivityAdapter: RealtimeActivityAdapter<HostSnapshot> = {
         return { ...snapshot, commentary: [...snapshot.commentary, String(payload.text || '')] };
       }
       case 'host_finish':
-        return { ...snapshot, completed: true };
+        return { ...snapshot, status: 'completed', completed: true };
       default:
         return snapshot;
     }
   },
-  canTransition(snapshot, action, userId): boolean {
+
+  transitionRules(_snapshot, _action, userId): boolean {
     return Boolean(userId);
   },
+
   summarize(snapshot: HostSnapshot): ActivityResult {
     return {
       activityType: 'host',
@@ -145,6 +204,7 @@ export const hostActivityAdapter: RealtimeActivityAdapter<HostSnapshot> = {
       summary: { theme: snapshot.theme, promptsDiscussed: snapshot.promptIndex, commentaryCount: snapshot.commentary.length },
     };
   },
+
   buildKeepsake(result: ActivityResult): KeepsakeDraft | null {
     const sum = result.summary as { theme: string; promptsDiscussed: number };
     return {
@@ -155,6 +215,9 @@ export const hostActivityAdapter: RealtimeActivityAdapter<HostSnapshot> = {
   },
 };
 
+export const hostActivityAdapter: RealtimeActivityAdapter<HostSnapshot> =
+  createAdapterFromDefinition(hostActivityDefinition);
+
 // ==========================================
 // 3. MATCH ADAPTER
 // ==========================================
@@ -162,32 +225,46 @@ export interface MatchSnapshot {
   [key: string]: unknown;
   activityType: 'match';
   schemaVersion: number;
+  status: StandardSessionState;
   pairIndex: number;
   score: number;
   totalPairs: number;
   completed: boolean;
 }
 
-export const matchActivityAdapter: RealtimeActivityAdapter<MatchSnapshot> = {
+export const MATCH_DURABLE_EVENTS = [
+  'match_select',
+  'match_reveal',
+  'match_next',
+] as const;
+
+export const matchActivityDefinition: ActivityDefinition<MatchSnapshot, RealtimeActivityEvent> = {
   activityType: 'match',
   schemaVersion: 1,
-  createInitialSnapshot(input: StartActivityInput): MatchSnapshot {
+  durableEvents: MATCH_DURABLE_EVENTS,
+  transientEvents: [],
+  privateFields: [],
+  reconnectBehavior: 'loading_snapshot',
+
+  initialSnapshot(input: StartActivityInput): MatchSnapshot {
     const opts = input.options || {};
     return {
       activityType: 'match',
       schemaVersion: 1,
+      status: 'active',
       pairIndex: 0,
       score: 0,
       totalPairs: Number(opts.totalPairs || 10),
       completed: false,
     };
   },
+
   validateEvent(event): ValidationResult {
-    const allowed = ['match_select', 'match_reveal', 'match_next'];
-    return allowed.includes(event.type)
+    return MATCH_DURABLE_EVENTS.includes(event.type as any)
       ? { valid: true }
       : { valid: false, code: 'INVALID_EVENT', message: `Event ${event.type} not allowed for match.` };
   },
+
   reduce(snapshot: MatchSnapshot, event): MatchSnapshot {
     switch (event.type) {
       case 'match_reveal': {
@@ -197,15 +274,23 @@ export const matchActivityAdapter: RealtimeActivityAdapter<MatchSnapshot> = {
       }
       case 'match_next': {
         const next = snapshot.pairIndex + 1;
-        return { ...snapshot, pairIndex: next, completed: next >= snapshot.totalPairs };
+        const isDone = next >= snapshot.totalPairs;
+        return {
+          ...snapshot,
+          pairIndex: next,
+          status: isDone ? 'completed' : 'active',
+          completed: isDone,
+        };
       }
       default:
         return snapshot;
     }
   },
-  canTransition(snapshot, action, userId): boolean {
+
+  transitionRules(_snapshot, _action, userId): boolean {
     return Boolean(userId);
   },
+
   summarize(snapshot: MatchSnapshot): ActivityResult {
     return {
       activityType: 'match',
@@ -213,6 +298,7 @@ export const matchActivityAdapter: RealtimeActivityAdapter<MatchSnapshot> = {
       summary: { score: snapshot.score, totalPairs: snapshot.totalPairs },
     };
   },
+
   buildKeepsake(result: ActivityResult): KeepsakeDraft | null {
     const sum = result.summary as { score: number; totalPairs: number };
     return {
@@ -223,6 +309,9 @@ export const matchActivityAdapter: RealtimeActivityAdapter<MatchSnapshot> = {
   },
 };
 
+export const matchActivityAdapter: RealtimeActivityAdapter<MatchSnapshot> =
+  createAdapterFromDefinition(matchActivityDefinition);
+
 // ==========================================
 // 4. DEBATE & COURT ADAPTER
 // ==========================================
@@ -230,6 +319,7 @@ export interface CourtSnapshot {
   [key: string]: unknown;
   activityType: 'court';
   schemaVersion: number;
+  status: StandardSessionState;
   caseTitle: string;
   defendant: string;
   plaintiff: string;
@@ -240,14 +330,27 @@ export interface CourtSnapshot {
   completed: boolean;
 }
 
-export const courtActivityAdapter: RealtimeActivityAdapter<CourtSnapshot> = {
+export const COURT_DURABLE_EVENTS = [
+  'court_plea',
+  'court_argument',
+  'court_verdict',
+  'court_close',
+] as const;
+
+export const courtActivityDefinition: ActivityDefinition<CourtSnapshot, RealtimeActivityEvent> = {
   activityType: 'court',
   schemaVersion: 1,
-  createInitialSnapshot(input: StartActivityInput): CourtSnapshot {
+  durableEvents: COURT_DURABLE_EVENTS,
+  transientEvents: [],
+  privateFields: [],
+  reconnectBehavior: 'loading_snapshot',
+
+  initialSnapshot(input: StartActivityInput): CourtSnapshot {
     const opts = input.options || {};
     return {
       activityType: 'court',
       schemaVersion: 1,
+      status: 'active',
       caseTitle: String(opts.caseTitle || 'The Case of the Missing Blankets 🧸'),
       defendant: String(opts.defendant || 'Partner B'),
       plaintiff: String(opts.plaintiff || 'Partner A'),
@@ -258,12 +361,13 @@ export const courtActivityAdapter: RealtimeActivityAdapter<CourtSnapshot> = {
       completed: false,
     };
   },
+
   validateEvent(event): ValidationResult {
-    const allowed = ['court_plea', 'court_argument', 'court_verdict', 'court_close'];
-    return allowed.includes(event.type)
+    return COURT_DURABLE_EVENTS.includes(event.type as any)
       ? { valid: true }
       : { valid: false, code: 'INVALID_EVENT', message: `Event ${event.type} not allowed for court.` };
   },
+
   reduce(snapshot: CourtSnapshot, event): CourtSnapshot {
     switch (event.type) {
       case 'court_plea': {
@@ -280,14 +384,16 @@ export const courtActivityAdapter: RealtimeActivityAdapter<CourtSnapshot> = {
         };
       }
       case 'court_close':
-        return { ...snapshot, stage: 'closed', completed: true };
+        return { ...snapshot, stage: 'closed', status: 'completed', completed: true };
       default:
         return snapshot;
     }
   },
-  canTransition(snapshot, action, userId): boolean {
+
+  transitionRules(_snapshot, _action, userId): boolean {
     return Boolean(userId);
   },
+
   summarize(snapshot: CourtSnapshot): ActivityResult {
     return {
       activityType: 'court',
@@ -295,6 +401,7 @@ export const courtActivityAdapter: RealtimeActivityAdapter<CourtSnapshot> = {
       summary: { caseTitle: snapshot.caseTitle, verdict: snapshot.verdict, penalty: snapshot.penalty },
     };
   },
+
   buildKeepsake(result: ActivityResult): KeepsakeDraft | null {
     const sum = result.summary as { caseTitle: string; verdict: string; penalty: string };
     return {
@@ -305,6 +412,9 @@ export const courtActivityAdapter: RealtimeActivityAdapter<CourtSnapshot> = {
   },
 };
 
+export const courtActivityAdapter: RealtimeActivityAdapter<CourtSnapshot> =
+  createAdapterFromDefinition(courtActivityDefinition);
+
 // ==========================================
 // 5. DARE ADAPTER
 // ==========================================
@@ -312,57 +422,74 @@ export interface DareSnapshot {
   [key: string]: unknown;
   activityType: 'dare';
   schemaVersion: number;
+  status: StandardSessionState;
   currentDare: string;
   category: string;
-  status: 'pending' | 'accepted' | 'completed' | 'rerolled';
+  dareStatus: 'pending' | 'accepted' | 'completed' | 'rerolled';
   completedCount: number;
   completed: boolean;
 }
 
-export const dareActivityAdapter: RealtimeActivityAdapter<DareSnapshot> = {
+export const DARE_DURABLE_EVENTS = [
+  'dare_accept',
+  'dare_complete',
+  'dare_reroll',
+  'dare_finish',
+] as const;
+
+export const dareActivityDefinition: ActivityDefinition<DareSnapshot, RealtimeActivityEvent> = {
   activityType: 'dare',
   schemaVersion: 1,
-  createInitialSnapshot(input: StartActivityInput): DareSnapshot {
+  durableEvents: DARE_DURABLE_EVENTS,
+  transientEvents: [],
+  privateFields: [],
+  reconnectBehavior: 'loading_snapshot',
+
+  initialSnapshot(input: StartActivityInput): DareSnapshot {
     const opts = input.options || {};
     return {
       activityType: 'dare',
       schemaVersion: 1,
+      status: 'active',
       currentDare: String(opts.currentDare || 'Sing the chorus of our favorite song without smiling! 🎤'),
       category: String(opts.category || 'Playful'),
-      status: 'pending',
+      dareStatus: 'pending',
       completedCount: 0,
       completed: false,
     };
   },
+
   validateEvent(event): ValidationResult {
-    const allowed = ['dare_accept', 'dare_complete', 'dare_reroll', 'dare_finish'];
-    return allowed.includes(event.type)
+    return DARE_DURABLE_EVENTS.includes(event.type as any)
       ? { valid: true }
       : { valid: false, code: 'INVALID_EVENT', message: `Event ${event.type} not allowed for dare.` };
   },
+
   reduce(snapshot: DareSnapshot, event): DareSnapshot {
     switch (event.type) {
       case 'dare_accept':
-        return { ...snapshot, status: 'accepted' };
+        return { ...snapshot, dareStatus: 'accepted' };
       case 'dare_complete':
-        return { ...snapshot, status: 'completed', completedCount: snapshot.completedCount + 1 };
+        return { ...snapshot, dareStatus: 'completed', completedCount: snapshot.completedCount + 1 };
       case 'dare_reroll': {
         const payload = (event.payload as Record<string, unknown>) || {};
         return {
           ...snapshot,
           currentDare: String(payload.newDare || 'Send a photo making your funniest face 🤪'),
-          status: 'pending',
+          dareStatus: 'pending',
         };
       }
       case 'dare_finish':
-        return { ...snapshot, completed: true };
+        return { ...snapshot, status: 'completed', completed: true };
       default:
         return snapshot;
     }
   },
-  canTransition(snapshot, action, userId): boolean {
+
+  transitionRules(_snapshot, _action, userId): boolean {
     return Boolean(userId);
   },
+
   summarize(snapshot: DareSnapshot): ActivityResult {
     return {
       activityType: 'dare',
@@ -370,6 +497,7 @@ export const dareActivityAdapter: RealtimeActivityAdapter<DareSnapshot> = {
       summary: { completedCount: snapshot.completedCount },
     };
   },
+
   buildKeepsake(result: ActivityResult): KeepsakeDraft | null {
     const sum = result.summary as { completedCount: number };
     return {
@@ -380,6 +508,9 @@ export const dareActivityAdapter: RealtimeActivityAdapter<DareSnapshot> = {
   },
 };
 
+export const dareActivityAdapter: RealtimeActivityAdapter<DareSnapshot> =
+  createAdapterFromDefinition(dareActivityDefinition);
+
 // ==========================================
 // 6. PHOTOBOOTH TIMING ADAPTER
 // ==========================================
@@ -387,59 +518,77 @@ export interface PhotoboothSnapshot {
   [key: string]: unknown;
   activityType: 'photobooth';
   schemaVersion: number;
+  status: StandardSessionState;
   countdownSeconds: number;
   activeFilter: string;
   frameStyle: string;
   photoCount: number;
-  status: 'standby' | 'countdown' | 'flash' | 'review';
+  photoboothStage: 'standby' | 'countdown' | 'flash' | 'review';
   completed: boolean;
 }
 
-export const photoboothActivityAdapter: RealtimeActivityAdapter<PhotoboothSnapshot> = {
+export const PHOTOBOOTH_DURABLE_EVENTS = [
+  'photo_start_countdown',
+  'photo_tick',
+  'photo_shutter',
+  'photo_filter',
+  'photo_finish',
+] as const;
+
+export const photoboothActivityDefinition: ActivityDefinition<PhotoboothSnapshot, RealtimeActivityEvent> = {
   activityType: 'photobooth',
   schemaVersion: 1,
-  createInitialSnapshot(input: StartActivityInput): PhotoboothSnapshot {
+  durableEvents: PHOTOBOOTH_DURABLE_EVENTS,
+  transientEvents: [],
+  privateFields: [],
+  reconnectBehavior: 'loading_snapshot',
+
+  initialSnapshot(input: StartActivityInput): PhotoboothSnapshot {
     const opts = input.options || {};
     return {
       activityType: 'photobooth',
       schemaVersion: 1,
+      status: 'active',
       countdownSeconds: 3,
       activeFilter: String(opts.filter || 'vintage-film'),
       frameStyle: String(opts.frameStyle || 'classic-white'),
       photoCount: 0,
-      status: 'standby',
+      photoboothStage: 'standby',
       completed: false,
     };
   },
+
   validateEvent(event): ValidationResult {
-    const allowed = ['photo_start_countdown', 'photo_tick', 'photo_shutter', 'photo_filter', 'photo_finish'];
-    return allowed.includes(event.type)
+    return PHOTOBOOTH_DURABLE_EVENTS.includes(event.type as any)
       ? { valid: true }
       : { valid: false, code: 'INVALID_EVENT', message: `Event ${event.type} not allowed for photobooth.` };
   },
+
   reduce(snapshot: PhotoboothSnapshot, event): PhotoboothSnapshot {
     switch (event.type) {
       case 'photo_start_countdown':
-        return { ...snapshot, status: 'countdown', countdownSeconds: 3 };
+        return { ...snapshot, photoboothStage: 'countdown', countdownSeconds: 3 };
       case 'photo_tick': {
         const payload = (event.payload as Record<string, unknown>) || {};
         return { ...snapshot, countdownSeconds: Number(payload.seconds ?? snapshot.countdownSeconds - 1) };
       }
       case 'photo_shutter':
-        return { ...snapshot, status: 'flash', photoCount: snapshot.photoCount + 1 };
+        return { ...snapshot, photoboothStage: 'flash', photoCount: snapshot.photoCount + 1 };
       case 'photo_filter': {
         const payload = (event.payload as Record<string, unknown>) || {};
         return { ...snapshot, activeFilter: String(payload.filter || snapshot.activeFilter) };
       }
       case 'photo_finish':
-        return { ...snapshot, status: 'review', completed: true };
+        return { ...snapshot, photoboothStage: 'review', status: 'completed', completed: true };
       default:
         return snapshot;
     }
   },
-  canTransition(snapshot, action, userId): boolean {
+
+  transitionRules(_snapshot, _action, userId): boolean {
     return Boolean(userId);
   },
+
   summarize(snapshot: PhotoboothSnapshot): ActivityResult {
     return {
       activityType: 'photobooth',
@@ -447,6 +596,7 @@ export const photoboothActivityAdapter: RealtimeActivityAdapter<PhotoboothSnapsh
       summary: { photoCount: snapshot.photoCount, filter: snapshot.activeFilter },
     };
   },
+
   buildKeepsake(result: ActivityResult): KeepsakeDraft | null {
     const sum = result.summary as { photoCount: number; filter: string };
     return {
@@ -457,6 +607,9 @@ export const photoboothActivityAdapter: RealtimeActivityAdapter<PhotoboothSnapsh
   },
 };
 
+export const photoboothActivityAdapter: RealtimeActivityAdapter<PhotoboothSnapshot> =
+  createAdapterFromDefinition(photoboothActivityDefinition);
+
 // ==========================================
 // 7. PASSPORT & SCRAPBOOK ADAPTER
 // ==========================================
@@ -464,32 +617,46 @@ export interface PassportSnapshot {
   [key: string]: unknown;
   activityType: 'passport';
   schemaVersion: number;
+  status: StandardSessionState;
   stampsCount: number;
   entriesCount: number;
   activePage: number;
   completed: boolean;
 }
 
-export const passportActivityAdapter: RealtimeActivityAdapter<PassportSnapshot> = {
+export const PASSPORT_DURABLE_EVENTS = [
+  'passport_stamp_add',
+  'scrapbook_entry_add',
+  'page_turn',
+] as const;
+
+export const passportActivityDefinition: ActivityDefinition<PassportSnapshot, RealtimeActivityEvent> = {
   activityType: 'passport',
   schemaVersion: 1,
-  createInitialSnapshot(input: StartActivityInput): PassportSnapshot {
+  durableEvents: PASSPORT_DURABLE_EVENTS,
+  transientEvents: [],
+  privateFields: [],
+  reconnectBehavior: 'loading_snapshot',
+
+  initialSnapshot(input: StartActivityInput): PassportSnapshot {
     const opts = input.options || {};
     return {
       activityType: 'passport',
       schemaVersion: 1,
+      status: 'active',
       stampsCount: Number(opts.stampsCount || 0),
       entriesCount: Number(opts.entriesCount || 0),
       activePage: 1,
       completed: false,
     };
   },
+
   validateEvent(event): ValidationResult {
-    const allowed = ['passport_stamp_add', 'scrapbook_entry_add', 'page_turn'];
-    return allowed.includes(event.type)
+    return PASSPORT_DURABLE_EVENTS.includes(event.type as any)
       ? { valid: true }
       : { valid: false, code: 'INVALID_EVENT', message: `Event ${event.type} not allowed for passport.` };
   },
+
   reduce(snapshot: PassportSnapshot, event): PassportSnapshot {
     switch (event.type) {
       case 'passport_stamp_add':
@@ -504,9 +671,11 @@ export const passportActivityAdapter: RealtimeActivityAdapter<PassportSnapshot> 
         return snapshot;
     }
   },
-  canTransition(snapshot, action, userId): boolean {
+
+  transitionRules(_snapshot, _action, userId): boolean {
     return Boolean(userId);
   },
+
   summarize(snapshot: PassportSnapshot): ActivityResult {
     return {
       activityType: 'passport',
@@ -514,6 +683,7 @@ export const passportActivityAdapter: RealtimeActivityAdapter<PassportSnapshot> 
       summary: { stampsCount: snapshot.stampsCount, entriesCount: snapshot.entriesCount },
     };
   },
+
   buildKeepsake(result: ActivityResult): KeepsakeDraft | null {
     const sum = result.summary as { stampsCount: number; entriesCount: number };
     return {
@@ -524,8 +694,11 @@ export const passportActivityAdapter: RealtimeActivityAdapter<PassportSnapshot> 
   },
 };
 
+export const passportActivityAdapter: RealtimeActivityAdapter<PassportSnapshot> =
+  createAdapterFromDefinition(passportActivityDefinition);
+
 // ==========================================
-// REGISTRY
+// REGISTRY & EXPORTS
 // ==========================================
 export const catalogActivityAdapters: Record<string, RealtimeActivityAdapter> = {
   cards: cardsActivityAdapter,
@@ -537,4 +710,14 @@ export const catalogActivityAdapters: Record<string, RealtimeActivityAdapter> = 
   photobooth: photoboothActivityAdapter,
   passport: passportActivityAdapter,
   scrapbook: passportActivityAdapter,
+};
+
+export const catalogActivityDefinitions = {
+  cards: cardsActivityDefinition,
+  host: hostActivityDefinition,
+  match: matchActivityDefinition,
+  court: courtActivityDefinition,
+  dare: dareActivityDefinition,
+  photobooth: photoboothActivityDefinition,
+  passport: passportActivityDefinition,
 };

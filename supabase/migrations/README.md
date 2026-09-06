@@ -9,17 +9,17 @@ This document maintains the local source of truth for reproducible database sche
 All database migrations are version-stamped using standard `YYYYMMDDNNNN_<name>.sql` format:
 
 1. **`202609040001_account_spaces.sql`**
-   - Core tables: `profiles`, `couple_spaces`, `couple_members`, `couple_invitations`, `keepsakes`, `shared_preferences`, `relationship_milestones`.
+   - Core tables: `profiles`, `couples`, `couple_spaces`, `couple_members`, `couple_invitations`, `keepsakes`, `shared_preferences`, `relationship_milestones`.
    - Primary single-use invitation generation, verification, and space claiming RPCs.
    - Initial RLS policies ensuring exactly two authenticated users can share a space.
 
 2. **`202609050001_realtime_room_foundation.sql`**
-   - Ephemeral date-night rooms (`date_rooms`), room participants (`room_members`), activity sessions (`activity_sessions`), and audit events (`activity_session_events`).
-   - Monotonic revision locking to prevent race conditions during activity transitions.
+   - Ephemeral date-night rooms (`rooms` / `date_rooms`), room participants (`room_members`), activity sessions (`activity_sessions`), sequenced events (`room_events`), and zero-leak private answers vault (`private_answers`).
+   - Monotonic revision locking to prevent race conditions during activity transitions (`append_activity_event`, `lock_private_answer`, `reveal_private_answers`, `complete_activity`).
    - Storage buckets configuration (`couple-keepsakes`, `couple-drawings`, `couple-photostrips`).
 
 3. **`202609050002_scope_foundation_completion.sql`**
-   - Realtime publication bindings for `date_rooms`, `room_members`, `activity_sessions`, and `keepsakes`.
+   - Realtime publication bindings for `rooms`, `room_members`, `activity_sessions`, `room_events`, and `keepsakes`.
    - Security definer RPCs for room entry, rotating room codes, and secure storage uploads.
 
 4. **`202609050003_core_domain_contract.sql`**

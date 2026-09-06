@@ -12,7 +12,9 @@
     "dev": "vinext dev",
     "build": "vinext build",
     "lint": "oxlint",
-    "format": "oxfmt"
+    "format": "oxfmt",
+    "test": "vitest run",
+    "test:browser": "playwright test"
   },
   "dependencies": {
     "@base-ui/react": "1.7.0",
@@ -40,6 +42,7 @@
     "vinext": "1.0.0-beta.9"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "4.2.1",
     "@types/node": "22.19.19",
     "@types/react": "19.2.14",
@@ -52,7 +55,8 @@
     "oxlint-tsgolint": "^7.0.2001",
     "tailwindcss": "4.2.1",
     "typescript": "5.9.3",
-    "vite": "8.2.2"
+    "vite": "8.2.2",
+    "vitest": "^5.0.0"
   },
   "type": "module"
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Ribbon, Navbar, CoupleNameBar, AiConsentToggle } from '@/components/shared';
 import { sounds } from '@/lib/sound';
@@ -9,6 +9,7 @@ import { ScratchOffCard } from '@/components/cards/ScratchOffCard';
 import { useCoupleProfile } from '@/lib/couple';
 import { useAiConsent } from '@/lib/ai-consent';
 import { generateAdaptiveQuestion } from '@/lib/gemini';
+import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 
 interface Card {
   tier: string;
@@ -26,7 +27,7 @@ const INITIAL_DECK: Card[] = [
 ];
 
 export default function CardsPage() {
-  const { partnerA, partnerB } = useCoupleProfile();
+  const { partnerA, partnerB, roomCode } = useCoupleProfile();
   const { hasAiConsent } = useAiConsent();
   const [deck, setDeck] = useState<Card[]>(INITIAL_DECK);
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -37,13 +38,25 @@ export default function CardsPage() {
   const [revealed, setRevealed] = useState(false);
   const [hostNote, setHostNote] = useState<string | null>(null);
   const [sessionHistory, setSessionHistory] = useState<Array<{ question: string; answerA: string; answerB: string }>>([]);
+  const runtime = useActivityRuntime({
+    sessionId: `mock-cards-${roomCode || 'local'}`,
+    activityType: 'cards',
+    roomId: roomCode || 'local',
+    transportMode: 'mock',
+    initialOptions: { deckId: 'honest-cards', totalCards: INITIAL_DECK.length },
+  });
+
+  useEffect(() => {
+    const snapshot = runtime.snapshot as { cardIndex?: number; flipped?: boolean };
+    if (typeof snapshot.cardIndex === 'number') setCurrentIdx(snapshot.cardIndex % deck.length);
+    if (typeof snapshot.flipped === 'boolean') setFlipped(snapshot.flipped);
+  }, [runtime.snapshot, deck.length]);
 
   const card = deck[currentIdx] || deck[0];
 
   const handleNext = () => {
     sounds.playPop();
-    setCurrentIdx((prev) => (prev + 1) % deck.length);
-    setFlipped(false);
+    void runtime.sendEvent('cards_next', {});
     setMyAnswer('');
     setPartnerAnswer('');
     setRevealed(false);
@@ -166,7 +179,7 @@ export default function CardsPage() {
               <ScratchOffCard resetKey={currentIdx}>
                 <div
                   onClick={() => {
-                    setFlipped(!flipped);
+                    void runtime.sendEvent('cards_flip', {});
                     sounds.playTick();
                   }}
                   className="card-3d"
@@ -212,7 +225,7 @@ export default function CardsPage() {
             ) : (
               <div
                 onClick={() => {
-                  setFlipped(!flipped);
+                  void runtime.sendEvent('cards_flip', {});
                   sounds.playTick();
                 }}
                 className="card-3d"

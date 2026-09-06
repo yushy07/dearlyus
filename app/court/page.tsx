@@ -8,6 +8,7 @@ import { sounds } from '@/lib/sound';
 import { CoupleNameBar } from '@/components/shared';
 import { useCoupleProfile } from '@/lib/couple';
 import { speakCupidot, stopCupidotSpeech } from '@/lib/voice';
+import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 
 interface CaseExample {
   title: string;
@@ -39,7 +40,7 @@ const PRESET_CASES: CaseExample[] = [
 ];
 
 export default function CourtPage() {
-  const { partnerA, partnerB } = useCoupleProfile();
+  const { partnerA, partnerB, roomCode } = useCoupleProfile();
   const [caseIdx, setCaseIdx] = useState(0);
   const [customTitle, setCustomTitle] = useState('');
   const [customClaimA, setCustomClaimA] = useState('');
@@ -48,6 +49,13 @@ export default function CourtPage() {
   const [verdict, setVerdict] = useState<CourtVerdict | null>(null);
   const [botState, setBotState] = useState<BotState>('idle');
   const [deliberating, setDeliberating] = useState(false);
+  const runtime = useActivityRuntime({
+    sessionId: `mock-court-${roomCode || 'local'}`,
+    activityType: 'court',
+    roomId: roomCode || 'local',
+    transportMode: 'mock',
+    initialOptions: { caseTitle: PRESET_CASES[0].title, plaintiff: partnerA, defendant: partnerB },
+  });
 
   useEffect(() => {
     return () => {
@@ -83,6 +91,7 @@ export default function CourtPage() {
       }
 
       setVerdict(result);
+      void runtime.sendEvent('court_verdict', { verdict: result.verdictTitle, penalty: result.sentence });
       setDeliberating(false);
       sounds.playCelebration();
 
@@ -104,6 +113,7 @@ export default function CourtPage() {
     setCaseIdx((p) => (p + 1) % PRESET_CASES.length);
     setVerdict(null);
     setBotState('idle');
+    void runtime.sendEvent('court_close', {});
   };
 
   return (

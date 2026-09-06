@@ -1,6 +1,7 @@
 'use client';
 
 export * from './types';
+export * from './template';
 export * from './quiz';
 export * from './draw';
 export * from './catalog';

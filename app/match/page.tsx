@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useCoupleProfile } from '@/lib/couple';
 import { CoupleNameBar } from '@/components/shared';
+import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 
 interface MatchQuestion {
   title: string;
@@ -55,7 +56,7 @@ const QUESTIONS: MatchQuestion[] = [
 ];
 
 export default function MatchPage() {
-  const { partnerA, partnerB } = useCoupleProfile();
+  const { partnerA, partnerB, roomCode } = useCoupleProfile();
   const [qIndex, setQIndex] = useState(0);
   const [partner1Picks, setPartner1Picks] = useState<number[]>([]);
   const [partner2Picks, setPartner2Picks] = useState<number[]>([]);
@@ -63,8 +64,23 @@ export default function MatchPage() {
   const [calculated, setCalculated] = useState(false);
   const [matchScore, setMatchScore] = useState(94);
   const [subScores, setSubScores] = useState({ intimacy: 96, banter: 94, future: 95 });
+  const runtime = useActivityRuntime({
+    sessionId: `mock-match-${roomCode || 'local'}`,
+    activityType: 'match',
+    roomId: roomCode || 'local',
+    transportMode: 'mock',
+    initialOptions: { totalPairs: QUESTIONS.length },
+  });
+
+  useEffect(() => {
+    const snapshot = runtime.snapshot as { pairIndex?: number; score?: number; completed?: boolean };
+    if (typeof snapshot.pairIndex === 'number') setQIndex(Math.min(snapshot.pairIndex, QUESTIONS.length - 1));
+    if (typeof snapshot.score === 'number') setMatchScore(Math.min(100, 88 + snapshot.score * 3));
+    if (snapshot.completed) setCalculated(true);
+  }, [runtime.snapshot]);
 
   const handlePick = (optionIndex: number) => {
+    void runtime.sendEvent('match_select', { optionIndex, partner: activePartner });
     if (activePartner === 1) {
       setPartner1Picks([...partner1Picks, optionIndex]);
       if (qIndex + 1 < QUESTIONS.length) {
@@ -85,6 +101,8 @@ export default function MatchPage() {
           if (partner1Picks[i] === nextPicks[i]) matches += 1;
         }
         const finalScore = Math.min(100, 88 + matches * 3);
+        void runtime.sendEvent('match_reveal', { isMatch: matches > 0 });
+        void runtime.sendEvent('match_next', {});
         const intimacy = Math.min(100, 90 + (partner1Picks[0] === nextPicks[0] ? 8 : 2) + (partner1Picks[2] === nextPicks[2] ? 2 : 0));
         const banter = Math.min(100, 89 + (partner1Picks[1] === nextPicks[1] ? 8 : 3));
         const future = Math.min(100, 91 + (partner1Picks[3] === nextPicks[3] ? 8 : 2));

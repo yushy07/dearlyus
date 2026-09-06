@@ -13,6 +13,11 @@ import {
 } from '@/lib/activity-session';
 import { startDateActivity as rpcStartDateActivity } from '@/lib/account';
 
+import type {
+  StandardSessionState,
+  StandardRecoveryState,
+} from '@/lib/activity-adapters';
+
 export interface ActivitySessionContextValue {
   session: ActivitySession | null;
   sessionId: string | null;
@@ -24,6 +29,8 @@ export interface ActivitySessionContextValue {
   loading: boolean;
   isReplaying: boolean;
   serverTimeOffset: number;
+  sessionState: StandardSessionState;
+  recoveryState: StandardRecoveryState;
   getServerNow: () => number;
   startActivity: (activityType: string, options?: Record<string, unknown>) => Promise<{ sessionId: string; activityType: string }>;
   sendEvent: (type: string, payload: unknown) => Promise<ActivityEvent | null>;
@@ -59,6 +66,8 @@ export function ActivitySessionProvider({
   const [loading, setLoading] = useState<boolean>(Boolean(initialSessionId || room?.currentSessionId));
   const [isReplaying, setIsReplaying] = useState(false);
   const [serverTimeOffset, setServerTimeOffset] = useState<number>(0);
+  const [sessionState, setSessionState] = useState<StandardSessionState>('drafting');
+  const [recoveryState, setRecoveryState] = useState<StandardRecoveryState>('idle');
 
   const seenEventIds = useRef<Set<string>>(new Set());
   const lastSequenceRef = useRef<number>(0);
@@ -284,7 +293,20 @@ export function ActivitySessionProvider({
   }, [supabase, room?.id]);
 
   const startActivityHandler = async (type: string, options: Record<string, unknown> = {}) => {
-    if (!room?.code) throw new Error('No active room to start activity.');
+    if (!room?.code || !user || !supabase) {
+      // Local mock fallback for development and local testing
+      const mockId = `mock-${Date.now()}`;
+      setSessionId(mockId);
+      setActivityType(type);
+      setRevision(1);
+      seenEventIds.current.clear();
+      lastSequenceRef.current = 0;
+      setLastSequence(0);
+      setEvents([]);
+      setSessionState('active');
+      setRecoveryState('recovered');
+      return { sessionId: mockId, activityType: type };
+    }
     setLoading(true);
     try {
       const started = await rpcStartDateActivity(room.code, type, options);
@@ -295,6 +317,8 @@ export function ActivitySessionProvider({
       lastSequenceRef.current = 0;
       setLastSequence(0);
       setEvents([]);
+      setSessionState('active');
+      setRecoveryState('recovered');
       return { sessionId: started.sessionId, activityType: started.activityType };
     } finally {
       setLoading(false);
@@ -303,7 +327,23 @@ export function ActivitySessionProvider({
 
   const sendEventHandler = async (type: string, payload: unknown): Promise<ActivityEvent | null> => {
     const activeSessionId = sessionId || room?.currentSessionId;
-    if (!activeSessionId || !user) return null;
+    if (!activeSessionId) return null;
+
+    if (!user || !supabase || activeSessionId.startsWith('mock-')) {
+      const mockSeq = lastSequenceRef.current + 1;
+      const mockEvt: ActivityEvent = {
+        id: crypto.randomUUID(),
+        sequence: mockSeq,
+        schemaVersion: 1,
+        senderId: user?.id || 'local-user',
+        type,
+        payload,
+        clientCreatedAt: null,
+        createdAt: new Date().toISOString(),
+      };
+      dispatchEvent(mockEvt);
+      return mockEvt;
+    }
 
     try {
       const result = await rpcAppendActivityEvent(activeSessionId, type, payload, revision || undefined);
@@ -323,12 +363,16 @@ export function ActivitySessionProvider({
   const completeActivityHandler = async (resultSnapshot: Record<string, unknown>) => {
     const activeSessionId = sessionId || room?.currentSessionId;
     if (!activeSessionId) return;
+    setSessionState('completed');
+    if (activeSessionId.startsWith('mock-')) return;
     await rpcCompleteActivitySession(activeSessionId, resultSnapshot);
   };
 
   const setPausedHandler = async (paused: boolean) => {
     const activeSessionId = sessionId || room?.currentSessionId;
     if (!activeSessionId) return;
+    setSessionState(paused ? 'paused' : 'active');
+    if (activeSessionId.startsWith('mock-')) return;
     const updated = await rpcSetActivityPaused(activeSessionId, paused);
     setSession(updated);
   };
@@ -345,6 +389,8 @@ export function ActivitySessionProvider({
       loading,
       isReplaying,
       serverTimeOffset,
+      sessionState,
+      recoveryState,
       getServerNow,
       startActivity: startActivityHandler,
       sendEvent: sendEventHandler,
@@ -366,9 +412,15 @@ export function ActivitySessionProvider({
       loading,
       isReplaying,
       serverTimeOffset,
+      sessionState,
+      recoveryState,
       getServerNow,
+      startActivityHandler,
+      sendEventHandler,
       sendTransient,
       recover,
+      completeActivityHandler,
+      setPausedHandler,
       registerEventHandler,
       registerTransientHandler,
     ]
@@ -388,6 +440,8 @@ const defaultActivitySessionValue: ActivitySessionContextValue = {
   loading: false,
   isReplaying: false,
   serverTimeOffset: 0,
+  sessionState: 'drafting',
+  recoveryState: 'idle',
   getServerNow: () => Date.now(),
   startActivity: async () => ({ sessionId: '', activityType: '' }),
   sendEvent: async () => null,
