@@ -5,6 +5,9 @@ import { Ribbon, Navbar, Confetti, CoupleNameBar, CupidotActivityGuidance } from
 import { sounds } from '@/lib/sound';
 import { WaxSealEnvelope, ScrollProgress, ScrollReveal, GlowBadge } from '@/components/ui';
 import { useCoupleProfile } from '@/lib/couple';
+import { sanitizeSafeAudioUrl } from '@/lib/audio-security';
+
+export { sanitizeSafeAudioUrl };
 
 interface SealedCapsule {
   id: string;
@@ -65,7 +68,17 @@ export default function LetterPage() {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          setVault(parsed);
+          const sanitizedVault: SealedCapsule[] = parsed.map((item) => ({
+            id: String(item?.id || ''),
+            title: String(item?.title || ''),
+            author: String(item?.author || ''),
+            unlockDate: String(item?.unlockDate || ''),
+            content: String(item?.content || ''),
+            stamp: String(item?.stamp || '💌'),
+            voiceNoteUrl: sanitizeSafeAudioUrl(item?.voiceNoteUrl),
+            voiceDurationSec: typeof item?.voiceDurationSec === 'number' ? item.voiceDurationSec : undefined,
+          }));
+          setVault(sanitizedVault);
         }
       }
     } catch {}
@@ -146,7 +159,7 @@ export default function LetterPage() {
       unlockDate,
       content: letterContent,
       stamp,
-      voiceNoteUrl: recordedAudioUrl || undefined,
+      voiceNoteUrl: sanitizeSafeAudioUrl(recordedAudioUrl),
       voiceDurationSec: recordSeconds > 0 ? recordSeconds : undefined,
     };
 
@@ -158,6 +171,10 @@ export default function LetterPage() {
     setConfettiActive(true);
     setTimeout(() => setConfettiActive(false), 3000);
   };
+
+  const activeVoiceUrl = sanitizeSafeAudioUrl(
+    activeCapsule ? activeCapsule.voiceNoteUrl : recordedAudioUrl
+  );
 
   return (
     <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px', color: 'var(--ink)' }}>
@@ -351,7 +368,7 @@ export default function LetterPage() {
                   <span style={{ fontSize: '13px', fontWeight: 700, color: '#4A3E34' }}>
                     Voice Whisper Inscribed ({recordSeconds}s)
                   </span>
-                  <audio controls src={recordedAudioUrl} style={{ height: '32px', flex: 1, maxWidth: '260px' }} />
+                  <audio controls src={sanitizeSafeAudioUrl(recordedAudioUrl)} style={{ height: '32px', flex: 1, maxWidth: '260px' }} />
                 </div>
               )}
             </div>
@@ -404,7 +421,7 @@ export default function LetterPage() {
                     : `If you are reading this, every late-night flight, every airport hug, and every time zone hour was worth it.\nI loved you across the miles, and I love you even more today right next to you.\n\nForever yours,\n${partnerA} ♡`}
                 </p>
 
-                {(activeCapsule?.voiceNoteUrl || (!activeCapsule && recordedAudioUrl)) && (
+                {activeVoiceUrl && (
                   <div
                     style={{
                       marginTop: '24px',
@@ -432,7 +449,7 @@ export default function LetterPage() {
                     </div>
                     <audio
                       controls
-                      src={activeCapsule ? activeCapsule.voiceNoteUrl : (recordedAudioUrl || undefined)}
+                      src={activeVoiceUrl}
                       onPlay={() => setIsPlayingVoice(true)}
                       onPause={() => setIsPlayingVoice(false)}
                       onEnded={() => setIsPlayingVoice(false)}
