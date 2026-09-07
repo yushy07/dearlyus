@@ -18,6 +18,8 @@ export interface SharedPreferences {
   defaultDurationMinutes: 15 | 30 | 45 | 60 | 90;
   ambientAudioEnabled: boolean;
   reducedMotion: boolean;
+  /** Couple-owned consent, persisted and enforced by the live backend. */
+  aiConsent: boolean;
   updatedAt: string | null;
 }
 
@@ -263,4 +265,3 @@ export async function saveScheduledDate(coupleId: string, scheduledDate: string,
   if (error) throw error;
   return data as { success: boolean; scheduledAt: string; title: string };
 }
-

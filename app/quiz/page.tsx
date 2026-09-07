@@ -121,6 +121,7 @@ export default function QuizPage() {
       // AI adaptive question generation if consented
       if (hasAiConsent && myDraftChoice !== null) {
         void generateAdaptiveQuestion({
+          sessionId: sessionId || undefined,
           partnerA: { name: partnerA, answer: textA },
           partnerB: { name: partnerB, answer: textB },
           mode: 'quiz',

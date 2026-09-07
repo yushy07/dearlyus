@@ -246,6 +246,7 @@ export default function ProfilePage() {
         defaultDurationMinutes: prefDuration,
         ambientAudioEnabled: prefAmbient,
         reducedMotion: prefReducedMotion,
+        aiConsent: preferences?.aiConsent ?? false,
       });
       setNotice({ kind: 'success', text: 'Your shared date-night defaults are saved.' });
     } catch {

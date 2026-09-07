@@ -150,6 +150,7 @@ function RoomLobbyInner({ code }: { code: string }) {
           defaultDurationMinutes: duration as any,
           ambientAudioEnabled: ambientAudio,
           reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+          aiConsent: preferences?.aiConsent ?? false,
         });
 
         if (ambientAudio) {

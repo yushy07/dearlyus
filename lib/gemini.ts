@@ -11,6 +11,8 @@ import { getSupabase } from './supabase';
 import { generateCupidotDilemma } from './cupidot';
 
 export interface QuestionRequest {
+  /** A live UUID activity session. The Edge Function derives all private context from it. */
+  sessionId?: string;
   partnerA: { name: string; answer: string };
   partnerB: { name: string; answer: string };
   mode: 'quiz' | 'cards' | 'host';
@@ -95,6 +97,7 @@ export function sanitizeCupidotPayload(req: QuestionRequest): QuestionRequest {
     : [];
 
   return {
+    sessionId: typeof req.sessionId === 'string' ? req.sessionId : undefined,
     partnerA: sanitizedA,
     partnerB: sanitizedB,
     mode: req.mode || 'quiz',
@@ -120,14 +123,20 @@ export async function generateAdaptiveQuestion(req: QuestionRequest): Promise<Ge
   const cleanReq = sanitizeCupidotPayload(req);
 
   const supabase = getSupabase();
-  if (!supabase) {
+  // Never transmit answer history, names, or consent from the browser. A live
+  // session lets the Edge Function derive only server-authorized revealed data.
+  if (!supabase || !cleanReq.sessionId) {
     return generateCupidotDilemma(cleanReq);
   }
 
   try {
     // Invoke Supabase Edge Function with sanitized context
     const { data, error } = await supabase.functions.invoke('gemini', {
-      body: cleanReq,
+      body: {
+        sessionId: cleanReq.sessionId,
+        mode: cleanReq.mode,
+        mood: cleanReq.mood,
+      },
     });
 
     if (error || !data?.question || !Array.isArray(data.options) || data.options.length < 2) {

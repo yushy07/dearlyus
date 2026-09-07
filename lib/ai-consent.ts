@@ -1,15 +1,18 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
 
 const AI_CONSENT_KEY = 'dearly_ai_followups_consent';
 
 export function useAiConsent() {
   const [hasAiConsent, setHasAiConsent] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const { preferences, space, savePreferences } = useCoupleSpace();
 
   useEffect(() => {
-    setHasAiConsent(localStorage.getItem(AI_CONSENT_KEY) === 'true');
+    const persisted = preferences?.aiConsent;
+    setHasAiConsent(persisted ?? localStorage.getItem(AI_CONSENT_KEY) === 'true');
     setIsLoaded(true);
     const syncConsent = () => setHasAiConsent(localStorage.getItem(AI_CONSENT_KEY) === 'true');
     window.addEventListener('dearly_ai_consent_changed', syncConsent);
@@ -18,12 +21,19 @@ export function useAiConsent() {
       window.removeEventListener('dearly_ai_consent_changed', syncConsent);
       window.removeEventListener('storage', syncConsent);
     };
-  }, []);
+  }, [preferences?.aiConsent]);
 
-  const setAiConsent = (enabled: boolean) => {
+  const setAiConsent = async (enabled: boolean) => {
     setHasAiConsent(enabled);
     localStorage.setItem(AI_CONSENT_KEY, String(enabled));
     window.dispatchEvent(new Event('dearly_ai_consent_changed'));
+
+    // A local preference can drive offline fallbacks, but live AI permission is
+    // couple-owned and must be persisted before the Edge Function may use it.
+    if (space && preferences) {
+      const { updatedAt: _updatedAt, ...current } = preferences;
+      await savePreferences({ ...current, aiConsent: enabled });
+    }
   };
 
   return { hasAiConsent, setAiConsent, isLoaded };
