@@ -6,7 +6,8 @@ import { Ribbon, Navbar, Confetti, CoupleNameBar, AiConsentToggle, CupidotActivi
 import { sounds } from '@/lib/sound';
 import { downloadReceiptPNG, DateReceiptData } from '@/lib/receipt-canvas';
 import { ThermalReceiptModal } from '@/components/shared/ThermalReceiptModal';
-import { CupidotBot, BotState } from '@/components/bot/CupidotBot';
+import type { BotState } from '@/components/bot/CupidotBot';
+import { Cupidot2D } from '@/components/bot/Cupidot2D';
 import { useCoupleProfile } from '@/lib/couple';
 import { useAiConsent } from '@/lib/ai-consent';
 import { generateAdaptiveQuestion } from '@/lib/gemini';
@@ -167,7 +168,7 @@ export default function DateHostPage() {
         {/* 3D Cupidot Mascot Host */}
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <div style={{ width: '190px', height: '190px', margin: '0 auto -12px' }}>
-            <CupidotBot state={botState} scale={2.2} />
+            <Cupidot2D state={botState} size={220} roam />
           </div>
           <CoupleNameBar />
           <h1 style={{ fontSize: 'clamp(28px, 4.5vw, 42px)', fontWeight: 800, margin: '8px 0 10px' }}>

@@ -32,14 +32,15 @@ export function ReactionBursts() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [lastBurstTime, setLastBurstTime] = useState(0);
 
-  const spawnBurst = useCallback((emoji: string, originX?: number, originY?: number, shouldBroadcast = true) => {
+  const spawnBurst = useCallback((emoji: string, shouldBroadcast = true) => {
     sounds.playSparkleReaction(emoji);
 
     const screenW = typeof window !== 'undefined' ? window.innerWidth : 800;
     const screenH = typeof window !== 'undefined' ? window.innerHeight : 600;
 
-    const startX = originX ?? screenW / 2;
-    const startY = originY ?? screenH - 120;
+    // Reactions are a shared moment, so every launch begins at the viewport centre.
+    const startX = screenW / 2;
+    const startY = screenH / 2;
 
     const now = Date.now();
     const newParticles: Particle3D[] = [];
@@ -91,7 +92,7 @@ export function ReactionBursts() {
     if (shouldBroadcast && typeof window !== 'undefined') {
       try {
         const channel = new BroadcastChannel('dearly_reaction_bursts');
-        channel.postMessage({ emoji, x: startX, y: startY });
+        channel.postMessage({ emoji });
       } catch {}
     }
   }, []);
@@ -103,7 +104,7 @@ export function ReactionBursts() {
       const channel = new BroadcastChannel('dearly_reaction_bursts');
       channel.onmessage = (e) => {
         if (e.data?.emoji) {
-          spawnBurst(e.data.emoji, e.data.x, e.data.y, false);
+          spawnBurst(e.data.emoji, false);
         }
       };
       return () => channel.close();
@@ -126,7 +127,7 @@ export function ReactionBursts() {
 
     const handleDblClick = (e: MouseEvent) => {
       if (isInteractive(e.target)) return;
-      spawnBurst('💖', e.clientX, e.clientY, true);
+      spawnBurst('💖', true);
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
@@ -134,7 +135,7 @@ export function ReactionBursts() {
       const touch = e.changedTouches[0];
       if (now - lastTapTime < 300 && touch) {
         if (!isInteractive(e.target)) {
-          spawnBurst('💖', touch.clientX, touch.clientY, true);
+          spawnBurst('💖', true);
         }
         lastTapTime = 0;
       } else {
@@ -178,12 +179,14 @@ export function ReactionBursts() {
         {particles.map((p) => (
           <div
             key={p.id}
-            className="particle-3d-element"
+            className={`particle-3d-element${p.isHero ? ' particle-3d-element--hero' : ''}`}
             style={{
               position: 'absolute',
               left: `${p.startX}px`,
               top: `${p.startY}px`,
               fontSize: `${p.fontSize}px`,
+              marginLeft: `${-p.fontSize / 2}px`,
+              marginTop: `${-p.fontSize / 2}px`,
               userSelect: 'none',
               filter: p.isHero
                 ? 'drop-shadow(0 15px 40px rgba(255, 123, 163, 0.95))'
@@ -197,7 +200,9 @@ export function ReactionBursts() {
               ['--duration' as string]: `${p.durationMs}ms`,
             }}
           >
-            {p.emoji}
+            <span className="particle-3d-glyph particle-3d-glyph--back">{p.emoji}</span>
+            <span className="particle-3d-glyph particle-3d-glyph--middle">{p.emoji}</span>
+            <span className="particle-3d-glyph particle-3d-glyph--front">{p.emoji}</span>
           </div>
         ))}
       </div>
@@ -231,10 +236,7 @@ export function ReactionBursts() {
             {EMOJI_LIST.map((item) => (
               <button
                 key={item.emoji}
-                onClick={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  spawnBurst(item.emoji, rect.left + rect.width / 2, rect.top);
-                }}
+                onClick={() => spawnBurst(item.emoji)}
                 style={{
                   background: 'none',
                   border: 'none',
@@ -292,8 +294,8 @@ export function ReactionBursts() {
               : '0 8px 24px rgba(0, 0, 0, 0.35)',
             transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
           }}
-          title={isExpanded ? 'Hide 3D reactions' : 'Send 3D flying reaction burst to partner'}
-          aria-label={isExpanded ? 'Hide reactions' : 'Send 3D reaction'}
+          title={isExpanded ? 'Hide reactions' : 'Send a flying reaction burst to your partner'}
+          aria-label={isExpanded ? 'Hide reactions' : 'Send reaction'}
         >
           {isExpanded ? '✕' : '💖'}
         </button>

@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { CupidotBot, BotState } from '@/components/bot/CupidotBot';
+import type { BotState } from '@/components/bot/CupidotBot';
+import { Cupidot2D } from '@/components/bot/Cupidot2D';
 import { generateLoveForecast, LoveForecast } from '@/lib/cupidot';
 import { sounds } from '@/lib/sound';
 import { speakCupidot, stopCupidotSpeech } from '@/lib/voice';
@@ -273,7 +274,7 @@ export default function ForecastPage() {
           }}
         >
           <div style={{ width: '150px', height: '150px', margin: '0 auto -12px' }}>
-            <CupidotBot state={botState} scale={2.4} />
+            <Cupidot2D state={botState} size={230} roam />
           </div>
 
           <div

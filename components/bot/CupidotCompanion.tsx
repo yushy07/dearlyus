@@ -1,13 +1,15 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { CupidotBot, BotState } from './CupidotBot';
+import type { BotState } from './CupidotBot';
 import { CupidotDockAvatar } from './CupidotDockAvatar';
+import { Cupidot2D } from './Cupidot2D';
 import { getRandomCupidotThought, getPokedCupidotDilemma, CupidotDilemma } from '@/lib/cupidot';
 import { sounds } from '@/lib/sound';
 import { useCoupleProfile } from '@/lib/couple';
 import { speakCupidot, getStoredVoiceMode, setStoredVoiceMode, VoiceMode, VoiceMood } from '@/lib/voice';
 import { RomanticEmergencyModal } from './RomanticEmergencyModal';
+import { useDraggableFixed } from '@/lib/use-draggable-fixed';
 
 export function CupidotCompanion() {
   const { partnerA, partnerB } = useCoupleProfile();
@@ -18,6 +20,7 @@ export function CupidotCompanion() {
   const [pokedCount, setPokedCount] = useState(0);
   const [voiceMode, setVoiceMode] = useState<VoiceMode>('chirp');
   const [emergencyOpen, setEmergencyOpen] = useState(false);
+  const dockDrag = useDraggableFixed<HTMLDivElement>('dearly-us:cupidot-dock-position');
 
   useEffect(() => {
     setVoiceMode(getStoredVoiceMode());
@@ -89,15 +92,18 @@ export function CupidotCompanion() {
     <>
       {/* Floating Cupidot Companion Dock Pill */}
       <div
+        ref={dockDrag.ref}
         style={{
           position: 'fixed',
-          bottom: '24px',
+          // Keep Cupidot above the fixed audio player instead of sharing its corner.
+          bottom: '104px',
           right: '24px',
           zIndex: 9998,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'flex-end',
           gap: '8px',
+          ...dockDrag.style,
         }}
       >
         {/* Cheeky Floating Thought Bubble */}
@@ -132,7 +138,9 @@ export function CupidotCompanion() {
 
         {/* Lightweight trigger: full WebGL is reserved for the expanded stage. */}
         <div
+          {...dockDrag.dragHandleProps}
           onClick={() => {
+            if (dockDrag.consumeDrag()) return;
             sounds.playPop();
             setIsOpen(!isOpen);
             setBotState(isOpen ? 'idle' : 'happy');
@@ -144,7 +152,8 @@ export function CupidotCompanion() {
             background: 'linear-gradient(135deg, #FFF5F7 0%, #FFE5EC 100%)',
             border: '2px solid rgba(255, 77, 128, 0.4)',
             boxShadow: '0 10px 30px rgba(255, 77, 128, 0.3), inset 0 2px 6px rgba(255,255,255,0.8)',
-            cursor: 'pointer',
+            cursor: 'grab',
+            touchAction: 'none',
             position: 'relative',
             display: 'flex',
             alignItems: 'center',
@@ -160,7 +169,7 @@ export function CupidotCompanion() {
             e.currentTarget.style.transform = 'scale(1.0)';
             setBotState('idle');
           }}
-          title="Cupidot 3D Romantic Mascot · Poke for Drama"
+          title="Cupidot · Your shared plush companion"
         >
           <CupidotDockAvatar state={botState} />
 
@@ -220,7 +229,7 @@ export function CupidotCompanion() {
               animation: 'scale-up 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
             }}
           >
-            {/* 3D Header Stage with Cupidot */}
+            {/* Animated Soft Plush Cupidot stage */}
             <div
               style={{
                 background: 'linear-gradient(180deg, #FFF0F5 0%, #FFFFFF 100%)',
@@ -230,13 +239,13 @@ export function CupidotCompanion() {
                 borderBottom: '1px solid rgba(255, 123, 163, 0.15)',
               }}
             >
-              <div style={{ width: '130px', height: '130px', margin: '0 auto -10px' }}>
-                <CupidotBot state={botState} scale={2.1} />
+              <div style={{ width: '178px', height: '178px', margin: '0 auto 4px', display: 'grid', placeItems: 'center' }}>
+                <Cupidot2D state={botState} size={172} roam={botState === 'happy' || botState === 'love'} />
               </div>
 
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255, 77, 128, 0.1)', color: '#FF4D80', padding: '4px 12px', borderRadius: '20px', fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 800 }}>
-                <span>ʚ🤖💘ɞ</span>
-                <span>CUPIDOT · CHEEKY AI COMPANION</span>
+                <span>ʚ💗ɞ</span>
+                <span>CUPIDOT · YOUR SHARED COMPANION</span>
               </div>
               <h3 style={{ fontSize: '18px', fontWeight: 900, margin: '8px 0 2px', color: '#1B1C22' }}>
                 &ldquo;You asked for drama? I deliver.&rdquo;
@@ -373,7 +382,7 @@ export function CupidotCompanion() {
                   <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 800, color: '#FF4D80', textTransform: 'uppercase' }}>
                     🎭 EMOTION &amp; TONE TESTER
                   </span>
-                  <span style={{ fontSize: '10px', color: '#888' }}>Tap to hear &amp; see 3D reactions</span>
+                  <span style={{ fontSize: '10px', color: '#888' }}>Tap to hear &amp; see plush reactions</span>
                 </div>
                 <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
                   {[

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useId } from 'react';
 import { CupidotState, CupidotMood, SAFE_REACTIONS, SafeReaction } from '@/types/cupidot';
 import { CupidotBot } from './CupidotBot';
+import { Cupidot2D } from './Cupidot2D';
 import { sounds } from '@/lib/sound';
 
 export interface CupidotPetStageProps {
@@ -89,8 +90,7 @@ export function CupidotPetStage({
   className = '',
   style,
 }: CupidotPetStageProps) {
-  const [use3D, setUse3D] = useState(true);
-  const [webglFailed, setWebglFailed] = useState(false);
+  const [use3D, setUse3D] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [reactionBurst, setReactionBurst] = useState<string | null>(null);
   const stageId = useId();
@@ -189,7 +189,7 @@ export function CupidotPetStage({
         </div>
 
         {/* 2D / 3D Presentation Toggle */}
-        {!reducedMotion && !webglFailed && (
+        {!reducedMotion && (
           <button
             type="button"
             onClick={() => setUse3D((prev) => !prev)}
@@ -203,9 +203,9 @@ export function CupidotPetStage({
               color: 'var(--ink)',
               cursor: 'pointer',
             }}
-            title={use3D ? 'Switch to lightweight 2D pet' : 'Switch to 3D interactive pet'}
+            title={use3D ? 'Switch to the animated plush character' : 'Preview the legacy 3D character'}
           >
-            {use3D ? '3D Stage ✨' : '2D Cozy 🌸'}
+            {use3D ? 'Legacy 3D' : 'Plush 2D'}
           </button>
         )}
       </div>
@@ -250,7 +250,7 @@ export function CupidotPetStage({
         )}
 
         {/* 3D Presentation Mode */}
-        {use3D && !reducedMotion && !webglFailed ? (
+        {use3D && !reducedMotion ? (
           <CupidotBot
             state={state}
             scale={2.2}
@@ -259,61 +259,12 @@ export function CupidotPetStage({
             showParticles={state === 'celebrating' || state === 'reunion'}
           />
         ) : (
-          /* High-Fidelity 2D Accessible Presentation Mode */
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '12px',
-              animation: reducedMotion ? 'none' : 'cupidot-breath 3.4s ease-in-out infinite',
-            }}
-          >
-            <div
-              style={{
-                width: '110px',
-                height: '110px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #FFF0F4 0%, #FFE3EC 100%)',
-                border: '2.5px solid rgba(255, 106, 153, 0.45)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '28px',
-                boxShadow: '0 12px 32px rgba(255, 77, 128, 0.2), inset 0 2px 8px #FFFFFF',
-                position: 'relative',
-              }}
-            >
-              {/* Soft Golden Halo */}
-              <span
-                style={{
-                  position: 'absolute',
-                  top: '-10px',
-                  width: '56px',
-                  height: '16px',
-                  borderRadius: '50%',
-                  border: '2px solid rgba(255, 215, 0, 0.85)',
-                  boxShadow: '0 0 10px rgba(255, 215, 0, 0.6)',
-                }}
-              />
-              <span style={{ userSelect: 'none', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.06))' }}>
-                {info.face2D}
-              </span>
-            </div>
-
-            <span
-              style={{
-                fontSize: '13px',
-                fontWeight: 600,
-                color: 'var(--ink-soft)',
-                textAlign: 'center',
-                maxWidth: '280px',
-              }}
-            >
-              {info.hint}
-            </span>
-          </div>
+          <Cupidot2D
+            state={state}
+            size="clamp(150px, 48vw, 220px)"
+            roam={!reducedMotion && state !== 'focused' && state !== 'settling_for_night'}
+            label={`Cupidot is ${info.title}`}
+          />
         )}
       </div>
 

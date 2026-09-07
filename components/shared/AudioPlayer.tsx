@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { sounds } from '@/lib/sound';
+import { useDraggableFixed } from '@/lib/use-draggable-fixed';
 
 interface TrackConfig {
   id: string;
@@ -29,6 +30,7 @@ export function AudioPlayer() {
   const [romanticVol, setRomanticVol] = useState(0.35);
   const [pianoVol, setPianoVol] = useState(0.35);
   const [lofiVol, setLofiVol] = useState(0.3);
+  const playerDrag = useDraggableFixed<HTMLElement>('dearly-us:audio-player-position');
 
   // Auto-start background music on site load
   useEffect(() => {
@@ -254,6 +256,7 @@ export function AudioPlayer() {
 
   return (
     <aside
+      ref={playerDrag.ref}
       aria-label="Ambient sound studio"
       style={{
         position: 'fixed',
@@ -264,6 +267,7 @@ export function AudioPlayer() {
         flexDirection: 'column',
         alignItems: 'flex-end',
         gap: '10px',
+        ...playerDrag.style,
       }}
     >
       {/* Floating Studio Modal */}
@@ -766,6 +770,16 @@ export function AudioPlayer() {
           transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
       >
+        <span
+          {...playerDrag.dragHandleProps}
+          role="button"
+          tabIndex={0}
+          aria-label="Move music player"
+          title="Drag to move music player"
+          style={{ cursor: 'grab', touchAction: 'none', color: 'rgba(255,255,255,.62)', fontWeight: 900, letterSpacing: '-3px', padding: '8px 3px 8px 0' }}
+        >
+          ⠿
+        </span>
         {/* Play/Pause Round Trigger Button */}
         <button
           onClick={toggleMaster}

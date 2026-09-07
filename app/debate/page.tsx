@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { CupidotBot, BotState } from '@/components/bot/CupidotBot';
+import type { BotState } from '@/components/bot/CupidotBot';
+import { Cupidot2D } from '@/components/bot/Cupidot2D';
 import { judgeDebate, DebateVerdict } from '@/lib/cupidot';
 import { sounds } from '@/lib/sound';
 import { Confetti } from '@/components/shared/Confetti';
@@ -146,7 +147,7 @@ export default function DebatePage() {
         {/* Arbiter Header */}
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <div style={{ width: '180px', height: '180px', margin: '0 auto -10px' }}>
-            <CupidotBot state={botState} scale={2.2} />
+            <Cupidot2D state={botState} size={220} roam />
           </div>
           <CoupleNameBar />
           <h1 style={{ fontSize: 'clamp(28px, 4.5vw, 42px)', fontWeight: 800, margin: '8px 0 10px' }}>

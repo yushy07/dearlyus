@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { Ribbon, Navbar, Confetti, CupidotActivityGuidance } from '@/components/shared';
 import { sounds } from '@/lib/sound';
 import { ScrollProgress, ScrollReveal } from '@/components/ui';
-import { CupidotBot, BotState } from '@/components/bot/CupidotBot';
+import type { BotState } from '@/components/bot/CupidotBot';
+import { Cupidot2D } from '@/components/bot/Cupidot2D';
 import { generateBucketDate, GeneratedBucketIdea } from '@/lib/cupidot';
 
 interface BucketDate {
@@ -284,7 +285,7 @@ export default function BucketListPage() {
             </button>
 
             <div style={{ width: '130px', height: '130px', margin: '0 auto -10px' }}>
-              <CupidotBot state={botState} scale={2.2} />
+              <Cupidot2D state={botState} size={220} roam />
             </div>
 
             <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 800, color: '#FF4D80', textTransform: 'uppercase', marginBottom: '8px' }}>
