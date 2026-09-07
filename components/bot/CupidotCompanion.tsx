@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { CupidotBot, BotState } from './CupidotBot';
+import { CupidotDockAvatar } from './CupidotDockAvatar';
 import { getRandomCupidotThought, getPokedCupidotDilemma, CupidotDilemma } from '@/lib/cupidot';
 import { sounds } from '@/lib/sound';
 import { useCoupleProfile } from '@/lib/couple';
@@ -129,7 +130,7 @@ export function CupidotCompanion() {
           </div>
         )}
 
-        {/* 3D Bot Mini Trigger Button */}
+        {/* Lightweight trigger: full WebGL is reserved for the expanded stage. */}
         <div
           onClick={() => {
             sounds.playPop();
@@ -161,9 +162,7 @@ export function CupidotCompanion() {
           }}
           title="Cupidot 3D Romantic Mascot · Poke for Drama"
         >
-          <div style={{ width: '80px', height: '80px', marginTop: '6px' }}>
-            <CupidotBot state={botState} scale={2.4} showGlow={false} showParticles={false} />
-          </div>
+          <CupidotDockAvatar state={botState} />
 
           {/* Tiny Status Indicator Pulse */}
           <span
