@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { GuidanceMode } from '@/types/cupidot';
+import { GuidanceMode, RomanceLevel, ROMANCE_LEVEL_DEFINITIONS } from '@/types/cupidot';
 import { AiConsentToggle } from '@/components/shared/AiConsentToggle';
 import { sounds } from '@/lib/sound';
 
@@ -10,6 +10,9 @@ export interface YourRoomYourRulesModalProps {
   onClose: () => void;
   guidanceMode: GuidanceMode;
   onGuidanceChange: (mode: GuidanceMode) => void;
+  romanceLevel?: RomanceLevel;
+  onRomanceLevelChange?: (level: RomanceLevel) => void;
+  onSoftenRomance?: () => void;
   reducedMotion: boolean;
   onReducedMotionChange: (val: boolean) => void;
   ambientAudio: boolean;
@@ -21,11 +24,15 @@ export function YourRoomYourRulesModal({
   onClose,
   guidanceMode,
   onGuidanceChange,
+  romanceLevel = 'romantic',
+  onRomanceLevelChange,
+  onSoftenRomance,
   reducedMotion,
   onReducedMotionChange,
   ambientAudio,
   onAmbientAudioChange,
 }: YourRoomYourRulesModalProps) {
+  const [softenNotice, setSoftenNotice] = useState<string | null>(null);
   const [askBeforeSave, setAskBeforeSave] = useState(true);
   const [quietHoursEnabled, setQuietHoursEnabled] = useState(true);
   const [quietStart, setQuietStart] = useState('22:00');
@@ -137,7 +144,104 @@ export function YourRoomYourRulesModal({
           </div>
         </div>
 
-        {/* Section 2: AI Assistance */}
+        {/* Section 2: Romance Spectrum */}
+        <div style={{ background: 'var(--paper)', padding: '16px', borderRadius: '18px', border: '1px solid var(--line)', marginBottom: '14px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+            <strong style={{ fontSize: '14px' }}>Romance Spectrum Level</strong>
+            <button
+              type="button"
+              onClick={() => {
+                sounds.playPop();
+                onSoftenRomance?.();
+                onRomanceLevelChange?.('warm');
+                setSoftenNotice('Keeping things lighter.');
+                window.setTimeout(() => setSoftenNotice(null), 3000);
+              }}
+              style={{
+                fontSize: '11px',
+                fontWeight: 700,
+                color: 'var(--pink)',
+                background: 'rgba(255, 78, 120, 0.08)',
+                border: '1px solid rgba(255, 78, 120, 0.25)',
+                borderRadius: '8px',
+                padding: '3px 8px',
+                cursor: 'pointer',
+              }}
+              title="Instantly soften intensity without notifying your partner who changed it"
+            >
+              🛡️ Soften Intensity
+            </button>
+          </div>
+          <span style={{ fontSize: '12px', color: 'var(--ink-soft)', display: 'block', marginBottom: '12px' }}>
+            Shared intensity matches the lower chosen level. Either partner can lower it privately at any time.
+          </span>
+
+          {softenNotice && (
+            <div
+              role="status"
+              style={{
+                fontSize: '12px',
+                fontWeight: 700,
+                color: 'var(--pink)',
+                background: '#FFF0F5',
+                padding: '6px 12px',
+                borderRadius: '8px',
+                marginBottom: '10px',
+              }}
+            >
+              ✓ {softenNotice}
+            </div>
+          )}
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+            {(['quiet', 'warm', 'romantic', 'cheeky', 'flirty', 'spicy'] as RomanceLevel[]).map((level) => {
+              const active = romanceLevel === level;
+              const def = ROMANCE_LEVEL_DEFINITIONS[level];
+              return (
+                <button
+                  key={level}
+                  type="button"
+                  onClick={() => {
+                    sounds.playPop();
+                    onRomanceLevelChange?.(level);
+                  }}
+                  style={{
+                    padding: '8px 6px',
+                    borderRadius: '12px',
+                    border: active ? '1.5px solid var(--pink)' : '1px solid var(--line)',
+                    background: active ? 'rgba(255, 78, 120, 0.1)' : '#FFFFFF',
+                    color: active ? 'var(--pink)' : 'var(--ink)',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    textTransform: 'capitalize',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '2px',
+                  }}
+                >
+                  <span>{def.name}</span>
+                  {def.requiresMutualOptIn && (
+                    <span style={{ fontSize: '9.5px', color: 'var(--pink)', fontWeight: 600 }}>
+                      {level === 'spicy' ? '18+ Session' : 'Mutual 18+'}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          <div style={{ fontSize: '11.5px', color: 'var(--ink-soft)', marginTop: '8px' }}>
+            {romanceLevel === 'quiet' && '• Level 0: Pure operational clarity, recovery, and zero flirtation.'}
+            {romanceLevel === 'warm' && '• Level 1: Kind, cozy, and gently encouraging without flirtation.'}
+            {romanceLevel === 'romantic' && '• Level 2: Sincere affection, date atmosphere, and soft sparks (Default).'}
+            {romanceLevel === 'cheeky' && '• Level 3: Playful challenges, winks, and bold situational humor.'}
+            {romanceLevel === 'flirty' && '• Level 4: Suggestive tension and double meanings. Requires mutual opt-in.'}
+            {romanceLevel === 'spicy' && '• Level 5: Adult-only, deliberate, and session-scoped. Easy one-tap exit.'}
+          </div>
+        </div>
+
+        {/* Section 3: AI Assistance */}
         <div style={{ background: 'var(--paper)', padding: '16px', borderRadius: '18px', border: '1px solid var(--line)', marginBottom: '14px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
             <div>

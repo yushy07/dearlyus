@@ -13,7 +13,7 @@ export function CupidotCompanion() {
   const { partnerA, partnerB } = useCoupleProfile();
   const [isOpen, setIsOpen] = useState(false);
   const [botState, setBotState] = useState<BotState>('idle');
-  const [thought, setThought] = useState('Cupidot is online and watching over you two ♡');
+  const [thought, setThought] = useState('Cupidot is resting cozy in your sanctuary ♡');
   const [activeDilemma, setActiveDilemma] = useState<CupidotDilemma | null>(null);
   const [pokedCount, setPokedCount] = useState(0);
   const [voiceMode, setVoiceMode] = useState<VoiceMode>('chirp');
@@ -25,11 +25,11 @@ export function CupidotCompanion() {
     setThought(getRandomCupidotThought());
   }, []);
 
-  // Cycle cheeky thoughts every 8 seconds
+  // Gentle thought cycle (calm 30s interval respecting interruption budget)
   useEffect(() => {
     const timer = setInterval(() => {
       setThought(getRandomCupidotThought());
-    }, 8000);
+    }, 30000);
     return () => clearInterval(timer);
   }, []);
 

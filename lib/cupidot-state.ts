@@ -15,7 +15,23 @@ import {
   MemorySeed,
   CupidotHomeState,
   GuidanceMode,
+  RomanceLevel,
 } from '@/types/cupidot';
+
+import { getCuratedDialogue } from './cupidot-behavior';
+
+export {
+  computeEffectiveRomanceLevel,
+  downgradeRomanceLevel,
+  canIncludeInNotification,
+  CURATED_DIALOGUE_LIBRARY,
+  getCuratedDialogue,
+  canCupidotSpeak,
+  createDefaultInterruptionBudget,
+  handleActivitySkip,
+  handleSafetyBoundary,
+  validateStructuredAiOutput,
+} from './cupidot-behavior';
 
 // Prohibited guilt phrases as specified by the blueprint
 export const PROHIBITED_GUILT_PHRASES = [
@@ -486,6 +502,7 @@ export function productStateToBehavior(
     partnerOnline?: boolean;
     isRoomActive?: boolean;
     guidanceMode?: GuidanceMode;
+    romanceLevel?: RomanceLevel;
     isLateNight?: boolean;
     hasNewUnopenedMemory?: boolean;
     hasConsentAlert?: boolean;
@@ -582,6 +599,10 @@ export function productStateToBehavior(
       priorityCategory = 'idle';
       speechCue = 'Resting peacefully in sanctuary.';
       break;
+  }
+
+  if (context.romanceLevel) {
+    speechCue = getCuratedDialogue(intent, context.romanceLevel);
   }
 
   return {
@@ -816,6 +837,7 @@ export function createDefaultHomeState(): CupidotHomeState {
     sparksThisSession: 0,
     partnerPresence: 'away',
     guidanceMode: 'gentle',
+    romanceLevel: 'romantic',
     lastReturnAt: new Date().toISOString(),
     placedDecorIds: ['decor_cozy_cushion', 'decor_welcome_plant'],
     upcomingRitual: null,

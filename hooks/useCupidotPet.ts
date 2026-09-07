@@ -6,6 +6,7 @@ import {
   CupidotMood,
   CupidotHomeState,
   GuidanceMode,
+  RomanceLevel,
   SafeReaction,
   CoupleRitual,
   MemorySeed,
@@ -128,6 +129,19 @@ export function useCupidotPet() {
   const setGuidanceMode = useCallback((guidanceMode: GuidanceMode) => {
     sounds.playTick();
     setHomeState((prev) => ({ ...prev, guidanceMode }));
+  }, []);
+
+  // Update romance level
+  const setRomanceLevel = useCallback((romanceLevel: RomanceLevel) => {
+    sounds.playTick();
+    setHomeState((prev) => ({ ...prev, romanceLevel }));
+  }, []);
+
+  // Private soften intensity action
+  const softenRomanceLevel = useCallback(() => {
+    sounds.playPop();
+    setHomeState((prev) => ({ ...prev, romanceLevel: 'warm' }));
+    return 'Keeping things lighter.';
   }, []);
 
   // Award growth sparks idempotently
@@ -334,6 +348,8 @@ export function useCupidotPet() {
     goodnightTap,
     changeMood,
     setGuidanceMode,
+    setRomanceLevel,
+    softenRomanceLevel,
     triggerGrowthSpark,
     placeDecor,
     removeDecor,

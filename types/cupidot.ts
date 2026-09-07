@@ -27,14 +27,154 @@ export type CupidotBehaviorIntent =
   | 'reunion'
   | 'suggest'
   | 'explain'
-  | 'wait'
-  | 'host'
+  | 'confirm_privacy'
   | 'privacy_confirmation'
+  | 'host'
+  | 'wait'
+  | 'reveal'
   | 'reveal_anticipation'
   | 'celebrate'
   | 'curate_memory'
+  | 'offer_keepsake'
   | 'recover_connection'
-  | 'settle';
+  | 'close_session'
+  | 'settle'
+  | 'soften_intensity'
+  | 'refuse_unsafe';
+
+/** Romance Spectrum Levels (Blueprint Section 3) */
+export type RomanceLevel =
+  | 'quiet'    // Level 0 — Quiet companion (operational, recovery, zero flirtation)
+  | 'warm'     // Level 1 — Warm (kind, cozy, togetherness without flirtation)
+  | 'romantic' // Level 2 — Romantic (soft sparks, date atmosphere, default)
+  | 'cheeky'   // Level 3 — Cheeky (harmless teasing, bold energy, winks)
+  | 'flirty'   // Level 4 — Flirty (suggestive double meanings, requires mutual opt-in & 18+)
+  | 'spicy';   // Level 5 — Spicy (adult-only, private, deliberate, session-scoped, easy exit)
+
+export const ROMANCE_LEVEL_RANK: Record<RomanceLevel, number> = {
+  quiet: 0,
+  warm: 1,
+  romantic: 2,
+  cheeky: 3,
+  flirty: 4,
+  spicy: 5,
+};
+
+export interface RomanceLevelDefinition {
+  level: RomanceLevel;
+  rank: number;
+  name: string;
+  tagline: string;
+  description: string;
+  exampleLine: string;
+  minAgeRequired: number;
+  requiresMutualOptIn: boolean;
+  requiresSessionReconfirmation: boolean;
+  allowedInNotifications: boolean;
+}
+
+export const ROMANCE_LEVEL_DEFINITIONS: Record<RomanceLevel, RomanceLevelDefinition> = {
+  quiet: {
+    level: 'quiet',
+    rank: 0,
+    name: 'Quiet Companion',
+    tagline: 'Calm presence & operational clarity only',
+    description: 'Minimal emotional language, no teasing or flirtation. Pure guidance and recovery.',
+    exampleLine: 'Both of you are ready. Reveal when you want.',
+    minAgeRequired: 0,
+    requiresMutualOptIn: false,
+    requiresSessionReconfirmation: false,
+    allowedInNotifications: true,
+  },
+  warm: {
+    level: 'warm',
+    rank: 1,
+    name: 'Warm',
+    tagline: 'Kind, cozy, and gently encouraging',
+    description: 'Celebrates togetherness warmly without flirtation or romantic pressure.',
+    exampleLine: 'You found your way back to your little corner.',
+    minAgeRequired: 0,
+    requiresMutualOptIn: false,
+    requiresSessionReconfirmation: false,
+    allowedInNotifications: true,
+  },
+  romantic: {
+    level: 'romantic',
+    rank: 2,
+    name: 'Romantic',
+    tagline: 'Soft sparks, date atmosphere, sincere affection',
+    description: 'The standard date night default. Atmosphere, gentle anticipation, and heartfelt joy.',
+    exampleLine: 'Two answers, one tiny drumroll. Ready?',
+    minAgeRequired: 0,
+    requiresMutualOptIn: false,
+    requiresSessionReconfirmation: false,
+    allowedInNotifications: true,
+  },
+  cheeky: {
+    level: 'cheeky',
+    rank: 3,
+    name: 'Cheeky',
+    tagline: 'Playful challenges, winks, and bold humor',
+    description: 'Confident winks, harmless situational teasing, and mischievous A/B dilemmas.',
+    exampleLine: 'Interesting. You both look very confident for people whose answers are still sealed.',
+    minAgeRequired: 0,
+    requiresMutualOptIn: false,
+    requiresSessionReconfirmation: false,
+    allowedInNotifications: false,
+  },
+  flirty: {
+    level: 'flirty',
+    rank: 4,
+    name: 'Flirty',
+    tagline: 'Suggestive double meanings & playful tension',
+    description: 'Flirt-forward prompts approved by both partners. Requires mutual opt-in and adult eligibility.',
+    exampleLine: 'Should I bring the sweet questions… or the ones that make eye contact suspicious?',
+    minAgeRequired: 18,
+    requiresMutualOptIn: true,
+    requiresSessionReconfirmation: false,
+    allowedInNotifications: false,
+  },
+  spicy: {
+    level: 'spicy',
+    rank: 5,
+    name: 'Spicy',
+    tagline: 'Adult-only, private, deliberate, session-scoped',
+    description: 'Sensual tension without coercion or unsafe content. Reconfirmation required per session; one-tap exit.',
+    exampleLine: 'I can turn up the temperature—but only if both troublemakers say yes.',
+    minAgeRequired: 18,
+    requiresMutualOptIn: true,
+    requiresSessionReconfirmation: true,
+    allowedInNotifications: false,
+  },
+};
+
+export interface CoupleRomancePreferences {
+  partnerALevel: RomanceLevel;
+  partnerBLevel: RomanceLevel;
+  effectiveLevel: RomanceLevel;
+  isAdultA: boolean;
+  isAdultB: boolean;
+  spicySessionActive: boolean;
+  spicyActivatedAt?: string | null;
+}
+
+export interface CupidotStructuredOutput {
+  intent: CupidotBehaviorIntent;
+  tone: RomanceLevel;
+  message: string;
+  emotion: string;
+  suggested_action_id?: string;
+  context_used: string[];
+  requires_confirmation: boolean;
+}
+
+export interface InterruptionBudget {
+  proactiveWelcomeGiven: boolean;
+  lastSpokenTimestamp: number;
+  recentSpokenIntents: Array<{ intent: string; timestamp: number }>;
+  dismissedSuggestionKeys: string[];
+  quietSessionActive: boolean;
+}
 
 /** The 8 readable momentary moods. */
 export type CupidotMood =
@@ -338,6 +478,7 @@ export interface CupidotHomeState {
   sparksThisSession: number;
   partnerPresence: SafePresenceState;
   guidanceMode: GuidanceMode;
+  romanceLevel?: RomanceLevel;
   lastGoodnightTapAt?: string | null;
   lastReturnAt: string;
   placedDecorIds: string[];

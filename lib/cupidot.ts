@@ -1,8 +1,8 @@
 /**
  * Cupidot — Autonomous On-Device Relationship Pattern & Thread Weaving Engine
  * 
- * Deeply analyzes multi-round conversation history, detects recurring couple archetypes,
- * identifies contradictions, tracks power dynamics, and synthesizes dilemmas that
+ * Analyzes multi-round conversation history, detects shared couple lore,
+ * identifies funny contrasts, and synthesizes dilemmas that
  * weave previous answers directly together for ANY couple worldwide.
  */
 
@@ -39,7 +39,7 @@ interface ThemeAnalysis {
   hasSleep: boolean;
   hasIntimacy: boolean;
   hasArgument: boolean;
-  hasJealousy: boolean;
+  hasTradition: boolean;
   hasLateNight: boolean;
   agreementCount: number;
   totalRounds: number;
@@ -78,7 +78,7 @@ function analyzeThemes(req: QuestionRequest): ThemeAnalysis {
     hasSleep: /(sleep|bed|nap|morning|noon|wake|snooze|pajamas|exhausted|jetlag|couch)/.test(allText),
     hasIntimacy: /(hug|cuddle|kiss|touch|holding|face|bedroom|blush|love|romantic|forehead|hand)/.test(allText),
     hasArgument: /(argument|fight|disagree|mad|pout|silent|stubborn|yell|apologize|peace|guilty)/.test(allText),
-    hasJealousy: /(jealous|flirt|territory|cute|look|stranger|protective|attention)/.test(allText),
+    hasTradition: /(tradition|habit|routine|anniversary|milestone|photo|memory|inside joke)/.test(allText),
     hasLateNight: /(late|night|midnight|camera|facetime|video|call|freeze|phone|text)/.test(allText),
     agreementCount,
     totalRounds: history.length + 1,
@@ -179,7 +179,7 @@ export function generateCupidotDilemma(req: QuestionRequest): GeneratedQuestion 
   }
 
   // --- THREAD PATTERN 4: Emotional Depth & Vulnerability ---
-  if (analysis.hasIntimacy || analysis.hasJealousy) {
+  if (analysis.hasIntimacy || analysis.hasTradition) {
     return {
       question: `Deep Thread: In this round, ${nameA} answered "${ansA.slice(0, 24)}" and ${nameB} chose "${ansB.slice(0, 24)}". If either of you had a genuinely horrible day, what brings your heart back to life faster than anything?`,
       options: [
@@ -213,12 +213,12 @@ export function generateCupidotDilemma(req: QuestionRequest): GeneratedQuestion 
 export function getPokedCupidotDilemma(nameA = 'Partner 1', nameB = 'Partner 2'): CupidotDilemma {
   const dilemmas: CupidotDilemma[] = [
     {
-      question: `Poke penalty! Connecting your relationship habits: what is the one thing ${nameA} does on camera that secretly makes ${nameB}'s heart skip a beat?`,
+      question: `Playful spark! Connecting your relationship habits: what is the one sweet quirk ${nameA} does on camera that secretly makes ${nameB}'s heart skip a beat?`,
       options: [
-        `Wearing that one oversized hoodie that looks ridiculously cute`,
+        `Wearing that one oversized hoodie that looks ridiculously cozy`,
         `The sleepy morning voice before coffee where words are barely formed`,
         `Biting their lip when trying not to laugh at a bad joke`,
-        `Staring intensely at the screen with that little warm smile`,
+        `Staring warmly at the screen with that little tender smile`,
       ],
       commentary: `Cupidot: "Miles apart and you're still giving each other butterflies through a screen? Gross. I love it. 💖"`,
       tag: 'spicy',
@@ -239,22 +239,22 @@ export function getPokedCupidotDilemma(nameA = 'Partner 1', nameB = 'Partner 2')
       options: [
         `${nameA} sprints full speed like a romance movie scene`,
         `${nameB} pretends to walk calmly, then abandons the luggage cart`,
-        `Both collide awkwardly in a tangled mess of backpacks and tears`,
+        `Both collide awkwardly in a tangled mess of backpacks and happy tears`,
         `Frozen in shock for 3 seconds before the biggest hug of the year`,
       ],
       commentary: `Cupidot: "Airports were engineered for romance. Keep counting down the days, lovers ✈️"`,
       tag: 'romantic',
     },
     {
-      question: `Cheeky territorial test: When a mutual friend asks who was the one that fell in love first, how does the argument play out?`,
+      question: `First spark confession: When reminiscing about when you two first knew this was something special, how does the story go?`,
       options: [
         `${nameA} has timestamps, screenshots, and receipts ready to prove it`,
         `${nameB} insists they knew on day one before ${nameA} even realized`,
         `We both argue that the other fell harder and faster`,
         `A cheeky smirk because you both know the true answer`,
       ],
-      commentary: `Cupidot: "Poked for drama and drama delivered! History is written by the boldest lover. 😏"`,
-      tag: 'spicy',
+      commentary: `Cupidot: "Poked for memories and memories delivered! Two hearts, one unforgettable story. 😏"`,
+      tag: 'romantic',
     },
   ];
 

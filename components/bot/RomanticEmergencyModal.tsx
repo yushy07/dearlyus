@@ -26,7 +26,7 @@ const BLITZ_QUESTIONS = [
 const COMPLIMENT_PROMPTS = [
   'must look their partner in the eye and confess the exact moment they realized they were in deep trouble (in love).',
   'must name 3 specific little habits of their partner that make them smile every single day.',
-  'must speak aloud their favorite physical feature of their partner without using the word "cute".',
+  'must share their absolute favorite shared inside joke from their late-night calls without breaking character.',
   'must explain why the long distance is 1000% worth every single kilometer.',
   'must describe their partner using only 3 romantic adjectives and a dramatic opera bow.',
 ];

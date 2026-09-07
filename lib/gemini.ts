@@ -9,6 +9,8 @@
  */
 import { getSupabase } from './supabase';
 import { generateCupidotDilemma } from './cupidot';
+import { RomanceLevel } from '@/types/cupidot';
+import { handleSafetyBoundary } from './cupidot-behavior';
 
 export interface QuestionRequest {
   /** A live UUID activity session. The Edge Function derives all private context from it. */
@@ -17,6 +19,7 @@ export interface QuestionRequest {
   partnerB: { name: string; answer: string };
   mode: 'quiz' | 'cards' | 'host';
   mood?: 'romantic' | 'playful' | 'deep' | 'spicy';
+  romanceLevel?: RomanceLevel;
   history?: Array<{ question: string; answerA: string; answerB: string }>;
   currentTopic?: string;
   aiConsent?: boolean;
@@ -150,6 +153,11 @@ export async function generateAdaptiveQuestion(req: QuestionRequest): Promise<Ge
       .filter(Boolean)
       .slice(0, 4);
     const cleanCommentary = data.commentary ? String(data.commentary).trim().slice(0, 200) : undefined;
+
+    // Safety check on returned text: reject prompt injections, leaks, or inappropriate content
+    if (!handleSafetyBoundary(cleanQuestion).isSafe || (cleanCommentary && !handleSafetyBoundary(cleanCommentary).isSafe)) {
+      return generateCupidotDilemma(cleanReq);
+    }
 
     return {
       question: cleanQuestion,

@@ -21,6 +21,8 @@ export interface CupidotActivityGuidanceProps {
   partnerName?: string;
   onNextAction?: () => void;
   nextActionLabel?: string;
+  onSkip?: () => void;
+  skipLabel?: string;
   privacyNote?: string;
   className?: string;
   style?: React.CSSProperties;
@@ -102,6 +104,8 @@ export function CupidotActivityGuidance({
   partnerName = 'Your person',
   onNextAction,
   nextActionLabel,
+  onSkip,
+  skipLabel = 'Skip',
   privacyNote,
   className = '',
   style,
@@ -168,16 +172,29 @@ export function CupidotActivityGuidance({
         </div>
       </div>
 
-      {onNextAction && nextActionLabel && (
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={onNextAction}
-          style={{ fontSize: '12px', padding: '6px 14px' }}
-        >
-          {nextActionLabel}
-        </button>
-      )}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {onSkip && (
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={onSkip}
+            style={{ fontSize: '11.5px', padding: '5px 10px', color: 'var(--ink-soft)' }}
+            title="Skip without penalty"
+          >
+            {skipLabel}
+          </button>
+        )}
+        {onNextAction && nextActionLabel && (
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={onNextAction}
+            style={{ fontSize: '12px', padding: '6px 14px' }}
+          >
+            {nextActionLabel}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

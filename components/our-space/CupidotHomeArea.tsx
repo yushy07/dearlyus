@@ -51,6 +51,8 @@ export function CupidotHomeArea({
     goodnightTap,
     changeMood,
     setGuidanceMode,
+    setRomanceLevel,
+    softenRomanceLevel,
     triggerGrowthSpark,
     placeDecor,
     removeDecor,
@@ -498,6 +500,9 @@ export function CupidotHomeArea({
         onClose={() => setRulesModalOpen(false)}
         guidanceMode={homeState.guidanceMode}
         onGuidanceChange={setGuidanceMode}
+        romanceLevel={homeState.romanceLevel || 'romantic'}
+        onRomanceLevelChange={setRomanceLevel}
+        onSoftenRomance={softenRomanceLevel}
         reducedMotion={reducedMotion}
         onReducedMotionChange={setReducedMotion}
         ambientAudio={ambientAudio}
