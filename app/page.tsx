@@ -4,12 +4,27 @@ import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { Footer } from '@/components/shared/Footer';
 import { AuthButton } from '@/components/shared/AuthButton';
-import { ShinyText, AuroraBackground, SpotlightCard, MagnetButton, ScrollProgress, ScrollReveal, Floating3D, GlowBadge } from '@/components/ui';
+import {
+  ShinyText,
+  AuroraBackground,
+  SpotlightCard,
+  MagnetButton,
+  ScrollProgress,
+  ScrollReveal,
+  Floating3D,
+  GlowBadge,
+} from '@/components/ui';
 import { sounds } from '@/lib/sound';
 import { useCoupleProfile } from '@/lib/couple';
 
 export default function HomePage() {
-  const { partnerA, partnerB, cityA, cityB, roomCode: savedRoomCode } = useCoupleProfile();
+  const {
+    partnerA,
+    partnerB,
+    cityA,
+    cityB,
+    roomCode: savedRoomCode,
+  } = useCoupleProfile();
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
   const [roomCode, setRoomCode] = useState<string[]>([]);
   const [copied, setCopied] = useState(false);
@@ -26,7 +41,12 @@ export default function HomePage() {
   }, [savedRoomCode]);
 
   // Hero photobooth machine state
-  const [litFrames, setLitFrames] = useState<boolean[]>([false, false, false, false]);
+  const [litFrames, setLitFrames] = useState<boolean[]>([
+    false,
+    false,
+    false,
+    false,
+  ]);
   const [shotStep, setShotStep] = useState<number>(0);
   const [countNum, setCountNum] = useState<string>('');
   const [flashing, setFlashing] = useState<boolean>(false);
@@ -42,12 +62,48 @@ export default function HomePage() {
 
   // Demo Section Photobooth State
   const DEMO_THEMES = [
-    { id: 'classic', name: 'Classic White (인생네컷)', bg: '#FFFFFF', text: '#17181C', border: '#E3E5EA' },
-    { id: 'vintage', name: 'Vintage 1930s Automat', bg: '#F6EDE6', text: '#4A332D', border: '#D1C4B2' },
-    { id: 'sunset', name: 'Sunset Romance', bg: 'linear-gradient(180deg, #FFE4D6, #FFD6E8)', text: '#23242A', border: '#FFB3C7' },
-    { id: 'cyber', name: 'Cyber Blue', bg: '#101726', text: '#DCEBFF', border: '#5FA0FF' },
-    { id: 'noir', name: 'Midnight Noir', bg: '#17181C', text: '#F8F9FB', border: '#33353D' },
-    { id: 'lavender', name: 'Soft Lavender', bg: '#F3EEFC', text: '#4D3678', border: '#D8C9F2' },
+    {
+      id: 'classic',
+      name: 'Classic White (인생네컷)',
+      bg: '#FFFFFF',
+      text: '#17181C',
+      border: '#E3E5EA',
+    },
+    {
+      id: 'vintage',
+      name: 'Vintage 1930s Automat',
+      bg: '#F6EDE6',
+      text: '#4A332D',
+      border: '#D1C4B2',
+    },
+    {
+      id: 'sunset',
+      name: 'Sunset Romance',
+      bg: 'linear-gradient(180deg, #FFE4D6, #FFD6E8)',
+      text: '#23242A',
+      border: '#FFB3C7',
+    },
+    {
+      id: 'cyber',
+      name: 'Cyber Blue',
+      bg: '#101726',
+      text: '#DCEBFF',
+      border: '#5FA0FF',
+    },
+    {
+      id: 'noir',
+      name: 'Midnight Noir',
+      bg: '#17181C',
+      text: '#F8F9FB',
+      border: '#33353D',
+    },
+    {
+      id: 'lavender',
+      name: 'Soft Lavender',
+      bg: '#F3EEFC',
+      text: '#4D3678',
+      border: '#D8C9F2',
+    },
   ];
 
   const DEMO_POSES = [
@@ -60,7 +116,9 @@ export default function HomePage() {
   const [demoMode, setDemoMode] = useState<'simulated' | 'webcam'>('simulated');
   const [demoTheme, setDemoTheme] = useState(DEMO_THEMES[0]);
   const [demoPoseIdx, setDemoPoseIdx] = useState(0);
-  const [demoFilter, setDemoFilter] = useState<'none' | 'sparkles' | 'hearts' | 'cat'>('none');
+  const [demoFilter, setDemoFilter] = useState<
+    'none' | 'sparkles' | 'hearts' | 'cat'
+  >('none');
   const [demoIsShooting, setDemoIsShooting] = useState(false);
   const [demoCountdown, setDemoCountdown] = useState<number | null>(null);
   const [demoFlashing, setDemoFlashing] = useState(false);
@@ -71,7 +129,9 @@ export default function HomePage() {
     '/photos/frame4.webp',
   ]);
   const [demoStickers, setDemoStickers] = useState<string[]>(['💖', '✨']);
-  const [demoCoupleName, setDemoCoupleName] = useState(`${partnerA} ♡ ${partnerB}`);
+  const [demoCoupleName, setDemoCoupleName] = useState(
+    `${partnerA} ♡ ${partnerB}`,
+  );
 
   useEffect(() => {
     setDemoCoupleName(`${partnerA} ♡ ${partnerB}`);
@@ -119,7 +179,11 @@ export default function HomePage() {
         setDemoFlashing(true);
         setTimeout(() => setDemoFlashing(false), 300);
 
-        if (demoMode === 'webcam' && demoVideoRef.current && demoCanvasRef.current) {
+        if (
+          demoMode === 'webcam' &&
+          demoVideoRef.current &&
+          demoCanvasRef.current
+        ) {
           const c = demoCanvasRef.current;
           const ctx = c.getContext('2d');
           if (ctx) {
@@ -155,7 +219,9 @@ export default function HomePage() {
     if (!ctx) return;
 
     // Background
-    ctx.fillStyle = demoTheme.bg.startsWith('linear') ? '#FFFFFF' : demoTheme.bg;
+    ctx.fillStyle = demoTheme.bg.startsWith('linear')
+      ? '#FFFFFF'
+      : demoTheme.bg;
     ctx.fillRect(0, 0, 600, 1600);
 
     // Border
@@ -188,7 +254,11 @@ export default function HomePage() {
     ctx.fillText(demoCoupleName, 300, 1510);
     ctx.font = '14px monospace';
     ctx.fillStyle = '#5B5E68';
-    ctx.fillText(`ROOM: ${roomCode.join('')} · ${new Date().toLocaleDateString()}`, 300, 1540);
+    ctx.fillText(
+      `ROOM: ${roomCode.join('')} · ${new Date().toLocaleDateString()}`,
+      300,
+      1540,
+    );
 
     const a = document.createElement('a');
     a.download = `dearly-us-photostrip-${roomCode.join('')}.png`;
@@ -332,7 +402,8 @@ export default function HomePage() {
       {/* Tagline Ribbon */}
       <div className="ribbon">
         <span className="ribbon-in">
-          ♡ Dearly Us · Made for the moments that belong to you two. · <b>35 Realtime Activities</b>
+          ♡ Dearly Us · Made for the moments that belong to you two. ·{' '}
+          <b>35 Realtime Activities</b>
         </span>
       </div>
 
@@ -343,8 +414,18 @@ export default function HomePage() {
             <span className="brand-emblem" aria-hidden="true">
               <svg width="28" height="28" viewBox="0 0 128 128" fill="none">
                 <rect width="128" height="128" rx="36" fill="#1C1924" />
-                <path d="M64 77 C51 93 29 86 29 64 C29 45 48 38 64 58" stroke="#FF4E78" strokeWidth="12" strokeLinecap="round" />
-                <path d="M64 58 C80 38 99 45 99 64 C99 86 77 93 64 77" stroke="#437EEB" strokeWidth="12" strokeLinecap="round" />
+                <path
+                  d="M64 77 C51 93 29 86 29 64 C29 45 48 38 64 58"
+                  stroke="#FF4E78"
+                  strokeWidth="12"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M64 58 C80 38 99 45 99 64 C99 86 77 93 64 77"
+                  stroke="#437EEB"
+                  strokeWidth="12"
+                  strokeLinecap="round"
+                />
                 <circle cx="64" cy="67" r="5" fill="#FFFFFF" />
               </svg>
             </span>
@@ -377,8 +458,19 @@ export default function HomePage() {
             </Link>
             <Link href="/blog">Blog</Link>
             <a href="#faq">FAQ</a>
-            <Link className="nav-shop" href="/shop" aria-label="Print shop" title="Print shop">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <Link
+              className="nav-shop"
+              href="/shop"
+              aria-label="Print shop"
+              title="Print shop"
+            >
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+              >
                 <path
                   d="M5 8h14l-1.2 12.1a1.5 1.5 0 0 1-1.5 1.4H7.7a1.5 1.5 0 0 1-1.5-1.4L5 8Z"
                   stroke="currentColor"
@@ -402,7 +494,11 @@ export default function HomePage() {
       </header>
 
       {/* Hero Section */}
-      <section className="hero" id="top" style={{ position: 'relative', overflow: 'hidden' }}>
+      <section
+        className="hero"
+        id="top"
+        style={{ position: 'relative', overflow: 'hidden' }}
+      >
         <AuroraBackground />
         {/* Animated Presence Cursors */}
         <div className="cursor-layer" id="cursors">
@@ -431,14 +527,23 @@ export default function HomePage() {
                   strokeLinejoin="round"
                 />
               </svg>
-              <span className="tag">{nickname} ({cityA || 'Local'})</span>
+              <span className="tag">
+                {nickname} ({cityA || 'Local'})
+              </span>
             </Floating3D>
           </div>
         </div>
 
         <div className="wrap" style={{ position: 'relative', zIndex: 2 }}>
           <div className="hero-copy">
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '10px',
+                marginBottom: '14px',
+              }}
+            >
               <GlowBadge text="Fresh Dates Everyday" size="sm" />
               <span className="eyebrow" style={{ margin: 0 }}>
                 made for two · <ShinyText text="17 realtime activities" />
@@ -447,10 +552,16 @@ export default function HomePage() {
             <h1>
               Moments That
               <br />
-              Belong to <span className="pink">You</span> <span className="blue">Two</span>.
+              Belong to <span className="pink">You</span>{' '}
+              <span className="blue">Two</span>.
             </h1>
             <p className="lede">
-              <span style={{ color: 'var(--blue)', fontWeight: 700 }}>Made for the moments that belong to you two.</span> A realtime sanctuary for couples bridging distance with 35+ interactive games, authentic Korean Life4Cuts photostrips, 3D memory vaults, and intimate keepsakes.
+              <span style={{ color: 'var(--blue)', fontWeight: 700 }}>
+                Made for the moments that belong to you two.
+              </span>{' '}
+              A realtime sanctuary for couples bridging distance with 35+
+              interactive games, authentic Korean Life4Cuts photostrips, 3D
+              memory vaults, and intimate keepsakes.
             </p>
             <div className="cta-row">
               <Link className="btn btn-grad btn-3d" href="/activity">
@@ -482,19 +593,29 @@ export default function HomePage() {
                   boxShadow: '0 0 8px #10B981',
                 }}
               />
-              <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--ink)' }}>
+              <span
+                style={{
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  color: 'var(--ink)',
+                }}
+              >
                 Instant Web App · No downloads or installs needed
               </span>
             </div>
 
-            <p className="platforms" aria-label="Runs smoothly on any browser across Phone, Tablet and Laptop">
+            <p
+              className="platforms"
+              aria-label="Runs smoothly on any browser across Phone, Tablet and Laptop"
+            >
               <span className="plat-label">works on</span>
               <span className="plat">🌐 Any Web Browser</span>
               <span className="plat">📱 iPhone &amp; Android</span>
               <span className="plat">💻 Mac &amp; Windows</span>
             </p>
             <p className="assure">
-              <span>● {nickname || 'You'}</span> &nbsp;♡&nbsp; <span>● {partnerName || 'Love'}</span>
+              <span>● {nickname || 'You'}</span> &nbsp;♡&nbsp;{' '}
+              <span>● {partnerName || 'Love'}</span>
             </p>
           </div>
 
@@ -509,7 +630,13 @@ export default function HomePage() {
                     <stop offset="68%" stopColor="#5495D6" />
                     <stop offset="100%" stopColor="#3A6FAE" />
                   </radialGradient>
-                  <linearGradient id="gl-landfill" x1=".15" y1="0" x2=".9" y2=".9">
+                  <linearGradient
+                    id="gl-landfill"
+                    x1=".15"
+                    y1="0"
+                    x2=".9"
+                    y2=".9"
+                  >
                     <stop offset="0%" stopColor="#6FD189" />
                     <stop offset="45%" stopColor="#41B76B" />
                     <stop offset="78%" stopColor="#2A9A57" />
@@ -529,7 +656,14 @@ export default function HomePage() {
                 </defs>
 
                 {/* Lit sphere background */}
-                <circle cx="300" cy="300" r="252" fill="#7FC0FF" opacity=".40" className="gl-halo" />
+                <circle
+                  cx="300"
+                  cy="300"
+                  r="252"
+                  fill="#7FC0FF"
+                  opacity=".40"
+                  className="gl-halo"
+                />
                 <circle cx="300" cy="300" r="252" fill="url(#gl-sphere)" />
 
                 {/* Globe continent paths & graticules */}
@@ -544,19 +678,67 @@ export default function HomePage() {
                     d="M 140 200 Q 200 160 260 200 T 380 240 T 440 180 Q 490 230 460 330 T 340 420 T 220 400 Z"
                   />
                   {/* Meridian graticules */}
-                  <ellipse cx="300" cy="300" rx="210" ry="250" className="gl-grat" />
-                  <ellipse cx="300" cy="300" rx="140" ry="250" className="gl-grat" />
-                  <ellipse cx="300" cy="300" rx="70" ry="250" className="gl-grat" />
-                  <line x1="300" y1="48" x2="300" y2="552" className="gl-grat" />
+                  <ellipse
+                    cx="300"
+                    cy="300"
+                    rx="210"
+                    ry="250"
+                    className="gl-grat"
+                  />
+                  <ellipse
+                    cx="300"
+                    cy="300"
+                    rx="140"
+                    ry="250"
+                    className="gl-grat"
+                  />
+                  <ellipse
+                    cx="300"
+                    cy="300"
+                    rx="70"
+                    ry="250"
+                    className="gl-grat"
+                  />
+                  <line
+                    x1="300"
+                    y1="48"
+                    x2="300"
+                    y2="552"
+                    className="gl-grat"
+                  />
 
                   {/* Parallel graticules */}
-                  <line x1="48" y1="300" x2="552" y2="300" className="gl-grat" />
-                  <line x1="80" y1="200" x2="520" y2="200" className="gl-grat" />
-                  <line x1="80" y1="400" x2="520" y2="400" className="gl-grat" />
+                  <line
+                    x1="48"
+                    y1="300"
+                    x2="552"
+                    y2="300"
+                    className="gl-grat"
+                  />
+                  <line
+                    x1="80"
+                    y1="200"
+                    x2="520"
+                    y2="200"
+                    className="gl-grat"
+                  />
+                  <line
+                    x1="80"
+                    y1="400"
+                    x2="520"
+                    y2="400"
+                    className="gl-grat"
+                  />
 
                   {/* Connecting Arcs */}
-                  <path d="M 478 214 C 418 188 360 220 320 286" className="gl-arc pink" />
-                  <path d="M 126 392 C 188 420 244 386 282 312" className="gl-arc blue" />
+                  <path
+                    d="M 478 214 C 418 188 360 220 320 286"
+                    className="gl-arc pink"
+                  />
+                  <path
+                    d="M 126 392 C 188 420 244 386 282 312"
+                    className="gl-arc blue"
+                  />
                 </g>
               </svg>
 
@@ -606,27 +788,55 @@ export default function HomePage() {
                 <div className="prints">
                   {/* Active Animated Strip */}
                   <div className="strip" id="strip">
-                    <div className="shotcount">shot {shotStep} / 4 {shotStep === 4 ? '✓' : ''}</div>
+                    <div className="shotcount">
+                      shot {shotStep} / 4 {shotStep === 4 ? '✓' : ''}
+                    </div>
                     <div className="count">
                       <span className="num">{countNum}</span>
                     </div>
-                    {flashing && <div className="flash" style={{ opacity: 0.9 }}></div>}
+                    {flashing && (
+                      <div className="flash" style={{ opacity: 0.9 }}></div>
+                    )}
 
                     <div className={`frame ${litFrames[0] ? 'lit' : ''}`}>
                       <span className="num">01</span>
-                      <img className="shot" src="/photos/frame1.webp" width="503" height="377" alt="Photobooth shot 1" />
+                      <img
+                        className="shot"
+                        src="/photos/frame1.webp"
+                        width="503"
+                        height="377"
+                        alt="Photobooth shot 1"
+                      />
                     </div>
                     <div className={`frame ${litFrames[1] ? 'lit' : ''}`}>
                       <span className="num">02</span>
-                      <img className="shot" src="/photos/frame2.webp" width="503" height="377" alt="Photobooth shot 2" />
+                      <img
+                        className="shot"
+                        src="/photos/frame2.webp"
+                        width="503"
+                        height="377"
+                        alt="Photobooth shot 2"
+                      />
                     </div>
                     <div className={`frame ${litFrames[2] ? 'lit' : ''}`}>
                       <span className="num">03</span>
-                      <img className="shot" src="/photos/frame3.webp" width="503" height="377" alt="Photobooth shot 3" />
+                      <img
+                        className="shot"
+                        src="/photos/frame3.webp"
+                        width="503"
+                        height="377"
+                        alt="Photobooth shot 3"
+                      />
                     </div>
                     <div className={`frame ${litFrames[3] ? 'lit' : ''}`}>
                       <span className="num">04</span>
-                      <img className="shot" src="/photos/frame4.webp" width="503" height="377" alt="Photobooth shot 4" />
+                      <img
+                        className="shot"
+                        src="/photos/frame4.webp"
+                        width="503"
+                        height="377"
+                        alt="Photobooth shot 4"
+                      />
                     </div>
                     <div className="serial">
                       dearly us · <b>{roomCode.join('') || 'YOUR ROOM'}</b>
@@ -637,19 +847,43 @@ export default function HomePage() {
                   <div className="strip" id="strip2" aria-hidden="true">
                     <div className="frame lit">
                       <span className="num">01</span>
-                      <img className="shot" src="/photos/b1.webp" width="503" height="377" alt="" />
+                      <img
+                        className="shot"
+                        src="/photos/b1.webp"
+                        width="503"
+                        height="377"
+                        alt=""
+                      />
                     </div>
                     <div className="frame lit">
                       <span className="num">02</span>
-                      <img className="shot" src="/photos/b2.webp" width="503" height="377" alt="" />
+                      <img
+                        className="shot"
+                        src="/photos/b2.webp"
+                        width="503"
+                        height="377"
+                        alt=""
+                      />
                     </div>
                     <div className="frame lit">
                       <span className="num">03</span>
-                      <img className="shot" src="/photos/b3.webp" width="503" height="377" alt="" />
+                      <img
+                        className="shot"
+                        src="/photos/b3.webp"
+                        width="503"
+                        height="377"
+                        alt=""
+                      />
                     </div>
                     <div className="frame lit">
                       <span className="num">04</span>
-                      <img className="shot" src="/photos/b4.webp" width="503" height="377" alt="" />
+                      <img
+                        className="shot"
+                        src="/photos/b4.webp"
+                        width="503"
+                        height="377"
+                        alt=""
+                      />
                     </div>
                     <div className="serial">
                       dearly us · <b>7K2QF</b>
@@ -673,31 +907,52 @@ export default function HomePage() {
                 width="1440"
                 height="930"
               />
-              <span className="august-stamp">✦ Curated Sanctuary Experience</span>
+              <span className="august-stamp">
+                ✦ Curated Sanctuary Experience
+              </span>
             </span>
             <span className="august-body">
               <span className="august-eyebrow">Couples Night Sanctuary</span>
               <h2>
-                The <em>Complete Date Journey</em> — an entire evening, beautifully planned.
+                The <em>Complete Date Journey</em> — an entire evening,
+                beautifully planned.
               </h2>
               <p>
-                Seven intimate moments to experience synchronously in one room, across any distance. From cozy warmup banters to deep connection cards and matching keepsakes.
+                Seven intimate moments to experience synchronously in one room,
+                across any distance. From cozy warmup banters to deep connection
+                cards and matching keepsakes.
               </p>
 
               <ul className="august-run" style={{ marginTop: '20px' }}>
-                <li><b>01</b> Warmup Photobooth</li>
-                <li><b>02</b> Harmony Match</li>
-                <li><b>03</b> Riddle Mystery</li>
-                <li><b>04</b> Lore Quiz Duel</li>
-                <li><b>05</b> Playful Debate</li>
-                <li><b>06</b> Midnight Honest Cards</li>
-                <li><b>07</b> Twin Keepsake Studio</li>
+                <li>
+                  <b>01</b> Warmup Photobooth
+                </li>
+                <li>
+                  <b>02</b> Harmony Match
+                </li>
+                <li>
+                  <b>03</b> Riddle Mystery
+                </li>
+                <li>
+                  <b>04</b> Lore Quiz Duel
+                </li>
+                <li>
+                  <b>05</b> Playful Debate
+                </li>
+                <li>
+                  <b>06</b> Midnight Honest Cards
+                </li>
+                <li>
+                  <b>07</b> Twin Keepsake Studio
+                </li>
               </ul>
               <span className="august-cta">
                 <span className="btn">
                   Begin Tonight’s Journey <span className="arr">▷</span>
                 </span>
-                <span className="when">two screens · instant connection · zero sign-up</span>
+                <span className="when">
+                  two screens · instant connection · zero sign-up
+                </span>
               </span>
             </span>
           </Link>
@@ -710,13 +965,16 @@ export default function HomePage() {
           <div className="closer-grid">
             <div>
               <h2>
-                One sanctuary of games &amp; moments for <span className="grad">two hearts apart</span>.
+                One sanctuary of games &amp; moments for{' '}
+                <span className="grad">two hearts apart</span>.
               </h2>
             </div>
             <div className="closer-aside">
               <p>
-                Thirty-five realtime activities and intimate dates you experience in one shared room, at the exact same second.
-                Open a private room and send the code — your partner will be there in one tap.
+                Thirty-five realtime activities and intimate dates you
+                experience in one shared room, at the exact same second. Open a
+                private room and send the code — your partner will be there in
+                one tap.
               </p>
               <div className="cta-row">
                 <Link className="btn btn-grad" href="/activity">
@@ -772,7 +1030,10 @@ export default function HomePage() {
                   onClick={() => {
                     sounds.playPop();
                     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-                    const fresh = Array.from({ length: 5 }, () => chars[Math.floor(Math.random() * chars.length)]);
+                    const fresh = Array.from(
+                      { length: 5 },
+                      () => chars[Math.floor(Math.random() * chars.length)],
+                    );
                     setRoomCode(fresh);
                   }}
                   style={{
@@ -836,413 +1097,716 @@ export default function HomePage() {
           {/* New spotlight cards */}
           <ScrollReveal animation="fade-up" delay={0.1}>
             <div className="spot perspective-container">
-              <span className="spot-label">New · the ones we can&apos;t stop playing</span>
-            <Link className="act card-3d" href="/letter">
-              <div className="ic layer-z2">
-                <svg viewBox="0 0 34 34" fill="none">
-                  <rect x="4" y="8" width="26" height="18" rx="2.5" stroke="#FF7BA3" strokeWidth="2" />
-                  <path
-                    d="M4.8 9.6L17 18.4 29.2 9.6"
-                    stroke="#FF7BA3"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <circle cx="26" cy="24" r="6" fill="#fff" stroke="#5FA0FF" strokeWidth="2" />
-                  <path
-                    d="M26 21v3l2 1.4"
-                    stroke="#5FA0FF"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-              <h3 className="layer-z1">
-                Letters to the Future <span className="badge new layer-z3">New</span>
-              </h3>
-              <p>
-                Write to the two of you years from now. Pick a date up to twelve years out — we hold the letter sealed until
-                that morning, then send it to you, to them, or to both.
-              </p>
-              <span className="go layer-z2">
-                Write a letter <span className="arr">▷</span>
+              <span className="spot-label">
+                New · the ones we can&apos;t stop playing
               </span>
-            </Link>
-
-            <Link className="act card-3d" href="/scrapbook">
-              <div className="ic layer-z2">
-                <svg viewBox="0 0 34 34" fill="none">
-                  <rect x="5" y="5" width="24" height="24" rx="2.5" stroke="#5FA0FF" strokeWidth="2" />
-                  <path d="M10 5v24" stroke="#5FA0FF" strokeWidth="2" />
-                  <rect x="14" y="10" width="11" height="8" rx="1" stroke="#FF7BA3" strokeWidth="2" />
-                  <path d="M14 23h11" stroke="#FF7BA3" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-              </div>
-              <h3 className="layer-z1">
-                Digital Scrapbook <span className="badge new layer-z3">New</span>
-              </h3>
-              <p>
-                The one thing here you come back to. Tape your real photostrips onto paper pages, draw on them, write
-                captions in your own hand — both of you on the same page at once.
-              </p>
-              <span className="go layer-z2">
-                Open the book <span className="arr">▷</span>
-              </span>
-            </Link>
-
-            <Link className="act card-3d" href="/birthday">
-              <div className="ic layer-z2">
-                <svg viewBox="0 0 34 34" fill="none">
-                  <rect x="5" y="14" width="24" height="15" rx="2" stroke="#5FA0FF" strokeWidth="2" />
-                  <path d="M5 19h24M17 14v15" stroke="#5FA0FF" strokeWidth="2" />
-                  <path
-                    d="M17 13.5s-5-2.6-5-5.6a2.6 2.6 0 014.3-1.8A2.6 2.6 0 0122 7.9c0 3-5 5.6-5 5.6z"
-                    stroke="#FF7BA3"
-                    strokeWidth="2"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-              <h3 className="layer-z1">
-                Birthday Gift Page <span className="badge new layer-z3">New</span>
-              </h3>
-              <p>
-                Build them a birthday page — a letter that types itself out, your photos, a live count of days together —
-                then hand it over as a heart-shaped QR code they can scan.
-              </p>
-              <span className="go layer-z2">
-                Make their page <span className="arr">▷</span>
-              </span>
-            </Link>
-          </div>
-        </ScrollReveal>
-
-        <ScrollReveal animation="fade-up" delay={0.15}>
-          <div className="grid-label">All games &amp; activities</div>
-          <div className="acts">
-            {/* Featured Wide Photobooth Tile */}
-            <Link className="act feature" href="/photobooth">
-              <span className="seamline"></span>
-              <div className="ic">
-                <svg viewBox="0 0 34 34" fill="none">
-                  <rect x="4" y="9" width="26" height="19" rx="3" stroke="#17181C" strokeWidth="2" />
-                  <path d="M12 9l2-4h6l2 4" stroke="#17181C" strokeWidth="2" strokeLinejoin="round" />
-                  <circle cx="17" cy="18" r="5" stroke="#FF7BA3" strokeWidth="2" />
-                  <circle cx="26" cy="13" r="1.6" fill="#5FA0FF" />
-                </svg>
-              </div>
-              <div className="copy">
-                <h3>
-                  Online Photobooth <span className="badge on">Always free</span>
+              <Link className="act card-3d" href="/letter">
+                <div className="ic layer-z2">
+                  <svg viewBox="0 0 34 34" fill="none">
+                    <rect
+                      x="4"
+                      y="8"
+                      width="26"
+                      height="18"
+                      rx="2.5"
+                      stroke="#FF7BA3"
+                      strokeWidth="2"
+                    />
+                    <path
+                      d="M4.8 9.6L17 18.4 29.2 9.6"
+                      stroke="#FF7BA3"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <circle
+                      cx="26"
+                      cy="24"
+                      r="6"
+                      fill="#fff"
+                      stroke="#5FA0FF"
+                      strokeWidth="2"
+                    />
+                    <path
+                      d="M26 21v3l2 1.4"
+                      stroke="#5FA0FF"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+                <h3 className="layer-z1">
+                  Letters to the Future{' '}
+                  <span className="badge new layer-z3">New</span>
                 </h3>
                 <p>
-                  The realtime 인생네컷 booth for two — a shared countdown fires the shot on both screens at once, so every
-                  frame holds both of you.
+                  Write to the two of you years from now. Pick a date up to
+                  twelve years out — we hold the letter sealed until that
+                  morning, then send it to you, to them, or to both.
                 </p>
-              </div>
-              <span className="arr-go">Open the booth ▷</span>
-            </Link>
+                <span className="go layer-z2">
+                  Write a letter <span className="arr">▷</span>
+                </span>
+              </Link>
 
-            <Link className="act" href="/quiz">
-              <span className="seamline"></span>
-              <div className="ic">
-                <svg viewBox="0 0 34 34" fill="none">
-                  <path
-                    d="M10 7a3.5 3.5 0 013.6 3.6c0 2.6-3.6 3.4-3.6 6"
-                    stroke="#FF7BA3"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                  <circle cx="10" cy="22" r="1.5" fill="#FF7BA3" />
-                  <path
-                    d="M24 28s-6-3.6-6-8.2a3 3 0 015.2-2.1 3 3 0 015.2 2.1C28.4 24.4 24 28 24 28z"
-                    stroke="#5FA0FF"
-                    strokeWidth="2"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-              <h3>
-                Know Me Quiz <span className="badge hot">★ Most played</span>
-              </h3>
-              <p>Lock in privately, reveal together, score your compatibility — 17 packs from cute to spicy.</p>
-            </Link>
+              <Link className="act card-3d" href="/scrapbook">
+                <div className="ic layer-z2">
+                  <svg viewBox="0 0 34 34" fill="none">
+                    <rect
+                      x="5"
+                      y="5"
+                      width="24"
+                      height="24"
+                      rx="2.5"
+                      stroke="#5FA0FF"
+                      strokeWidth="2"
+                    />
+                    <path d="M10 5v24" stroke="#5FA0FF" strokeWidth="2" />
+                    <rect
+                      x="14"
+                      y="10"
+                      width="11"
+                      height="8"
+                      rx="1"
+                      stroke="#FF7BA3"
+                      strokeWidth="2"
+                    />
+                    <path
+                      d="M14 23h11"
+                      stroke="#FF7BA3"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </div>
+                <h3 className="layer-z1">
+                  Digital Scrapbook{' '}
+                  <span className="badge new layer-z3">New</span>
+                </h3>
+                <p>
+                  The one thing here you come back to. Tape your real
+                  photostrips onto paper pages, draw on them, write captions in
+                  your own hand — both of you on the same page at once.
+                </p>
+                <span className="go layer-z2">
+                  Open the book <span className="arr">▷</span>
+                </span>
+              </Link>
 
-            <Link className="act" href="/host">
-              <span className="seamline"></span>
-              <div className="ic">
-                <span style={{ fontSize: '26px' }}>🎙️</span>
-              </div>
-              <h3>
-                Date Host <span className="badge new">New</span>
-              </h3>
-              <p>An observant host reacts to your answers and crafts dynamic follow-up dilemmas in real time.</p>
-            </Link>
+              <Link className="act card-3d" href="/birthday">
+                <div className="ic layer-z2">
+                  <svg viewBox="0 0 34 34" fill="none">
+                    <rect
+                      x="5"
+                      y="14"
+                      width="24"
+                      height="15"
+                      rx="2"
+                      stroke="#5FA0FF"
+                      strokeWidth="2"
+                    />
+                    <path
+                      d="M5 19h24M17 14v15"
+                      stroke="#5FA0FF"
+                      strokeWidth="2"
+                    />
+                    <path
+                      d="M17 13.5s-5-2.6-5-5.6a2.6 2.6 0 014.3-1.8A2.6 2.6 0 0122 7.9c0 3-5 5.6-5 5.6z"
+                      stroke="#FF7BA3"
+                      strokeWidth="2"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+                <h3 className="layer-z1">
+                  Birthday Gift Page{' '}
+                  <span className="badge new layer-z3">New</span>
+                </h3>
+                <p>
+                  Build them a birthday page — a letter that types itself out,
+                  your photos, a live count of days together — then hand it over
+                  as a heart-shaped QR code they can scan.
+                </p>
+                <span className="go layer-z2">
+                  Make their page <span className="arr">▷</span>
+                </span>
+              </Link>
+            </div>
+          </ScrollReveal>
 
-            <Link className="act" href="/match">
-              <span className="seamline"></span>
-              <div className="ic">
-                <svg viewBox="0 0 34 34" fill="none">
-                  <path
-                    d="M13 25S4 19.4 4 13.6A4.2 4.2 0 0111.6 11"
-                    stroke="#FF7BA3"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M21 25s9-5.6 9-11.4A4.2 4.2 0 0022.4 11"
-                    stroke="#5FA0FF"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M12 17h3l2-3 3 6 2-3h3"
-                    stroke="#17181C"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-              <h3>
-                Love Match <span className="badge new">New</span>
-              </h3>
-              <p>Take the same personality test at the same instant — 16 types, Big Five, the stars — and get your match score.</p>
-            </Link>
+          <ScrollReveal animation="fade-up" delay={0.15}>
+            <div className="grid-label">All games &amp; activities</div>
+            <div className="acts">
+              {/* Featured Wide Photobooth Tile */}
+              <Link className="act feature" href="/photobooth">
+                <span className="seamline"></span>
+                <div className="ic">
+                  <svg viewBox="0 0 34 34" fill="none">
+                    <rect
+                      x="4"
+                      y="9"
+                      width="26"
+                      height="19"
+                      rx="3"
+                      stroke="#17181C"
+                      strokeWidth="2"
+                    />
+                    <path
+                      d="M12 9l2-4h6l2 4"
+                      stroke="#17181C"
+                      strokeWidth="2"
+                      strokeLinejoin="round"
+                    />
+                    <circle
+                      cx="17"
+                      cy="18"
+                      r="5"
+                      stroke="#FF7BA3"
+                      strokeWidth="2"
+                    />
+                    <circle cx="26" cy="13" r="1.6" fill="#5FA0FF" />
+                  </svg>
+                </div>
+                <div className="copy">
+                  <h3>
+                    Online Photobooth{' '}
+                    <span className="badge on">Always free</span>
+                  </h3>
+                  <p>
+                    The realtime 인생네컷 booth for two — a shared countdown
+                    fires the shot on both screens at once, so every frame holds
+                    both of you.
+                  </p>
+                </div>
+                <span className="arr-go">Open the booth ▷</span>
+              </Link>
 
-            <Link className="act" href="/dare">
-              <span className="seamline"></span>
-              <div className="ic">
-                <svg viewBox="0 0 34 34" fill="none">
-                  <rect x="4" y="10" width="17" height="17" rx="3" stroke="#17181C" strokeWidth="2" />
-                  <circle cx="9.5" cy="15.5" r="1.6" fill="#5FA0FF" />
-                  <circle cx="15.5" cy="15.5" r="1.6" fill="#5FA0FF" />
-                  <circle cx="9.5" cy="21.5" r="1.6" fill="#5FA0FF" />
-                  <circle cx="15.5" cy="21.5" r="1.6" fill="#5FA0FF" />
-                  <path
-                    d="M25 15s-5-3.2-5-6.4a2.6 2.6 0 014.5-1.8A2.6 2.6 0 0129 8.6C29 11.8 25 15 25 15z"
-                    stroke="#FF7BA3"
-                    strokeWidth="2"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M24 19l2 3.2-3.2 1 2 3.2"
-                    stroke="#FF7BA3"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-              <h3>
-                Truth or Dare <span className="badge new">New</span>
-              </h3>
-              <p>Seal a stake, battle through 20 tiny minigames — the loser of every round picks truth or dare.</p>
-            </Link>
+              <Link className="act" href="/quiz">
+                <span className="seamline"></span>
+                <div className="ic">
+                  <svg viewBox="0 0 34 34" fill="none">
+                    <path
+                      d="M10 7a3.5 3.5 0 013.6 3.6c0 2.6-3.6 3.4-3.6 6"
+                      stroke="#FF7BA3"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                    <circle cx="10" cy="22" r="1.5" fill="#FF7BA3" />
+                    <path
+                      d="M24 28s-6-3.6-6-8.2a3 3 0 015.2-2.1 3 3 0 015.2 2.1C28.4 24.4 24 28 24 28z"
+                      stroke="#5FA0FF"
+                      strokeWidth="2"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+                <h3>
+                  Know Me Quiz <span className="badge hot">★ Most played</span>
+                </h3>
+                <p>
+                  Lock in privately, reveal together, score your compatibility —
+                  17 packs from cute to spicy.
+                </p>
+              </Link>
 
-            <Link className="act" href="/future">
-              <span className="seamline"></span>
-              <div className="ic">
-                <svg viewBox="0 0 34 34" fill="none">
-                  <circle cx="17" cy="19" r="6" stroke="#FF7BA3" strokeWidth="2" />
-                  <path d="M4 25h26" stroke="#17181C" strokeWidth="2" strokeLinecap="round" />
-                  <path d="M17 7v3M7 11l2 2M27 11l-2 2" stroke="#5FA0FF" strokeWidth="2" strokeLinecap="round" />
-                  <path d="M9 29h16" stroke="#5FA0FF" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-              </div>
-              <h3>
-                Our Future <span className="badge new">New</span>
-              </h3>
-              <p>Design your future together — home, travel, money, tiny humans — then turn it into a scrapbook vision board + plan.</p>
-            </Link>
+              <Link className="act" href="/host">
+                <span className="seamline"></span>
+                <div className="ic">
+                  <span style={{ fontSize: '26px' }}>🎙️</span>
+                </div>
+                <h3>
+                  Date Host <span className="badge new">New</span>
+                </h3>
+                <p>
+                  An observant host reacts to your answers and crafts dynamic
+                  follow-up dilemmas in real time.
+                </p>
+              </Link>
 
-            <Link className="act" href="/arcade">
-              <span className="seamline"></span>
-              <div className="ic">
-                <svg viewBox="0 0 34 34" fill="none">
-                  <rect x="4" y="7" width="26" height="17" rx="3" stroke="#17181C" strokeWidth="2" />
-                  <circle cx="11" cy="15" r="3" stroke="#FF7BA3" strokeWidth="2" />
-                  <path d="M11 12v-4" stroke="#FF7BA3" strokeWidth="2" strokeLinecap="round" />
-                  <circle cx="22" cy="14" r="1.6" fill="#5FA0FF" />
-                  <circle cx="26" cy="17" r="1.6" fill="#5FA0FF" />
-                  <path d="M11 28h12" stroke="#17181C" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-              </div>
-              <h3>Arcade</h3>
-              <p>Your face on cartoon legs in ten tiny games — flappy, tetris duel, whack-a-partner.</p>
-            </Link>
+              <Link className="act" href="/match">
+                <span className="seamline"></span>
+                <div className="ic">
+                  <svg viewBox="0 0 34 34" fill="none">
+                    <path
+                      d="M13 25S4 19.4 4 13.6A4.2 4.2 0 0111.6 11"
+                      stroke="#FF7BA3"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M21 25s9-5.6 9-11.4A4.2 4.2 0 0022.4 11"
+                      stroke="#5FA0FF"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M12 17h3l2-3 3 6 2-3h3"
+                      stroke="#17181C"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+                <h3>
+                  Love Match <span className="badge new">New</span>
+                </h3>
+                <p>
+                  Take the same personality test at the same instant — 16 types,
+                  Big Five, the stars — and get your match score.
+                </p>
+              </Link>
 
-            <Link className="act" href="/debate">
-              <span className="seamline"></span>
-              <div className="ic">
-                <svg viewBox="0 0 34 34" fill="none">
-                  <rect x="3" y="5" width="17" height="13" rx="3" stroke="#FF7BA3" strokeWidth="2" />
-                  <path d="M9 18l-2 4 5-2" stroke="#FF7BA3" strokeWidth="2" strokeLinejoin="round" />
-                  <rect x="14" y="14" width="17" height="13" rx="3" stroke="#5FA0FF" strokeWidth="2" />
-                  <path d="M25 27l2 4-5-2" stroke="#5FA0FF" strokeWidth="2" strokeLinejoin="round" />
-                </svg>
-              </div>
-              <h3>Couples Debate</h3>
-              <p>Argue it out on camera — an AI judge scores every round and crowns a winner.</p>
-            </Link>
+              <Link className="act" href="/dare">
+                <span className="seamline"></span>
+                <div className="ic">
+                  <svg viewBox="0 0 34 34" fill="none">
+                    <rect
+                      x="4"
+                      y="10"
+                      width="17"
+                      height="17"
+                      rx="3"
+                      stroke="#17181C"
+                      strokeWidth="2"
+                    />
+                    <circle cx="9.5" cy="15.5" r="1.6" fill="#5FA0FF" />
+                    <circle cx="15.5" cy="15.5" r="1.6" fill="#5FA0FF" />
+                    <circle cx="9.5" cy="21.5" r="1.6" fill="#5FA0FF" />
+                    <circle cx="15.5" cy="21.5" r="1.6" fill="#5FA0FF" />
+                    <path
+                      d="M25 15s-5-3.2-5-6.4a2.6 2.6 0 014.5-1.8A2.6 2.6 0 0129 8.6C29 11.8 25 15 25 15z"
+                      stroke="#FF7BA3"
+                      strokeWidth="2"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M24 19l2 3.2-3.2 1 2 3.2"
+                      stroke="#FF7BA3"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+                <h3>
+                  Truth or Dare <span className="badge new">New</span>
+                </h3>
+                <p>
+                  Seal a stake, battle through 20 tiny minigames — the loser of
+                  every round picks truth or dare.
+                </p>
+              </Link>
 
-            <Link className="act" href="/draw">
-              <span className="seamline"></span>
-              <div className="ic">
-                <svg viewBox="0 0 34 34" fill="none">
-                  <rect x="4" y="4" width="26" height="26" rx="3" stroke="#17181C" strokeWidth="2" />
-                  <path d="M22 8l4 4-12 12-4 1 1-4z" stroke="#FF7BA3" strokeWidth="2" strokeLinejoin="round" />
-                  <path d="M7 27c3-5 6 1 9-3" stroke="#5FA0FF" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-              </div>
-              <h3>Draw Together</h3>
-              <p>Same prompt, two canvases — watch each other&apos;s strokes appear live.</p>
-            </Link>
+              <Link className="act" href="/future">
+                <span className="seamline"></span>
+                <div className="ic">
+                  <svg viewBox="0 0 34 34" fill="none">
+                    <circle
+                      cx="17"
+                      cy="19"
+                      r="6"
+                      stroke="#FF7BA3"
+                      strokeWidth="2"
+                    />
+                    <path
+                      d="M4 25h26"
+                      stroke="#17181C"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M17 7v3M7 11l2 2M27 11l-2 2"
+                      stroke="#5FA0FF"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M9 29h16"
+                      stroke="#5FA0FF"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </div>
+                <h3>
+                  Our Future <span className="badge new">New</span>
+                </h3>
+                <p>
+                  Design your future together — home, travel, money, tiny humans
+                  — then turn it into a scrapbook vision board + plan.
+                </p>
+              </Link>
 
-            <Link className="act" href="/court">
-              <span className="seamline"></span>
-              <div className="ic">
-                <svg viewBox="0 0 34 34" fill="none">
-                  <path d="M17 5v22" stroke="#17181C" strokeWidth="2" strokeLinecap="round" />
-                  <path d="M6 12h22" stroke="#17181C" strokeWidth="2" strokeLinecap="round" />
-                  <path d="M6 12l-3 7h6z" stroke="#FF7BA3" strokeWidth="2" strokeLinejoin="round" />
-                  <path d="M28 12l-3 7h6z" stroke="#5FA0FF" strokeWidth="2" strokeLinejoin="round" />
-                  <path d="M12 29h10" stroke="#17181C" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-              </div>
-              <h3>Couples Court</h3>
-              <p>Plead your case, snap photo evidence — the AI judge delivers a verdict.</p>
-            </Link>
+              <Link className="act" href="/arcade">
+                <span className="seamline"></span>
+                <div className="ic">
+                  <svg viewBox="0 0 34 34" fill="none">
+                    <rect
+                      x="4"
+                      y="7"
+                      width="26"
+                      height="17"
+                      rx="3"
+                      stroke="#17181C"
+                      strokeWidth="2"
+                    />
+                    <circle
+                      cx="11"
+                      cy="15"
+                      r="3"
+                      stroke="#FF7BA3"
+                      strokeWidth="2"
+                    />
+                    <path
+                      d="M11 12v-4"
+                      stroke="#FF7BA3"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                    <circle cx="22" cy="14" r="1.6" fill="#5FA0FF" />
+                    <circle cx="26" cy="17" r="1.6" fill="#5FA0FF" />
+                    <path
+                      d="M11 28h12"
+                      stroke="#17181C"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </div>
+                <h3>Arcade</h3>
+                <p>
+                  Your face on cartoon legs in ten tiny games — flappy, tetris
+                  duel, whack-a-partner.
+                </p>
+              </Link>
 
-            <Link className="act" href="/hunt">
-              <span className="seamline"></span>
-              <div className="ic">
-                <svg viewBox="0 0 34 34" fill="none">
-                  <circle cx="15" cy="15" r="9" stroke="#FF7BA3" strokeWidth="2" />
-                  <path d="M21.5 21.5l7 7" stroke="#5FA0FF" strokeWidth="2" strokeLinecap="round" />
-                  <path d="M15 11v8M11 15h8" stroke="#5FA0FF" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-              </div>
-              <h3>Snap Hunt</h3>
-              <p>Race your homes to match a loose clue — cleverest find takes the round.</p>
-            </Link>
+              <Link className="act" href="/debate">
+                <span className="seamline"></span>
+                <div className="ic">
+                  <svg viewBox="0 0 34 34" fill="none">
+                    <rect
+                      x="3"
+                      y="5"
+                      width="17"
+                      height="13"
+                      rx="3"
+                      stroke="#FF7BA3"
+                      strokeWidth="2"
+                    />
+                    <path
+                      d="M9 18l-2 4 5-2"
+                      stroke="#FF7BA3"
+                      strokeWidth="2"
+                      strokeLinejoin="round"
+                    />
+                    <rect
+                      x="14"
+                      y="14"
+                      width="17"
+                      height="13"
+                      rx="3"
+                      stroke="#5FA0FF"
+                      strokeWidth="2"
+                    />
+                    <path
+                      d="M25 27l2 4-5-2"
+                      stroke="#5FA0FF"
+                      strokeWidth="2"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+                <h3>Couples Debate</h3>
+                <p>
+                  Argue it out on camera — an AI judge scores every round and
+                  crowns a winner.
+                </p>
+              </Link>
 
-            <Link className="act" href="/riddle">
-              <span className="seamline"></span>
-              <div className="ic">
-                <svg viewBox="0 0 34 34" fill="none">
-                  <path
-                    d="M13 5a6 6 0 016.2 6.2c0 4.4-6.2 5.8-6.2 10.2"
-                    stroke="#FF7BA3"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                  <circle cx="13" cy="27" r="2" fill="#FF7BA3" />
-                  <path
-                    d="M24 16l2 4.2 4.6.6-3.4 3.2.9 4.6L24 26.4l-4.1 2.2.9-4.6-3.4-3.2 4.6-.6z"
-                    stroke="#5FA0FF"
-                    strokeWidth="2"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-              <h3>Riddle Night</h3>
-              <p>The legendary riddles — talk them out, lock in privately, reveal together.</p>
-            </Link>
+              <Link className="act" href="/draw">
+                <span className="seamline"></span>
+                <div className="ic">
+                  <svg viewBox="0 0 34 34" fill="none">
+                    <rect
+                      x="4"
+                      y="4"
+                      width="26"
+                      height="26"
+                      rx="3"
+                      stroke="#17181C"
+                      strokeWidth="2"
+                    />
+                    <path
+                      d="M22 8l4 4-12 12-4 1 1-4z"
+                      stroke="#FF7BA3"
+                      strokeWidth="2"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M7 27c3-5 6 1 9-3"
+                      stroke="#5FA0FF"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </div>
+                <h3>Draw Together</h3>
+                <p>
+                  Same prompt, two canvases — watch each other&apos;s strokes
+                  appear live.
+                </p>
+              </Link>
 
-            <Link className="act" href="/iq">
-              <span className="seamline"></span>
-              <div className="ic">
-                <svg viewBox="0 0 34 34" fill="none">
-                  <rect x="4" y="4" width="11" height="11" rx="2" stroke="#FF7BA3" strokeWidth="2" />
-                  <rect x="19" y="4" width="11" height="11" rx="2" stroke="#5FA0FF" strokeWidth="2" />
-                  <rect x="4" y="19" width="11" height="11" rx="2" stroke="#5FA0FF" strokeWidth="2" />
-                  <path d="M21 24.5h7M24.5 21v7" stroke="#FF7BA3" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-              </div>
-              <h3>IQ Duel</h3>
-              <p>The same puzzles on both screens, against the clock — nothing reveals till the end.</p>
-            </Link>
+              <Link className="act" href="/court">
+                <span className="seamline"></span>
+                <div className="ic">
+                  <svg viewBox="0 0 34 34" fill="none">
+                    <path
+                      d="M17 5v22"
+                      stroke="#17181C"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M6 12h22"
+                      stroke="#17181C"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M6 12l-3 7h6z"
+                      stroke="#FF7BA3"
+                      strokeWidth="2"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M28 12l-3 7h6z"
+                      stroke="#5FA0FF"
+                      strokeWidth="2"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M12 29h10"
+                      stroke="#17181C"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </div>
+                <h3>Couples Court</h3>
+                <p>
+                  Plead your case, snap photo evidence — the AI judge delivers a
+                  verdict.
+                </p>
+              </Link>
 
-            <Link className="act" href="/lab">
-              <span className="seamline"></span>
-              <div className="ic">
-                <svg viewBox="0 0 34 34" fill="none">
-                  <path
-                    d="M14 5h6M15 5v8l7 12a2.5 2.5 0 01-2.2 3.8H11.2A2.5 2.5 0 019 25l7-12V5"
-                    stroke="#17181C"
-                    strokeWidth="2"
-                    strokeLinejoin="round"
-                  />
-                  <path d="M12 21h10" stroke="#5FA0FF" strokeWidth="2" strokeLinecap="round" />
-                  <circle cx="15" cy="24.5" r="1.4" fill="#FF7BA3" />
-                  <circle cx="19" cy="25.5" r="1.1" fill="#FF7BA3" />
-                </svg>
-              </div>
-              <h3>
-                The Lab <span className="badge new">New</span>
-              </h3>
-              <p>A study date with a scoreboard — real math &amp; science, versus or co-op.</p>
-            </Link>
+              <Link className="act" href="/hunt">
+                <span className="seamline"></span>
+                <div className="ic">
+                  <svg viewBox="0 0 34 34" fill="none">
+                    <circle
+                      cx="15"
+                      cy="15"
+                      r="9"
+                      stroke="#FF7BA3"
+                      strokeWidth="2"
+                    />
+                    <path
+                      d="M21.5 21.5l7 7"
+                      stroke="#5FA0FF"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M15 11v8M11 15h8"
+                      stroke="#5FA0FF"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </div>
+                <h3>Snap Hunt</h3>
+                <p>
+                  Race your homes to match a loose clue — cleverest find takes
+                  the round.
+                </p>
+              </Link>
 
-            <Link className="act" href="/cards">
-              <span className="seamline"></span>
-              <div className="ic">
-                <span style={{ fontSize: '26px' }}>💌</span>
-              </div>
-              <h3>
-                Honest Cards <span className="badge new">New</span>
-              </h3>
-              <p>A deck of honest questions — you both answer privately, it opens at once.</p>
-            </Link>
-            <Link className="act" href="/timezone">
-              <span className="seamline"></span>
-              <div className="ic">
-                <span style={{ fontSize: '26px' }}>🌍</span>
-              </div>
-              <h3>
-                Timezone Hub <span className="badge hot">★ Essential</span>
-              </h3>
-              <p>Visual 24h sun/moon horizon, golden overlap hours, and a millisecond airport reunion countdown.</p>
-            </Link>
+              <Link className="act" href="/riddle">
+                <span className="seamline"></span>
+                <div className="ic">
+                  <svg viewBox="0 0 34 34" fill="none">
+                    <path
+                      d="M13 5a6 6 0 016.2 6.2c0 4.4-6.2 5.8-6.2 10.2"
+                      stroke="#FF7BA3"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                    <circle cx="13" cy="27" r="2" fill="#FF7BA3" />
+                    <path
+                      d="M24 16l2 4.2 4.6.6-3.4 3.2.9 4.6L24 26.4l-4.1 2.2.9-4.6-3.4-3.2 4.6-.6z"
+                      stroke="#5FA0FF"
+                      strokeWidth="2"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+                <h3>Riddle Night</h3>
+                <p>
+                  The legendary riddles — talk them out, lock in privately,
+                  reveal together.
+                </p>
+              </Link>
 
-            <Link className="act" href="/bucket">
-              <span className="seamline"></span>
-              <div className="ic">
-                <span style={{ fontSize: '26px' }}>🎯</span>
-              </div>
-              <h3>
-                100 Dates Bucket List <span className="badge new">New</span>
-              </h3>
-              <p>Scratch off milestone cards from late-night video call dates to airport hugs and grocery runs.</p>
-            </Link>
+              <Link className="act" href="/iq">
+                <span className="seamline"></span>
+                <div className="ic">
+                  <svg viewBox="0 0 34 34" fill="none">
+                    <rect
+                      x="4"
+                      y="4"
+                      width="11"
+                      height="11"
+                      rx="2"
+                      stroke="#FF7BA3"
+                      strokeWidth="2"
+                    />
+                    <rect
+                      x="19"
+                      y="4"
+                      width="11"
+                      height="11"
+                      rx="2"
+                      stroke="#5FA0FF"
+                      strokeWidth="2"
+                    />
+                    <rect
+                      x="4"
+                      y="19"
+                      width="11"
+                      height="11"
+                      rx="2"
+                      stroke="#5FA0FF"
+                      strokeWidth="2"
+                    />
+                    <path
+                      d="M21 24.5h7M24.5 21v7"
+                      stroke="#FF7BA3"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </div>
+                <h3>IQ Duel</h3>
+                <p>
+                  The same puzzles on both screens, against the clock — nothing
+                  reveals till the end.
+                </p>
+              </Link>
 
-            <Link className="act" href="/scrapbook">
-              <span className="seamline"></span>
-              <div className="ic">
-                <span style={{ fontSize: '26px' }}>📖</span>
-              </div>
-              <h3>
-                Digital Scrapbook <span className="badge new">New</span>
-              </h3>
-              <p>Tape down photostrips, boarding passes, washi tape, and sticky notes on a shared memory corkboard.</p>
-            </Link>
+              <Link className="act" href="/lab">
+                <span className="seamline"></span>
+                <div className="ic">
+                  <svg viewBox="0 0 34 34" fill="none">
+                    <path
+                      d="M14 5h6M15 5v8l7 12a2.5 2.5 0 01-2.2 3.8H11.2A2.5 2.5 0 019 25l7-12V5"
+                      stroke="#17181C"
+                      strokeWidth="2"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M12 21h10"
+                      stroke="#5FA0FF"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                    <circle cx="15" cy="24.5" r="1.4" fill="#FF7BA3" />
+                    <circle cx="19" cy="25.5" r="1.1" fill="#FF7BA3" />
+                  </svg>
+                </div>
+                <h3>
+                  The Lab <span className="badge new">New</span>
+                </h3>
+                <p>
+                  A study date with a scoreboard — real math &amp; science,
+                  versus or co-op.
+                </p>
+              </Link>
 
-            <Link className="act" href="/letter">
-              <span className="seamline"></span>
-              <div className="ic">
-                <span style={{ fontSize: '26px' }}>💌</span>
-              </div>
-              <h3>
-                Time Capsule Letters <span className="badge new">New</span>
-              </h3>
-              <p>Write letters to future you, sealed in a vault until your chosen reunion anniversary.</p>
-            </Link>
-          </div>
-        </ScrollReveal>
+              <Link className="act" href="/cards">
+                <span className="seamline"></span>
+                <div className="ic">
+                  <span style={{ fontSize: '26px' }}>💌</span>
+                </div>
+                <h3>
+                  Honest Cards <span className="badge new">New</span>
+                </h3>
+                <p>
+                  A deck of honest questions — you both answer privately, it
+                  opens at once.
+                </p>
+              </Link>
+              <Link className="act" href="/timezone">
+                <span className="seamline"></span>
+                <div className="ic">
+                  <span style={{ fontSize: '26px' }}>🌍</span>
+                </div>
+                <h3>
+                  Timezone Hub <span className="badge hot">★ Essential</span>
+                </h3>
+                <p>
+                  Visual 24h sun/moon horizon, golden overlap hours, and a
+                  millisecond airport reunion countdown.
+                </p>
+              </Link>
+
+              <Link className="act" href="/bucket">
+                <span className="seamline"></span>
+                <div className="ic">
+                  <span style={{ fontSize: '26px' }}>🎯</span>
+                </div>
+                <h3>
+                  100 Dates Bucket List <span className="badge new">New</span>
+                </h3>
+                <p>
+                  Scratch off milestone cards from late-night video call dates
+                  to airport hugs and grocery runs.
+                </p>
+              </Link>
+
+              <Link className="act" href="/scrapbook">
+                <span className="seamline"></span>
+                <div className="ic">
+                  <span style={{ fontSize: '26px' }}>📖</span>
+                </div>
+                <h3>
+                  Digital Scrapbook <span className="badge new">New</span>
+                </h3>
+                <p>
+                  Tape down photostrips, boarding passes, washi tape, and sticky
+                  notes on a shared memory corkboard.
+                </p>
+              </Link>
+
+              <Link className="act" href="/letter">
+                <span className="seamline"></span>
+                <div className="ic">
+                  <span style={{ fontSize: '26px' }}>💌</span>
+                </div>
+                <h3>
+                  Time Capsule Letters <span className="badge new">New</span>
+                </h3>
+                <p>
+                  Write letters to future you, sealed in a vault until your
+                  chosen reunion anniversary.
+                </p>
+              </Link>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 
@@ -1254,11 +1818,13 @@ export default function HomePage() {
             <div className="section-head">
               <div className="kicker">Online Photobooth · 인생네컷</div>
               <h2>
-                Capture both of you in <span className="grad">one frame</span> — at the exact same second.
+                Capture both of you in <span className="grad">one frame</span> —
+                at the exact same second.
               </h2>
               <p>
-                A shared countdown fires the shot on both screens at once — arrange into a 4-cut photostrip you can download
-                or print as fridge magnets. Try a live interactive test right here.
+                A shared countdown fires the shot on both screens at once —
+                arrange into a 4-cut photostrip you can download or print as
+                fridge magnets. Try a live interactive test right here.
               </p>
             </div>
           </ScrollReveal>
@@ -1266,288 +1832,469 @@ export default function HomePage() {
           <ScrollReveal animation="scale" delay={0.1}>
             <div className="booth-showcase-grid">
               {/* Left: Interactive Studio Booth Stage */}
-              <div className={`booth-box ${demoTheme.id === 'vintage' ? 'vintage-automat' : ''}`}>
-              {/* Studio Controls Header */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button
-                    className={`btn ${demoMode === 'simulated' ? 'btn-primary' : 'btn-ghost'}`}
-                    style={{ padding: '6px 14px', fontSize: '13px' }}
-                    onClick={() => setDemoMode('simulated')}
-                  >
-                    👫 Couple Demo
-                  </button>
-                  <button
-                    className={`btn ${demoMode === 'webcam' ? 'btn-primary' : 'btn-ghost'}`}
-                    style={{ padding: '6px 14px', fontSize: '13px' }}
-                    onClick={() => setDemoMode('webcam')}
-                  >
-                    📷 Test Live Camera
-                  </button>
-                </div>
-
-                <div style={{ display: 'flex', gap: '6px' }}>
-                  <button
-                    className="btn btn-ghost"
-                    style={{ padding: '5px 12px', fontSize: '12px', fontFamily: 'var(--font-mono)' }}
-                    onClick={() => setDemoPoseIdx((p) => (p + 1) % DEMO_POSES.length)}
-                  >
-                    🎲 Shuffle Pose
-                  </button>
-                </div>
-              </div>
-
-              {/* Camera Viewport Screen */}
-              <div className="booth-cam-stage">
-                {/* Pose Prompt Top Banner */}
-                <div className="pose-prompt-card">
-                  <span>📸</span>
-                  <span>{DEMO_POSES[demoPoseIdx]}</span>
-                </div>
-
-                {demoMode === 'webcam' ? (
-                  <div className="booth-duo-view solo">
-                    <div className="booth-feed-panel">
-                      <video ref={demoVideoRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      <div className="feed-city-badge pink">
-                        <span className="dot"></span> You (Live Camera)
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="booth-duo-view">
-                    <div className="booth-feed-panel">
-                      <img src="/photos/face-calgary.webp" alt="Partner 1 feed" />
-                      <div className="feed-city-badge pink">
-                        <span className="dot"></span> {cityA || 'Local'} ({partnerA})
-                      </div>
-                    </div>
-                    <div className="booth-feed-panel">
-                      <img src="/photos/face-jakarta.webp" alt="Partner 2 feed" />
-                      <div className="feed-city-badge blue">
-                        <span className="dot"></span> {cityB || 'Remote'} ({partnerB})
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* 3..2..1 Countdown Flash */}
-                {demoCountdown !== null && <div className="booth-flash-num">{demoCountdown}</div>}
-
-                {/* Camera Flash Screen Effect */}
-                {demoFlashing && <div className="booth-camera-flash" />}
-
-                {/* AR Filter Overlays */}
-                {demoFilter === 'sparkles' && (
-                  <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', display: 'flex', justifyContent: 'space-around', alignItems: 'center', fontSize: '32px', zIndex: 6 }}>
-                    <span style={{ animation: 'gl-tw 1.5s infinite' }}>✨</span>
-                    <span style={{ animation: 'gl-tw 2s infinite' }}>🌟</span>
-                    <span style={{ animation: 'gl-tw 1.8s infinite' }}>✨</span>
-                  </div>
-                )}
-                {demoFilter === 'hearts' && (
-                  <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', display: 'flex', justifyContent: 'space-around', alignItems: 'center', fontSize: '28px', zIndex: 6 }}>
-                    <span style={{ animation: 'gl-pulse 1.6s infinite' }}>💖</span>
-                    <span style={{ animation: 'gl-pulse 2.2s infinite' }}>💕</span>
-                    <span style={{ animation: 'gl-pulse 1.9s infinite' }}>💗</span>
-                  </div>
-                )}
-                {demoFilter === 'cat' && (
-                  <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', display: 'flex', justifyContent: 'space-between', padding: '16px 40px', fontSize: '28px', zIndex: 6 }}>
-                    <span>🐱</span>
-                    <span>🐾</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Shutter Trigger & AR Filter Controls */}
-              <div style={{ marginTop: '18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: '11.5px', fontFamily: 'var(--font-mono)', color: 'var(--ink-soft)', textTransform: 'uppercase', marginRight: '4px' }}>
-                    AR Filter:
-                  </span>
-                  {[
-                    { id: 'none', label: 'None' },
-                    { id: 'sparkles', label: '✨ Glow' },
-                    { id: 'hearts', label: '💖 Hearts' },
-                    { id: 'cat', label: '🐱 Cat' },
-                  ].map((f) => (
-                    <button
-                      key={f.id}
-                      onClick={() => setDemoFilter(f.id as any)}
-                      style={{
-                        padding: '4px 10px',
-                        borderRadius: '6px',
-                        border: demoFilter === f.id ? '1.5px solid var(--pink)' : '1px solid var(--line)',
-                        background: demoFilter === f.id ? 'var(--pink-tint)' : 'var(--paper)',
-                        fontSize: '11px',
-                        fontWeight: 700,
-                        color: 'var(--ink)',
-                      }}
-                    >
-                      {f.label}
-                    </button>
-                  ))}
-                </div>
-
-                <button
-                  className="btn btn-grad"
-                  onClick={triggerDemoShoot}
-                  disabled={demoIsShooting}
-                  style={{ padding: '10px 24px', fontSize: '15px' }}
+              <div
+                className={`booth-box ${demoTheme.id === 'vintage' ? 'vintage-automat' : ''}`}
+              >
+                {/* Studio Controls Header */}
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '16px',
+                    flexWrap: 'wrap',
+                    gap: '10px',
+                  }}
                 >
-                  {demoIsShooting ? 'Taking 4 Shots 📸...' : 'Take 4 Photos 📸'}
-                </button>
-              </div>
-
-              {/* Theme Selector Palette */}
-              <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--line)' }}>
-                <span style={{ display: 'block', fontSize: '11.5px', fontFamily: 'var(--font-mono)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px', color: 'var(--ink-soft)' }}>
-                  Photostrip Theme &amp; Room Style:
-                </span>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  {DEMO_THEMES.map((theme) => (
+                  <div style={{ display: 'flex', gap: '8px' }}>
                     <button
-                      key={theme.id}
-                      onClick={() => setDemoTheme(theme)}
-                      style={{
-                        padding: '6px 12px',
-                        borderRadius: '6px',
-                        border: demoTheme.id === theme.id ? '2px solid var(--pink)' : '1px solid var(--line)',
-                        background: theme.bg,
-                        color: theme.text,
-                        fontWeight: 700,
-                        fontSize: '11.5px',
-                        boxShadow: demoTheme.id === theme.id ? 'var(--shadow)' : 'none',
-                        transform: demoTheme.id === theme.id ? 'scale(1.03)' : 'none',
-                        transition: 'all 0.15s ease',
-                      }}
+                      className={`btn ${demoMode === 'simulated' ? 'btn-primary' : 'btn-ghost'}`}
+                      style={{ padding: '6px 14px', fontSize: '13px' }}
+                      onClick={() => setDemoMode('simulated')}
                     >
-                      {theme.name}
+                      👫 Couple Demo
                     </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Add Cute Stickers */}
-              <div style={{ marginTop: '16px' }}>
-                <span style={{ display: 'block', fontSize: '11.5px', fontFamily: 'var(--font-mono)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px', color: 'var(--ink-soft)' }}>
-                  Add Cute Stickers:
-                </span>
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
-                  {['💖', '✨', '🫰', '🌸', '👑', '💌', '🎀', '🧸', '🌟'].map((emoji, i) => (
                     <button
-                      key={i}
-                      onClick={() => addDemoSticker(emoji)}
-                      style={{
-                        width: '34px',
-                        height: '34px',
-                        borderRadius: '6px',
-                        border: '1px solid var(--line)',
-                        background: 'var(--paper)',
-                        fontSize: '16px',
-                      }}
+                      className={`btn ${demoMode === 'webcam' ? 'btn-primary' : 'btn-ghost'}`}
+                      style={{ padding: '6px 14px', fontSize: '13px' }}
+                      onClick={() => setDemoMode('webcam')}
                     >
-                      {emoji}
+                      📷 Test Live Camera
                     </button>
-                  ))}
-                  {demoStickers.length > 0 && (
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '6px' }}>
                     <button
-                      onClick={() => setDemoStickers([])}
+                      className="btn btn-ghost"
                       style={{
-                        padding: '4px 8px',
-                        borderRadius: '6px',
-                        border: '1px solid var(--line)',
-                        background: 'none',
-                        fontSize: '11px',
-                        color: 'var(--ink-soft)',
+                        padding: '5px 12px',
+                        fontSize: '12px',
                         fontFamily: 'var(--font-mono)',
                       }}
+                      onClick={() =>
+                        setDemoPoseIdx((p) => (p + 1) % DEMO_POSES.length)
+                      }
                     >
-                      Clear
+                      🎲 Shuffle Pose
                     </button>
+                  </div>
+                </div>
+
+                {/* Camera Viewport Screen */}
+                <div className="booth-cam-stage">
+                  {/* Pose Prompt Top Banner */}
+                  <div className="pose-prompt-card">
+                    <span>📸</span>
+                    <span>{DEMO_POSES[demoPoseIdx]}</span>
+                  </div>
+
+                  {demoMode === 'webcam' ? (
+                    <div className="booth-duo-view solo">
+                      <div className="booth-feed-panel">
+                        <video
+                          ref={demoVideoRef}
+                          autoPlay
+                          playsInline
+                          muted
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                          }}
+                        />
+                        <div className="feed-city-badge pink">
+                          <span className="dot"></span> You (Live Camera)
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="booth-duo-view">
+                      <div className="booth-feed-panel">
+                        <img
+                          src="/photos/face-calgary.webp"
+                          alt="Partner 1 feed"
+                        />
+                        <div className="feed-city-badge pink">
+                          <span className="dot"></span> {cityA || 'Local'} (
+                          {partnerA})
+                        </div>
+                      </div>
+                      <div className="booth-feed-panel">
+                        <img
+                          src="/photos/face-jakarta.webp"
+                          alt="Partner 2 feed"
+                        />
+                        <div className="feed-city-badge blue">
+                          <span className="dot"></span> {cityB || 'Remote'} (
+                          {partnerB})
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 3..2..1 Countdown Flash */}
+                  {demoCountdown !== null && (
+                    <div className="booth-flash-num">{demoCountdown}</div>
+                  )}
+
+                  {/* Camera Flash Screen Effect */}
+                  {demoFlashing && <div className="booth-camera-flash" />}
+
+                  {/* AR Filter Overlays */}
+                  {demoFilter === 'sparkles' && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        pointerEvents: 'none',
+                        display: 'flex',
+                        justifyContent: 'space-around',
+                        alignItems: 'center',
+                        fontSize: '32px',
+                        zIndex: 6,
+                      }}
+                    >
+                      <span style={{ animation: 'gl-tw 1.5s infinite' }}>
+                        ✨
+                      </span>
+                      <span style={{ animation: 'gl-tw 2s infinite' }}>🌟</span>
+                      <span style={{ animation: 'gl-tw 1.8s infinite' }}>
+                        ✨
+                      </span>
+                    </div>
+                  )}
+                  {demoFilter === 'hearts' && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        pointerEvents: 'none',
+                        display: 'flex',
+                        justifyContent: 'space-around',
+                        alignItems: 'center',
+                        fontSize: '28px',
+                        zIndex: 6,
+                      }}
+                    >
+                      <span style={{ animation: 'gl-pulse 1.6s infinite' }}>
+                        💖
+                      </span>
+                      <span style={{ animation: 'gl-pulse 2.2s infinite' }}>
+                        💕
+                      </span>
+                      <span style={{ animation: 'gl-pulse 1.9s infinite' }}>
+                        💗
+                      </span>
+                    </div>
+                  )}
+                  {demoFilter === 'cat' && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        pointerEvents: 'none',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        padding: '16px 40px',
+                        fontSize: '28px',
+                        zIndex: 6,
+                      }}
+                    >
+                      <span>🐱</span>
+                      <span>🐾</span>
+                    </div>
                   )}
                 </div>
-              </div>
-            </div>
 
-            {/* Right: Live 4-Cut Photostrip Real Output */}
-            <div className="strip-preview-holder">
-              <div
-                className="real-strip"
-                style={{
-                  background: demoTheme.bg,
-                  color: demoTheme.text,
-                  borderColor: demoTheme.border,
-                }}
-              >
-                <div className="real-strip-brand">DEARLY US · 인생네컷</div>
-
-                <div className="real-strip-frames">
-                  {demoShots.map((shotUrl, idx) => (
-                    <div key={idx} className="real-strip-cell">
-                      <img src={shotUrl} alt={`Photobooth shot ${idx + 1}`} />
-                      <span className="frame-tag">0{idx + 1}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Placed Stickers on strip */}
-                {demoStickers.length > 0 && (
+                {/* Shutter Trigger & AR Filter Controls */}
+                <div
+                  style={{
+                    marginTop: '18px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: '12px',
+                  }}
+                >
                   <div
                     style={{
-                      position: 'absolute',
-                      top: '36px',
-                      right: '-10px',
                       display: 'flex',
-                      flexDirection: 'column',
-                      gap: '4px',
-                      pointerEvents: 'none',
+                      alignItems: 'center',
+                      gap: '6px',
+                      flexWrap: 'wrap',
                     }}
                   >
-                    {demoStickers.map((stk, i) => (
-                      <span key={i} style={{ fontSize: '18px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }}>
-                        {stk}
-                      </span>
+                    <span
+                      style={{
+                        fontSize: '11.5px',
+                        fontFamily: 'var(--font-mono)',
+                        color: 'var(--ink-soft)',
+                        textTransform: 'uppercase',
+                        marginRight: '4px',
+                      }}
+                    >
+                      AR Filter:
+                    </span>
+                    {[
+                      { id: 'none', label: 'None' },
+                      { id: 'sparkles', label: '✨ Glow' },
+                      { id: 'hearts', label: '💖 Hearts' },
+                      { id: 'cat', label: '🐱 Cat' },
+                    ].map((f) => (
+                      <button
+                        key={f.id}
+                        onClick={() => setDemoFilter(f.id as any)}
+                        style={{
+                          padding: '4px 10px',
+                          borderRadius: '6px',
+                          border:
+                            demoFilter === f.id
+                              ? '1.5px solid var(--pink)'
+                              : '1px solid var(--line)',
+                          background:
+                            demoFilter === f.id
+                              ? 'var(--pink-tint)'
+                              : 'var(--paper)',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          color: 'var(--ink)',
+                        }}
+                      >
+                        {f.label}
+                      </button>
                     ))}
                   </div>
-                )}
 
-                <div className="real-strip-footer">
-                  <input
-                    type="text"
-                    value={demoCoupleName}
-                    onChange={(e) => setDemoCoupleName(e.target.value)}
-                    className="real-strip-name"
+                  <button
+                    className="btn btn-grad"
+                    onClick={triggerDemoShoot}
+                    disabled={demoIsShooting}
+                    style={{ padding: '10px 24px', fontSize: '15px' }}
+                  >
+                    {demoIsShooting
+                      ? 'Taking 4 Shots 📸...'
+                      : 'Take 4 Photos 📸'}
+                  </button>
+                </div>
+
+                {/* Theme Selector Palette */}
+                <div
+                  style={{
+                    marginTop: '20px',
+                    paddingTop: '16px',
+                    borderTop: '1px solid var(--line)',
+                  }}
+                >
+                  <span
                     style={{
-                      width: '100%',
-                      textAlign: 'center',
-                      border: 'none',
-                      background: 'transparent',
-                      outline: 'none',
+                      display: 'block',
+                      fontSize: '11.5px',
+                      fontFamily: 'var(--font-mono)',
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      marginBottom: '8px',
+                      color: 'var(--ink-soft)',
                     }}
-                  />
-                  <div className="real-strip-serial">
-                    DEARLY US · <b>{roomCode.join('')}</b>
+                  >
+                    Photostrip Theme &amp; Room Style:
+                  </span>
+                  <div
+                    style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}
+                  >
+                    {DEMO_THEMES.map((theme) => (
+                      <button
+                        key={theme.id}
+                        onClick={() => setDemoTheme(theme)}
+                        style={{
+                          padding: '6px 12px',
+                          borderRadius: '6px',
+                          border:
+                            demoTheme.id === theme.id
+                              ? '2px solid var(--pink)'
+                              : '1px solid var(--line)',
+                          background: theme.bg,
+                          color: theme.text,
+                          fontWeight: 700,
+                          fontSize: '11.5px',
+                          boxShadow:
+                            demoTheme.id === theme.id
+                              ? 'var(--shadow)'
+                              : 'none',
+                          transform:
+                            demoTheme.id === theme.id ? 'scale(1.03)' : 'none',
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        {theme.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Add Cute Stickers */}
+                <div style={{ marginTop: '16px' }}>
+                  <span
+                    style={{
+                      display: 'block',
+                      fontSize: '11.5px',
+                      fontFamily: 'var(--font-mono)',
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      marginBottom: '8px',
+                      color: 'var(--ink-soft)',
+                    }}
+                  >
+                    Add Cute Stickers:
+                  </span>
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '6px',
+                      flexWrap: 'wrap',
+                      alignItems: 'center',
+                    }}
+                  >
+                    {['💖', '✨', '🫰', '🌸', '👑', '💌', '🎀', '🧸', '🌟'].map(
+                      (emoji, i) => (
+                        <button
+                          key={i}
+                          onClick={() => addDemoSticker(emoji)}
+                          style={{
+                            width: '34px',
+                            height: '34px',
+                            borderRadius: '6px',
+                            border: '1px solid var(--line)',
+                            background: 'var(--paper)',
+                            fontSize: '16px',
+                          }}
+                        >
+                          {emoji}
+                        </button>
+                      ),
+                    )}
+                    {demoStickers.length > 0 && (
+                      <button
+                        onClick={() => setDemoStickers([])}
+                        style={{
+                          padding: '4px 8px',
+                          borderRadius: '6px',
+                          border: '1px solid var(--line)',
+                          background: 'none',
+                          fontSize: '11px',
+                          color: 'var(--ink-soft)',
+                          fontFamily: 'var(--font-mono)',
+                        }}
+                      >
+                        Clear
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
 
-              {/* Strip Actions */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '250px' }}>
-                <button className="btn btn-primary" onClick={downloadDemoStrip} style={{ justifyContent: 'center' }}>
-                  Download Photo Strip 💾
-                </button>
-                <Link className="btn btn-grad" href="/photobooth" style={{ justifyContent: 'center' }}>
-                  Open Full Studio ▷
-                </Link>
-                <Link className="btn btn-ghost" href="/shop" style={{ justifyContent: 'center', fontSize: '13px' }}>
-                  Save Free Keepsakes 🎁
-                </Link>
+              {/* Right: Live 4-Cut Photostrip Real Output */}
+              <div className="strip-preview-holder">
+                <div
+                  className="real-strip"
+                  style={{
+                    background: demoTheme.bg,
+                    color: demoTheme.text,
+                    borderColor: demoTheme.border,
+                  }}
+                >
+                  <div className="real-strip-brand">DEARLY US · 인생네컷</div>
+
+                  <div className="real-strip-frames">
+                    {demoShots.map((shotUrl, idx) => (
+                      <div key={idx} className="real-strip-cell">
+                        <img src={shotUrl} alt={`Photobooth shot ${idx + 1}`} />
+                        <span className="frame-tag">0{idx + 1}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Placed Stickers on strip */}
+                  {demoStickers.length > 0 && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '36px',
+                        right: '-10px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '4px',
+                        pointerEvents: 'none',
+                      }}
+                    >
+                      {demoStickers.map((stk, i) => (
+                        <span
+                          key={i}
+                          style={{
+                            fontSize: '18px',
+                            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
+                          }}
+                        >
+                          {stk}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="real-strip-footer">
+                    <input
+                      type="text"
+                      value={demoCoupleName}
+                      onChange={(e) => setDemoCoupleName(e.target.value)}
+                      className="real-strip-name"
+                      style={{
+                        width: '100%',
+                        textAlign: 'center',
+                        border: 'none',
+                        background: 'transparent',
+                        outline: 'none',
+                      }}
+                    />
+                    <div className="real-strip-serial">
+                      DEARLY US · <b>{roomCode.join('')}</b>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Strip Actions */}
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                    width: '250px',
+                  }}
+                >
+                  <button
+                    className="btn btn-primary"
+                    onClick={downloadDemoStrip}
+                    style={{ justifyContent: 'center' }}
+                  >
+                    Download Photo Strip 💾
+                  </button>
+                  <Link
+                    className="btn btn-grad"
+                    href="/photobooth"
+                    style={{ justifyContent: 'center' }}
+                  >
+                    Open Full Studio ▷
+                  </Link>
+                  <Link
+                    className="btn btn-ghost"
+                    href="/shop"
+                    style={{ justifyContent: 'center', fontSize: '13px' }}
+                  >
+                    Save Free Keepsakes 🎁
+                  </Link>
+                </div>
               </div>
             </div>
-          </div>
-        </ScrollReveal>
+          </ScrollReveal>
         </div>
       </section>
 
@@ -1559,54 +2306,74 @@ export default function HomePage() {
               <div className="section-head" style={{ margin: 0 }}>
                 <div className="kicker">See it in action</div>
                 <h2>Watch a round of our most-played game.</h2>
-              <img
-                className="qd-art"
-                src="/photos/quiz-duo.webp"
-                width="1264"
-                height="848"
-                alt="Two phones playing the couples quiz together, one pink and one blue"
-              />
-              <p>
-                One question, two screens. You both lock in privately — nobody can peek — then the answers flip at the
-                exact same second. Match, and the confetti flies.
-              </p>
-              <p style={{ marginTop: '18px' }}>
-                <Link className="btn btn-primary" href="/quiz">
-                  Play it free <span className="arr">▷</span>
-                </Link>
-              </p>
-            </div>
-            <div className="qd-stage" aria-label="Animated example of a quiz round">
-              <div className="qd-card pink">
-                <div className="qd-who">
-                  <b>{partnerA}</b> · answers honestly
-                </div>
-                <div className="qd-q">What&apos;s {partnerA}&apos;s go-to karaoke song? 🎤</div>
-                <div className="qd-opt pick">Bohemian Rhapsody 🎸</div>
-                <div className="qd-opt">Something by IU 🎧</div>
-                <div className="qd-opt">Rap god, allegedly 🎤</div>
-                <span className="qd-lock">locked in ✓</span>
+                <img
+                  className="qd-art"
+                  src="/photos/quiz-duo.webp"
+                  width="1264"
+                  height="848"
+                  alt="Two phones playing the couples quiz together, one pink and one blue"
+                />
+                <p>
+                  One question, two screens. You both lock in privately — nobody
+                  can peek — then the answers flip at the exact same second.
+                  Match, and the confetti flies.
+                </p>
+                <p style={{ marginTop: '18px' }}>
+                  <Link className="btn btn-primary" href="/quiz">
+                    Play it free <span className="arr">▷</span>
+                  </Link>
+                </p>
               </div>
-              <div className="qd-card blue">
-                <div className="qd-who">
-                  <b>{partnerB}</b> · guesses answer
+              <div
+                className="qd-stage"
+                aria-label="Animated example of a quiz round"
+              >
+                <div className="qd-card pink">
+                  <div className="qd-who">
+                    <b>{partnerA}</b> · answers honestly
+                  </div>
+                  <div className="qd-q">
+                    What&apos;s {partnerA}&apos;s go-to karaoke song? 🎤
+                  </div>
+                  <div className="qd-opt pick">Bohemian Rhapsody 🎸</div>
+                  <div className="qd-opt">Something by IU 🎧</div>
+                  <div className="qd-opt">Rap god, allegedly 🎤</div>
+                  <span className="qd-lock">locked in ✓</span>
                 </div>
-                <div className="qd-q">What&apos;s {partnerA}&apos;s go-to karaoke song? 🎤</div>
-                <div className="qd-opt pick">Bohemian Rhapsody 🎸</div>
-                <div className="qd-opt">Something by IU 🎧</div>
-                <div className="qd-opt">Rap god, allegedly 🎤</div>
-                <span className="qd-lock">locked in ✓</span>
+                <div className="qd-card blue">
+                  <div className="qd-who">
+                    <b>{partnerB}</b> · guesses answer
+                  </div>
+                  <div className="qd-q">
+                    What&apos;s {partnerA}&apos;s go-to karaoke song? 🎤
+                  </div>
+                  <div className="qd-opt pick">Bohemian Rhapsody 🎸</div>
+                  <div className="qd-opt">Something by IU 🎧</div>
+                  <div className="qd-opt">Rap god, allegedly 🎤</div>
+                  <span className="qd-lock">locked in ✓</span>
+                </div>
+                <svg
+                  className="qd-cursor pink"
+                  viewBox="0 0 24 24"
+                  fill="#F5739E"
+                  stroke="#fff"
+                  strokeWidth="1.5"
+                >
+                  <path d="M4 2l16 7.5-7 2.2L9.8 19z" />
+                </svg>
+                <svg
+                  className="qd-cursor blue"
+                  viewBox="0 0 24 24"
+                  fill="#5B8DEF"
+                  stroke="#fff"
+                  strokeWidth="1.5"
+                >
+                  <path d="M4 2l16 7.5-7 2.2L9.8 19z" />
+                </svg>
+                <div className="qd-badge">✓ Matched! 💞</div>
               </div>
-              <svg className="qd-cursor pink" viewBox="0 0 24 24" fill="#F5739E" stroke="#fff" strokeWidth="1.5">
-                <path d="M4 2l16 7.5-7 2.2L9.8 19z" />
-              </svg>
-              <svg className="qd-cursor blue" viewBox="0 0 24 24" fill="#5B8DEF" stroke="#fff" strokeWidth="1.5">
-                <path d="M4 2l16 7.5-7 2.2L9.8 19z" />
-              </svg>
-              <div className="qd-badge">✓ Matched! 💞</div>
             </div>
-          </div>
-        </ScrollReveal>
+          </ScrollReveal>
         </div>
       </section>
 
@@ -1616,51 +2383,81 @@ export default function HomePage() {
           <ScrollReveal animation="fade-up">
             <div className="pb-grid">
               <div className="pb-copy">
-                <div className="kicker">Digital Keepsakes &amp; Print Sheets</div>
-                <h2>
-                  Preserve your memories with <span className="grad">printable DIY keepsakes</span>.
-                </h2>
-              <p>
-                Turn today&apos;s session into printable 4×6 photo sheets, couple lockscreen wallpapers, and DIY fridge magnet templates.
-              </p>
-              <ul className="pb-feats">
-                <li>300 DPI high-res printable photo sheets for standard 4×6 paper</li>
-                <li>Matching couple lockscreen &amp; desktop wallpaper pairs</li>
-                <li>Instant PNG &amp; PDF downloads for both of you</li>
-              </ul>
-              <div className="pb-cta-row">
-                <Link className="btn btn-grad" href="/shop">
-                  Open Keepsakes Studio <span className="arr">▷</span>
-                </Link>
-                <span className="pb-ships">✨ 300 DPI high-res layouts · Print at home or any local photo kiosk</span>
-              </div>
-            </div>
-            <div className="pb-art">
-              <div className="pb-proof" id="pb-proof">
-                <div className="strip pb-magnet" aria-hidden="true">
-                  <div className="frame lit">
-                    <span className="num">01</span>
-                    <img className="shot" src="/photos/frame1.webp" width="503" height="377" alt="" />
-                  </div>
-                  <div className="frame lit">
-                    <span className="num">02</span>
-                    <img className="shot" src="/photos/frame2.webp" width="503" height="377" alt="" />
-                  </div>
-                  <div className="frame lit">
-                    <span className="num">03</span>
-                    <img className="shot" src="/photos/frame3.webp" width="503" height="377" alt="" />
-                  </div>
-                  <div className="serial">
-                    dearly us · <b>♡ us</b>
-                  </div>
+                <div className="kicker">
+                  Digital Keepsakes &amp; Print Sheets
                 </div>
-                <span className="pb-tag">
-                  DIY<small>Print</small>
-                </span>
+                <h2>
+                  Preserve your memories with{' '}
+                  <span className="grad">printable DIY keepsakes</span>.
+                </h2>
+                <p>
+                  Turn today&apos;s session into printable 4×6 photo sheets,
+                  couple lockscreen wallpapers, and DIY fridge magnet templates.
+                </p>
+                <ul className="pb-feats">
+                  <li>
+                    300 DPI high-res printable photo sheets for standard 4×6
+                    paper
+                  </li>
+                  <li>
+                    Matching couple lockscreen &amp; desktop wallpaper pairs
+                  </li>
+                  <li>Instant PNG &amp; PDF downloads for both of you</li>
+                </ul>
+                <div className="pb-cta-row">
+                  <Link className="btn btn-grad" href="/shop">
+                    Open Keepsakes Studio <span className="arr">▷</span>
+                  </Link>
+                  <span className="pb-ships">
+                    ✨ 300 DPI high-res layouts · Print at home or any local
+                    photo kiosk
+                  </span>
+                </div>
+              </div>
+              <div className="pb-art">
+                <div className="pb-proof" id="pb-proof">
+                  <div className="strip pb-magnet" aria-hidden="true">
+                    <div className="frame lit">
+                      <span className="num">01</span>
+                      <img
+                        className="shot"
+                        src="/photos/frame1.webp"
+                        width="503"
+                        height="377"
+                        alt=""
+                      />
+                    </div>
+                    <div className="frame lit">
+                      <span className="num">02</span>
+                      <img
+                        className="shot"
+                        src="/photos/frame2.webp"
+                        width="503"
+                        height="377"
+                        alt=""
+                      />
+                    </div>
+                    <div className="frame lit">
+                      <span className="num">03</span>
+                      <img
+                        className="shot"
+                        src="/photos/frame3.webp"
+                        width="503"
+                        height="377"
+                        alt=""
+                      />
+                    </div>
+                    <div className="serial">
+                      dearly us · <b>♡ us</b>
+                    </div>
+                  </div>
+                  <span className="pb-tag">
+                    DIY<small>Print</small>
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        </ScrollReveal>
+          </ScrollReveal>
         </div>
       </section>
 
@@ -1672,11 +2469,14 @@ export default function HomePage() {
               <div>
                 <div className="kicker">Creator program</div>
                 <h2>
-                  Post one video, <span className="grad">get Dearly Us VIP for life</span>.
+                  Post one video,{' '}
+                  <span className="grad">get Dearly Us VIP for life</span>.
                 </h2>
                 <p>
-                  Film a photobooth session with your partner or best friend, post it on TikTok or Instagram, and send us
-                  the link. If it&apos;s approved, you get a <b>Lifetime VIP Pass</b> — every game, every HD download, forever.
+                  Film a photobooth session with your partner or best friend,
+                  post it on TikTok or Instagram, and send us the link. If
+                  it&apos;s approved, you get a <b>Lifetime VIP Pass</b> — every
+                  game, every HD download, forever.
                 </p>
               </div>
               <div className="cb-cta">
@@ -1697,13 +2497,23 @@ export default function HomePage() {
             <div className="faq-layout">
               {/* Left Column: Sticky Context & Support Card */}
               <div className="faq-sidebar">
-                <div className="kicker" style={{ color: 'var(--pink)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <div
+                  className="kicker"
+                  style={{
+                    color: 'var(--pink)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
                   <span>✨</span>
                   <span>Good to Know</span>
                 </div>
                 <h2>Questions long distance couples ask.</h2>
                 <p>
-                  Zero downloads, instant 5-letter room codes, Korean Life4Cuts photo strips, and real-time multiplayer across any country or timezone.
+                  Zero downloads, instant 5-letter room codes, Korean Life4Cuts
+                  photo strips, and real-time multiplayer across any country or
+                  timezone.
                 </p>
 
                 {/* Direct Contact Helper Card */}
@@ -1719,12 +2529,27 @@ export default function HomePage() {
                     boxShadow: '0 4px 16px rgba(0,0,0,0.03)',
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800, fontSize: '14px' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      fontWeight: 800,
+                      fontSize: '14px',
+                    }}
+                  >
                     <span>💌</span>
                     <span>Need help planning a date?</span>
                   </div>
-                  <p style={{ fontSize: '13px', color: 'var(--ink-soft)', lineHeight: 1.5 }}>
-                    We answer every single couple. Have an activity request or timezone question? Reach out anytime!
+                  <p
+                    style={{
+                      fontSize: '13px',
+                      color: 'var(--ink-soft)',
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    We answer every single couple. Have an activity request or
+                    timezone question? Reach out anytime!
                   </p>
                   <a
                     href="mailto:hello@dearlyus.love"
@@ -1761,7 +2586,7 @@ export default function HomePage() {
                   },
                   {
                     q: 'Do we need to install an app?',
-                    a: 'No! Dearly Us runs right in any modern web browser on iPhone, Android, iPad, Mac, or Windows — zero downloads needed. Just tap the link and you\'re connected together in under 5 seconds.',
+                    a: "No! Dearly Us runs right in any modern web browser on iPhone, Android, iPad, Mac, or Windows — zero downloads needed. Just tap the link and you're connected together in under 5 seconds.",
                   },
                   {
                     q: 'Is the photobooth like 인생네컷 / Life4Cuts?',

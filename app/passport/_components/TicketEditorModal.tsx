@@ -11,7 +11,12 @@ interface TicketEditorModalProps {
   onSave: (updated: CoupleTicketProfile) => void;
 }
 
-export function TicketEditorModal({ isOpen, profile, onClose, onSave }: TicketEditorModalProps) {
+export function TicketEditorModal({
+  isOpen,
+  profile,
+  onClose,
+  onSave,
+}: TicketEditorModalProps) {
   const [formData, setFormData] = useState<CoupleTicketProfile>(profile);
 
   if (!isOpen) return null;
@@ -51,12 +56,29 @@ export function TicketEditorModal({ isOpen, profile, onClose, onSave }: TicketEd
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '20px',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '24px' }}>✈️</span>
             <div>
-              <h3 style={{ fontSize: '18px', fontWeight: 900, margin: 0 }}>Edit Love Airlines Ticket</h3>
-              <p style={{ fontSize: '12px', color: 'var(--ink-soft)', margin: 0 }}>Customize your boarding pass keepsakes</p>
+              <h3 style={{ fontSize: '18px', fontWeight: 900, margin: 0 }}>
+                Edit Love Airlines Ticket
+              </h3>
+              <p
+                style={{
+                  fontSize: '12px',
+                  color: 'var(--ink-soft)',
+                  margin: 0,
+                }}
+              >
+                Customize your boarding pass keepsakes
+              </p>
             </div>
           </div>
           <button
@@ -73,16 +95,35 @@ export function TicketEditorModal({ isOpen, profile, onClose, onSave }: TicketEd
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+        <form
+          onSubmit={handleSubmit}
+          style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}
+        >
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '12px',
+            }}
+          >
             <div>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--ink-soft)', marginBottom: '4px' }}>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  color: 'var(--ink-soft)',
+                  marginBottom: '4px',
+                }}
+              >
                 PARTNER 1 NAME
               </label>
               <input
                 type="text"
                 value={formData.partner1}
-                onChange={(e) => setFormData({ ...formData, partner1: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, partner1: e.target.value })
+                }
                 style={{
                   width: '100%',
                   padding: '8px 12px',
@@ -97,13 +138,23 @@ export function TicketEditorModal({ isOpen, profile, onClose, onSave }: TicketEd
               />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--ink-soft)', marginBottom: '4px' }}>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  color: 'var(--ink-soft)',
+                  marginBottom: '4px',
+                }}
+              >
                 PARTNER 2 NAME
               </label>
               <input
                 type="text"
                 value={formData.partner2}
-                onChange={(e) => setFormData({ ...formData, partner2: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, partner2: e.target.value })
+                }
                 style={{
                   width: '100%',
                   padding: '8px 12px',
@@ -120,13 +171,23 @@ export function TicketEditorModal({ isOpen, profile, onClose, onSave }: TicketEd
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--ink-soft)', marginBottom: '4px' }}>
+            <label
+              style={{
+                display: 'block',
+                fontSize: '11px',
+                fontWeight: 700,
+                color: 'var(--ink-soft)',
+                marginBottom: '4px',
+              }}
+            >
               ORIGIN CITY (HOME 1)
             </label>
             <input
               type="text"
               value={formData.originCity}
-              onChange={(e) => setFormData({ ...formData, originCity: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, originCity: e.target.value })
+              }
               style={{
                 width: '100%',
                 padding: '8px 12px',
@@ -141,13 +202,23 @@ export function TicketEditorModal({ isOpen, profile, onClose, onSave }: TicketEd
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--ink-soft)', marginBottom: '4px' }}>
+            <label
+              style={{
+                display: 'block',
+                fontSize: '11px',
+                fontWeight: 700,
+                color: 'var(--ink-soft)',
+                marginBottom: '4px',
+              }}
+            >
               DESTINATION CITY (HOME 2)
             </label>
             <input
               type="text"
               value={formData.destinationCity}
-              onChange={(e) => setFormData({ ...formData, destinationCity: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, destinationCity: e.target.value })
+              }
               style={{
                 width: '100%',
                 padding: '8px 12px',
@@ -161,15 +232,31 @@ export function TicketEditorModal({ isOpen, profile, onClose, onSave }: TicketEd
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '12px',
+            }}
+          >
             <div>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--ink-soft)', marginBottom: '4px' }}>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  color: 'var(--ink-soft)',
+                  marginBottom: '4px',
+                }}
+              >
                 ANNIVERSARY / DATE
               </label>
               <input
                 type="text"
                 value={formData.anniversaryDate}
-                onChange={(e) => setFormData({ ...formData, anniversaryDate: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, anniversaryDate: e.target.value })
+                }
                 style={{
                   width: '100%',
                   padding: '8px 12px',
@@ -183,13 +270,23 @@ export function TicketEditorModal({ isOpen, profile, onClose, onSave }: TicketEd
               />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--ink-soft)', marginBottom: '4px' }}>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  color: 'var(--ink-soft)',
+                  marginBottom: '4px',
+                }}
+              >
                 SEAT ASSIGNMENT
               </label>
               <input
                 type="text"
                 value={formData.seatNumber}
-                onChange={(e) => setFormData({ ...formData, seatNumber: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, seatNumber: e.target.value })
+                }
                 style={{
                   width: '100%',
                   padding: '8px 12px',

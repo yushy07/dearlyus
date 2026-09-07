@@ -50,7 +50,9 @@ describe('Phase 0: Standard Activity Definitions & Adapters', () => {
         },
       };
 
-      const validation = quizActivityDefinition.validateEvent!(leakedEvent as any);
+      const validation = quizActivityDefinition.validateEvent!(
+        leakedEvent as any,
+      );
       expect(validation.valid).toBe(false);
       expect(validation.code).toBe('PRIVATE_DATA_LEAK');
     });
@@ -64,7 +66,9 @@ describe('Phase 0: Standard Activity Definitions & Adapters', () => {
         },
       };
 
-      const validation = quizActivityDefinition.validateEvent!(cleanEvent as any);
+      const validation = quizActivityDefinition.validateEvent!(
+        cleanEvent as any,
+      );
       expect(validation.valid).toBe(true);
     });
 
@@ -154,7 +158,10 @@ describe('Phase 0: Standard Activity Definitions & Adapters', () => {
         sequence: 1,
         color: '#FF0000',
         brushSize: 4,
-        points: [{ x: 10, y: 10 }, { x: 20, y: 20 }],
+        points: [
+          { x: 10, y: 10 },
+          { x: 20, y: 20 },
+        ],
         timestamp: '2026-09-05T00:00:00Z',
       };
 
@@ -225,7 +232,7 @@ describe('Phase 0: Standard Activity Definitions & Adapters', () => {
       expect(snapshot.completed).toBe(true);
 
       const keepsake = catalogActivityDefinitions.host.buildKeepsake!(
-        catalogActivityDefinitions.host.summarize(snapshot)
+        catalogActivityDefinitions.host.summarize(snapshot),
       );
       expect(keepsake?.kind).toBe('activity');
     });
@@ -380,7 +387,7 @@ describe('Phase 0: Standard Activity Definitions & Adapters', () => {
       expect(snapshot.entriesCount).toBe(1);
 
       const keepsake = catalogActivityDefinitions.passport.buildKeepsake!(
-        catalogActivityDefinitions.passport.summarize(snapshot)
+        catalogActivityDefinitions.passport.summarize(snapshot),
       );
       expect(keepsake?.kind).toBe('activity');
       expect(keepsake?.metadata.stamps).toBe(1);

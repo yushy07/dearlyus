@@ -68,7 +68,10 @@ export const DRAW_TRANSIENT_EVENTS = [
 
 export const DRAW_PRIVATE_FIELDS = [] as const;
 
-export const drawActivityDefinition: ActivityDefinition<DrawSnapshot, DrawEvent> = {
+export const drawActivityDefinition: ActivityDefinition<
+  DrawSnapshot,
+  DrawEvent
+> = {
   activityType: 'draw',
   schemaVersion: 1,
 
@@ -103,7 +106,10 @@ export const drawActivityDefinition: ActivityDefinition<DrawSnapshot, DrawEvent>
     if (event.type === 'draw_batch') {
       const payload = event.payload;
       if (!Array.isArray(payload.points) || payload.points.length === 0) {
-        return { valid: false, message: 'Stroke batch must contain at least one point.' };
+        return {
+          valid: false,
+          message: 'Stroke batch must contain at least one point.',
+        };
       }
       if (!payload.id) {
         return { valid: false, message: 'Stroke batch must have a unique id.' };
@@ -122,7 +128,9 @@ export const drawActivityDefinition: ActivityDefinition<DrawSnapshot, DrawEvent>
           return snapshot;
         }
 
-        const newStrokes = [...snapshot.strokes, batch].sort((a, b) => a.sequence - b.sequence);
+        const newStrokes = [...snapshot.strokes, batch].sort(
+          (a, b) => a.sequence - b.sequence,
+        );
         return {
           ...snapshot,
           strokes: newStrokes,
@@ -160,7 +168,11 @@ export const drawActivityDefinition: ActivityDefinition<DrawSnapshot, DrawEvent>
     }
   },
 
-  transitionRules(_snapshot: DrawSnapshot, _action: string, userId: string): boolean {
+  transitionRules(
+    _snapshot: DrawSnapshot,
+    _action: string,
+    userId: string,
+  ): boolean {
     return Boolean(userId);
   },
 
@@ -195,5 +207,7 @@ export const drawActivityDefinition: ActivityDefinition<DrawSnapshot, DrawEvent>
   },
 };
 
-export const drawActivityAdapter: RealtimeActivityAdapter<DrawSnapshot, DrawEvent> =
-  createAdapterFromDefinition(drawActivityDefinition);
+export const drawActivityAdapter: RealtimeActivityAdapter<
+  DrawSnapshot,
+  DrawEvent
+> = createAdapterFromDefinition(drawActivityDefinition);

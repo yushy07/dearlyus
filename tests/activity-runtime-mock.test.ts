@@ -4,7 +4,10 @@ import {
   MockActivityTransport,
   clearMockBuses,
 } from '../lib/runtime';
-import { quizActivityAdapter, drawActivityAdapter } from '../lib/activity-adapters';
+import {
+  quizActivityAdapter,
+  drawActivityAdapter,
+} from '../lib/activity-adapters';
 
 describe('Phase 1: Activity Runtime & Deterministic Mock Transport', () => {
   beforeEach(() => {
@@ -71,16 +74,22 @@ describe('Phase 1: Activity Runtime & Deterministic Mock Transport', () => {
     await transportB.connect(sessionId, 'user-b');
 
     // Partner A locks answer
-    const lockResultA = await transportA.privateVault.lockAnswer(0, { choiceIndex: 2 });
+    const lockResultA = await transportA.privateVault.lockAnswer(0, {
+      choiceIndex: 2,
+    });
     expect(lockResultA.locked).toBe(true);
     expect(lockResultA.bothLocked).toBe(false);
     expect(transportA.privateVault.isLocked(0, 'user-a')).toBe(true);
     expect(transportA.privateVault.isLocked(0, 'user-b')).toBe(false);
     expect(transportA.privateVault.areBothLocked(0)).toBe(false);
-    await expect(transportA.privateVault.revealAnswers(0)).rejects.toThrow('NOT_READY');
+    await expect(transportA.privateVault.revealAnswers(0)).rejects.toThrow(
+      'NOT_READY',
+    );
 
     // Partner B locks answer
-    const lockResultB = await transportB.privateVault.lockAnswer(0, { choiceIndex: 2 });
+    const lockResultB = await transportB.privateVault.lockAnswer(0, {
+      choiceIndex: 2,
+    });
     expect(lockResultB.locked).toBe(true);
     expect(lockResultB.bothLocked).toBe(true);
     expect(transportA.privateVault.areBothLocked(0)).toBe(true);
@@ -88,8 +97,12 @@ describe('Phase 1: Activity Runtime & Deterministic Mock Transport', () => {
     // Reveal unseals both answers with metadata
     const revealResult = await transportA.privateVault.revealAnswers(0);
     expect(revealResult.answers.length).toBe(2);
-    expect(revealResult.answers.find((a) => a.userId === 'user-a')?.answer).toEqual({ choiceIndex: 2 });
-    expect(revealResult.answers.find((a) => a.userId === 'user-b')?.answer).toEqual({ choiceIndex: 2 });
+    expect(
+      revealResult.answers.find((a) => a.userId === 'user-a')?.answer,
+    ).toEqual({ choiceIndex: 2 });
+    expect(
+      revealResult.answers.find((a) => a.userId === 'user-b')?.answer,
+    ).toEqual({ choiceIndex: 2 });
   });
 
   it('silently ignores duplicate incoming events', async () => {
@@ -130,7 +143,10 @@ describe('Phase 1: Activity Runtime & Deterministic Mock Transport', () => {
       adapter: quizActivityAdapter,
       transport: writer,
     });
-    await writerRuntime.sendEvent('answer_locked', { roundNumber: 0, locked: true });
+    await writerRuntime.sendEvent('answer_locked', {
+      roundNumber: 0,
+      locked: true,
+    });
 
     const reader = new MockActivityTransport();
     await reader.connect(sessionId, 'user-b');
@@ -162,7 +178,10 @@ describe('Phase 1: Activity Runtime & Deterministic Mock Transport', () => {
       partnerBReceived = payload;
     });
 
-    transportA.sendTransient('typing_presence', { isTyping: true, userId: 'user-a' });
+    transportA.sendTransient('typing_presence', {
+      isTyping: true,
+      userId: 'user-a',
+    });
 
     expect(partnerBReceived).toEqual({ isTyping: true, userId: 'user-a' });
     expect(transportA.privateVault.isLocked(0)).toBe(false);
@@ -173,7 +192,9 @@ describe('Phase 1: Activity Runtime & Deterministic Mock Transport', () => {
     const transport = new MockActivityTransport();
     await transport.connect(sessionId, 'artist-1');
 
-    const runtime = createActivityRuntime<import('../lib/activity-adapters').DrawSnapshot>({
+    const runtime = createActivityRuntime<
+      import('../lib/activity-adapters').DrawSnapshot
+    >({
       sessionId,
       activityType: 'draw',
       currentUserId: 'artist-1',
@@ -187,7 +208,10 @@ describe('Phase 1: Activity Runtime & Deterministic Mock Transport', () => {
       sequence: 1,
       color: '#FF4488',
       brushSize: 6,
-      points: [{ x: 50, y: 50 }, { x: 60, y: 70 }],
+      points: [
+        { x: 50, y: 50 },
+        { x: 60, y: 70 },
+      ],
       timestamp: new Date().toISOString(),
     });
 

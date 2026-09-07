@@ -1,4 +1,8 @@
-export type AccountLifecycleStatus = 'active' | 'suspended' | 'deletion_requested' | 'deleted';
+export type AccountLifecycleStatus =
+  | 'active'
+  | 'suspended'
+  | 'deletion_requested'
+  | 'deleted';
 export type CoupleRole = 'owner' | 'partner';
 export type InviteStatus = 'active' | 'accepted' | 'revoked' | 'expired';
 export type InviteViewState =
@@ -10,8 +14,21 @@ export type InviteViewState =
   | 'couple_full'
   | 'self_invite'
   | 'already_connected';
-export type RoomStatus = 'lobby' | 'active' | 'paused' | 'completed' | 'expired' | 'cancelled';
-export type ActivityStatus = 'preparing' | 'active' | 'waiting' | 'revealing' | 'paused' | 'completed' | 'abandoned';
+export type RoomStatus =
+  | 'lobby'
+  | 'active'
+  | 'paused'
+  | 'completed'
+  | 'expired'
+  | 'cancelled';
+export type ActivityStatus =
+  | 'preparing'
+  | 'active'
+  | 'waiting'
+  | 'revealing'
+  | 'paused'
+  | 'completed'
+  | 'abandoned';
 export type KeepsakeStatus = 'draft' | 'finalized' | 'deleted';
 
 export interface AccountProfile {
@@ -124,7 +141,13 @@ export interface PresenceState {
 
 export interface Keepsake {
   id: string;
-  kind: 'photostrip' | 'passport' | 'receipt' | 'letter' | 'scrapbook' | 'activity';
+  kind:
+    | 'photostrip'
+    | 'passport'
+    | 'receipt'
+    | 'letter'
+    | 'scrapbook'
+    | 'activity';
   status: KeepsakeStatus;
   title: string;
   previewUrl: string | null;

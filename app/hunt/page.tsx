@@ -12,7 +12,10 @@ export default function HuntPage() {
   const [seconds, setSeconds] = useState(60);
   const [hunting, setHunting] = useState(false);
   const [snapped, setSnapped] = useState(false);
-  const [scores, setScores] = useState<{ a: number; b: number }>({ a: 0, b: 0 });
+  const [scores, setScores] = useState<{ a: number; b: number }>({
+    a: 0,
+    b: 0,
+  });
   const [confettiActive, setConfettiActive] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
@@ -44,7 +47,11 @@ export default function HuntPage() {
       setCameraError(null);
       sounds.playPop();
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
+        video: {
+          width: { ideal: 640 },
+          height: { ideal: 480 },
+          facingMode: 'user',
+        },
         audio: false,
       });
       streamRef.current = stream;
@@ -54,7 +61,9 @@ export default function HuntPage() {
       }
       setCameraActive(true);
     } catch {
-      setCameraError('Camera access not available. You can still play with manual click validation!');
+      setCameraError(
+        'Camera access not available. You can still play with manual click validation!',
+      );
     }
   };
 
@@ -138,18 +147,47 @@ export default function HuntPage() {
   };
 
   return (
-    <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px', color: 'var(--ink)' }}>
+    <div
+      style={{
+        background: 'var(--paper)',
+        minHeight: '100vh',
+        paddingBottom: '80px',
+        color: 'var(--ink)',
+      }}
+    >
       <Confetti active={confettiActive} />
 
       <header className="bar">
-        <div className="wrap" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div
+          className="wrap"
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <Link className="brand" href="/" onClick={() => sounds.playPop()} aria-label="Dearly Us Home">
+            <Link
+              className="brand"
+              href="/"
+              onClick={() => sounds.playPop()}
+              aria-label="Dearly Us Home"
+            >
               <span className="brand-emblem" aria-hidden="true">
                 <svg width="28" height="28" viewBox="0 0 128 128" fill="none">
                   <rect width="128" height="128" rx="36" fill="#1C1924" />
-                  <path d="M64 77 C51 93 29 86 29 64 C29 45 48 38 64 58" stroke="#FF4E78" strokeWidth="12" strokeLinecap="round" />
-                  <path d="M64 58 C80 38 99 45 99 64 C99 86 77 93 64 77" stroke="#437EEB" strokeWidth="12" strokeLinecap="round" />
+                  <path
+                    d="M64 77 C51 93 29 86 29 64 C29 45 48 38 64 58"
+                    stroke="#FF4E78"
+                    strokeWidth="12"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M64 58 C80 38 99 45 99 64 C99 86 77 93 64 77"
+                    stroke="#437EEB"
+                    strokeWidth="12"
+                    strokeLinecap="round"
+                  />
                   <circle cx="64" cy="67" r="5" fill="#FFFFFF" />
                 </svg>
               </span>
@@ -176,10 +214,17 @@ export default function HuntPage() {
                 gap: '6px',
               }}
             >
-              <span>{partnerA}:</span> <b style={{ color: 'var(--pink)' }}>{scores.a} PTS</b> · <span>{partnerB}:</span> <b style={{ color: 'var(--blue)' }}>{scores.b} PTS</b>
+              <span>{partnerA}:</span>{' '}
+              <b style={{ color: 'var(--pink)' }}>{scores.a} PTS</b> ·{' '}
+              <span>{partnerB}:</span>{' '}
+              <b style={{ color: 'var(--blue)' }}>{scores.b} PTS</b>
             </span>
 
-            <Link className="btn btn-ghost" href="/activity" onClick={() => sounds.playPop()}>
+            <Link
+              className="btn btn-ghost"
+              href="/activity"
+              onClick={() => sounds.playPop()}
+            >
               Activities ▷
             </Link>
           </div>
@@ -189,7 +234,9 @@ export default function HuntPage() {
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '720px' }}>
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
           <span className="eyebrow">Snap Hunt · 60s Room Scavenger</span>
-          <h1 style={{ fontSize: 'clamp(28px, 4vw, 40px)', marginBottom: '8px' }}>
+          <h1
+            style={{ fontSize: 'clamp(28px, 4vw, 40px)', marginBottom: '8px' }}
+          >
             Race to find it, <span className="grad">snap it</span>.
           </h1>
           <p style={{ color: 'var(--ink-soft)', fontSize: '15px' }}>
@@ -209,24 +256,60 @@ export default function HuntPage() {
         >
           {/* Prompt Banner */}
           <div style={{ fontSize: '42px', marginBottom: '8px' }}>🔍</div>
-          <h2 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '14px', maxWidth: '520px', margin: '0 auto 14px', lineHeight: 1.35 }}>
+          <h2
+            style={{
+              fontSize: '22px',
+              fontWeight: 800,
+              marginBottom: '14px',
+              maxWidth: '520px',
+              margin: '0 auto 14px',
+              lineHeight: 1.35,
+            }}
+          >
             {prompts[promptIdx]}
           </h2>
 
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '44px', fontWeight: 900, color: 'var(--pink)', marginBottom: '20px' }}>
+          <div
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '44px',
+              fontWeight: 900,
+              color: 'var(--pink)',
+              marginBottom: '20px',
+            }}
+          >
             {hunting ? `00:${String(seconds).padStart(2, '0')}` : '60 Seconds'}
           </div>
 
           {/* Camera Viewport (Optional Live Snap) */}
-          <div style={{ maxWidth: '420px', margin: '0 auto 20px', position: 'relative' }}>
+          <div
+            style={{
+              maxWidth: '420px',
+              margin: '0 auto 20px',
+              position: 'relative',
+            }}
+          >
             {cameraActive ? (
-              <div style={{ borderRadius: '16px', overflow: 'hidden', border: '2px solid var(--line)', background: '#000', position: 'relative' }}>
+              <div
+                style={{
+                  borderRadius: '16px',
+                  overflow: 'hidden',
+                  border: '2px solid var(--line)',
+                  background: '#000',
+                  position: 'relative',
+                }}
+              >
                 <video
                   ref={videoRef}
                   autoPlay
                   playsInline
                   muted
-                  style={{ width: '100%', height: '240px', objectFit: 'cover', transform: 'scaleX(-1)' }}
+                  style={{
+                    width: '100%',
+                    height: '240px',
+                    objectFit: 'cover',
+                    transform: 'scaleX(-1)',
+                  }}
                 />
                 <button
                   onClick={stopCamera}
@@ -250,21 +333,40 @@ export default function HuntPage() {
               <button
                 onClick={startCamera}
                 className="btn btn-ghost"
-                style={{ fontSize: '13px', padding: '8px 16px', borderRadius: '10px' }}
+                style={{
+                  fontSize: '13px',
+                  padding: '8px 16px',
+                  borderRadius: '10px',
+                }}
               >
                 📹 Turn On Webcam for Live Snaps
               </button>
             )}
 
             {cameraError && (
-              <p style={{ color: '#EF4444', fontSize: '12px', marginTop: '6px' }}>{cameraError}</p>
+              <p
+                style={{ color: '#EF4444', fontSize: '12px', marginTop: '6px' }}
+              >
+                {cameraError}
+              </p>
             )}
           </div>
 
           {/* Action Buttons */}
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <div
+            style={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+            }}
+          >
             {!hunting ? (
-              <button className="btn btn-grad" onClick={startHunt} style={{ padding: '12px 32px', fontSize: '16px' }}>
+              <button
+                className="btn btn-grad"
+                onClick={startHunt}
+                style={{ padding: '12px 32px', fontSize: '16px' }}
+              >
                 Start Scavenger Hunt ▷
               </button>
             ) : (
@@ -323,15 +425,29 @@ export default function HuntPage() {
                   <img
                     src={capturedPhoto}
                     alt="Scavenger Snap"
-                    style={{ width: '240px', height: '180px', objectFit: 'cover', borderRadius: '4px' }}
+                    style={{
+                      width: '240px',
+                      height: '180px',
+                      objectFit: 'cover',
+                      borderRadius: '4px',
+                    }}
                   />
-                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--ink-soft)', marginTop: '8px' }}>
+                  <div
+                    style={{
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '12px',
+                      color: 'var(--ink-soft)',
+                      marginTop: '8px',
+                    }}
+                  >
                     Captured in {60 - seconds}s · {partnerA} &amp; {partnerB}
                   </div>
                 </div>
               )}
 
-              <div style={{ color: '#0a7d4d', fontWeight: 800, fontSize: '15px' }}>
+              <div
+                style={{ color: '#0a7d4d', fontWeight: 800, fontSize: '15px' }}
+              >
                 🎉 Round Captured! Point saved on couple scoreboard.
               </div>
             </div>

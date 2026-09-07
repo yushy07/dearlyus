@@ -1,6 +1,6 @@
 /**
  * Cupidot Voice & Speech Synthesis Engine
- * 
+ *
  * Provides:
  * 1. Procedural Animal Crossing / Celeste retro synth chirps with rich emotions:
  *    - Cute happy / love chirps (sweet sine/triangle harmonics)
@@ -37,7 +37,8 @@ function getAudioContext(): AudioContext | null {
   if (typeof window === 'undefined') return null;
   try {
     if (!audioCtx) {
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      const AudioContextClass =
+        window.AudioContext || (window as any).webkitAudioContext;
       if (AudioContextClass) audioCtx = new AudioContextClass();
     }
     if (audioCtx && audioCtx.state === 'suspended') {
@@ -53,7 +54,8 @@ export function getStoredVoiceMode(): VoiceMode {
   if (typeof window === 'undefined') return 'chirp';
   try {
     const saved = localStorage.getItem(STORAGE_KEY) as VoiceMode;
-    if (saved === 'chirp' || saved === 'speech' || saved === 'mute') return saved;
+    if (saved === 'chirp' || saved === 'speech' || saved === 'mute')
+      return saved;
   } catch {}
   return 'chirp';
 }
@@ -62,7 +64,9 @@ export function setStoredVoiceMode(mode: VoiceMode): void {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(STORAGE_KEY, mode);
-    window.dispatchEvent(new CustomEvent('dearly_cupidot_voice_mode_changed', { detail: mode }));
+    window.dispatchEvent(
+      new CustomEvent('dearly_cupidot_voice_mode_changed', { detail: mode }),
+    );
   } catch {}
 }
 
@@ -74,7 +78,7 @@ function playSingleChirp(
   freq: number,
   duration = 0.055,
   mood: VoiceMood = 'talking',
-  isEndPunctuation = false
+  isEndPunctuation = false,
 ) {
   try {
     const now = ctx.currentTime;
@@ -112,7 +116,10 @@ function playSingleChirp(
     }
 
     osc.frequency.setValueAtTime(freq, now);
-    osc.frequency.exponentialRampToValueAtTime(Math.max(targetFreq, 80), now + duration);
+    osc.frequency.exponentialRampToValueAtTime(
+      Math.max(targetFreq, 80),
+      now + duration,
+    );
 
     // Gain envelope tailored to emotional intensity
     let maxGain = 0.07;
@@ -157,7 +164,7 @@ function playSingleChirp(
 export function playCupidotChirps(
   text: string,
   mood: VoiceMood = 'talking',
-  onComplete?: () => void
+  onComplete?: () => void,
 ): void {
   stopCupidotSpeech();
   const ctx = getAudioContext();
@@ -176,10 +183,10 @@ export function playCupidotChirps(
     love: 660,
     thinking: 520,
     celebration: 820,
-    angry: 380,    // lower, grumbly robot growls
+    angry: 380, // lower, grumbly robot growls
     sassy: 680,
-    shock: 920,    // squeaky high pitch
-    pouty: 460,    // dejected low sigh
+    shock: 920, // squeaky high pitch
+    pouty: 460, // dejected low sigh
     tweaking: 780, // hyperactive erratic pitch
   };
 
@@ -188,16 +195,16 @@ export function playCupidotChirps(
 
   // Emotional cadence pacing
   const wordPacing: Record<VoiceMood, number> = {
-    angry: 48,      // rapid, frustrated burst
-    tweaking: 42,   // hyperactive panic
+    angry: 48, // rapid, frustrated burst
+    tweaking: 42, // hyperactive panic
     shock: 55,
     happy: 65,
     talking: 68,
     sassy: 72,
-    love: 85,       // warm, lingering
-    thinking: 95,   // slow, contemplative
+    love: 85, // warm, lingering
+    thinking: 95, // slow, contemplative
     celebration: 60,
-    pouty: 100,     // slow, sulking
+    pouty: 100, // slow, sulking
   };
 
   const pace = wordPacing[mood] || 65;
@@ -215,15 +222,16 @@ export function playCupidotChirps(
         // Alternates between grumpy low buzz and indignant high squeak
         pitchOffset = s % 2 === 0 ? -90 : 110;
       } else if (mood === 'shock') {
-        pitchOffset = 180 + (s * 60);
+        pitchOffset = 180 + s * 60;
       } else if (mood === 'pouty') {
-        pitchOffset = -60 - (s * 40);
+        pitchOffset = -60 - s * 40;
       } else if (mood === 'tweaking') {
         pitchOffset = (Math.random() - 0.5) * 280;
       }
 
       const freq = Math.max(220, baseFreq + pitchOffset);
-      const chirpDuration = mood === 'angry' || mood === 'tweaking' ? 0.042 : 0.058;
+      const chirpDuration =
+        mood === 'angry' || mood === 'tweaking' ? 0.042 : 0.058;
 
       const timer = setTimeout(() => {
         if (!isSpeaking) return;
@@ -253,7 +261,7 @@ export function speakCupidot(
     mood?: VoiceMood;
     onStart?: () => void;
     onEnd?: () => void;
-  }
+  },
 ): void {
   const mode = getStoredVoiceMode();
   if (mode === 'mute') {
@@ -343,7 +351,7 @@ export function speakCupidot(
             v.name.includes('Samantha') ||
             v.name.includes('Karen') ||
             v.name.includes('Victoria')) &&
-          v.lang.startsWith('en')
+          v.lang.startsWith('en'),
       );
       if (preferred) utterance.voice = preferred;
 

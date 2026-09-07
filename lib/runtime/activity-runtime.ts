@@ -1,10 +1,6 @@
 'use client';
 
-import type {
-  ActivityRuntime,
-  ActivityTransport,
-  PrivateVault,
-} from './types';
+import type { ActivityRuntime, ActivityTransport, PrivateVault } from './types';
 import type {
   StandardSessionState,
   StandardRecoveryState,
@@ -23,20 +19,25 @@ export interface CreateActivityRuntimeOptions<TSnapshot = any> {
   initialInput?: StartActivityInput;
 }
 
-export function createActivityRuntime<TSnapshot extends Record<string, unknown> = Record<string, unknown>>(
-  options: CreateActivityRuntimeOptions<TSnapshot>
+export function createActivityRuntime<
+  TSnapshot extends Record<string, unknown> = Record<string, unknown>,
+>(
+  options: CreateActivityRuntimeOptions<TSnapshot>,
 ): ActivityRuntime<TSnapshot> {
-  const { sessionId, activityType, currentUserId, adapter, transport } = options;
+  const { sessionId, activityType, currentUserId, adapter, transport } =
+    options;
 
   let currentSnapshot: TSnapshot = adapter.createInitialSnapshot(
-    options.initialInput || { roomCode: 'local-room', userId: currentUserId }
+    options.initialInput || { roomCode: 'local-room', userId: currentUserId },
   );
   let lastSequence = 0;
   let revision = 1;
   let recoveryState: StandardRecoveryState = 'idle';
 
   const seenEventIds = new Set<string>();
-  const listeners = new Set<(snapshot: TSnapshot, event?: StandardActivityEvent) => void>();
+  const listeners = new Set<
+    (snapshot: TSnapshot, event?: StandardActivityEvent) => void
+  >();
   const recoveryListeners = new Set<(state: StandardRecoveryState) => void>();
 
   const setRecoveryState = (state: StandardRecoveryState) => {
@@ -56,7 +57,7 @@ export function createActivityRuntime<TSnapshot extends Record<string, unknown> 
     // 2. Detect sequence gaps and trigger recovery
     if (event.sequence > lastSequence + 1 && lastSequence > 0) {
       console.warn(
-        `[ActivityRuntime] Event gap detected: lastSequence=${lastSequence}, incoming=${event.sequence}. Triggering replay recovery.`
+        `[ActivityRuntime] Event gap detected: lastSequence=${lastSequence}, incoming=${event.sequence}. Triggering replay recovery.`,
       );
       void requestRecovery(lastSequence);
     }
@@ -67,7 +68,10 @@ export function createActivityRuntime<TSnapshot extends Record<string, unknown> 
     // 3. Validate and reduce into current snapshot
     const validation = adapter.validateEvent(event as any);
     if (!validation.valid) {
-      console.warn(`[ActivityRuntime] Rejected invalid event '${event.type}':`, validation.message);
+      console.warn(
+        `[ActivityRuntime] Rejected invalid event '${event.type}':`,
+        validation.message,
+      );
       return;
     }
 
@@ -90,10 +94,19 @@ export function createActivityRuntime<TSnapshot extends Record<string, unknown> 
     setRecoveryState(state);
   });
 
-  const sendEvent = async (type: string, payload: unknown): Promise<StandardActivityEvent | null> => {
-    const actionAllowed = adapter.canTransition(currentSnapshot, type, currentUserId);
+  const sendEvent = async (
+    type: string,
+    payload: unknown,
+  ): Promise<StandardActivityEvent | null> => {
+    const actionAllowed = adapter.canTransition(
+      currentSnapshot,
+      type,
+      currentUserId,
+    );
     if (!actionAllowed) {
-      console.warn(`[ActivityRuntime] Transition '${type}' rejected by adapter transition rules.`);
+      console.warn(
+        `[ActivityRuntime] Transition '${type}' rejected by adapter transition rules.`,
+      );
       return null;
     }
     return await transport.sendEvent(type, payload, revision);
@@ -110,7 +123,11 @@ export function createActivityRuntime<TSnapshot extends Record<string, unknown> 
       if (recovered) {
         if (recovered.snapshot && afterSequence === 0) {
           currentSnapshot = recovered.snapshot;
-          const recoveredSequence = Number(recovered.lastSequence ?? (recovered.snapshot as any).lastSequence ?? 0);
+          const recoveredSequence = Number(
+            recovered.lastSequence ??
+              (recovered.snapshot as any).lastSequence ??
+              0,
+          );
           lastSequence = Math.max(lastSequence, recoveredSequence);
         }
         if (Array.isArray(recovered.events)) {
@@ -124,7 +141,9 @@ export function createActivityRuntime<TSnapshot extends Record<string, unknown> 
     }
   };
 
-  const completeActivity = async (resultSnapshot?: Record<string, unknown>): Promise<ActivityResult> => {
+  const completeActivity = async (
+    resultSnapshot?: Record<string, unknown>,
+  ): Promise<ActivityResult> => {
     const finalSnapshot = {
       ...currentSnapshot,
       ...resultSnapshot,
@@ -142,16 +161,23 @@ export function createActivityRuntime<TSnapshot extends Record<string, unknown> 
     await transport.setPaused(paused);
   };
 
-  const subscribe = (listener: (snapshot: TSnapshot, event?: StandardActivityEvent) => void): (() => void) => {
+  const subscribe = (
+    listener: (snapshot: TSnapshot, event?: StandardActivityEvent) => void,
+  ): (() => void) => {
     listeners.add(listener);
     return () => listeners.delete(listener);
   };
 
-  const subscribeTransient = (event: string, listener: (payload: any) => void): (() => void) => {
+  const subscribeTransient = (
+    event: string,
+    listener: (payload: any) => void,
+  ): (() => void) => {
     return transport.onTransient(event, listener);
   };
 
-  const subscribeRecoveryState = (listener: (state: StandardRecoveryState) => void): (() => void) => {
+  const subscribeRecoveryState = (
+    listener: (state: StandardRecoveryState) => void,
+  ): (() => void) => {
     recoveryListeners.add(listener);
     return () => recoveryListeners.delete(listener);
   };
@@ -169,7 +195,8 @@ export function createActivityRuntime<TSnapshot extends Record<string, unknown> 
     adapter,
     currentUserId,
     getSnapshot: () => currentSnapshot,
-    getSessionState: () => (currentSnapshot.status as StandardSessionState) || 'drafting',
+    getSessionState: () =>
+      (currentSnapshot.status as StandardSessionState) || 'drafting',
     getRecoveryState: () => recoveryState,
     getLastSequence: () => lastSequence,
     getRevision: () => revision,

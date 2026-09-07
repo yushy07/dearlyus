@@ -7,21 +7,55 @@ import { sounds } from '@/lib/sound';
 import { useCoupleProfile } from '@/lib/couple';
 
 const SHIRT_COLORS = [
-  { id: 'vintage-white', name: 'Vintage Off-White', hex: '#F7F5F0', textHex: '#1E1E24' },
-  { id: 'washed-black', name: 'Washed Charcoal', hex: '#26262B', textHex: '#F8F9FB' },
+  {
+    id: 'vintage-white',
+    name: 'Vintage Off-White',
+    hex: '#F7F5F0',
+    textHex: '#1E1E24',
+  },
+  {
+    id: 'washed-black',
+    name: 'Washed Charcoal',
+    hex: '#26262B',
+    textHex: '#F8F9FB',
+  },
   { id: 'baby-pink', name: 'Blush Pink', hex: '#FDECEF', textHex: '#3D2A30' },
   { id: 'sky-blue', name: 'Sky Blue', hex: '#E8F1F8', textHex: '#223843' },
   { id: 'matcha', name: 'Matcha Sage', hex: '#E9EFE6', textHex: '#2B3A28' },
-  { id: 'navy', name: 'Deep Midnight Navy', hex: '#161E2E', textHex: '#ECEFF4' },
+  {
+    id: 'navy',
+    name: 'Deep Midnight Navy',
+    hex: '#161E2E',
+    textHex: '#ECEFF4',
+  },
 ];
 
-const SHIRT_EMOJIS = ['🫰', '💖', '✨', '☕', '✈️', '🌏', '🍕', '🧸', '🌸', '💌', '🎬', '🍜'];
+const SHIRT_EMOJIS = [
+  '🫰',
+  '💖',
+  '✨',
+  '☕',
+  '✈️',
+  '🌏',
+  '🍕',
+  '🧸',
+  '🌸',
+  '💌',
+  '🎬',
+  '🍜',
+];
 
 export default function ShirtsStudioPage() {
   const { partnerA, partnerB, cityA, cityB } = useCoupleProfile();
   const [selectedColor, setSelectedColor] = useState(SHIRT_COLORS[0]);
-  const [customText, setCustomText] = useState(`${cityA || partnerA} ♡ ${cityB || partnerB}`);
-  const [placedStickers, setPlacedStickers] = useState<string[]>(['🫰', '✈️', '💖']);
+  const [customText, setCustomText] = useState(
+    `${cityA || partnerA} ♡ ${cityB || partnerB}`,
+  );
+  const [placedStickers, setPlacedStickers] = useState<string[]>([
+    '🫰',
+    '✈️',
+    '💖',
+  ]);
   const [viewSide, setViewSide] = useState<'FRONT' | 'BACK'>('FRONT');
   const [saved, setSaved] = useState(false);
   const [confettiActive, setConfettiActive] = useState(false);
@@ -108,7 +142,11 @@ export default function ShirtsStudioPage() {
         // Footer
         ctx.fillStyle = '#8B8E98';
         ctx.font = '13px monospace';
-        ctx.fillText(`DESIGNED BY ${partnerA.toUpperCase()} & ${partnerB.toUpperCase()}`, 400, 830);
+        ctx.fillText(
+          `DESIGNED BY ${partnerA.toUpperCase()} & ${partnerB.toUpperCase()}`,
+          400,
+          830,
+        );
 
         const link = document.createElement('a');
         link.download = `dearly-us-matching-shirt-${Date.now()}.png`;
@@ -125,13 +163,31 @@ export default function ShirtsStudioPage() {
   };
 
   return (
-    <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px', color: 'var(--ink)' }}>
-      <Ribbon text={<>👕 Couple Matching Outfits · <b>Interactive Outfit Designer for Two</b></>} />
+    <div
+      style={{
+        background: 'var(--paper)',
+        minHeight: '100vh',
+        paddingBottom: '80px',
+        color: 'var(--ink)',
+      }}
+    >
+      <Ribbon
+        text={
+          <>
+            👕 Couple Matching Outfits ·{' '}
+            <b>Interactive Outfit Designer for Two</b>
+          </>
+        }
+      />
       <Confetti active={confettiActive} />
 
       <Navbar
         rightAction={
-          <Link className="btn btn-ghost" href="/fashion" style={{ padding: '6px 12px', fontSize: '13px' }}>
+          <Link
+            className="btn btn-ghost"
+            href="/fashion"
+            style={{ padding: '6px 12px', fontSize: '13px' }}
+          >
             Fashion Runway ▷
           </Link>
         }
@@ -140,17 +196,42 @@ export default function ShirtsStudioPage() {
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '980px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <span className="eyebrow">Digital Outfit Studio</span>
-          <h1 style={{ fontSize: 'clamp(28px, 5vw, 44px)', fontWeight: 800, margin: '8px 0' }}>
+          <h1
+            style={{
+              fontSize: 'clamp(28px, 5vw, 44px)',
+              fontWeight: 800,
+              margin: '8px 0',
+            }}
+          >
             Design Matching <span className="grad">Couple Outfits</span>
           </h1>
-          <p style={{ color: 'var(--ink-soft)', fontSize: '16px', maxWidth: '54ch', margin: '0 auto' }}>
-            Customize matching shirts with your city names, coordinates, and photo stickers. Export high-res digital mockups for your couple scrapbook.
+          <p
+            style={{
+              color: 'var(--ink-soft)',
+              fontSize: '16px',
+              maxWidth: '54ch',
+              margin: '0 auto',
+            }}
+          >
+            Customize matching shirts with your city names, coordinates, and
+            photo stickers. Export high-res digital mockups for your couple
+            scrapbook.
           </p>
         </div>
 
         <div className="booth-showcase-grid">
           {/* Shirt Visual Canvas */}
-          <div className="booth-box" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '36px 20px', minHeight: '440px' }}>
+          <div
+            className="booth-box"
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '36px 20px',
+              minHeight: '440px',
+            }}
+          >
             {/* Front / Back Toggle */}
             <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
               <button
@@ -177,7 +258,8 @@ export default function ShirtsStudioPage() {
                 height: '320px',
                 background: selectedColor.hex,
                 borderRadius: '24px 24px 12px 12px',
-                boxShadow: '0 16px 40px rgba(0,0,0,0.12), inset 0 2px 4px rgba(255,255,255,0.4)',
+                boxShadow:
+                  '0 16px 40px rgba(0,0,0,0.12), inset 0 2px 4px rgba(255,255,255,0.4)',
                 border: '2px solid rgba(0,0,0,0.08)',
                 display: 'flex',
                 flexDirection: 'column',
@@ -232,28 +314,82 @@ export default function ShirtsStudioPage() {
                       gap: '4px',
                     }}
                   >
-                    <div style={{ flex: 1, background: 'var(--paper)', borderRadius: '2px', overflow: 'hidden' }}>
-                      <img src="/photos/frame1.webp" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <div
+                      style={{
+                        flex: 1,
+                        background: 'var(--paper)',
+                        borderRadius: '2px',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      <img
+                        src="/photos/frame1.webp"
+                        alt=""
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                        }}
+                      />
                     </div>
-                    <div style={{ flex: 1, background: 'var(--paper)', borderRadius: '2px', overflow: 'hidden' }}>
-                      <img src="/photos/frame2.webp" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <div
+                      style={{
+                        flex: 1,
+                        background: 'var(--paper)',
+                        borderRadius: '2px',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      <img
+                        src="/photos/frame2.webp"
+                        alt=""
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                        }}
+                      />
                     </div>
                   </div>
 
                   {/* Sticker Badges */}
-                  <div style={{ display: 'flex', gap: '6px', marginTop: '12px' }}>
+                  <div
+                    style={{ display: 'flex', gap: '6px', marginTop: '12px' }}
+                  >
                     {placedStickers.map((stk, i) => (
-                      <span key={i} style={{ fontSize: '18px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }}>
+                      <span
+                        key={i}
+                        style={{
+                          fontSize: '18px',
+                          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
+                        }}
+                      >
                         {stk}
                       </span>
                     ))}
                   </div>
                 </>
               ) : (
-                <div style={{ textAlign: 'center', color: selectedColor.textHex }}>
-                  <div style={{ fontSize: '42px', marginBottom: '8px' }}>💖</div>
-                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', fontWeight: 800 }}>DEARLY US CLUB</div>
-                  <div style={{ fontSize: '11px', opacity: 0.7, marginTop: '4px' }}>EST. 2026 · DISTANCE CLOSED</div>
+                <div
+                  style={{ textAlign: 'center', color: selectedColor.textHex }}
+                >
+                  <div style={{ fontSize: '42px', marginBottom: '8px' }}>
+                    💖
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '14px',
+                      fontWeight: 800,
+                    }}
+                  >
+                    DEARLY US CLUB
+                  </div>
+                  <div
+                    style={{ fontSize: '11px', opacity: 0.7, marginTop: '4px' }}
+                  >
+                    EST. 2026 · DISTANCE CLOSED
+                  </div>
                 </div>
               )}
             </div>
@@ -262,11 +398,27 @@ export default function ShirtsStudioPage() {
           {/* Customizer Panel */}
           <div className="booth-box">
             <span className="eyebrow">Design Controls</span>
-            <h3 style={{ fontSize: '20px', fontWeight: 800, margin: '6px 0 16px' }}>Customize Twin Look</h3>
+            <h3
+              style={{
+                fontSize: '20px',
+                fontWeight: 800,
+                margin: '6px 0 16px',
+              }}
+            >
+              Customize Twin Look
+            </h3>
 
             {/* Palette */}
             <div style={{ marginBottom: '18px' }}>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  marginBottom: '8px',
+                }}
+              >
                 Fabric Color: <b>{selectedColor.name}</b>
               </label>
               <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
@@ -279,7 +431,10 @@ export default function ShirtsStudioPage() {
                       height: '32px',
                       borderRadius: '50%',
                       background: c.hex,
-                      border: selectedColor.id === c.id ? '3px solid var(--pink)' : '1px solid var(--line)',
+                      border:
+                        selectedColor.id === c.id
+                          ? '3px solid var(--pink)'
+                          : '1px solid var(--line)',
                       boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
                       cursor: 'pointer',
                     }}
@@ -291,7 +446,15 @@ export default function ShirtsStudioPage() {
 
             {/* Custom Cities / Coordinates Text */}
             <div style={{ marginBottom: '18px' }}>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  marginBottom: '6px',
+                }}
+              >
                 Chest Typography:
               </label>
               <input
@@ -299,16 +462,38 @@ export default function ShirtsStudioPage() {
                 value={customText}
                 onChange={(e) => setCustomText(e.target.value)}
                 maxLength={30}
-                style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--line)', fontSize: '14px', fontWeight: 700 }}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--line)',
+                  fontSize: '14px',
+                  fontWeight: 700,
+                }}
               />
             </div>
 
             {/* Stickers Palette */}
             <div style={{ marginBottom: '24px' }}>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  marginBottom: '8px',
+                }}
+              >
                 Add Photo Stickers ({placedStickers.length}/6):
               </label>
-              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '10px' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '6px',
+                  flexWrap: 'wrap',
+                  marginBottom: '10px',
+                }}
+              >
                 {SHIRT_EMOJIS.map((emoji) => (
                   <button
                     key={emoji}
@@ -353,9 +538,16 @@ export default function ShirtsStudioPage() {
             <button
               onClick={handleExportPNG}
               className="btn btn-primary"
-              style={{ width: '100%', padding: '14px', fontSize: '15px', justifyContent: 'center' }}
+              style={{
+                width: '100%',
+                padding: '14px',
+                fontSize: '15px',
+                justifyContent: 'center',
+              }}
             >
-              {saved ? '✓ Digital Outfit Saved!' : 'Download Outfit Mockup PNG 💾'}
+              {saved
+                ? '✓ Digital Outfit Saved!'
+                : 'Download Outfit Mockup PNG 💾'}
             </button>
           </div>
         </div>

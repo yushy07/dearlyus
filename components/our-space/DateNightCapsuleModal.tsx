@@ -33,7 +33,9 @@ export function DateNightCapsuleModal({
 }: DateNightCapsuleModalProps) {
   const { saveCapsule, saving } = useKeepsakeWriter();
 
-  const [title, setTitle] = useState(`Date Night · ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`);
+  const [title, setTitle] = useState(
+    `Date Night · ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
+  );
   const [selectedMood, setSelectedMood] = useState(defaultMood);
   const [activities, setActivities] = useState<string[]>(defaultActivities);
   const [newActivityInput, setNewActivityInput] = useState('');
@@ -68,7 +70,7 @@ export function DateNightCapsuleModal({
     sounds.playChime();
     setTimeout(() => {
       setCupidotSummary(
-        `Cupidot observes: An evening painted in ${selectedMood} hues between ${partnerA} and ${partnerB}. Whether exchanging telepathic quiz glances or sharing quiet laughter, this capsule seals another irreplaceable milestone in your ongoing story.`
+        `Cupidot observes: An evening painted in ${selectedMood} hues between ${partnerA} and ${partnerB}. Whether exchanging telepathic quiz glances or sharing quiet laughter, this capsule seals another irreplaceable milestone in your ongoing story.`,
       );
       setIsGeneratingAi(false);
     }, 450);
@@ -81,7 +83,8 @@ export function DateNightCapsuleModal({
         title,
         mood: selectedMood,
         activities,
-        favoriteMoment: favoriteMoment || 'A golden night together across the miles.',
+        favoriteMoment:
+          favoriteMoment || 'A golden night together across the miles.',
         privateNote,
         cupidotSummary: cupidotSummary || undefined,
         partnerA,
@@ -130,11 +133,26 @@ export function DateNightCapsuleModal({
         }}
       >
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '20px',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '24px' }}>📦</span>
             <div>
-              <h2 id="capsule-modal-title" style={{ fontSize: '20px', fontWeight: 800, margin: 0, color: '#111827' }}>
+              <h2
+                id="capsule-modal-title"
+                style={{
+                  fontSize: '20px',
+                  fontWeight: 800,
+                  margin: 0,
+                  color: '#111827',
+                }}
+              >
                 Seal Date Night Capsule
               </h2>
               <span style={{ fontSize: '12px', color: '#6B7280' }}>
@@ -166,7 +184,15 @@ export function DateNightCapsuleModal({
 
         {/* Capsule Title */}
         <div style={{ marginBottom: '18px' }}>
-          <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 700, color: '#374151', marginBottom: '6px' }}>
+          <label
+            style={{
+              display: 'block',
+              fontSize: '12.5px',
+              fontWeight: 700,
+              color: '#374151',
+              marginBottom: '6px',
+            }}
+          >
             Capsule Name
           </label>
           <input
@@ -186,7 +212,15 @@ export function DateNightCapsuleModal({
 
         {/* Mood Selection (powers Memory Weather) */}
         <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 700, color: '#374151', marginBottom: '6px' }}>
+          <label
+            style={{
+              display: 'block',
+              fontSize: '12.5px',
+              fontWeight: 700,
+              color: '#374151',
+              marginBottom: '6px',
+            }}
+          >
             Session Atmosphere (Explicit Mood)
           </label>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -198,8 +232,12 @@ export function DateNightCapsuleModal({
                 style={{
                   padding: '6px 14px',
                   borderRadius: '999px',
-                  border: selectedMood === m.key ? `2px solid ${m.color}` : '1px solid #E5E7EB',
-                  background: selectedMood === m.key ? `${m.color}15` : '#F9FAFB',
+                  border:
+                    selectedMood === m.key
+                      ? `2px solid ${m.color}`
+                      : '1px solid #E5E7EB',
+                  background:
+                    selectedMood === m.key ? `${m.color}15` : '#F9FAFB',
                   color: selectedMood === m.key ? m.color : '#4B5563',
                   fontSize: '12.5px',
                   fontWeight: 700,
@@ -214,10 +252,25 @@ export function DateNightCapsuleModal({
 
         {/* Activities Explored */}
         <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 700, color: '#374151', marginBottom: '6px' }}>
+          <label
+            style={{
+              display: 'block',
+              fontSize: '12.5px',
+              fontWeight: 700,
+              color: '#374151',
+              marginBottom: '6px',
+            }}
+          >
             Activities Explored Tonight
           </label>
-          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '8px' }}>
+          <div
+            style={{
+              display: 'flex',
+              gap: '6px',
+              flexWrap: 'wrap',
+              marginBottom: '8px',
+            }}
+          >
             {activities.map((act, idx) => (
               <span
                 key={idx}
@@ -237,7 +290,13 @@ export function DateNightCapsuleModal({
                 <button
                   type="button"
                   onClick={() => handleRemoveActivity(idx)}
-                  style={{ background: 'none', border: 'none', color: '#BE123C', cursor: 'pointer', padding: '0 2px' }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#BE123C',
+                    cursor: 'pointer',
+                    padding: '0 2px',
+                  }}
                 >
                   ×
                 </button>
@@ -272,7 +331,15 @@ export function DateNightCapsuleModal({
 
         {/* Favorite Moment */}
         <div style={{ marginBottom: '18px' }}>
-          <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 700, color: '#374151', marginBottom: '6px' }}>
+          <label
+            style={{
+              display: 'block',
+              fontSize: '12.5px',
+              fontWeight: 700,
+              color: '#374151',
+              marginBottom: '6px',
+            }}
+          >
             Our Favorite Moment / Highlight
           </label>
           <textarea
@@ -294,7 +361,15 @@ export function DateNightCapsuleModal({
 
         {/* Private Note */}
         <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 700, color: '#374151', marginBottom: '6px' }}>
+          <label
+            style={{
+              display: 'block',
+              fontSize: '12.5px',
+              fontWeight: 700,
+              color: '#374151',
+              marginBottom: '6px',
+            }}
+          >
             Private Note for Our Future Selves
           </label>
           <textarea
@@ -315,9 +390,26 @@ export function DateNightCapsuleModal({
         </div>
 
         {/* Cupidot AI Reflection */}
-        <div style={{ marginBottom: '24px', background: '#FFFDF5', padding: '16px', borderRadius: '16px', border: '1px solid #FEF08A' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#854D0E' }}>
+        <div
+          style={{
+            marginBottom: '24px',
+            background: '#FFFDF5',
+            padding: '16px',
+            borderRadius: '16px',
+            border: '1px solid #FEF08A',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '8px',
+            }}
+          >
+            <span
+              style={{ fontSize: '12.5px', fontWeight: 700, color: '#854D0E' }}
+            >
               ✨ Optional Cupidot Reflection
             </span>
             <button
@@ -339,18 +431,35 @@ export function DateNightCapsuleModal({
             </button>
           </div>
           {cupidotSummary ? (
-            <p style={{ fontSize: '13px', color: '#713F12', lineHeight: 1.5, margin: 0, fontStyle: 'italic' }}>
+            <p
+              style={{
+                fontSize: '13px',
+                color: '#713F12',
+                lineHeight: 1.5,
+                margin: 0,
+                fontStyle: 'italic',
+              }}
+            >
               &ldquo;{cupidotSummary}&rdquo;
             </p>
           ) : (
             <p style={{ fontSize: '12px', color: '#A16207', margin: 0 }}>
-              Generates a gentle couple reflection without sending any passwords, tokens, or private answers.
+              Generates a gentle couple reflection without sending any
+              passwords, tokens, or private answers.
             </p>
           )}
         </div>
 
         {/* Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '16px', borderTop: '1px solid #F3F4F6' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingTop: '16px',
+            borderTop: '1px solid #F3F4F6',
+          }}
+        >
           <button
             type="button"
             onClick={onClose}

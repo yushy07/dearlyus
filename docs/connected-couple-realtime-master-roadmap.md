@@ -625,39 +625,39 @@ Purpose: one application profile per authenticated Google user.
 
 Key columns:
 
-| Column | Type | Rule |
-|---|---|---|
-| `id` | `uuid` | Primary key and FK to `auth.users` |
-| `display_name` | `text` | Required after onboarding |
-| `city` | `text` | Optional and user-controlled |
-| `timezone` | `text` | IANA timezone identifier |
-| `avatar_url` | `text` | Google or approved application avatar |
-| `onboarding_completed` | `boolean` | Defaults to false |
-| `account_status` | `text` | active, deletion_requested, deleted |
-| `created_at` | `timestamptz` | Server-generated |
-| `updated_at` | `timestamptz` | Server-generated |
+| Column                 | Type          | Rule                                  |
+| ---------------------- | ------------- | ------------------------------------- |
+| `id`                   | `uuid`        | Primary key and FK to `auth.users`    |
+| `display_name`         | `text`        | Required after onboarding             |
+| `city`                 | `text`        | Optional and user-controlled          |
+| `timezone`             | `text`        | IANA timezone identifier              |
+| `avatar_url`           | `text`        | Google or approved application avatar |
+| `onboarding_completed` | `boolean`     | Defaults to false                     |
+| `account_status`       | `text`        | active, deletion_requested, deleted   |
+| `created_at`           | `timestamptz` | Server-generated                      |
+| `updated_at`           | `timestamptz` | Server-generated                      |
 
 ### 10.2 `couples`
 
-| Column | Type | Rule |
-|---|---|---|
-| `id` | `uuid` | Primary key |
-| `name` | `text` | Shared display name |
-| `created_by` | `uuid` | Original creator |
-| `active_room_id` | `uuid` | Nullable current room reference |
-| `status` | `text` | active, separation_pending, archived |
-| `created_at` | `timestamptz` | Server-generated |
-| `updated_at` | `timestamptz` | Server-generated |
+| Column           | Type          | Rule                                 |
+| ---------------- | ------------- | ------------------------------------ |
+| `id`             | `uuid`        | Primary key                          |
+| `name`           | `text`        | Shared display name                  |
+| `created_by`     | `uuid`        | Original creator                     |
+| `active_room_id` | `uuid`        | Nullable current room reference      |
+| `status`         | `text`        | active, separation_pending, archived |
+| `created_at`     | `timestamptz` | Server-generated                     |
+| `updated_at`     | `timestamptz` | Server-generated                     |
 
 ### 10.3 `couple_members`
 
-| Column | Type | Rule |
-|---|---|---|
-| `couple_id` | `uuid` | Couple FK |
-| `user_id` | `uuid` | Profile FK and globally unique active membership |
-| `role` | `text` | owner or partner for lifecycle purposes only |
-| `joined_at` | `timestamptz` | Server-generated |
-| `left_at` | `timestamptz` | Nullable lifecycle marker |
+| Column      | Type          | Rule                                             |
+| ----------- | ------------- | ------------------------------------------------ |
+| `couple_id` | `uuid`        | Couple FK                                        |
+| `user_id`   | `uuid`        | Profile FK and globally unique active membership |
+| `role`      | `text`        | owner or partner for lifecycle purposes only     |
+| `joined_at` | `timestamptz` | Server-generated                                 |
+| `left_at`   | `timestamptz` | Nullable lifecycle marker                        |
 
 Constraints:
 
@@ -667,79 +667,79 @@ Constraints:
 
 ### 10.4 `couple_invites`
 
-| Column | Type | Rule |
-|---|---|---|
-| `id` | `uuid` | Primary key |
-| `couple_id` | `uuid` | Owning couple |
-| `token_hash` | `text` | Preferred production storage |
-| `display_code` | `text` | Optional readable code |
-| `created_by` | `uuid` | Inviter |
-| `expires_at` | `timestamptz` | Required |
-| `accepted_at` | `timestamptz` | Nullable |
-| `accepted_by` | `uuid` | Nullable |
-| `revoked_at` | `timestamptz` | Nullable |
-| `created_at` | `timestamptz` | Server-generated |
+| Column         | Type          | Rule                         |
+| -------------- | ------------- | ---------------------------- |
+| `id`           | `uuid`        | Primary key                  |
+| `couple_id`    | `uuid`        | Owning couple                |
+| `token_hash`   | `text`        | Preferred production storage |
+| `display_code` | `text`        | Optional readable code       |
+| `created_by`   | `uuid`        | Inviter                      |
+| `expires_at`   | `timestamptz` | Required                     |
+| `accepted_at`  | `timestamptz` | Nullable                     |
+| `accepted_by`  | `uuid`        | Nullable                     |
+| `revoked_at`   | `timestamptz` | Nullable                     |
+| `created_at`   | `timestamptz` | Server-generated             |
 
 Status is derived in this priority order: revoked, accepted, expired, pending.
 
 ### 10.5 `rooms`
 
-| Column | Type | Rule |
-|---|---|---|
-| `id` | `uuid` | Primary key |
-| `couple_id` | `uuid` | Required owner |
-| `code` | `text` | Server-generated and unique among active rooms |
-| `status` | `text` | lobby, active, paused, completed, expired, cancelled |
-| `created_by` | `uuid` | Couple member |
-| `current_session_id` | `uuid` | Nullable |
-| `expires_at` | `timestamptz` | Required |
-| `last_activity_at` | `timestamptz` | Used for lifecycle cleanup |
-| `created_at` | `timestamptz` | Server-generated |
-| `completed_at` | `timestamptz` | Nullable |
+| Column               | Type          | Rule                                                 |
+| -------------------- | ------------- | ---------------------------------------------------- |
+| `id`                 | `uuid`        | Primary key                                          |
+| `couple_id`          | `uuid`        | Required owner                                       |
+| `code`               | `text`        | Server-generated and unique among active rooms       |
+| `status`             | `text`        | lobby, active, paused, completed, expired, cancelled |
+| `created_by`         | `uuid`        | Couple member                                        |
+| `current_session_id` | `uuid`        | Nullable                                             |
+| `expires_at`         | `timestamptz` | Required                                             |
+| `last_activity_at`   | `timestamptz` | Used for lifecycle cleanup                           |
+| `created_at`         | `timestamptz` | Server-generated                                     |
+| `completed_at`       | `timestamptz` | Nullable                                             |
 
 ### 10.6 `room_members`
 
-| Column | Type | Rule |
-|---|---|---|
-| `room_id` | `uuid` | Room FK |
-| `user_id` | `uuid` | Must be a current couple member |
-| `joined_at` | `timestamptz` | First join |
-| `last_seen_at` | `timestamptz` | Coarse durable recovery aid |
-| `ready_at` | `timestamptz` | Nullable lobby readiness |
-| `left_at` | `timestamptz` | Nullable |
+| Column         | Type          | Rule                            |
+| -------------- | ------------- | ------------------------------- |
+| `room_id`      | `uuid`        | Room FK                         |
+| `user_id`      | `uuid`        | Must be a current couple member |
+| `joined_at`    | `timestamptz` | First join                      |
+| `last_seen_at` | `timestamptz` | Coarse durable recovery aid     |
+| `ready_at`     | `timestamptz` | Nullable lobby readiness        |
+| `left_at`      | `timestamptz` | Nullable                        |
 
 Actual online state remains in Presence.
 
 ### 10.7 `activity_sessions`
 
-| Column | Type | Rule |
-|---|---|---|
-| `id` | `uuid` | Primary key |
-| `room_id` | `uuid` | Owning room |
-| `activity_type` | `text` | Validated registry value |
-| `schema_version` | `integer` | Snapshot/event compatibility |
-| `status` | `text` | preparing, active, waiting, revealing, completed, abandoned |
-| `round_number` | `integer` | Non-negative |
-| `snapshot` | `jsonb` | Validated shared state only |
-| `revision` | `bigint` | Optimistic-concurrency version |
-| `last_event_sequence` | `bigint` | Replay cursor |
-| `started_at` | `timestamptz` | Nullable until started |
-| `completed_at` | `timestamptz` | Nullable |
-| `updated_at` | `timestamptz` | Server-generated |
+| Column                | Type          | Rule                                                        |
+| --------------------- | ------------- | ----------------------------------------------------------- |
+| `id`                  | `uuid`        | Primary key                                                 |
+| `room_id`             | `uuid`        | Owning room                                                 |
+| `activity_type`       | `text`        | Validated registry value                                    |
+| `schema_version`      | `integer`     | Snapshot/event compatibility                                |
+| `status`              | `text`        | preparing, active, waiting, revealing, completed, abandoned |
+| `round_number`        | `integer`     | Non-negative                                                |
+| `snapshot`            | `jsonb`       | Validated shared state only                                 |
+| `revision`            | `bigint`      | Optimistic-concurrency version                              |
+| `last_event_sequence` | `bigint`      | Replay cursor                                               |
+| `started_at`          | `timestamptz` | Nullable until started                                      |
+| `completed_at`        | `timestamptz` | Nullable                                                    |
+| `updated_at`          | `timestamptz` | Server-generated                                            |
 
 ### 10.8 `room_events`
 
-| Column | Type | Rule |
-|---|---|---|
-| `id` | `uuid` | Client-generated idempotency key or server UUID |
-| `room_id` | `uuid` | Required |
-| `session_id` | `uuid` | Required for activity events |
-| `sequence` | `bigint` | Server-assigned and unique per session |
-| `sender_id` | `uuid` | Derived from authentication |
-| `event_type` | `text` | Allow-listed |
-| `payload` | `jsonb` | Size-limited and validated |
-| `client_created_at` | `timestamptz` | Diagnostic only |
-| `created_at` | `timestamptz` | Authoritative server time |
+| Column              | Type          | Rule                                            |
+| ------------------- | ------------- | ----------------------------------------------- |
+| `id`                | `uuid`        | Client-generated idempotency key or server UUID |
+| `room_id`           | `uuid`        | Required                                        |
+| `session_id`        | `uuid`        | Required for activity events                    |
+| `sequence`          | `bigint`      | Server-assigned and unique per session          |
+| `sender_id`         | `uuid`        | Derived from authentication                     |
+| `event_type`        | `text`        | Allow-listed                                    |
+| `payload`           | `jsonb`       | Size-limited and validated                      |
+| `client_created_at` | `timestamptz` | Diagnostic only                                 |
+| `created_at`        | `timestamptz` | Authoritative server time                       |
 
 Indexes:
 
@@ -750,16 +750,16 @@ Indexes:
 
 ### 10.9 `private_answers`
 
-| Column | Type | Rule |
-|---|---|---|
-| `id` | `uuid` | Primary key |
-| `session_id` | `uuid` | Required |
-| `round_number` | `integer` | Required |
-| `user_id` | `uuid` | Required |
-| `answer` | `jsonb` | Validated by activity type |
-| `locked_at` | `timestamptz` | Nullable until sealed |
-| `revealed_at` | `timestamptz` | Nullable |
-| `created_at` | `timestamptz` | Server-generated |
+| Column         | Type          | Rule                       |
+| -------------- | ------------- | -------------------------- |
+| `id`           | `uuid`        | Primary key                |
+| `session_id`   | `uuid`        | Required                   |
+| `round_number` | `integer`     | Required                   |
+| `user_id`      | `uuid`        | Required                   |
+| `answer`       | `jsonb`       | Validated by activity type |
+| `locked_at`    | `timestamptz` | Nullable until sealed      |
+| `revealed_at`  | `timestamptz` | Nullable                   |
+| `created_at`   | `timestamptz` | Server-generated           |
 
 Constraint: unique `(session_id, round_number, user_id)`.
 
@@ -767,19 +767,19 @@ Direct partner reads are forbidden before the server-authorized reveal.
 
 ### 10.10 `keepsakes`
 
-| Column | Type | Rule |
-|---|---|---|
-| `id` | `uuid` | Primary key |
-| `couple_id` | `uuid` | Required owner |
-| `session_id` | `uuid` | Optional source |
-| `kind` | `text` | Allow-listed memory type |
-| `title` | `text` | Required |
-| `caption` | `text` | Optional |
-| `preview_url` | `text` | Optional signed/private asset reference |
-| `activity_path` | `text` | Optional safe internal route |
-| `metadata` | `jsonb` | Validated and size-limited |
-| `created_by` | `uuid` | Required |
-| `created_at` | `timestamptz` | Server-generated |
+| Column          | Type          | Rule                                    |
+| --------------- | ------------- | --------------------------------------- |
+| `id`            | `uuid`        | Primary key                             |
+| `couple_id`     | `uuid`        | Required owner                          |
+| `session_id`    | `uuid`        | Optional source                         |
+| `kind`          | `text`        | Allow-listed memory type                |
+| `title`         | `text`        | Required                                |
+| `caption`       | `text`        | Optional                                |
+| `preview_url`   | `text`        | Optional signed/private asset reference |
+| `activity_path` | `text`        | Optional safe internal route            |
+| `metadata`      | `jsonb`       | Validated and size-limited              |
+| `created_by`    | `uuid`        | Required                                |
+| `created_at`    | `timestamptz` | Server-generated                        |
 
 ### 10.11 `relationship_milestones`
 
@@ -797,20 +797,20 @@ The core authorization predicate is:
 
 > The authenticated user must be an active member of the couple that owns the requested resource.
 
-| Resource | Read | Insert | Update | Delete |
-|---|---|---|---|---|
-| Own profile | Self | Trigger/self | Self | Controlled account flow |
-| Partner profile | Connected partner only | Never | Never | Never |
-| Couple | Active members | RPC only | RPC only | Controlled lifecycle RPC |
-| Couple members | Same couple | RPC only | RPC only | Controlled lifecycle RPC |
-| Invites | Inviter/couple members | RPC only | RPC only | Revoke RPC only |
-| Rooms | Owning couple members | RPC only | RPC only | Expire/cancel RPC only |
-| Room members | Owning couple members | RPC only | RPC only | Leave RPC only |
-| Activity sessions | Owning couple members | RPC only | RPC only | Never from client |
-| Room events | Owning couple members | RPC or validated insert | Never | Retention job only |
-| Private answer | Owner before reveal; both after authorized reveal | RPC only | RPC only before lock | Retention job only |
-| Keepsakes | Owning couple members | RPC only | Owning couple members | Controlled delete RPC |
-| Storage object | Owning couple members | Scoped upload policy | Scoped update | Scoped delete |
+| Resource          | Read                                              | Insert                  | Update                | Delete                   |
+| ----------------- | ------------------------------------------------- | ----------------------- | --------------------- | ------------------------ |
+| Own profile       | Self                                              | Trigger/self            | Self                  | Controlled account flow  |
+| Partner profile   | Connected partner only                            | Never                   | Never                 | Never                    |
+| Couple            | Active members                                    | RPC only                | RPC only              | Controlled lifecycle RPC |
+| Couple members    | Same couple                                       | RPC only                | RPC only              | Controlled lifecycle RPC |
+| Invites           | Inviter/couple members                            | RPC only                | RPC only              | Revoke RPC only          |
+| Rooms             | Owning couple members                             | RPC only                | RPC only              | Expire/cancel RPC only   |
+| Room members      | Owning couple members                             | RPC only                | RPC only              | Leave RPC only           |
+| Activity sessions | Owning couple members                             | RPC only                | RPC only              | Never from client        |
+| Room events       | Owning couple members                             | RPC or validated insert | Never                 | Retention job only       |
+| Private answer    | Owner before reveal; both after authorized reveal | RPC only                | RPC only before lock  | Retention job only       |
+| Keepsakes         | Owning couple members                             | RPC only                | Owning couple members | Controlled delete RPC    |
+| Storage object    | Owning couple members                             | Scoped upload policy    | Scoped update         | Scoped delete            |
 
 Security requirements:
 
@@ -1898,19 +1898,19 @@ These are product budgets, not guarantees; telemetry will establish realistic pr
 
 ## 26. Risks and mitigations
 
-| Risk | Impact | Mitigation |
-|---|---|---|
-| Guessable codes treated as authorization | Unauthorized access | Require authenticated couple membership independently of the code |
-| RLS policy regression | Private-data exposure | Automated cross-account negative tests in every migration |
-| Duplicate/out-of-order events | Divergent screens | Idempotency IDs, server sequence, cursor replay |
-| Presence mistaken for durable state | Lost progress | Keep snapshots/events in Postgres |
-| Multiple tabs | False partner presence or conflicting actions | Device IDs, user-level presence aggregation, revision checks |
-| Drawing event volume | Cost and latency | Batch strokes, transient cursors, periodic checkpoints |
-| AI leakage | Privacy failure | Explicit consent, strict payload builder, no raw logging |
-| Media storage growth | Cost | Compression, limits, retention, quotas |
-| OAuth domain drift | Login failure | Environment checklist and automated redirect validation |
-| Partial activity conversion | Misleading realtime promise | Mark only verified activities as realtime |
-| Couple separation semantics | Data-loss conflict | Define policy before destructive lifecycle implementation |
+| Risk                                     | Impact                                        | Mitigation                                                        |
+| ---------------------------------------- | --------------------------------------------- | ----------------------------------------------------------------- |
+| Guessable codes treated as authorization | Unauthorized access                           | Require authenticated couple membership independently of the code |
+| RLS policy regression                    | Private-data exposure                         | Automated cross-account negative tests in every migration         |
+| Duplicate/out-of-order events            | Divergent screens                             | Idempotency IDs, server sequence, cursor replay                   |
+| Presence mistaken for durable state      | Lost progress                                 | Keep snapshots/events in Postgres                                 |
+| Multiple tabs                            | False partner presence or conflicting actions | Device IDs, user-level presence aggregation, revision checks      |
+| Drawing event volume                     | Cost and latency                              | Batch strokes, transient cursors, periodic checkpoints            |
+| AI leakage                               | Privacy failure                               | Explicit consent, strict payload builder, no raw logging          |
+| Media storage growth                     | Cost                                          | Compression, limits, retention, quotas                            |
+| OAuth domain drift                       | Login failure                                 | Environment checklist and automated redirect validation           |
+| Partial activity conversion              | Misleading realtime promise                   | Mark only verified activities as realtime                         |
+| Couple separation semantics              | Data-loss conflict                            | Define policy before destructive lifecycle implementation         |
 
 ---
 

@@ -20,8 +20,13 @@ export function TiltedCard({
   ...props
 }: TiltedCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
-  const [transform, setTransform] = useState<string>('perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)');
-  const [glarePosition, setGlarePosition] = useState<{ x: number; y: number }>({ x: 50, y: 50 });
+  const [transform, setTransform] = useState<string>(
+    'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)',
+  );
+  const [glarePosition, setGlarePosition] = useState<{ x: number; y: number }>({
+    x: 50,
+    y: 50,
+  });
   const [isHovered, setIsHovered] = useState(false);
 
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
@@ -36,7 +41,9 @@ export function TiltedCard({
     const rotateX = ((y - centerY) / centerY) * -maxAngle;
     const rotateY = ((x - centerX) / centerX) * maxAngle;
 
-    setTransform(`perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale3d(${scale}, ${scale}, ${scale})`);
+    setTransform(
+      `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale3d(${scale}, ${scale}, ${scale})`,
+    );
     setGlarePosition({
       x: (x / rect.width) * 100,
       y: (y / rect.height) * 100,
@@ -46,7 +53,9 @@ export function TiltedCard({
   const handleMouseEnter = () => setIsHovered(true);
   const handleMouseLeave = () => {
     setIsHovered(false);
-    setTransform('perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)');
+    setTransform(
+      'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)',
+    );
   };
 
   return (
@@ -59,7 +68,9 @@ export function TiltedCard({
       style={{
         ...style,
         transform,
-        transition: isHovered ? 'transform 0.1s ease-out' : 'transform 0.5s ease-out',
+        transition: isHovered
+          ? 'transform 0.1s ease-out'
+          : 'transform 0.5s ease-out',
         transformStyle: 'preserve-3d',
         position: 'relative',
       }}

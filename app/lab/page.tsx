@@ -10,8 +10,12 @@ export default function LabPage() {
   const { partnerA, partnerB } = useCoupleProfile();
   const [seconds, setSeconds] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
-  const [ambientSound, setAmbientSound] = useState<'rain' | 'cafe' | 'lofi' | 'off'>('rain');
-  const [sessionNotes, setSessionNotes] = useState(`${partnerA} working · ${partnerB} studying 💻`);
+  const [ambientSound, setAmbientSound] = useState<
+    'rain' | 'cafe' | 'lofi' | 'off'
+  >('rain');
+  const [sessionNotes, setSessionNotes] = useState(
+    `${partnerA} working · ${partnerB} studying 💻`,
+  );
 
   useEffect(() => {
     setSessionNotes(`${partnerA} working · ${partnerB} studying 💻`);
@@ -61,7 +65,13 @@ export default function LabPage() {
   const timeStr = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 
   return (
-    <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px' }}>
+    <div
+      style={{
+        background: 'var(--paper)',
+        minHeight: '100vh',
+        paddingBottom: '80px',
+      }}
+    >
       <header className="bar">
         <div className="wrap">
           <Link className="brand" href="/">
@@ -80,11 +90,14 @@ export default function LabPage() {
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '720px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <CoupleNameBar />
-          <h1 style={{ fontSize: 'clamp(28px, 4vw, 42px)', marginBottom: '10px' }}>
+          <h1
+            style={{ fontSize: 'clamp(28px, 4vw, 42px)', marginBottom: '10px' }}
+          >
             Study together, <span className="grad">miles apart</span>.
           </h1>
           <p style={{ color: 'var(--ink-soft)', fontSize: '16px' }}>
-            Pomodoro focus timer, ambient soundscapes, and synchronized work presence.
+            Pomodoro focus timer, ambient soundscapes, and synchronized work
+            presence.
           </p>
         </div>
 
@@ -128,13 +141,24 @@ export default function LabPage() {
             </div>
           )}
 
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginBottom: '32px' }}>
+          <div
+            style={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'center',
+              marginBottom: '32px',
+            }}
+          >
             <button
               className="btn btn-grad"
               onClick={() => setIsRunning(!isRunning)}
               style={{ padding: '12px 32px', fontSize: '16px' }}
             >
-              {isRunning ? 'Pause Focus ⏸️' : seconds === 0 ? 'Start New Session ▷' : 'Start Focus Session ▷'}
+              {isRunning
+                ? 'Pause Focus ⏸️'
+                : seconds === 0
+                  ? 'Start New Session ▷'
+                  : 'Start Focus Session ▷'}
             </button>
             <button
               className="btn btn-ghost"
@@ -148,11 +172,32 @@ export default function LabPage() {
           </div>
 
           {/* Ambient Sounds */}
-          <div style={{ borderTop: '1px solid var(--line)', paddingTop: '24px', marginBottom: '24px' }}>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '12px' }}>
+          <div
+            style={{
+              borderTop: '1px solid var(--line)',
+              paddingTop: '24px',
+              marginBottom: '24px',
+            }}
+          >
+            <label
+              style={{
+                display: 'block',
+                fontSize: '12px',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                marginBottom: '12px',
+              }}
+            >
               Select Ambient Audio Atmosphere:
             </label>
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <div
+              style={{
+                display: 'flex',
+                gap: '10px',
+                justifyContent: 'center',
+                flexWrap: 'wrap',
+              }}
+            >
               {[
                 { id: 'rain', name: '🌧️ Cozy Rainy Window' },
                 { id: 'cafe', name: '☕ Paris Coffeehouse' },
@@ -165,8 +210,14 @@ export default function LabPage() {
                   style={{
                     padding: '8px 14px',
                     borderRadius: '8px',
-                    border: ambientSound === s.id ? '2px solid var(--pink)' : '1px solid var(--line)',
-                    background: ambientSound === s.id ? 'var(--pink-tint)' : 'var(--paper)',
+                    border:
+                      ambientSound === s.id
+                        ? '2px solid var(--pink)'
+                        : '1px solid var(--line)',
+                    background:
+                      ambientSound === s.id
+                        ? 'var(--pink-tint)'
+                        : 'var(--paper)',
                     fontWeight: 700,
                     fontSize: '13px',
                     cursor: 'pointer',
@@ -180,7 +231,15 @@ export default function LabPage() {
 
           {/* Shared Note */}
           <div style={{ textAlign: 'left' }}>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
+            <label
+              style={{
+                display: 'block',
+                fontSize: '12px',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                marginBottom: '6px',
+              }}
+            >
               Shared Session Intentions:
             </label>
             <input

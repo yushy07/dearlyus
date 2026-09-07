@@ -166,7 +166,14 @@ export function CupidotActivityGuidance({
               {info.title}
             </span>
           </div>
-          <p style={{ fontSize: '12px', color: 'var(--ink-soft)', margin: '2px 0 0', lineHeight: 1.35 }}>
+          <p
+            style={{
+              fontSize: '12px',
+              color: 'var(--ink-soft)',
+              margin: '2px 0 0',
+              lineHeight: 1.35,
+            }}
+          >
             {privacyNote || info.hint.replace('your person', partnerName)}
           </p>
         </div>
@@ -178,7 +185,11 @@ export function CupidotActivityGuidance({
             type="button"
             className="btn btn-ghost"
             onClick={onSkip}
-            style={{ fontSize: '11.5px', padding: '5px 10px', color: 'var(--ink-soft)' }}
+            style={{
+              fontSize: '11.5px',
+              padding: '5px 10px',
+              color: 'var(--ink-soft)',
+            }}
             title="Skip without penalty"
           >
             {skipLabel}

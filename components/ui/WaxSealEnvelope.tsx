@@ -27,7 +27,7 @@ export function WaxSealEnvelope({
     if (isOpen || isOpening) return;
     setIsOpening(true);
     sounds.playWaxCrack();
-    
+
     // Play tactile parchment unfolding sound as letter slides out
     setTimeout(() => {
       sounds.playParchmentUnfold();
@@ -62,7 +62,8 @@ export function WaxSealEnvelope({
             borderRadius: '16px',
             padding: '40px 30px',
             position: 'relative',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.12), inset 0 0 20px rgba(180,150,120,0.15)',
+            boxShadow:
+              '0 20px 40px rgba(0,0,0,0.12), inset 0 0 20px rgba(180,150,120,0.15)',
             cursor: 'pointer',
             overflow: 'hidden',
             display: 'flex',
@@ -70,7 +71,8 @@ export function WaxSealEnvelope({
             alignItems: 'center',
             justifyContent: 'center',
             minHeight: '340px',
-            backgroundImage: 'repeating-linear-gradient(45deg, rgba(0,0,0,0.01) 0, rgba(0,0,0,0.01) 2px, transparent 0, transparent 4px)',
+            backgroundImage:
+              'repeating-linear-gradient(45deg, rgba(0,0,0,0.01) 0, rgba(0,0,0,0.01) 2px, transparent 0, transparent 4px)',
             transition: 'transform 0.2s ease, box-shadow 0.2s ease',
           }}
         >
@@ -94,13 +96,36 @@ export function WaxSealEnvelope({
 
           {/* Postal Address Stamp */}
           <div style={{ textAlign: 'center', zIndex: 2, marginBottom: '24px' }}>
-            <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', letterSpacing: '.14em', color: '#8C6E54', textTransform: 'uppercase' }}>
+            <span
+              style={{
+                fontSize: '11px',
+                fontFamily: 'var(--font-mono)',
+                letterSpacing: '.14em',
+                color: '#8C6E54',
+                textTransform: 'uppercase',
+              }}
+            >
               TIME CAPSULE VAULT · PAR AVION
             </span>
-            <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '24px', color: '#3A2E24', margin: '6px 0 2px' }}>
+            <h3
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '24px',
+                color: '#3A2E24',
+                margin: '6px 0 2px',
+              }}
+            >
               To: {recipient}
             </h3>
-            <span style={{ fontSize: '13px', color: '#8C6E54', fontStyle: 'italic' }}>From: {sender} · {sealDate}</span>
+            <span
+              style={{
+                fontSize: '13px',
+                color: '#8C6E54',
+                fontStyle: 'italic',
+              }}
+            >
+              From: {sender} · {sealDate}
+            </span>
           </div>
 
           {/* 3D Wax Seal Stamp with Realistic Jagged Crack Physics */}
@@ -120,8 +145,10 @@ export function WaxSealEnvelope({
                 position: 'absolute',
                 inset: 0,
                 borderRadius: '50%',
-                background: 'radial-gradient(circle at 35% 35%, #E63946 0%, #9B111E 70%, #5E000B 100%)',
-                boxShadow: '0 8px 24px rgba(155, 17, 30, 0.45), inset 0 2px 3px rgba(255,255,255,0.4)',
+                background:
+                  'radial-gradient(circle at 35% 35%, #E63946 0%, #9B111E 70%, #5E000B 100%)',
+                boxShadow:
+                  '0 8px 24px rgba(155, 17, 30, 0.45), inset 0 2px 3px rgba(255,255,255,0.4)',
                 border: '2px solid rgba(255,255,255,0.25)',
                 display: 'flex',
                 alignItems: 'center',
@@ -129,10 +156,14 @@ export function WaxSealEnvelope({
                 color: '#FFE5EC',
                 fontSize: '32px',
                 fontWeight: 900,
-                clipPath: 'polygon(0 0, 52% 0, 48% 30%, 54% 60%, 47% 100%, 0 100%)',
-                transform: isOpening ? 'translate(-30px, -10px) rotate(-22deg)' : 'none',
+                clipPath:
+                  'polygon(0 0, 52% 0, 48% 30%, 54% 60%, 47% 100%, 0 100%)',
+                transform: isOpening
+                  ? 'translate(-30px, -10px) rotate(-22deg)'
+                  : 'none',
                 opacity: isOpening ? 0 : 1,
-                transition: 'transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.65s ease',
+                transition:
+                  'transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.65s ease',
               }}
             >
               ♡
@@ -144,8 +175,10 @@ export function WaxSealEnvelope({
                 position: 'absolute',
                 inset: 0,
                 borderRadius: '50%',
-                background: 'radial-gradient(circle at 35% 35%, #E63946 0%, #9B111E 70%, #5E000B 100%)',
-                boxShadow: '0 8px 24px rgba(155, 17, 30, 0.45), inset 0 2px 3px rgba(255,255,255,0.4)',
+                background:
+                  'radial-gradient(circle at 35% 35%, #E63946 0%, #9B111E 70%, #5E000B 100%)',
+                boxShadow:
+                  '0 8px 24px rgba(155, 17, 30, 0.45), inset 0 2px 3px rgba(255,255,255,0.4)',
                 border: '2px solid rgba(255,255,255,0.25)',
                 display: 'flex',
                 alignItems: 'center',
@@ -153,10 +186,14 @@ export function WaxSealEnvelope({
                 color: '#FFE5EC',
                 fontSize: '32px',
                 fontWeight: 900,
-                clipPath: 'polygon(52% 0, 100% 0, 100% 100%, 47% 100%, 54% 60%, 48% 30%)',
-                transform: isOpening ? 'translate(30px, 10px) rotate(22deg)' : 'none',
+                clipPath:
+                  'polygon(52% 0, 100% 0, 100% 100%, 47% 100%, 54% 60%, 48% 30%)',
+                transform: isOpening
+                  ? 'translate(30px, 10px) rotate(22deg)'
+                  : 'none',
                 opacity: isOpening ? 0 : 1,
-                transition: 'transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.65s ease',
+                transition:
+                  'transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.65s ease',
               }}
             >
               ♡
@@ -202,7 +239,9 @@ export function WaxSealEnvelope({
               zIndex: 2,
             }}
           >
-            {isOpening ? '🕯️ Wax seal cracking...' : '✨ Tap wax seal to break & open letter ▷'}
+            {isOpening
+              ? '🕯️ Wax seal cracking...'
+              : '✨ Tap wax seal to break & open letter ▷'}
           </span>
         </div>
       ) : (
@@ -214,12 +253,22 @@ export function WaxSealEnvelope({
             border: '1px solid #E6D9C8',
             borderRadius: '16px',
             padding: '36px 32px',
-            boxShadow: '0 24px 48px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04)',
+            boxShadow:
+              '0 24px 48px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04)',
             position: 'relative',
           }}
         >
           {/* Top Wax Seal Remnant Badge & Music Box Control */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '8px' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '20px',
+              flexWrap: 'wrap',
+              gap: '8px',
+            }}
+          >
             <div
               style={{
                 display: 'inline-flex',

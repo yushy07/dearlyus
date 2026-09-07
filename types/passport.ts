@@ -1,7 +1,16 @@
 // Couple Date Passport & Collectible Stamp Types
 
-export type StampCategory = 'Photobooth' | 'Games & Duels' | 'Keepsakes' | 'Milestones';
-export type StampSealShape = 'circle' | 'square' | 'octagon' | 'crest' | 'heart';
+export type StampCategory =
+  | 'Photobooth'
+  | 'Games & Duels'
+  | 'Keepsakes'
+  | 'Milestones';
+export type StampSealShape =
+  | 'circle'
+  | 'square'
+  | 'octagon'
+  | 'crest'
+  | 'heart';
 
 export interface PassportStamp {
   id: string;

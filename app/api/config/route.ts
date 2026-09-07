@@ -3,7 +3,8 @@ import { NextResponse } from 'next/server';
 export async function GET() {
   const config = {
     appName: 'Dearly Us',
-    tagline: 'Made for the moments that belong to you two. Realtime date night & synced photobooth for couples worldwide',
+    tagline:
+      'Made for the moments that belong to you two. Realtime date night & synced photobooth for couples worldwide',
     pricing: {
       status: '100% Free Forever',
       costUSD: 0,

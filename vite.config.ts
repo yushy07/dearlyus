@@ -6,9 +6,6 @@ import { defineConfig } from 'vite';
 export default defineConfig(async () => {
   return {
     css: { postcss: { plugins: [tailwindcss()] } },
-    plugins: [
-      vinext(),
-      nitro(),
-    ],
+    plugins: [vinext(), nitro()],
   };
 });

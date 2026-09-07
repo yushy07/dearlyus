@@ -5,6 +5,7 @@ Thank you to everyone who has contributed to making **Dearly Us** the warmest, m
 ---
 
 ## 👑 Primary Creator, Project Architect & Lead Developer
+
 - **Ayush Kant ([@yushy07](https://github.com/yushy07))** — Major project architect and lead engineer on GitHub.
   - Conceived, architected, and engineered the core Dearly Us platform from the ground up.
   - Designed the complete visual identity, bespoke interlocking infinity-heart brand system, and candlelight alabaster / twilight cerulean UI/UX.
@@ -14,12 +15,15 @@ Thank you to everyone who has contributed to making **Dearly Us** the warmest, m
 ---
 
 ## 💖 Community & Inspiration
+
 - **Couples Everywhere** — For testing rooms across Calgary, Jakarta, Seoul, London, Tokyo, and beyond.
 
 ---
 
 ## 🤝 Contributing to Dearly Us
+
 We welcome community contributions! If you'd like to help build new date games, photobooth themes, or soundscapes:
+
 1. Fork the Project ([https://github.com/yushy07/dearlyus](https://github.com/yushy07/dearlyus))
 2. Create your Feature Branch (`git checkout -b feat/amazing-date-mode`)
 3. Commit your Changes (`git commit -m 'feat: add amazing date mode'`)

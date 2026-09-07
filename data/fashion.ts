@@ -7,7 +7,8 @@ export const FASHION_ROUNDS: FashionRound[] = [
     theme: 'High drama, avant-garde elegance',
     twist: 'Must incorporate an unexpected metallic or bioluminescent element',
     colorPalette: ['#1A1A24', '#E6C687', '#9D4EDD', '#F72585'],
-    inspiration: 'Voluminous trains, sculptural shoulders, jewel-encrusted capes',
+    inspiration:
+      'Voluminous trains, sculptural shoulders, jewel-encrusted capes',
   },
   {
     id: 2,
@@ -15,15 +16,18 @@ export const FASHION_ROUNDS: FashionRound[] = [
     theme: 'Effortless French chic & cozy layered textures',
     twist: 'Must style around a vintage thrifted trenchcoat and beret',
     colorPalette: ['#C5B39A', '#3D342F', '#5E6472', '#FAF0CA'],
-    inspiration: 'Chunky knit scarves, oversized wool tailoring, espresso leather boots',
+    inspiration:
+      'Chunky knit scarves, oversized wool tailoring, espresso leather boots',
   },
   {
     id: 3,
     title: 'Round 3 of 3: Neo-Tokyo Cyber Date 2099',
     theme: 'Cyberpunk streetwear & holographic accessories',
-    twist: 'Your partner’s signature color must be the glowing neon centerpiece',
+    twist:
+      'Your partner’s signature color must be the glowing neon centerpiece',
     colorPalette: ['#05050A', '#00F5D4', '#7B2CBF', '#FF0054'],
-    inspiration: 'Translucent vinyl jackets, circuit-board jewelry, platform combat boots',
+    inspiration:
+      'Translucent vinyl jackets, circuit-board jewelry, platform combat boots',
   },
 ];
 

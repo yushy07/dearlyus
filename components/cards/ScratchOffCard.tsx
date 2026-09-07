@@ -9,7 +9,11 @@ interface ScratchOffCardProps {
   resetKey?: string | number;
 }
 
-export function ScratchOffCard({ children, onScratchComplete, resetKey }: ScratchOffCardProps) {
+export function ScratchOffCard({
+  children,
+  onScratchComplete,
+  resetKey,
+}: ScratchOffCardProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isScratched, setIsScratched] = useState(false);
@@ -64,7 +68,11 @@ export function ScratchOffCard({ children, onScratchComplete, resetKey }: Scratc
     ctx.fillText('🪙 SCRATCH WITH COIN OR FINGER', width / 2, height / 2 - 6);
     ctx.font = '11px sans-serif';
     ctx.fillStyle = '#64748B';
-    ctx.fillText('Scratch 50% to reveal mystery card', width / 2, height / 2 + 12);
+    ctx.fillText(
+      'Scratch 50% to reveal mystery card',
+      width / 2,
+      height / 2 + 12,
+    );
 
     setIsScratched(false);
     setScratchPercent(0);

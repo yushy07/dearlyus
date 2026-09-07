@@ -46,7 +46,9 @@ export type AllowedActionId = (typeof ALLOWED_ACTION_IDS)[number];
  * Level 4 (Flirty): Requires adult verification for both partners.
  * Level 5 (Spicy): Requires adult verification AND active session confirmation.
  */
-export function computeEffectiveRomanceLevel(pref: Partial<CoupleRomancePreferences>): RomanceLevel {
+export function computeEffectiveRomanceLevel(
+  pref: Partial<CoupleRomancePreferences>,
+): RomanceLevel {
   const levelA = pref.partnerALevel || 'romantic';
   const levelB = pref.partnerBLevel || 'romantic';
 
@@ -68,7 +70,14 @@ export function computeEffectiveRomanceLevel(pref: Partial<CoupleRomancePreferen
   }
 
   // Map back to RomanceLevel
-  const levels: RomanceLevel[] = ['quiet', 'warm', 'romantic', 'cheeky', 'flirty', 'spicy'];
+  const levels: RomanceLevel[] = [
+    'quiet',
+    'warm',
+    'romantic',
+    'cheeky',
+    'flirty',
+    'spicy',
+  ];
   return levels[effectiveRank];
 }
 
@@ -79,7 +88,7 @@ export function computeEffectiveRomanceLevel(pref: Partial<CoupleRomancePreferen
 export function downgradeRomanceLevel(
   currentPref: CoupleRomancePreferences,
   newLevel: RomanceLevel,
-  forPartner: 'A' | 'B'
+  forPartner: 'A' | 'B',
 ): { updatedPref: CoupleRomancePreferences; announcement: string } {
   const updatedPref: CoupleRomancePreferences = {
     ...currentPref,
@@ -112,7 +121,10 @@ export function canIncludeInNotification(level: RomanceLevel): boolean {
  * Comprehensive Curated Dialogue Library (Blueprint Section 23)
  * Mapped by: [intent][romanceLevel] -> string[]
  */
-export const CURATED_DIALOGUE_LIBRARY: Record<CupidotBehaviorIntent, Record<RomanceLevel, string[]>> = {
+export const CURATED_DIALOGUE_LIBRARY: Record<
+  CupidotBehaviorIntent,
+  Record<RomanceLevel, string[]>
+> = {
   welcome: {
     quiet: ["You're back in your space.", 'Welcome back.'],
     warm: [
@@ -241,8 +253,12 @@ export const CURATED_DIALOGUE_LIBRARY: Record<CupidotBehaviorIntent, Record<Roma
 
   privacy_confirmation: {
     quiet: ['Privacy confirmed. Drafts sealed.'],
-    warm: ['Privacy confirmed. Everything in your room stays sealed until you both choose.'],
-    romantic: ['Sealed in digital wax. Nobody peeks until both hearts are ready.'],
+    warm: [
+      'Privacy confirmed. Everything in your room stays sealed until you both choose.',
+    ],
+    romantic: [
+      'Sealed in digital wax. Nobody peeks until both hearts are ready.',
+    ],
     cheeky: ['Sealed tighter than a secret diary. No peeking allowed!'],
     flirty: ['Vault locked. The suspense is half the fun.'],
     spicy: ['Completely private and shielded. Your secrets are safe with me.'],
@@ -380,10 +396,16 @@ export const CURATED_DIALOGUE_LIBRARY: Record<CupidotBehaviorIntent, Record<Roma
   offer_keepsake: {
     quiet: ['Option to save keepsake.'],
     warm: ['Would you like to preserve this shared moment as a keepsake?'],
-    romantic: ['A sweet little milestone. Shall we save it to our cedar shelf?'],
+    romantic: [
+      'A sweet little milestone. Shall we save it to our cedar shelf?',
+    ],
     cheeky: ['Moment complete. Keep it, continue, or call it a lovely night?'],
-    flirty: ['Definitely worth saving. Retake, keep, or declare this beautifully chaotic?'],
-    spicy: ['A memorable round. Keep it in your private vault or let it stay in the moment?'],
+    flirty: [
+      'Definitely worth saving. Retake, keep, or declare this beautifully chaotic?',
+    ],
+    spicy: [
+      'A memorable round. Keep it in your private vault or let it stay in the moment?',
+    ],
   },
 
   recover_connection: {
@@ -437,8 +459,12 @@ export const CURATED_DIALOGUE_LIBRARY: Record<CupidotBehaviorIntent, Record<Roma
   settle: {
     quiet: ['Session settled.'],
     warm: ['Settling in for the night. Sweet dreams to you both.'],
-    romantic: ['Resting peacefully. Wishing both of you the sweetest dreams across the miles.'],
-    cheeky: ['Calling it a night. Cupidot is logging off before you start plotting more mischief.'],
+    romantic: [
+      'Resting peacefully. Wishing both of you the sweetest dreams across the miles.',
+    ],
+    cheeky: [
+      'Calling it a night. Cupidot is logging off before you start plotting more mischief.',
+    ],
     flirty: ['Winding down. Keep each other warm tonight.'],
     spicy: ['Private session closed. Rest cozy, lovers.'],
   },
@@ -463,7 +489,7 @@ export const CURATED_DIALOGUE_LIBRARY: Record<CupidotBehaviorIntent, Record<Roma
       'Consent comes first. I can only share what you both want revealed.',
     ],
     cheeky: [
-      "Nice try! My matchmaking license would be revoked if I let you cheat.",
+      'Nice try! My matchmaking license would be revoked if I let you cheat.',
       'Nope! Cupidot’s vault is strictly locked against unauthorized snooping.',
     ],
     flirty: [
@@ -484,9 +510,10 @@ export const CURATED_DIALOGUE_LIBRARY: Record<CupidotBehaviorIntent, Record<Roma
 export function getCuratedDialogue(
   intent: CupidotBehaviorIntent,
   level: RomanceLevel = 'romantic',
-  seed = 0
+  seed = 0,
 ): string {
-  const intentDict = CURATED_DIALOGUE_LIBRARY[intent] || CURATED_DIALOGUE_LIBRARY.welcome;
+  const intentDict =
+    CURATED_DIALOGUE_LIBRARY[intent] || CURATED_DIALOGUE_LIBRARY.welcome;
 
   // Fallback chain: level -> romantic -> warm -> quiet
   const levelOrder: RomanceLevel[] = [level, 'romantic', 'warm', 'quiet'];
@@ -497,7 +524,7 @@ export function getCuratedDialogue(
     }
   }
 
-  return "Welcome back to your little corner.";
+  return 'Welcome back to your little corner.';
 }
 
 /**
@@ -511,19 +538,28 @@ export function canCupidotSpeak(params: {
   guidanceMode: GuidanceMode;
   isPrivateDrafting?: boolean;
 }): boolean {
-  const { productState, intent, budget, guidanceMode, isPrivateDrafting } = params;
+  const { productState, intent, budget, guidanceMode, isPrivateDrafting } =
+    params;
 
   // Rule 1: STRICT SILENCE during private drafting/choosing/drawing
   if (isPrivateDrafting || productState === 'focused') {
     // Only critical safety or recovery alerts may break silence
-    if (intent !== 'confirm_privacy' && intent !== 'privacy_confirmation' && intent !== 'recover_connection') {
+    if (
+      intent !== 'confirm_privacy' &&
+      intent !== 'privacy_confirmation' &&
+      intent !== 'recover_connection'
+    ) {
       return false;
     }
   }
 
   // Rule 2: Quiet session setting suppresses non-essential dialogue
   if (budget.quietSessionActive) {
-    if (intent !== 'recover_connection' && intent !== 'confirm_privacy' && intent !== 'soften_intensity') {
+    if (
+      intent !== 'recover_connection' &&
+      intent !== 'confirm_privacy' &&
+      intent !== 'soften_intensity'
+    ) {
       return false;
     }
   }
@@ -552,7 +588,11 @@ export function canCupidotSpeak(params: {
 
   // Rule 5: Cooldown of minimum 3 seconds between chatter to avoid rapid spam
   const now = Date.now();
-  if (now - budget.lastSpokenTimestamp < 3000 && intent !== 'recover_connection' && intent !== 'soften_intensity') {
+  if (
+    now - budget.lastSpokenTimestamp < 3000 &&
+    intent !== 'recover_connection' &&
+    intent !== 'soften_intensity'
+  ) {
     return false;
   }
 
@@ -584,7 +624,11 @@ export function handleActivitySkip(): {
     options: [
       { id: 'pause', label: 'Take a gentle pause', action: 'pause' },
       { id: 'lighter', label: 'Try a lighter prompt', action: 'lighter' },
-      { id: 'quiet_together', label: 'Switch to Quiet Together', action: 'quiet_together' },
+      {
+        id: 'quiet_together',
+        label: 'Switch to Quiet Together',
+        action: 'quiet_together',
+      },
       { id: 'exit_home', label: 'Return to Shared Home', action: 'exit_home' },
     ],
   };
@@ -622,13 +666,20 @@ export function handleSafetyBoundary(input: string): {
     if (lower.includes(pattern)) {
       return {
         isSafe: false,
-        response: "I can't peek at anything your partner hasn't chosen to share.",
+        response:
+          "I can't peek at anything your partner hasn't chosen to share.",
       };
     }
   }
 
   // Serious coercion / danger detection
-  const crisisPatterns = ['help me escape', 'hurting me', 'im in danger', "i'm in danger", 'abuse'];
+  const crisisPatterns = [
+    'help me escape',
+    'hurting me',
+    'im in danger',
+    "i'm in danger",
+    'abuse',
+  ];
   for (const pattern of crisisPatterns) {
     if (lower.includes(pattern)) {
       return {
@@ -656,7 +707,7 @@ export function validateStructuredAiOutput(
   context: {
     allowedIntents: CupidotBehaviorIntent[];
     maxRomanceLevel: RomanceLevel;
-  }
+  },
 ): {
   isValid: boolean;
   output?: CupidotStructuredOutput;
@@ -669,13 +720,17 @@ export function validateStructuredAiOutput(
   const obj = raw as Record<string, unknown>;
 
   // 1. Intent validation
-  const intent = typeof obj.intent === 'string' ? (obj.intent as CupidotBehaviorIntent) : undefined;
+  const intent =
+    typeof obj.intent === 'string'
+      ? (obj.intent as CupidotBehaviorIntent)
+      : undefined;
   if (!intent || !context.allowedIntents.includes(intent)) {
     return { isValid: false, rejectionReason: 'intent_not_allow_listed' };
   }
 
   // 2. Tone ceiling validation
-  const tone = typeof obj.tone === 'string' ? (obj.tone as RomanceLevel) : 'romantic';
+  const tone =
+    typeof obj.tone === 'string' ? (obj.tone as RomanceLevel) : 'romantic';
   const toneRank = ROMANCE_LEVEL_RANK[tone] ?? 99;
   const maxRank = ROMANCE_LEVEL_RANK[context.maxRomanceLevel] ?? 2;
 
@@ -696,20 +751,33 @@ export function validateStructuredAiOutput(
   if (/[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+/i.test(rawMessage)) {
     return { isValid: false, rejectionReason: 'message_contains_email' };
   }
-  if (/(system instruction|ignore previous|bypass rules|api_key|secret)/i.test(rawMessage)) {
-    return { isValid: false, rejectionReason: 'message_contains_system_injection' };
+  if (
+    /(system instruction|ignore previous|bypass rules|api_key|secret)/i.test(
+      rawMessage,
+    )
+  ) {
+    return {
+      isValid: false,
+      rejectionReason: 'message_contains_system_injection',
+    };
   }
 
   // 4. Action ID validation (if provided)
   let actionId: string | undefined = undefined;
-  if (typeof obj.suggested_action_id === 'string' && obj.suggested_action_id.length > 0) {
-    if (!ALLOWED_ACTION_IDS.includes(obj.suggested_action_id as AllowedActionId)) {
+  if (
+    typeof obj.suggested_action_id === 'string' &&
+    obj.suggested_action_id.length > 0
+  ) {
+    if (
+      !ALLOWED_ACTION_IDS.includes(obj.suggested_action_id as AllowedActionId)
+    ) {
       return { isValid: false, rejectionReason: 'action_id_not_allow_listed' };
     }
     actionId = obj.suggested_action_id;
   }
 
-  const emotion = typeof obj.emotion === 'string' ? obj.emotion.slice(0, 30) : 'warm';
+  const emotion =
+    typeof obj.emotion === 'string' ? obj.emotion.slice(0, 30) : 'warm';
   const contextUsed = Array.isArray(obj.context_used)
     ? obj.context_used.map((c) => String(c).slice(0, 40))
     : [];

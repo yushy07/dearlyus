@@ -18,7 +18,11 @@ import { TiltedCard, ShinyText } from '@/components/ui';
 import { RoomInviteModal } from '@/components/shared/RoomInviteModal';
 import { CoupleNameBar } from '@/components/shared/CoupleNameBar';
 import { CupidotActivityGuidance } from '@/components/shared/CupidotActivityGuidance';
-import { getCupidotPoseIdea, generateCupidotCaption, PoseIdea } from '@/lib/cupidot';
+import {
+  getCupidotPoseIdea,
+  generateCupidotCaption,
+  PoseIdea,
+} from '@/lib/cupidot';
 import { useCoupleProfile } from '@/lib/couple';
 import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 
@@ -80,7 +84,16 @@ const STICKER_CATEGORIES = [
 export default function PhotoboothPage() {
   // Navigation & Scene state: START | ROOM | PROFILE | LAYOUT | THEME | BOOTH | EDIT | FILTER | DECORATE | DOWNLOAD
   const [scene, setScene] = useState<
-    'START' | 'ROOM' | 'PROFILE' | 'LAYOUT' | 'THEME' | 'BOOTH' | 'EDIT' | 'FILTER' | 'DECORATE' | 'DOWNLOAD'
+    | 'START'
+    | 'ROOM'
+    | 'PROFILE'
+    | 'LAYOUT'
+    | 'THEME'
+    | 'BOOTH'
+    | 'EDIT'
+    | 'FILTER'
+    | 'DECORATE'
+    | 'DOWNLOAD'
   >('BOOTH');
 
   // Room config
@@ -89,7 +102,13 @@ export default function PhotoboothPage() {
   const [selectedLayout, setSelectedLayout] = useState(LAYOUTS[0]);
   const [isGroupMode, setIsGroupMode] = useState(false);
   const [isSoloMode, setIsSoloMode] = useState(false);
-  const { partnerA, partnerB, cityA, cityB, roomCode: savedRoomCode } = useCoupleProfile();
+  const {
+    partnerA,
+    partnerB,
+    cityA,
+    cityB,
+    roomCode: savedRoomCode,
+  } = useCoupleProfile();
   const activityRuntime = useActivityRuntime({
     sessionId: `mock-photobooth-${savedRoomCode || 'local'}`,
     activityType: 'photobooth',
@@ -125,14 +144,28 @@ export default function PhotoboothPage() {
     '/photos/frame4.webp',
   ]);
   const [selectedArFilter, setSelectedArFilter] = useState(AR_FILTERS[0]);
-  const [selectedColorFilter, setSelectedColorFilter] = useState(COLOR_FILTERS[0]);
+  const [selectedColorFilter, setSelectedColorFilter] = useState(
+    COLOR_FILTERS[0],
+  );
   const [placedStickers, setPlacedStickers] = useState<PlacedSticker[]>([
-    { id: '1', content: '사랑해', x: 28, y: 18, rotation: -6, scale: 1, isHangul: true },
+    {
+      id: '1',
+      content: '사랑해',
+      x: 28,
+      y: 18,
+      rotation: -6,
+      scale: 1,
+      isHangul: true,
+    },
     { id: '2', content: '✨', x: 74, y: 38, rotation: 12, scale: 1.1 },
     { id: '3', content: '💖', x: 80, y: 84, rotation: 8, scale: 1.2 },
   ]);
-  const [selectedStickerId, setSelectedStickerId] = useState<string | null>(null);
-  const [activeStickerTab, setActiveStickerTab] = useState<'hangul' | 'props' | 'sparkles'>('hangul');
+  const [selectedStickerId, setSelectedStickerId] = useState<string | null>(
+    null,
+  );
+  const [activeStickerTab, setActiveStickerTab] = useState<
+    'hangul' | 'props' | 'sparkles'
+  >('hangul');
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [confettiActive, setConfettiActive] = useState(false);
@@ -255,7 +288,7 @@ export default function PhotoboothPage() {
 
   const updateSticker = (id: string, updates: Partial<PlacedSticker>) => {
     setPlacedStickers((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, ...updates } : s))
+      prev.map((s) => (s.id === id ? { ...s, ...updates } : s)),
     );
   };
 
@@ -266,7 +299,9 @@ export default function PhotoboothPage() {
   };
 
   const copyRoomLink = () => {
-    navigator.clipboard.writeText(typeof window !== 'undefined' ? window.location.href : '');
+    navigator.clipboard.writeText(
+      typeof window !== 'undefined' ? window.location.href : '',
+    );
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -310,7 +345,10 @@ export default function PhotoboothPage() {
     ctx.fillRect(0, 0, 600, 1600);
 
     // Border
-    ctx.strokeStyle = selectedStyle.foilEffect === 'matte-foil' ? '#E2E8F0' : selectedStyle.border;
+    ctx.strokeStyle =
+      selectedStyle.foilEffect === 'matte-foil'
+        ? '#E2E8F0'
+        : selectedStyle.border;
     ctx.lineWidth = 2.5;
     ctx.strokeRect(16, 16, 568, 1568);
 
@@ -331,7 +369,9 @@ export default function PhotoboothPage() {
       });
     };
 
-    const loadedImages = await Promise.all(capturedShots.map((s) => loadImage(s)));
+    const loadedImages = await Promise.all(
+      capturedShots.map((s) => loadImage(s)),
+    );
 
     // 4 Photo Frames
     for (let i = 0; i < 4; i++) {
@@ -362,7 +402,14 @@ export default function PhotoboothPage() {
 
         // Optional 90s Film Cam light leak & LED date stamp
         if (isVintageCamMode) {
-          const leakGrad = ctx.createRadialGradient(42 + 516 * 0.85, y + 40, 10, 42 + 516 * 0.85, y + 40, 240);
+          const leakGrad = ctx.createRadialGradient(
+            42 + 516 * 0.85,
+            y + 40,
+            10,
+            42 + 516 * 0.85,
+            y + 40,
+            240,
+          );
           leakGrad.addColorStop(0, 'rgba(255, 120, 50, 0.45)');
           leakGrad.addColorStop(0.4, 'rgba(255, 40, 100, 0.22)');
           leakGrad.addColorStop(1, 'rgba(255, 40, 100, 0)');
@@ -389,7 +436,11 @@ export default function PhotoboothPage() {
         ctx.fillStyle = '#8B8E98';
         ctx.font = 'bold 13px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText(`0${i + 1} · ${nickname.toUpperCase()} ♡ ${partnerName.toUpperCase()}`, 300, y + 165);
+        ctx.fillText(
+          `0${i + 1} · ${nickname.toUpperCase()} ♡ ${partnerName.toUpperCase()}`,
+          300,
+          y + 165,
+        );
       }
 
       ctx.strokeStyle = selectedStyle.border;
@@ -454,7 +505,11 @@ export default function PhotoboothPage() {
 
     ctx.font = '13px monospace';
     ctx.fillStyle = '#5B5E68';
-    ctx.fillText(`ROOM: ${roomCode} · ${new Date().toLocaleDateString()}`, 300, 1545);
+    ctx.fillText(
+      `ROOM: ${roomCode} · ${new Date().toLocaleDateString()}`,
+      300,
+      1545,
+    );
 
     const a = document.createElement('a');
     a.download = `dearly-us-photostrip-${roomCode}.png`;
@@ -468,14 +523,28 @@ export default function PhotoboothPage() {
   };
 
   return (
-    <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px', color: 'var(--ink)' }}>
+    <div
+      style={{
+        background: 'var(--paper)',
+        minHeight: '100vh',
+        paddingBottom: '80px',
+        color: 'var(--ink)',
+      }}
+    >
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 
       {/* Confetti celebration overlay */}
       <Confetti active={confettiActive} />
 
       {/* Tagline Ribbon */}
-      <Ribbon text={<>♡ Online Photobooth for Long Distance Couples · <b>인생네컷 Free Studio</b></>} />
+      <Ribbon
+        text={
+          <>
+            ♡ Online Photobooth for Long Distance Couples ·{' '}
+            <b>인생네컷 Free Studio</b>
+          </>
+        }
+      />
 
       {/* Top Navbar */}
       <header className="bar">
@@ -484,8 +553,18 @@ export default function PhotoboothPage() {
             <span className="brand-emblem" aria-hidden="true">
               <svg width="28" height="28" viewBox="0 0 128 128" fill="none">
                 <rect width="128" height="128" rx="36" fill="#1C1924" />
-                <path d="M64 77 C51 93 29 86 29 64 C29 45 48 38 64 58" stroke="#FF4E78" strokeWidth="12" strokeLinecap="round" />
-                <path d="M64 58 C80 38 99 45 99 64 C99 86 77 93 64 77" stroke="#437EEB" strokeWidth="12" strokeLinecap="round" />
+                <path
+                  d="M64 77 C51 93 29 86 29 64 C29 45 48 38 64 58"
+                  stroke="#FF4E78"
+                  strokeWidth="12"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M64 58 C80 38 99 45 99 64 C99 86 77 93 64 77"
+                  stroke="#437EEB"
+                  strokeWidth="12"
+                  strokeLinecap="round"
+                />
                 <circle cx="64" cy="67" r="5" fill="#FFFFFF" />
               </svg>
             </span>
@@ -519,12 +598,33 @@ export default function PhotoboothPage() {
               }}
               title="Click to invite partner via QR code or WhatsApp"
             >
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', boxShadow: '0 0 6px #10B981', display: 'inline-block' }}></span>
+              <span
+                style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  background: '#10B981',
+                  boxShadow: '0 0 6px #10B981',
+                  display: 'inline-block',
+                }}
+              ></span>
               ROOM: <b>{roomCode}</b>
-              <span style={{ fontSize: '11px', color: 'var(--pink)', fontWeight: 700 }}>💌 Invite</span>
+              <span
+                style={{
+                  fontSize: '11px',
+                  color: 'var(--pink)',
+                  fontWeight: 700,
+                }}
+              >
+                💌 Invite
+              </span>
             </button>
 
-            <Link className="btn btn-ghost" href="/activity" style={{ fontSize: '13px', padding: '6px 12px' }}>
+            <Link
+              className="btn btn-ghost"
+              href="/activity"
+              style={{ fontSize: '13px', padding: '6px 12px' }}
+            >
               Activities ▷
             </Link>
           </div>
@@ -539,10 +639,10 @@ export default function PhotoboothPage() {
             scene === 'DOWNLOAD'
               ? 'completed'
               : scene === 'BOOTH' || scene === 'EDIT'
-              ? 'private'
-              : scene === 'DECORATE' || scene === 'FILTER'
-              ? 'revealed'
-              : 'ready'
+                ? 'private'
+                : scene === 'DECORATE' || scene === 'FILTER'
+                  ? 'revealed'
+                  : 'ready'
           }
           partnerName={partnerB || 'Partner'}
           privacyNote="Webcam feed is strictly client-side and peer-to-peer. No raw video is ever uploaded or stored."
@@ -579,8 +679,12 @@ export default function PhotoboothPage() {
                 style={{
                   padding: '6px 12px',
                   borderRadius: '6px',
-                  border: scene === s.id ? '1.5px solid var(--pink)' : '1px solid transparent',
-                  background: scene === s.id ? 'var(--pink-tint)' : 'transparent',
+                  border:
+                    scene === s.id
+                      ? '1.5px solid var(--pink)'
+                      : '1px solid transparent',
+                  background:
+                    scene === s.id ? 'var(--pink-tint)' : 'transparent',
                   color: scene === s.id ? 'var(--ink)' : 'var(--ink-soft)',
                   fontWeight: 700,
                   fontSize: '12.5px',
@@ -592,7 +696,15 @@ export default function PhotoboothPage() {
             ))}
           </div>
 
-          <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--pink)', fontWeight: 700, whiteSpace: 'nowrap' }}>
+          <span
+            style={{
+              fontSize: '12px',
+              fontFamily: 'var(--font-mono)',
+              color: 'var(--pink)',
+              fontWeight: 700,
+              whiteSpace: 'nowrap',
+            }}
+          >
             {selectedStyle.label} · {selectedLayout.name.split(' ')[0]}
           </span>
         </div>
@@ -604,16 +716,33 @@ export default function PhotoboothPage() {
           <div style={{ maxWidth: '780px', margin: '0 auto' }}>
             <div style={{ textAlign: 'center', marginBottom: '28px' }}>
               <span className="eyebrow">Pick Your Experience Room Style</span>
-              <h1 style={{ fontSize: '36px', fontWeight: 800, marginTop: '8px' }}>
+              <h1
+                style={{ fontSize: '36px', fontWeight: 800, marginTop: '8px' }}
+              >
                 Create a <span className="grad">Photobooth Room</span>
               </h1>
-              <p style={{ color: 'var(--ink-soft)', fontSize: '15px', marginTop: '6px' }}>
-                Pick an aesthetic room skin — classic 인생네컷, 1930s automat, neon karaoke, or meme recreation.
+              <p
+                style={{
+                  color: 'var(--ink-soft)',
+                  fontSize: '15px',
+                  marginTop: '6px',
+                }}
+              >
+                Pick an aesthetic room skin — classic 인생네컷, 1930s automat,
+                neon karaoke, or meme recreation.
               </p>
             </div>
 
             {/* Mode toggles */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '14px', marginBottom: '26px', flexWrap: 'wrap' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                gap: '14px',
+                marginBottom: '26px',
+                flexWrap: 'wrap',
+              }}
+            >
               <button
                 className={`btn ${!isSoloMode && !isGroupMode ? 'btn-primary' : 'btn-ghost'}`}
                 onClick={() => {
@@ -644,7 +773,13 @@ export default function PhotoboothPage() {
             </div>
 
             {/* Room Style Cards Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '14px' }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+                gap: '14px',
+              }}
+            >
               {ROOM_STYLES.map((style) => (
                 <div
                   key={style.id}
@@ -655,21 +790,55 @@ export default function PhotoboothPage() {
                   style={{
                     background: style.bg,
                     color: style.color,
-                    border: selectedStyle.id === style.id ? '2px solid var(--pink)' : `1px solid ${style.border}`,
+                    border:
+                      selectedStyle.id === style.id
+                        ? '2px solid var(--pink)'
+                        : `1px solid ${style.border}`,
                     borderRadius: '12px',
                     padding: '18px 16px',
                     boxShadow: 'var(--shadow)',
                     cursor: 'pointer',
-                    transform: selectedStyle.id === style.id ? 'scale(1.02)' : 'none',
+                    transform:
+                      selectedStyle.id === style.id ? 'scale(1.02)' : 'none',
                     transition: 'all 0.15s ease',
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginBottom: '8px',
+                    }}
+                  >
                     <strong style={{ fontSize: '16px' }}>{style.label}</strong>
-                    <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: style.accent }}></span>
+                    <span
+                      style={{
+                        width: '12px',
+                        height: '12px',
+                        borderRadius: '50%',
+                        background: style.accent,
+                      }}
+                    ></span>
                   </div>
-                  <p style={{ fontSize: '12.5px', opacity: 0.8, lineHeight: 1.4 }}>{style.sub}</p>
-                  <span style={{ display: 'inline-block', marginTop: '12px', fontSize: '12px', fontWeight: 700, color: style.accent }}>
+                  <p
+                    style={{
+                      fontSize: '12.5px',
+                      opacity: 0.8,
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {style.sub}
+                  </p>
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      marginTop: '12px',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      color: style.accent,
+                    }}
+                  >
                     Select Room ▷
                   </span>
                 </div>
@@ -682,16 +851,36 @@ export default function PhotoboothPage() {
             SCENE 2: ROOM (Lobby, Code Sharing & QR, Partner Status)
             ========================================================================= */}
         {scene === 'ROOM' && (
-          <div style={{ maxWidth: '580px', margin: '0 auto', textAlign: 'center' }}>
+          <div
+            style={{ maxWidth: '580px', margin: '0 auto', textAlign: 'center' }}
+          >
             <div className="booth-box" style={{ padding: '36px 28px' }}>
               <span className="eyebrow">Room Lobby · 5-Letter Code</span>
-              <h2 style={{ fontSize: '28px', fontWeight: 800, margin: '10px 0' }}>Share code with your partner</h2>
-              <p style={{ color: 'var(--ink-soft)', fontSize: '15px', marginBottom: '24px' }}>
-                Send this 5-letter code to your partner so both screens connect into the same photobooth frame.
+              <h2
+                style={{ fontSize: '28px', fontWeight: 800, margin: '10px 0' }}
+              >
+                Share code with your partner
+              </h2>
+              <p
+                style={{
+                  color: 'var(--ink-soft)',
+                  fontSize: '15px',
+                  marginBottom: '24px',
+                }}
+              >
+                Send this 5-letter code to your partner so both screens connect
+                into the same photobooth frame.
               </p>
 
               {/* Big Room Code Cells */}
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '20px' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  marginBottom: '20px',
+                }}
+              >
                 {roomCode.split('').map((char, i) => (
                   <span
                     key={i}
@@ -727,22 +916,55 @@ export default function PhotoboothPage() {
                   border: '1px solid var(--line)',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#0a7d4d' }}></span>
-                  <span style={{ fontSize: '13px', fontWeight: 700 }}>{nickname} ({cityA || 'Local'}) — Ready</span>
+                <div
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                >
+                  <span
+                    style={{
+                      width: '8px',
+                      height: '8px',
+                      borderRadius: '50%',
+                      background: '#0a7d4d',
+                    }}
+                  ></span>
+                  <span style={{ fontSize: '13px', fontWeight: 700 }}>
+                    {nickname} ({cityA || 'Local'}) — Ready
+                  </span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#0a7d4d' }}></span>
-                  <span style={{ fontSize: '13px', fontWeight: 700 }}>{partnerName} ({cityB || 'Remote'}) — Connected</span>
+                <div
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                >
+                  <span
+                    style={{
+                      width: '8px',
+                      height: '8px',
+                      borderRadius: '50%',
+                      background: '#0a7d4d',
+                    }}
+                  ></span>
+                  <span style={{ fontSize: '13px', fontWeight: 700 }}>
+                    {partnerName} ({cityB || 'Remote'}) — Connected
+                  </span>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '10px',
+                  justifyContent: 'center',
+                  flexWrap: 'wrap',
+                }}
+              >
                 <button className="btn btn-ghost" onClick={copyRoomLink}>
                   {copied ? '✓ Link Copied!' : 'Copy Room Link 🔗'}
                 </button>
-                <button className="btn btn-grad" onClick={() => setScene('BOOTH')} style={{ padding: '12px 28px' }}>
+                <button
+                  className="btn btn-grad"
+                  onClick={() => setScene('BOOTH')}
+                  style={{ padding: '12px 28px' }}
+                >
                   Enter Photobooth ▷
                 </button>
               </div>
@@ -756,9 +978,20 @@ export default function PhotoboothPage() {
         {scene === 'BOOTH' && (
           <div className="booth-showcase-grid">
             {/* Left: Studio Stage */}
-            <div className={`booth-box ${selectedStyle.id === 'vintage' ? 'vintage-automat' : ''}`}>
+            <div
+              className={`booth-box ${selectedStyle.id === 'vintage' ? 'vintage-automat' : ''}`}
+            >
               {/* Studio Bar Header */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '14px',
+                  flexWrap: 'wrap',
+                  gap: '8px',
+                }}
+              >
                 <div style={{ display: 'flex', gap: '6px' }}>
                   <button
                     className={`btn ${feedMode === 'simulated' ? 'btn-primary' : 'btn-ghost'}`}
@@ -776,7 +1009,9 @@ export default function PhotoboothPage() {
                   </button>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
                   <button
                     className="btn btn-ghost"
                     onClick={() => setMicMuted(!micMuted)}
@@ -790,10 +1025,28 @@ export default function PhotoboothPage() {
               {/* Camera Screen Stage */}
               <div className="booth-cam-stage">
                 {/* Pose Prompt Top Banner */}
-                <div className="pose-prompt-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span>{POSE_PROMPTS[currentShotIdx % POSE_PROMPTS.length].icon}</span>
-                    <span>{POSE_PROMPTS[currentShotIdx % POSE_PROMPTS.length].text}</span>
+                <div
+                  className="pose-prompt-card"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '8px',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                    }}
+                  >
+                    <span>
+                      {POSE_PROMPTS[currentShotIdx % POSE_PROMPTS.length].icon}
+                    </span>
+                    <span>
+                      {POSE_PROMPTS[currentShotIdx % POSE_PROMPTS.length].text}
+                    </span>
                   </div>
                   <button
                     onClick={() => {
@@ -821,7 +1074,8 @@ export default function PhotoboothPage() {
                       margin: '6px 0 10px',
                       padding: '10px 14px',
                       borderRadius: '12px',
-                      background: 'linear-gradient(135deg, #FFF0F5 0%, #FFFFFF 100%)',
+                      background:
+                        'linear-gradient(135deg, #FFF0F5 0%, #FFFFFF 100%)',
                       border: '1.5px solid rgba(255, 77, 128, 0.35)',
                       display: 'flex',
                       alignItems: 'center',
@@ -830,20 +1084,48 @@ export default function PhotoboothPage() {
                       animation: 'gl-rise 0.25s ease',
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '22px' }}>{cupidotPose.emoji}</span>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                      }}
+                    >
+                      <span style={{ fontSize: '22px' }}>
+                        {cupidotPose.emoji}
+                      </span>
                       <div>
-                        <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 800, color: '#FF4D80', textTransform: 'uppercase' }}>
+                        <div
+                          style={{
+                            fontSize: '11px',
+                            fontFamily: 'var(--font-mono)',
+                            fontWeight: 800,
+                            color: '#FF4D80',
+                            textTransform: 'uppercase',
+                          }}
+                        >
                           CUPIDOT POSE: {cupidotPose.title}
                         </div>
-                        <div style={{ fontSize: '12.5px', color: '#17181C', fontWeight: 600 }}>
+                        <div
+                          style={{
+                            fontSize: '12.5px',
+                            color: '#17181C',
+                            fontWeight: 600,
+                          }}
+                        >
                           {cupidotPose.instructions}
                         </div>
                       </div>
                     </div>
                     <button
                       onClick={() => setCupidotPose(null)}
-                      style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '14px', color: 'var(--ink-soft)' }}
+                      style={{
+                        border: 'none',
+                        background: 'transparent',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        color: 'var(--ink-soft)',
+                      }}
                     >
                       ✕
                     </button>
@@ -853,7 +1135,17 @@ export default function PhotoboothPage() {
                 {feedMode === 'webcam' ? (
                   <div className="booth-duo-view solo">
                     <div className="booth-feed-panel">
-                      <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <video
+                        ref={videoRef}
+                        autoPlay
+                        playsInline
+                        muted
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                        }}
+                      />
                       <div className="feed-city-badge pink">
                         <span className="dot"></span> {nickname} (You)
                       </div>
@@ -862,50 +1154,112 @@ export default function PhotoboothPage() {
                 ) : (
                   <div className="booth-duo-view">
                     <div className="booth-feed-panel">
-                      <img src="/photos/face-calgary.webp" alt="Partner 1 feed" />
+                      <img
+                        src="/photos/face-calgary.webp"
+                        alt="Partner 1 feed"
+                      />
                       <div className="feed-city-badge pink">
-                        <span className="dot"></span> {nickname} ({cityA || 'Local'})
+                        <span className="dot"></span> {nickname} (
+                        {cityA || 'Local'})
                       </div>
                     </div>
                     <div className="booth-feed-panel">
-                      <img src="/photos/face-jakarta.webp" alt="Partner 2 feed" />
+                      <img
+                        src="/photos/face-jakarta.webp"
+                        alt="Partner 2 feed"
+                      />
                       <div className="feed-city-badge blue">
-                        <span className="dot"></span> {partnerName} ({cityB || 'Remote'})
+                        <span className="dot"></span> {partnerName} (
+                        {cityB || 'Remote'})
                       </div>
                     </div>
                   </div>
                 )}
 
                 {/* 3..2..1 Countdown Flash */}
-                {countdown !== null && <div className="booth-flash-num">{countdown}</div>}
+                {countdown !== null && (
+                  <div className="booth-flash-num">{countdown}</div>
+                )}
 
                 {/* Studio Camera Flashbulb Effect */}
-                {flashing && <div className="camera-flash-overlay" aria-hidden="true" />}
+                {flashing && (
+                  <div className="camera-flash-overlay" aria-hidden="true" />
+                )}
                 {flashing && <div className="booth-camera-flash" />}
 
                 {/* AR Filter Overlays */}
                 {selectedArFilter.id === 'sparkles' && (
-                  <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', display: 'flex', justifyContent: 'space-around', alignItems: 'center', fontSize: '32px', zIndex: 6 }}>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      pointerEvents: 'none',
+                      display: 'flex',
+                      justifyContent: 'space-around',
+                      alignItems: 'center',
+                      fontSize: '32px',
+                      zIndex: 6,
+                    }}
+                  >
                     <span style={{ animation: 'gl-tw 1.5s infinite' }}>✨</span>
                     <span style={{ animation: 'gl-tw 2s infinite' }}>🌟</span>
                     <span style={{ animation: 'gl-tw 1.8s infinite' }}>✨</span>
                   </div>
                 )}
                 {selectedArFilter.id === 'hearts' && (
-                  <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', display: 'flex', justifyContent: 'space-around', alignItems: 'center', fontSize: '28px', zIndex: 6 }}>
-                    <span style={{ animation: 'gl-pulse 1.6s infinite' }}>💖</span>
-                    <span style={{ animation: 'gl-pulse 2.2s infinite' }}>💕</span>
-                    <span style={{ animation: 'gl-pulse 1.9s infinite' }}>💗</span>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      pointerEvents: 'none',
+                      display: 'flex',
+                      justifyContent: 'space-around',
+                      alignItems: 'center',
+                      fontSize: '28px',
+                      zIndex: 6,
+                    }}
+                  >
+                    <span style={{ animation: 'gl-pulse 1.6s infinite' }}>
+                      💖
+                    </span>
+                    <span style={{ animation: 'gl-pulse 2.2s infinite' }}>
+                      💕
+                    </span>
+                    <span style={{ animation: 'gl-pulse 1.9s infinite' }}>
+                      💗
+                    </span>
                   </div>
                 )}
                 {selectedArFilter.id === 'cat' && (
-                  <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', display: 'flex', justifyContent: 'space-between', padding: '16px 40px', fontSize: '28px', zIndex: 6 }}>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      pointerEvents: 'none',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      padding: '16px 40px',
+                      fontSize: '28px',
+                      zIndex: 6,
+                    }}
+                  >
                     <span>🐱</span>
                     <span>🐾</span>
                   </div>
                 )}
                 {selectedArFilter.id === 'halo' && (
-                  <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', display: 'flex', justifyContent: 'space-around', padding: '10px', fontSize: '28px', zIndex: 6 }}>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      pointerEvents: 'none',
+                      display: 'flex',
+                      justifyContent: 'space-around',
+                      padding: '10px',
+                      fontSize: '28px',
+                      zIndex: 6,
+                    }}
+                  >
                     <span>😇</span>
                     <span>😇</span>
                   </div>
@@ -913,21 +1267,53 @@ export default function PhotoboothPage() {
               </div>
 
               {/* Shutter Button & AR Filter Bar */}
-              <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-                <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: '11.5px', fontFamily: 'var(--font-mono)', color: 'var(--ink-soft)' }}>AR FX:</span>
+              <div
+                style={{
+                  marginTop: '16px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '12px',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: '6px',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: '11.5px',
+                      fontFamily: 'var(--font-mono)',
+                      color: 'var(--ink-soft)',
+                    }}
+                  >
+                    AR FX:
+                  </span>
                   {AR_FILTERS.slice(0, 4).map((f) => (
                     <button
                       key={f.id}
                       onClick={() => {
                         setSelectedArFilter(f);
-                        void activityRuntime.sendEvent('photo_filter', { filter: f.id });
+                        void activityRuntime.sendEvent('photo_filter', {
+                          filter: f.id,
+                        });
                       }}
                       style={{
                         padding: '4px 8px',
                         borderRadius: '6px',
-                        border: selectedArFilter.id === f.id ? '1.5px solid var(--pink)' : '1px solid var(--line)',
-                        background: selectedArFilter.id === f.id ? 'var(--pink-tint)' : 'var(--paper)',
+                        border:
+                          selectedArFilter.id === f.id
+                            ? '1.5px solid var(--pink)'
+                            : '1px solid var(--line)',
+                        background:
+                          selectedArFilter.id === f.id
+                            ? 'var(--pink-tint)'
+                            : 'var(--paper)',
                         fontSize: '11px',
                         fontWeight: 700,
                       }}
@@ -943,16 +1329,38 @@ export default function PhotoboothPage() {
                   disabled={isShooting}
                   style={{ padding: '12px 28px', fontSize: '16px' }}
                 >
-                  {isShooting ? 'Taking 4-Cut Photos 📸...' : 'Take 4-Cut Photos 📸'}
+                  {isShooting
+                    ? 'Taking 4-Cut Photos 📸...'
+                    : 'Take 4-Cut Photos 📸'}
                 </button>
               </div>
 
               {/* Live Thumbnail Strip Progress */}
-              <div style={{ marginTop: '20px', paddingTop: '14px', borderTop: '1px solid var(--line)' }}>
-                <span style={{ fontSize: '11.5px', fontFamily: 'var(--font-mono)', color: 'var(--ink-soft)', textTransform: 'uppercase' }}>
+              <div
+                style={{
+                  marginTop: '20px',
+                  paddingTop: '14px',
+                  borderTop: '1px solid var(--line)',
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: '11.5px',
+                    fontFamily: 'var(--font-mono)',
+                    color: 'var(--ink-soft)',
+                    textTransform: 'uppercase',
+                  }}
+                >
                   Live Capture Shots ({capturedShots.length} / 4):
                 </span>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginTop: '8px' }}>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(4, 1fr)',
+                    gap: '8px',
+                    marginTop: '8px',
+                  }}
+                >
                   {capturedShots.map((shot, i) => (
                     <div
                       key={i}
@@ -962,11 +1370,33 @@ export default function PhotoboothPage() {
                         borderRadius: '6px',
                         overflow: 'hidden',
                         position: 'relative',
-                        border: currentShotIdx === i && isShooting ? '2px solid var(--pink)' : '1px solid var(--line)',
+                        border:
+                          currentShotIdx === i && isShooting
+                            ? '2px solid var(--pink)'
+                            : '1px solid var(--line)',
                       }}
                     >
-                      <img src={shot} alt={`Shot ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      <span style={{ position: 'absolute', top: '2px', left: '4px', fontSize: '8px', color: '#fff', background: 'rgba(0,0,0,0.6)', padding: '1px 3px', borderRadius: '2px' }}>
+                      <img
+                        src={shot}
+                        alt={`Shot ${i + 1}`}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                        }}
+                      />
+                      <span
+                        style={{
+                          position: 'absolute',
+                          top: '2px',
+                          left: '4px',
+                          fontSize: '8px',
+                          color: '#fff',
+                          background: 'rgba(0,0,0,0.6)',
+                          padding: '1px 3px',
+                          borderRadius: '2px',
+                        }}
+                      >
                         0{i + 1}
                       </span>
                     </div>
@@ -1014,7 +1444,13 @@ export default function PhotoboothPage() {
                     }}
                   >
                     {placedStickers.map((stk) => (
-                      <span key={stk.id} style={{ fontSize: '18px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }}>
+                      <span
+                        key={stk.id}
+                        style={{
+                          fontSize: '18px',
+                          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
+                        }}
+                      >
                         {stk.content}
                       </span>
                     ))}
@@ -1027,12 +1463,20 @@ export default function PhotoboothPage() {
                     value={coupleName}
                     onChange={(e) => setCoupleName(e.target.value)}
                     className="real-strip-name"
-                    style={{ width: '100%', textAlign: 'center', border: 'none', background: 'transparent', outline: 'none' }}
+                    style={{
+                      width: '100%',
+                      textAlign: 'center',
+                      border: 'none',
+                      background: 'transparent',
+                      outline: 'none',
+                    }}
                   />
                   <button
                     onClick={() => {
                       sounds.playPop();
-                      setCoupleName(generateCupidotCaption(nickname, partnerName));
+                      setCoupleName(
+                        generateCupidotCaption(nickname, partnerName),
+                      );
                     }}
                     style={{
                       border: 'none',
@@ -1055,11 +1499,26 @@ export default function PhotoboothPage() {
               </div>
 
               {/* Strip Next Scene CTAs */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '250px' }}>
-                <button className="btn btn-grad" onClick={() => setScene('EDIT')} style={{ justifyContent: 'center' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px',
+                  width: '250px',
+                }}
+              >
+                <button
+                  className="btn btn-grad"
+                  onClick={() => setScene('EDIT')}
+                  style={{ justifyContent: 'center' }}
+                >
                   Next: Edit &amp; Color Filters ▷
                 </button>
-                <button className="btn btn-primary" onClick={downloadHighResStrip} style={{ justifyContent: 'center' }}>
+                <button
+                  className="btn btn-primary"
+                  onClick={downloadHighResStrip}
+                  style={{ justifyContent: 'center' }}
+                >
                   Download Photo Strip 💾
                 </button>
               </div>
@@ -1073,20 +1532,42 @@ export default function PhotoboothPage() {
         {(scene === 'EDIT' || scene === 'FILTER') && (
           <div className="booth-showcase-grid">
             <div className="booth-box">
-              <span className="eyebrow">Step 4 &amp; 5 · Review &amp; Color Grading</span>
-              <h2 style={{ fontSize: '24px', fontWeight: 800, margin: '8px 0 16px' }}>Choose your photo color grade</h2>
+              <span className="eyebrow">
+                Step 4 &amp; 5 · Review &amp; Color Grading
+              </span>
+              <h2
+                style={{
+                  fontSize: '24px',
+                  fontWeight: 800,
+                  margin: '8px 0 16px',
+                }}
+              >
+                Choose your photo color grade
+              </h2>
 
               {/* Color Filter presets */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '10px', marginBottom: '24px' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))',
+                  gap: '10px',
+                  marginBottom: '24px',
+                }}
+              >
                 {COLOR_FILTERS.map((cf) => (
                   <div
                     key={cf.id}
                     onClick={() => {
                       setSelectedColorFilter(cf);
-                      void activityRuntime.sendEvent('photo_filter', { filter: cf.id });
+                      void activityRuntime.sendEvent('photo_filter', {
+                        filter: cf.id,
+                      });
                     }}
                     style={{
-                      border: selectedColorFilter.id === cf.id ? '2px solid var(--pink)' : '1px solid var(--line)',
+                      border:
+                        selectedColorFilter.id === cf.id
+                          ? '2px solid var(--pink)'
+                          : '1px solid var(--line)',
                       borderRadius: '8px',
                       padding: '8px',
                       cursor: 'pointer',
@@ -1094,17 +1575,44 @@ export default function PhotoboothPage() {
                       textAlign: 'center',
                     }}
                   >
-                    <div style={{ width: '100%', aspectRatio: '4/3', overflow: 'hidden', borderRadius: '4px', marginBottom: '6px' }}>
-                      <img src="/photos/frame1.webp" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', filter: cf.filter }} />
+                    <div
+                      style={{
+                        width: '100%',
+                        aspectRatio: '4/3',
+                        overflow: 'hidden',
+                        borderRadius: '4px',
+                        marginBottom: '6px',
+                      }}
+                    >
+                      <img
+                        src="/photos/frame1.webp"
+                        alt=""
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          filter: cf.filter,
+                        }}
+                      />
                     </div>
-                    <span style={{ fontSize: '11px', fontWeight: 700 }}>{cf.name}</span>
+                    <span style={{ fontSize: '11px', fontWeight: 700 }}>
+                      {cf.name}
+                    </span>
                   </div>
                 ))}
               </div>
 
               {/* Layout Switcher */}
               <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    marginBottom: '8px',
+                  }}
+                >
                   Strip Format:
                 </label>
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -1115,8 +1623,14 @@ export default function PhotoboothPage() {
                       style={{
                         padding: '6px 12px',
                         borderRadius: '6px',
-                        border: selectedLayout.id === layout.id ? '1.5px solid var(--pink)' : '1px solid var(--line)',
-                        background: selectedLayout.id === layout.id ? 'var(--pink-tint)' : 'var(--paper)',
+                        border:
+                          selectedLayout.id === layout.id
+                            ? '1.5px solid var(--pink)'
+                            : '1px solid var(--line)',
+                        background:
+                          selectedLayout.id === layout.id
+                            ? 'var(--pink-tint)'
+                            : 'var(--paper)',
                         fontSize: '12px',
                         fontWeight: 700,
                       }}
@@ -1128,10 +1642,16 @@ export default function PhotoboothPage() {
               </div>
 
               <div style={{ display: 'flex', gap: '10px' }}>
-                <button className="btn btn-ghost" onClick={() => setScene('BOOTH')}>
+                <button
+                  className="btn btn-ghost"
+                  onClick={() => setScene('BOOTH')}
+                >
                   ← Retake Photos
                 </button>
-                <button className="btn btn-grad" onClick={() => setScene('DECORATE')}>
+                <button
+                  className="btn btn-grad"
+                  onClick={() => setScene('DECORATE')}
+                >
                   Next: Add Stickers ▷
                 </button>
               </div>
@@ -1151,7 +1671,11 @@ export default function PhotoboothPage() {
                 <div className="real-strip-frames">
                   {capturedShots.map((shot, idx) => (
                     <div key={idx} className="real-strip-cell">
-                      <img src={shot} alt="" style={{ filter: selectedColorFilter.filter }} />
+                      <img
+                        src={shot}
+                        alt=""
+                        style={{ filter: selectedColorFilter.filter }}
+                      />
                       <span className="frame-tag">0{idx + 1}</span>
                     </div>
                   ))}
@@ -1173,12 +1697,30 @@ export default function PhotoboothPage() {
         {(scene === 'DECORATE' || scene === 'DOWNLOAD') && (
           <div className="booth-showcase-grid">
             <div className="booth-box">
-              <span className="eyebrow">Step 6 &amp; 7 · Decorate &amp; Download</span>
-              <h2 style={{ fontSize: '24px', fontWeight: 800, margin: '8px 0 16px' }}>Customize your keepsake</h2>
+              <span className="eyebrow">
+                Step 6 &amp; 7 · Decorate &amp; Download
+              </span>
+              <h2
+                style={{
+                  fontSize: '24px',
+                  fontWeight: 800,
+                  margin: '8px 0 16px',
+                }}
+              >
+                Customize your keepsake
+              </h2>
 
               {/* Couple Name */}
               <div style={{ marginBottom: '18px' }}>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    marginBottom: '6px',
+                  }}
+                >
                   Couple Names on Strip:
                 </label>
                 <input
@@ -1199,8 +1741,23 @@ export default function PhotoboothPage() {
 
               {/* Categorized Korean Sticker Studio */}
               <div style={{ marginBottom: '24px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '8px',
+                  }}
+                >
+                  <label
+                    style={{
+                      display: 'block',
+                      fontSize: '12px',
+                      fontWeight: 800,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                    }}
+                  >
                     Sticker Studio &amp; Korean Badges:
                   </label>
                   {placedStickers.length > 0 && (
@@ -1226,7 +1783,9 @@ export default function PhotoboothPage() {
                 </div>
 
                 {/* Category Pills */}
-                <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
+                <div
+                  style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}
+                >
                   {STICKER_CATEGORIES.map((cat) => {
                     const isActive = activeStickerTab === cat.id;
                     return (
@@ -1239,8 +1798,12 @@ export default function PhotoboothPage() {
                         style={{
                           padding: '6px 12px',
                           borderRadius: '20px',
-                          border: isActive ? '1.5px solid var(--pink)' : '1px solid var(--line)',
-                          background: isActive ? 'var(--pink-tint)' : 'var(--paper)',
+                          border: isActive
+                            ? '1.5px solid var(--pink)'
+                            : '1px solid var(--line)',
+                          background: isActive
+                            ? 'var(--pink-tint)'
+                            : 'var(--paper)',
                           color: isActive ? 'var(--pink)' : 'var(--ink-soft)',
                           fontSize: '12px',
                           fontWeight: 700,
@@ -1267,19 +1830,27 @@ export default function PhotoboothPage() {
                     minHeight: '60px',
                   }}
                 >
-                  {STICKER_CATEGORIES.find((c) => c.id === activeStickerTab)?.items.map((item, i) => (
+                  {STICKER_CATEGORIES.find(
+                    (c) => c.id === activeStickerTab,
+                  )?.items.map((item, i) => (
                     <button
                       key={i}
-                      onClick={() => addSticker(item.text, (item as any).isHangul)}
+                      onClick={() =>
+                        addSticker(item.text, (item as any).isHangul)
+                      }
                       title={item.label}
                       style={{
-                        padding: (item as any).isHangul ? '6px 14px' : '6px 10px',
+                        padding: (item as any).isHangul
+                          ? '6px 14px'
+                          : '6px 10px',
                         borderRadius: '10px',
                         border: '1px solid var(--line)',
                         background: '#FFFFFF',
                         fontSize: (item as any).isHangul ? '13px' : '20px',
                         fontWeight: (item as any).isHangul ? 800 : 400,
-                        color: (item as any).isHangul ? 'var(--pink)' : 'inherit',
+                        color: (item as any).isHangul
+                          ? 'var(--pink)'
+                          : 'inherit',
                         cursor: 'pointer',
                         display: 'inline-flex',
                         alignItems: 'center',
@@ -1292,15 +1863,40 @@ export default function PhotoboothPage() {
                     </button>
                   ))}
                 </div>
-                <p style={{ fontSize: '11px', color: 'var(--ink-soft)', marginTop: '6px', marginInline: '2px' }}>
-                  💡 <b>Tip:</b> Tap stickers to drop onto your strip · Drag to reposition · Tap on a sticker to rotate, resize, or remove.
+                <p
+                  style={{
+                    fontSize: '11px',
+                    color: 'var(--ink-soft)',
+                    marginTop: '6px',
+                    marginInline: '2px',
+                  }}
+                >
+                  💡 <b>Tip:</b> Tap stickers to drop onto your strip · Drag to
+                  reposition · Tap on a sticker to rotate, resize, or remove.
                 </p>
               </div>
 
               {/* Motion Strip Mode & Neon Doodling Controls */}
-              <div style={{ background: 'var(--paper)', padding: '18px', borderRadius: '12px', border: '1px solid var(--line)', marginBottom: '20px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                  <span style={{ fontWeight: 800, fontSize: '14px' }}>🎞️ Korean Photogray Motion Mode</span>
+              <div
+                style={{
+                  background: 'var(--paper)',
+                  padding: '18px',
+                  borderRadius: '12px',
+                  border: '1px solid var(--line)',
+                  marginBottom: '20px',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '10px',
+                  }}
+                >
+                  <span style={{ fontWeight: 800, fontSize: '14px' }}>
+                    🎞️ Korean Photogray Motion Mode
+                  </span>
                   <button
                     onClick={() => setIsMotionMode(!isMotionMode)}
                     className={`btn ${isMotionMode ? 'btn-primary' : 'btn-ghost'}`}
@@ -1309,15 +1905,39 @@ export default function PhotoboothPage() {
                     {isMotionMode ? '✓ Motion Active' : 'Enable Motion'}
                   </button>
                 </div>
-                <p style={{ fontSize: '12.5px', color: 'var(--ink-soft)', margin: 0 }}>
-                  Loops all 4 cuts in an animated motion sequence mimicking Korean live photostrips.
+                <p
+                  style={{
+                    fontSize: '12.5px',
+                    color: 'var(--ink-soft)',
+                    margin: 0,
+                  }}
+                >
+                  Loops all 4 cuts in an animated motion sequence mimicking
+                  Korean live photostrips.
                 </p>
 
                 {/* Neon Pen Selector */}
-                <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid var(--line)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '13px', fontWeight: 700 }}>🎨 Neon Glow Pen:</span>
+                <div
+                  style={{
+                    marginTop: '14px',
+                    paddingTop: '12px',
+                    borderTop: '1px solid var(--line)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <span style={{ fontSize: '13px', fontWeight: 700 }}>
+                    🎨 Neon Glow Pen:
+                  </span>
                   <div style={{ display: 'flex', gap: '6px' }}>
-                    {['#FF7BA3', '#5FA0FF', '#FFD68A', '#4ECCA3', '#FFFFFF'].map((col) => (
+                    {[
+                      '#FF7BA3',
+                      '#5FA0FF',
+                      '#FFD68A',
+                      '#4ECCA3',
+                      '#FFFFFF',
+                    ].map((col) => (
                       <button
                         key={col}
                         onClick={() => {
@@ -1329,7 +1949,10 @@ export default function PhotoboothPage() {
                           height: '24px',
                           borderRadius: '50%',
                           background: col,
-                          border: neonPenColor === col ? '2px solid #17181C' : '1px solid rgba(0,0,0,0.2)',
+                          border:
+                            neonPenColor === col
+                              ? '2px solid #17181C'
+                              : '1px solid rgba(0,0,0,0.2)',
                           cursor: 'pointer',
                         }}
                       />
@@ -1338,11 +1961,29 @@ export default function PhotoboothPage() {
                 </div>
 
                 {/* 90s Vintage Cam Date Stamp & Light Leak Toggle */}
-                <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid var(--line)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div
+                  style={{
+                    marginTop: '14px',
+                    paddingTop: '12px',
+                    borderTop: '1px solid var(--line)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
                   <div>
-                    <span style={{ fontWeight: 800, fontSize: '13px' }}>🎞️ 90s Film Cam Mode</span>
-                    <p style={{ fontSize: '11.5px', color: 'var(--ink-soft)', margin: '2px 0 0' }}>
-                      LED date stamp (&apos;26 9 3) &amp; warm nostalgic light leaks.
+                    <span style={{ fontWeight: 800, fontSize: '13px' }}>
+                      🎞️ 90s Film Cam Mode
+                    </span>
+                    <p
+                      style={{
+                        fontSize: '11.5px',
+                        color: 'var(--ink-soft)',
+                        margin: '2px 0 0',
+                      }}
+                    >
+                      LED date stamp (&apos;26 9 3) &amp; warm nostalgic light
+                      leaks.
                     </p>
                   </div>
                   <button
@@ -1351,7 +1992,11 @@ export default function PhotoboothPage() {
                       setIsVintageCamMode(!isVintageCamMode);
                     }}
                     className={`btn ${isVintageCamMode ? 'btn-primary' : 'btn-ghost'}`}
-                    style={{ padding: '4px 12px', fontSize: '12px', whiteSpace: 'nowrap' }}
+                    style={{
+                      padding: '4px 12px',
+                      fontSize: '12px',
+                      whiteSpace: 'nowrap',
+                    }}
                   >
                     {isVintageCamMode ? '✓ Vintage Active' : 'Enable Vintage'}
                   </button>
@@ -1359,7 +2004,15 @@ export default function PhotoboothPage() {
               </div>
 
               <div style={{ display: 'grid', gap: '10px' }}>
-                <button className="btn btn-primary" onClick={downloadHighResStrip} style={{ width: '100%', justifyContent: 'center', padding: '12px' }}>
+                <button
+                  className="btn btn-primary"
+                  onClick={downloadHighResStrip}
+                  style={{
+                    width: '100%',
+                    justifyContent: 'center',
+                    padding: '12px',
+                  }}
+                >
                   Download High-Res 600×1600 Strip PNG 💾
                 </button>
                 <div style={{ display: 'flex', gap: '10px' }}>
@@ -1370,18 +2023,26 @@ export default function PhotoboothPage() {
                       setConfettiActive(true);
                       setTimeout(() => setConfettiActive(false), 3000);
                       try {
-                        await downloadAnimatedStripVideo(capturedShots, `dearly-us-live-strip-${roomCode}.webm`, {
-                          includeFlash: true,
-                          fps: 2,
-                          frameBorderColor: selectedStyle.bg,
-                        });
+                        await downloadAnimatedStripVideo(
+                          capturedShots,
+                          `dearly-us-live-strip-${roomCode}.webm`,
+                          {
+                            includeFlash: true,
+                            fps: 2,
+                            frameBorderColor: selectedStyle.bg,
+                          },
+                        );
                       } catch {}
                     }}
                     style={{ flex: 1, padding: '10px', fontSize: '13px' }}
                   >
                     Export Animated Live Strip 🎞️
                   </button>
-                  <button className="btn btn-ghost" onClick={copyRoomLink} style={{ padding: '10px 16px', fontSize: '13px' }}>
+                  <button
+                    className="btn btn-ghost"
+                    onClick={copyRoomLink}
+                    style={{ padding: '10px 16px', fontSize: '13px' }}
+                  >
                     {copied ? '✓ Copied' : 'Share Link 🔗'}
                   </button>
                 </div>
@@ -1396,12 +2057,16 @@ export default function PhotoboothPage() {
                   style={{
                     background: selectedStyle.bg,
                     color: selectedStyle.color,
-                    borderColor: selectedStyle.foilEffect === 'matte-foil' ? '#E2E8F0' : selectedStyle.border,
-                    boxShadow: selectedStyle.foilEffect === 'holographic'
-                      ? '0 20px 50px rgba(192, 132, 252, 0.3), 0 0 30px rgba(255, 209, 220, 0.4)'
-                      : selectedStyle.foilEffect === 'chrome'
-                      ? '0 20px 50px rgba(148, 163, 184, 0.4), inset 0 0 0 1px rgba(255,255,255,0.8)'
-                      : undefined,
+                    borderColor:
+                      selectedStyle.foilEffect === 'matte-foil'
+                        ? '#E2E8F0'
+                        : selectedStyle.border,
+                    boxShadow:
+                      selectedStyle.foilEffect === 'holographic'
+                        ? '0 20px 50px rgba(192, 132, 252, 0.3), 0 0 30px rgba(255, 209, 220, 0.4)'
+                        : selectedStyle.foilEffect === 'chrome'
+                          ? '0 20px 50px rgba(148, 163, 184, 0.4), inset 0 0 0 1px rgba(255,255,255,0.8)'
+                          : undefined,
                     position: 'relative',
                     overflow: 'hidden',
                   }}
@@ -1412,7 +2077,8 @@ export default function PhotoboothPage() {
                       style={{
                         position: 'absolute',
                         inset: 0,
-                        background: 'linear-gradient(125deg, transparent 20%, rgba(255, 255, 255, 0.45) 35%, transparent 50%, rgba(255, 255, 255, 0.35) 65%, transparent 80%)',
+                        background:
+                          'linear-gradient(125deg, transparent 20%, rgba(255, 255, 255, 0.45) 35%, transparent 50%, rgba(255, 255, 255, 0.35) 65%, transparent 80%)',
                         backgroundSize: '250% 250%',
                         mixBlendMode: 'overlay',
                         pointerEvents: 'none',
@@ -1425,7 +2091,8 @@ export default function PhotoboothPage() {
                       style={{
                         position: 'absolute',
                         inset: 0,
-                        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, transparent 35%, rgba(255, 255, 255, 0.3) 65%, transparent 100%)',
+                        background:
+                          'linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, transparent 35%, rgba(255, 255, 255, 0.3) 65%, transparent 100%)',
                         mixBlendMode: 'screen',
                         pointerEvents: 'none',
                         zIndex: 4,
@@ -1440,13 +2107,20 @@ export default function PhotoboothPage() {
                         key={idx}
                         className="real-strip-cell"
                         style={{
-                          transform: isMotionMode && motionFrameIdx === idx ? 'scale(1.03)' : 'scale(1)',
+                          transform:
+                            isMotionMode && motionFrameIdx === idx
+                              ? 'scale(1.03)'
+                              : 'scale(1)',
                           transition: 'transform 0.2s ease',
                           position: 'relative',
                           overflow: 'hidden',
                         }}
                       >
-                        <img src={shot} alt="" style={{ filter: selectedColorFilter.filter }} />
+                        <img
+                          src={shot}
+                          alt=""
+                          style={{ filter: selectedColorFilter.filter }}
+                        />
                         <span className="frame-tag">0{idx + 1}</span>
 
                         {/* Optional 90s Film Cam Overlays */}
@@ -1457,7 +2131,8 @@ export default function PhotoboothPage() {
                               style={{
                                 position: 'absolute',
                                 inset: 0,
-                                background: 'radial-gradient(ellipse at 85% 15%, rgba(255, 120, 50, 0.42) 0%, rgba(255, 40, 100, 0.22) 40%, transparent 75%)',
+                                background:
+                                  'radial-gradient(ellipse at 85% 15%, rgba(255, 120, 50, 0.42) 0%, rgba(255, 40, 100, 0.22) 40%, transparent 75%)',
                                 mixBlendMode: 'screen',
                                 pointerEvents: 'none',
                                 zIndex: 6,
@@ -1473,7 +2148,8 @@ export default function PhotoboothPage() {
                                 fontSize: '10.5px',
                                 fontWeight: 900,
                                 color: '#FF6A00',
-                                textShadow: '0 0 4px #FF4500, 0 0 8px rgba(255, 69, 0, 0.6)',
+                                textShadow:
+                                  '0 0 4px #FF4500, 0 0 8px rgba(255, 69, 0, 0.6)',
                                 letterSpacing: '1px',
                                 pointerEvents: 'none',
                                 zIndex: 8,
@@ -1501,14 +2177,37 @@ export default function PhotoboothPage() {
                           const rect = stripEl.getBoundingClientRect();
 
                           const onPointerMove = (moveEvt: PointerEvent) => {
-                            const newX = Math.max(5, Math.min(95, ((moveEvt.clientX - rect.left) / rect.width) * 100));
-                            const newY = Math.max(4, Math.min(96, ((moveEvt.clientY - rect.top) / rect.height) * 100));
-                            updateSticker(stk.id, { x: Math.round(newX), y: Math.round(newY) });
+                            const newX = Math.max(
+                              5,
+                              Math.min(
+                                95,
+                                ((moveEvt.clientX - rect.left) / rect.width) *
+                                  100,
+                              ),
+                            );
+                            const newY = Math.max(
+                              4,
+                              Math.min(
+                                96,
+                                ((moveEvt.clientY - rect.top) / rect.height) *
+                                  100,
+                              ),
+                            );
+                            updateSticker(stk.id, {
+                              x: Math.round(newX),
+                              y: Math.round(newY),
+                            });
                           };
 
                           const onPointerUp = () => {
-                            window.removeEventListener('pointermove', onPointerMove);
-                            window.removeEventListener('pointerup', onPointerUp);
+                            window.removeEventListener(
+                              'pointermove',
+                              onPointerMove,
+                            );
+                            window.removeEventListener(
+                              'pointerup',
+                              onPointerUp,
+                            );
                           };
 
                           window.addEventListener('pointermove', onPointerMove);
@@ -1529,7 +2228,9 @@ export default function PhotoboothPage() {
                           <span
                             style={{
                               background: '#FFFFFF',
-                              border: isSelected ? '2px solid #FF4D80' : '1.5px solid var(--pink)',
+                              border: isSelected
+                                ? '2px solid #FF4D80'
+                                : '1.5px solid var(--pink)',
                               color: '#FF4D80',
                               padding: '4px 10px',
                               borderRadius: '20px',
@@ -1579,7 +2280,11 @@ export default function PhotoboothPage() {
                             }}
                           >
                             <button
-                              onClick={() => updateSticker(stk.id, { rotation: stk.rotation - 12 })}
+                              onClick={() =>
+                                updateSticker(stk.id, {
+                                  rotation: stk.rotation - 12,
+                                })
+                              }
                               title="Rotate Left"
                               style={{
                                 background: 'none',
@@ -1593,7 +2298,11 @@ export default function PhotoboothPage() {
                               ↺
                             </button>
                             <button
-                              onClick={() => updateSticker(stk.id, { rotation: stk.rotation + 12 })}
+                              onClick={() =>
+                                updateSticker(stk.id, {
+                                  rotation: stk.rotation + 12,
+                                })
+                              }
                               title="Rotate Right"
                               style={{
                                 background: 'none',
@@ -1607,7 +2316,11 @@ export default function PhotoboothPage() {
                               ↻
                             </button>
                             <button
-                              onClick={() => updateSticker(stk.id, { scale: Math.max(0.7, stk.scale - 0.15) })}
+                              onClick={() =>
+                                updateSticker(stk.id, {
+                                  scale: Math.max(0.7, stk.scale - 0.15),
+                                })
+                              }
                               title="Smaller"
                               style={{
                                 background: 'none',
@@ -1621,7 +2334,11 @@ export default function PhotoboothPage() {
                               ➖
                             </button>
                             <button
-                              onClick={() => updateSticker(stk.id, { scale: Math.min(1.6, stk.scale + 0.15) })}
+                              onClick={() =>
+                                updateSticker(stk.id, {
+                                  scale: Math.min(1.6, stk.scale + 0.15),
+                                })
+                              }
                               title="Larger"
                               style={{
                                 background: 'none',
@@ -1664,7 +2381,11 @@ export default function PhotoboothPage() {
                 </div>
               </TiltedCard>
 
-              <button className="btn btn-grad" onClick={downloadHighResStrip} style={{ width: '250px', justifyContent: 'center' }}>
+              <button
+                className="btn btn-grad"
+                onClick={downloadHighResStrip}
+                style={{ width: '250px', justifyContent: 'center' }}
+              >
                 Download PNG 💾
               </button>
             </div>

@@ -20,7 +20,9 @@ export function AudioPlayer() {
   const [isOpen, setIsOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isBgMusicActive, setIsBgMusicActive] = useState(true);
-  const [activePreset, setActivePreset] = useState<'warm' | 'romantic' | 'tokyo' | null>(null);
+  const [activePreset, setActivePreset] = useState<
+    'warm' | 'romantic' | 'tokyo' | null
+  >(null);
   const [sleepTimer, setSleepTimerState] = useState<number | null>(null);
   const [sleepRemainingSec, setSleepRemainingSec] = useState<number>(0);
   const [partnerSync, setPartnerSync] = useState<boolean>(true);
@@ -30,7 +32,9 @@ export function AudioPlayer() {
   const [romanticVol, setRomanticVol] = useState(0.35);
   const [pianoVol, setPianoVol] = useState(0.35);
   const [lofiVol, setLofiVol] = useState(0.3);
-  const playerDrag = useDraggableFixed<HTMLElement>('dearly-us:audio-player-position');
+  const playerDrag = useDraggableFixed<HTMLElement>(
+    'dearly-us:audio-player-position',
+  );
 
   // Auto-start background music on site load
   useEffect(() => {
@@ -52,7 +56,12 @@ export function AudioPlayer() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const activeTag = document.activeElement?.tagName.toLowerCase();
-      if (activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select') return;
+      if (
+        activeTag === 'input' ||
+        activeTag === 'textarea' ||
+        activeTag === 'select'
+      )
+        return;
 
       if (e.key === 'm' || e.key === 'M') {
         e.preventDefault();
@@ -84,7 +93,13 @@ export function AudioPlayer() {
     } catch {}
   }, [partnerSync]);
 
-  const broadcastSync = (data: { preset?: string; warm?: number; romantic?: number; piano?: number; lofi?: number }) => {
+  const broadcastSync = (data: {
+    preset?: string;
+    warm?: number;
+    romantic?: number;
+    piano?: number;
+    lofi?: number;
+  }) => {
     if (!partnerSync || typeof window === 'undefined') return;
     try {
       const channel = new BroadcastChannel('dearly_soundscape_sync');
@@ -108,7 +123,7 @@ export function AudioPlayer() {
           setIsBgMusicActive(false);
           setSleepTimerState(null);
           setSleepRemainingSec(0);
-        }
+        },
       );
     }
   };
@@ -144,7 +159,10 @@ export function AudioPlayer() {
     }
   };
 
-  const setPreset = (preset: 'warm' | 'romantic' | 'tokyo', shouldBroadcast = true) => {
+  const setPreset = (
+    preset: 'warm' | 'romantic' | 'tokyo',
+    shouldBroadcast = true,
+  ) => {
     sounds.playPop();
     stopBg();
     setActivePreset(preset);
@@ -160,7 +178,14 @@ export function AudioPlayer() {
         sounds.startPiano(0.35);
         sounds.startTokyoCafe(0.2);
       }
-      if (shouldBroadcast) broadcastSync({ preset: 'warm', warm: 0.65, romantic: 0.2, piano: 0.35, lofi: 0.2 });
+      if (shouldBroadcast)
+        broadcastSync({
+          preset: 'warm',
+          warm: 0.65,
+          romantic: 0.2,
+          piano: 0.35,
+          lofi: 0.2,
+        });
     } else if (preset === 'romantic') {
       setWarmVol(0.2);
       setRomanticVol(0.65);
@@ -172,7 +197,14 @@ export function AudioPlayer() {
         sounds.startPiano(0.4);
         sounds.startTokyoCafe(0.25);
       }
-      if (shouldBroadcast) broadcastSync({ preset: 'romantic', warm: 0.2, romantic: 0.65, piano: 0.4, lofi: 0.25 });
+      if (shouldBroadcast)
+        broadcastSync({
+          preset: 'romantic',
+          warm: 0.2,
+          romantic: 0.65,
+          piano: 0.4,
+          lofi: 0.25,
+        });
     } else if (preset === 'tokyo') {
       setWarmVol(0.3);
       setRomanticVol(0.2);
@@ -184,7 +216,14 @@ export function AudioPlayer() {
         sounds.startPiano(0.35);
         sounds.startTokyoCafe(0.65);
       }
-      if (shouldBroadcast) broadcastSync({ preset: 'tokyo', warm: 0.3, romantic: 0.2, piano: 0.35, lofi: 0.65 });
+      if (shouldBroadcast)
+        broadcastSync({
+          preset: 'tokyo',
+          warm: 0.3,
+          romantic: 0.2,
+          piano: 0.35,
+          lofi: 0.65,
+        });
     }
   };
 
@@ -192,7 +231,7 @@ export function AudioPlayer() {
     key: 'warm' | 'romantic' | 'piano' | 'lofi',
     currentVol: number,
     setVol: (v: number) => void,
-    startFn: (v: number) => void
+    startFn: (v: number) => void,
   ) => {
     sounds.playPop();
     stopBg();
@@ -282,7 +321,8 @@ export function AudioPlayer() {
             padding: '20px 22px',
             width: '320px',
             color: '#FFFFFF',
-            boxShadow: '0 24px 60px rgba(0, 0, 0, 0.65), 0 0 40px rgba(255, 123, 163, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.2)',
+            boxShadow:
+              '0 24px 60px rgba(0, 0, 0, 0.65), 0 0 40px rgba(255, 123, 163, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.2)',
             animation: 'gl-rise 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
             position: 'relative',
             overflow: 'hidden',
@@ -296,34 +336,78 @@ export function AudioPlayer() {
               right: '-40px',
               width: '140px',
               height: '140px',
-              background: isPlaying ? 'radial-gradient(circle, rgba(255,123,163,0.25) 0%, transparent 70%)' : 'none',
+              background: isPlaying
+                ? 'radial-gradient(circle, rgba(255,123,163,0.25) 0%, transparent 70%)'
+                : 'none',
               pointerEvents: 'none',
               transition: 'background 0.5s ease',
             }}
           />
 
           {/* Studio Header with 3D Turntable */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '16px',
+            }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div className="turntable-3d-stage" title="Dearly Us Analog Turntable · 33⅓ RPM">
-                <div className={`vinyl-3d-disc ${isPlaying || isBgMusicActive ? 'spinning' : ''}`}>
+              <div
+                className="turntable-3d-stage"
+                title="Dearly Us Analog Turntable · 33⅓ RPM"
+              >
+                <div
+                  className={`vinyl-3d-disc ${isPlaying || isBgMusicActive ? 'spinning' : ''}`}
+                >
                   <div className="vinyl-center-label">
                     <div className="vinyl-center-hole" />
                   </div>
                 </div>
                 {/* 3D Tonearm Needle */}
-                <div className={`turntable-tonearm ${isPlaying || isBgMusicActive ? 'active' : 'paused'}`}>
+                <div
+                  className={`turntable-tonearm ${isPlaying || isBgMusicActive ? 'active' : 'paused'}`}
+                >
                   <div className="tonearm-pivot" />
                   <div className="tonearm-arm" />
                   <div className="tonearm-head" />
                 </div>
               </div>
               <div>
-                <div style={{ fontSize: '13.5px', fontWeight: 900, letterSpacing: '-0.2px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div
+                  style={{
+                    fontSize: '13.5px',
+                    fontWeight: 900,
+                    letterSpacing: '-0.2px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
                   <span>Soundscape Studio</span>
-                  <span style={{ fontSize: '9px', background: 'rgba(255, 123, 163, 0.2)', color: 'var(--pink)', padding: '1px 6px', borderRadius: '6px', fontWeight: 800 }}>3D PRO</span>
+                  <span
+                    style={{
+                      fontSize: '9px',
+                      background: 'rgba(255, 123, 163, 0.2)',
+                      color: 'var(--pink)',
+                      padding: '1px 6px',
+                      borderRadius: '6px',
+                      fontWeight: 800,
+                    }}
+                  >
+                    3D PRO
+                  </span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '10px', color: 'rgba(255,255,255,0.6)' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    fontSize: '10px',
+                    color: 'rgba(255,255,255,0.6)',
+                  }}
+                >
                   <span
                     style={{
                       width: '6px',
@@ -334,7 +418,13 @@ export function AudioPlayer() {
                       display: 'inline-block',
                     }}
                   />
-                  <span>{isPlaying ? '4 Analog Channels Streaming' : isBgMusicActive ? 'Background Music Live' : 'Ready to stream'}</span>
+                  <span>
+                    {isPlaying
+                      ? '4 Analog Channels Streaming'
+                      : isBgMusicActive
+                        ? 'Background Music Live'
+                        : 'Ready to stream'}
+                  </span>
                 </div>
               </div>
             </div>
@@ -342,7 +432,14 @@ export function AudioPlayer() {
             {/* Top Right EQ Visualizer & Close */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               {isPlaying && (
-                <div style={{ display: 'flex', alignItems: 'flex-end', gap: '2.5px', height: '18px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'flex-end',
+                    gap: '2.5px',
+                    height: '18px',
+                  }}
+                >
                   <div className="radio-eq-bar" />
                   <div className="radio-eq-bar" />
                   <div className="radio-eq-bar" />
@@ -386,22 +483,55 @@ export function AudioPlayer() {
 
           {/* Quick Atmosphere Presets */}
           <div style={{ marginBottom: '14px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <div style={{ fontSize: '10.5px', textTransform: 'uppercase', letterSpacing: '0.8px', color: 'rgba(255,255,255,0.45)', fontWeight: 700 }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '8px',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '10.5px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.8px',
+                  color: 'rgba(255,255,255,0.45)',
+                  fontWeight: 700,
+                }}
+              >
                 Curated Moods
               </div>
-              <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-mono)' }}>
+              <div
+                style={{
+                  fontSize: '10px',
+                  color: 'rgba(255,255,255,0.4)',
+                  fontFamily: 'var(--font-mono)',
+                }}
+              >
                 Press <b>[M]</b> to Mute
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: '6px',
+              }}
+            >
               <button
                 onClick={() => setPreset('warm')}
                 className="radio-preset-btn"
                 style={{
-                  background: activePreset === 'warm' ? 'rgba(95,160,255,0.22)' : 'rgba(255,255,255,0.05)',
-                  border: activePreset === 'warm' ? '1px solid rgba(95,160,255,0.6)' : '1px solid rgba(255,255,255,0.08)',
+                  background:
+                    activePreset === 'warm'
+                      ? 'rgba(95,160,255,0.22)'
+                      : 'rgba(255,255,255,0.05)',
+                  border:
+                    activePreset === 'warm'
+                      ? '1px solid rgba(95,160,255,0.6)'
+                      : '1px solid rgba(255,255,255,0.08)',
                   borderRadius: '10px',
                   padding: '8px 4px',
                   color: activePreset === 'warm' ? '#82B6FF' : '#FFFFFF',
@@ -422,8 +552,14 @@ export function AudioPlayer() {
                 onClick={() => setPreset('romantic')}
                 className="radio-preset-btn"
                 style={{
-                  background: activePreset === 'romantic' ? 'rgba(255,123,163,0.22)' : 'rgba(255,255,255,0.05)',
-                  border: activePreset === 'romantic' ? '1px solid rgba(255,123,163,0.6)' : '1px solid rgba(255,255,255,0.08)',
+                  background:
+                    activePreset === 'romantic'
+                      ? 'rgba(255,123,163,0.22)'
+                      : 'rgba(255,255,255,0.05)',
+                  border:
+                    activePreset === 'romantic'
+                      ? '1px solid rgba(255,123,163,0.6)'
+                      : '1px solid rgba(255,255,255,0.08)',
                   borderRadius: '10px',
                   padding: '8px 4px',
                   color: activePreset === 'romantic' ? '#FFA0BC' : '#FFFFFF',
@@ -444,8 +580,14 @@ export function AudioPlayer() {
                 onClick={() => setPreset('tokyo')}
                 className="radio-preset-btn"
                 style={{
-                  background: activePreset === 'tokyo' ? 'rgba(179,136,255,0.22)' : 'rgba(255,255,255,0.05)',
-                  border: activePreset === 'tokyo' ? '1px solid rgba(179,136,255,0.6)' : '1px solid rgba(255,255,255,0.08)',
+                  background:
+                    activePreset === 'tokyo'
+                      ? 'rgba(179,136,255,0.22)'
+                      : 'rgba(255,255,255,0.05)',
+                  border:
+                    activePreset === 'tokyo'
+                      ? '1px solid rgba(179,136,255,0.6)'
+                      : '1px solid rgba(255,255,255,0.08)',
                   borderRadius: '10px',
                   padding: '8px 4px',
                   color: activePreset === 'tokyo' ? '#D1B3FF' : '#FFFFFF',
@@ -478,19 +620,47 @@ export function AudioPlayer() {
             }}
           >
             {/* Sleep Timer Selector */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', fontWeight: 700 }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                }}
+              >
                 <span>🌙</span>
                 <span>Sleep Timer:</span>
               </div>
               {sleepRemainingSec > 0 && (
-                <div style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: '#4ADE80', fontWeight: 700 }}>
-                  {Math.floor(sleepRemainingSec / 60)}:{(sleepRemainingSec % 60).toString().padStart(2, '0')} left
+                <div
+                  style={{
+                    fontSize: '10.5px',
+                    fontFamily: 'var(--font-mono)',
+                    color: '#4ADE80',
+                    fontWeight: 700,
+                  }}
+                >
+                  {Math.floor(sleepRemainingSec / 60)}:
+                  {(sleepRemainingSec % 60).toString().padStart(2, '0')} left
                 </div>
               )}
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '4px' }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(5, 1fr)',
+                gap: '4px',
+              }}
+            >
               {[null, 15, 30, 45, 60].map((mins) => {
                 const isSelected = sleepTimer === mins;
                 return (
@@ -498,11 +668,17 @@ export function AudioPlayer() {
                     key={mins === null ? 'off' : mins}
                     onClick={() => handleSetSleepTimer(mins)}
                     style={{
-                      background: isSelected ? 'rgba(74, 222, 128, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                      border: isSelected ? '1px solid rgba(74, 222, 128, 0.6)' : '1px solid rgba(255, 255, 255, 0.08)',
+                      background: isSelected
+                        ? 'rgba(74, 222, 128, 0.2)'
+                        : 'rgba(255, 255, 255, 0.05)',
+                      border: isSelected
+                        ? '1px solid rgba(74, 222, 128, 0.6)'
+                        : '1px solid rgba(255, 255, 255, 0.08)',
                       borderRadius: '6px',
                       padding: '4px 0',
-                      color: isSelected ? '#4ADE80' : 'rgba(255, 255, 255, 0.7)',
+                      color: isSelected
+                        ? '#4ADE80'
+                        : 'rgba(255, 255, 255, 0.7)',
                       fontSize: '10px',
                       fontWeight: 700,
                       cursor: 'pointer',
@@ -526,7 +702,15 @@ export function AudioPlayer() {
                 marginTop: '2px',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10.5px', color: 'rgba(255,255,255,0.7)' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontSize: '10.5px',
+                  color: 'rgba(255,255,255,0.7)',
+                }}
+              >
                 <span>🕯️</span>
                 <span>Candlelight Night Dimmer</span>
               </div>
@@ -536,8 +720,12 @@ export function AudioPlayer() {
                   setCandlelightMode(!candlelightMode);
                 }}
                 style={{
-                  background: candlelightMode ? 'rgba(245, 158, 11, 0.25)' : 'rgba(255, 255, 255, 0.08)',
-                  border: candlelightMode ? '1px solid #F59E0B' : '1px solid rgba(255, 255, 255, 0.1)',
+                  background: candlelightMode
+                    ? 'rgba(245, 158, 11, 0.25)'
+                    : 'rgba(255, 255, 255, 0.08)',
+                  border: candlelightMode
+                    ? '1px solid #F59E0B'
+                    : '1px solid rgba(255, 255, 255, 0.1)',
                   borderRadius: '12px',
                   padding: '2px 8px',
                   color: candlelightMode ? '#FBBF24' : 'rgba(255,255,255,0.5)',
@@ -561,7 +749,15 @@ export function AudioPlayer() {
                 marginTop: '2px',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10.5px', color: 'rgba(255,255,255,0.7)' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontSize: '10.5px',
+                  color: 'rgba(255,255,255,0.7)',
+                }}
+              >
                 <span>📻</span>
                 <span>Room Partner Sync</span>
               </div>
@@ -571,8 +767,12 @@ export function AudioPlayer() {
                   setPartnerSync(!partnerSync);
                 }}
                 style={{
-                  background: partnerSync ? 'rgba(255, 123, 163, 0.2)' : 'rgba(255, 255, 255, 0.08)',
-                  border: partnerSync ? '1px solid var(--pink)' : '1px solid rgba(255, 255, 255, 0.1)',
+                  background: partnerSync
+                    ? 'rgba(255, 123, 163, 0.2)'
+                    : 'rgba(255, 255, 255, 0.08)',
+                  border: partnerSync
+                    ? '1px solid var(--pink)'
+                    : '1px solid rgba(255, 255, 255, 0.1)',
                   borderRadius: '12px',
                   padding: '2px 8px',
                   color: partnerSync ? 'var(--pink)' : 'rgba(255,255,255,0.5)',
@@ -604,8 +804,21 @@ export function AudioPlayer() {
                   }}
                 >
                   {/* Channel Meta & Mute */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '8px',
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                      }}
+                    >
                       <span
                         style={{
                           fontSize: '13px',
@@ -621,27 +834,49 @@ export function AudioPlayer() {
                         {track.icon}
                       </span>
                       <div>
-                        <div style={{ fontSize: '11.5px', fontWeight: 700, color: isMuted ? 'rgba(255,255,255,0.4)' : '#FFFFFF' }}>
+                        <div
+                          style={{
+                            fontSize: '11.5px',
+                            fontWeight: 700,
+                            color: isMuted
+                              ? 'rgba(255,255,255,0.4)'
+                              : '#FFFFFF',
+                          }}
+                        >
                           {track.name}
                         </div>
-                        <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.45)', lineHeight: 1 }}>
+                        <div
+                          style={{
+                            fontSize: '9px',
+                            color: 'rgba(255,255,255,0.45)',
+                            lineHeight: 1,
+                          }}
+                        >
                           {track.subtitle}
                         </div>
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                      }}
+                    >
                       <button
                         onClick={() =>
                           toggleChannelMute(
                             track.id as 'warm' | 'romantic' | 'piano' | 'lofi',
                             track.volume,
                             track.setVolume,
-                            track.start
+                            track.start,
                           )
                         }
                         style={{
-                          background: isMuted ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.1)',
+                          background: isMuted
+                            ? 'rgba(255,255,255,0.05)'
+                            : 'rgba(255,255,255,0.1)',
                           border: 'none',
                           borderRadius: '6px',
                           padding: '3px 6px',
@@ -660,7 +895,9 @@ export function AudioPlayer() {
                           fontSize: '10.5px',
                           fontFamily: 'var(--font-mono)',
                           fontWeight: 700,
-                          color: isMuted ? 'rgba(255,255,255,0.3)' : track.color,
+                          color: isMuted
+                            ? 'rgba(255,255,255,0.3)'
+                            : track.color,
                           minWidth: '32px',
                           textAlign: 'right',
                         }}
@@ -671,7 +908,13 @@ export function AudioPlayer() {
                   </div>
 
                   {/* Gradient-Filled Range Slider */}
-                  <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  <div
+                    style={{
+                      position: 'relative',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
                     <input
                       type="range"
                       min="0"
@@ -717,7 +960,9 @@ export function AudioPlayer() {
                 justifyContent: 'center',
                 gap: '8px',
                 cursor: 'pointer',
-                boxShadow: isPlaying ? '0 4px 18px rgba(255, 123, 163, 0.4)' : 'none',
+                boxShadow: isPlaying
+                  ? '0 4px 18px rgba(255, 123, 163, 0.4)'
+                  : 'none',
                 transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
               }}
             >
@@ -761,12 +1006,16 @@ export function AudioPlayer() {
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
-          border: (isPlaying || isBgMusicActive) ? '1px solid rgba(255, 123, 163, 0.4)' : '1px solid rgba(255, 255, 255, 0.16)',
+          border:
+            isPlaying || isBgMusicActive
+              ? '1px solid rgba(255, 123, 163, 0.4)'
+              : '1px solid rgba(255, 255, 255, 0.16)',
           borderRadius: '36px',
           padding: '6px 14px 6px 8px',
-          boxShadow: (isPlaying || isBgMusicActive)
-            ? '0 12px 30px rgba(0, 0, 0, 0.5), 0 0 24px rgba(255, 123, 163, 0.35)'
-            : '0 8px 24px rgba(0, 0, 0, 0.35)',
+          boxShadow:
+            isPlaying || isBgMusicActive
+              ? '0 12px 30px rgba(0, 0, 0, 0.5), 0 0 24px rgba(255, 123, 163, 0.35)'
+              : '0 8px 24px rgba(0, 0, 0, 0.35)',
           transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
       >
@@ -776,7 +1025,14 @@ export function AudioPlayer() {
           tabIndex={0}
           aria-label="Move music player"
           title="Drag to move music player"
-          style={{ cursor: 'grab', touchAction: 'none', color: 'rgba(255,255,255,.62)', fontWeight: 900, letterSpacing: '-3px', padding: '8px 3px 8px 0' }}
+          style={{
+            cursor: 'grab',
+            touchAction: 'none',
+            color: 'rgba(255,255,255,.62)',
+            fontWeight: 900,
+            letterSpacing: '-3px',
+            padding: '8px 3px 8px 0',
+          }}
         >
           ⠿
         </span>
@@ -787,9 +1043,10 @@ export function AudioPlayer() {
             width: '34px',
             height: '34px',
             borderRadius: '50%',
-            background: (isPlaying || isBgMusicActive)
-              ? 'linear-gradient(135deg, var(--pink), #FF9E64)'
-              : 'rgba(255, 255, 255, 0.12)',
+            background:
+              isPlaying || isBgMusicActive
+                ? 'linear-gradient(135deg, var(--pink), #FF9E64)'
+                : 'rgba(255, 255, 255, 0.12)',
             border: 'none',
             color: '#FFFFFF',
             fontSize: '13px',
@@ -797,7 +1054,10 @@ export function AudioPlayer() {
             placeItems: 'center',
             cursor: 'pointer',
             transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-            boxShadow: (isPlaying || isBgMusicActive) ? '0 2px 10px rgba(255, 123, 163, 0.5)' : 'none',
+            boxShadow:
+              isPlaying || isBgMusicActive
+                ? '0 2px 10px rgba(255, 123, 163, 0.5)'
+                : 'none',
           }}
           title={isPlaying ? 'Pause Ambience' : 'Play Soundscape'}
           aria-label={isPlaying ? 'Pause Ambience' : 'Play Soundscape'}
@@ -826,17 +1086,23 @@ export function AudioPlayer() {
         >
           {/* Rotating Vinyl Icon When Playing */}
           <span
-            className={(isPlaying || isBgMusicActive) ? 'radio-spinning-disc' : ''}
+            className={
+              isPlaying || isBgMusicActive ? 'radio-spinning-disc' : ''
+            }
             style={{
               fontSize: '14px',
               display: 'inline-block',
             }}
           >
-            {(isPlaying || isBgMusicActive) ? '💿' : '📻'}
+            {isPlaying || isBgMusicActive ? '💿' : '📻'}
           </span>
 
           <span>
-            {isPlaying ? 'Soundscape Live' : isBgMusicActive ? 'Music Playing' : 'Radio Mixer'}
+            {isPlaying
+              ? 'Soundscape Live'
+              : isBgMusicActive
+                ? 'Music Playing'
+                : 'Radio Mixer'}
           </span>
 
           {sleepRemainingSec > 0 && (
@@ -868,7 +1134,9 @@ export function AudioPlayer() {
       </div>
 
       {/* Candlelight Night Mode Overlay */}
-      {candlelightMode && <div className="candlelight-dimmer-overlay" aria-hidden="true" />}
+      {candlelightMode && (
+        <div className="candlelight-dimmer-overlay" aria-hidden="true" />
+      )}
     </aside>
   );
 }

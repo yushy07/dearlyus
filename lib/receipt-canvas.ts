@@ -21,7 +21,10 @@ export interface DateReceiptData {
   hostVerdict: string;
 }
 
-export function drawReceiptToCanvas(canvas: HTMLCanvasElement, data: DateReceiptData) {
+export function drawReceiptToCanvas(
+  canvas: HTMLCanvasElement,
+  data: DateReceiptData,
+) {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
@@ -71,7 +74,11 @@ export function drawReceiptToCanvas(canvas: HTMLCanvasElement, data: DateReceipt
   ctx.font = '13px "Space Mono", monospace, sans-serif';
   ctx.fillStyle = '#555761';
   ctx.fillText(`ROOM: #${data.roomCode} · ${data.date}`, width / 2, 75);
-  ctx.fillText(`${data.partnerA.toUpperCase()} ♡ ${data.partnerB.toUpperCase()}`, width / 2, 95);
+  ctx.fillText(
+    `${data.partnerA.toUpperCase()} ♡ ${data.partnerB.toUpperCase()}`,
+    width / 2,
+    95,
+  );
 
   // Dashed Separator
   ctx.setLineDash([4, 4]);
@@ -101,7 +108,11 @@ export function drawReceiptToCanvas(canvas: HTMLCanvasElement, data: DateReceipt
     ctx.textAlign = 'left';
     ctx.font = 'bold 13px "Space Mono", monospace, sans-serif';
     ctx.fillStyle = '#17181C';
-    ctx.fillText(`${item.number}   ${item.topic.toUpperCase().slice(0, 24)}`, 40, y);
+    ctx.fillText(
+      `${item.number}   ${item.topic.toUpperCase().slice(0, 24)}`,
+      40,
+      y,
+    );
 
     ctx.textAlign = 'right';
     ctx.font = 'bold 13px "Space Mono", monospace, sans-serif';
@@ -112,8 +123,16 @@ export function drawReceiptToCanvas(canvas: HTMLCanvasElement, data: DateReceipt
     ctx.textAlign = 'left';
     ctx.font = '11.5px "Space Mono", monospace, sans-serif';
     ctx.fillStyle = '#5B5E68';
-    ctx.fillText(`     ${data.partnerA}: "${item.answerA.slice(0, 26)}"`, 40, y + 18);
-    ctx.fillText(`     ${data.partnerB}: "${item.answerB.slice(0, 26)}"`, 40, y + 34);
+    ctx.fillText(
+      `     ${data.partnerA}: "${item.answerA.slice(0, 26)}"`,
+      40,
+      y + 18,
+    );
+    ctx.fillText(
+      `     ${data.partnerB}: "${item.answerB.slice(0, 26)}"`,
+      40,
+      y + 34,
+    );
 
     y += itemHeight;
   });
@@ -160,15 +179,19 @@ export function drawReceiptToCanvas(canvas: HTMLCanvasElement, data: DateReceipt
   const barcodeWidth = width - 120;
   const barcodeStart = 60;
   for (let b = 0; b < 65; b++) {
-    const bx = barcodeStart + (b * (barcodeWidth / 65));
-    const bw = (b % 3 === 0 || b % 5 === 0) ? 3.5 : 1.5;
+    const bx = barcodeStart + b * (barcodeWidth / 65);
+    const bw = b % 3 === 0 || b % 5 === 0 ? 3.5 : 1.5;
     ctx.fillRect(bx, y, bw, 42);
   }
 
   y += 56;
   ctx.font = '11px "Space Mono", monospace, sans-serif';
   ctx.fillStyle = '#6B6E78';
-  ctx.fillText(`* DEARLY-US-${data.roomCode}-${Date.now().toString().slice(-6)} *`, width / 2, y);
+  ctx.fillText(
+    `* DEARLY-US-${data.roomCode}-${Date.now().toString().slice(-6)} *`,
+    width / 2,
+    y,
+  );
 
   // Footer message
   y += 22;
@@ -194,7 +217,8 @@ export function downloadReceiptPNG(data: DateReceiptData, filename?: string) {
   const canvas = document.createElement('canvas');
   drawReceiptToCanvas(canvas, data);
   const link = document.createElement('a');
-  link.download = filename || `dearly-us-date-receipt-${data.roomCode || 'PRIVATE'}.png`;
+  link.download =
+    filename || `dearly-us-date-receipt-${data.roomCode || 'PRIVATE'}.png`;
   link.href = canvas.toDataURL('image/png');
   document.body.appendChild(link);
   link.click();

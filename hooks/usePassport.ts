@@ -15,7 +15,9 @@ import type { PassportStamp, CoupleTicketProfile } from '@/types/passport';
 export function usePassport() {
   const [unlockedIds, setUnlockedIds] = useState<string[]>([]);
   const [stampNotes, setStampNotesState] = useState<Record<string, string>>({});
-  const [profile, setProfileState] = useState<CoupleTicketProfile>(() => getCoupleTicketProfile());
+  const [profile, setProfileState] = useState<CoupleTicketProfile>(() =>
+    getCoupleTicketProfile(),
+  );
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
@@ -30,7 +32,10 @@ export function usePassport() {
     window.addEventListener('dearly_couple_profile_updated', handleProfileSync);
     window.addEventListener('storage', handleProfileSync);
     return () => {
-      window.removeEventListener('dearly_couple_profile_updated', handleProfileSync);
+      window.removeEventListener(
+        'dearly_couple_profile_updated',
+        handleProfileSync,
+      );
       window.removeEventListener('storage', handleProfileSync);
     };
   }, []);
@@ -48,14 +53,18 @@ export function usePassport() {
     setStampNotesState((prev) => ({ ...prev, [stampId]: note }));
   }, []);
 
-  const updateProfile = useCallback((newProfile: Partial<CoupleTicketProfile>) => {
-    saveCoupleTicketProfile(newProfile);
-    setProfileState(getCoupleTicketProfile());
-  }, []);
+  const updateProfile = useCallback(
+    (newProfile: Partial<CoupleTicketProfile>) => {
+      saveCoupleTicketProfile(newProfile);
+      setProfileState(getCoupleTicketProfile());
+    },
+    [],
+  );
 
   const unlockedCount = unlockedIds.length;
   const totalCount = PASSPORT_STAMPS.length;
-  const progressPercent = totalCount > 0 ? Math.round((unlockedCount / totalCount) * 100) : 0;
+  const progressPercent =
+    totalCount > 0 ? Math.round((unlockedCount / totalCount) * 100) : 0;
 
   const getRankTier = () => {
     if (unlockedCount >= 12) return '👑 Eternal Soulmates (Grandmaster)';

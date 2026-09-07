@@ -73,7 +73,8 @@ export function CupidotHomeArea({
   const [reducedMotion, setReducedMotion] = useState(false);
   const [ambientAudio, setAmbientAudio] = useState(false);
 
-  const presenceInfo = PRESENCE_LABELS[partnerSafePresence] || PRESENCE_LABELS.away;
+  const presenceInfo =
+    PRESENCE_LABELS[partnerSafePresence] || PRESENCE_LABELS.away;
 
   return (
     <section
@@ -89,7 +90,8 @@ export function CupidotHomeArea({
       {/* 1. Progression & Chapter Header Ribbon */}
       <div
         style={{
-          background: 'linear-gradient(135deg, rgba(255, 240, 245, 0.95), rgba(240, 245, 255, 0.9))',
+          background:
+            'linear-gradient(135deg, rgba(255, 240, 245, 0.95), rgba(240, 245, 255, 0.9))',
           border: '1px solid rgba(255, 143, 178, 0.3)',
           borderRadius: '24px',
           padding: '18px 24px',
@@ -101,7 +103,14 @@ export function CupidotHomeArea({
           boxShadow: '0 8px 24px -4px rgba(255, 78, 120, 0.08)',
         }}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '420px' }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '4px',
+            maxWidth: '420px',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span
               style={{
@@ -122,15 +131,21 @@ export function CupidotHomeArea({
               {chapterProgress.currentChapter === 1
                 ? 'A New Little Home'
                 : chapterProgress.currentChapter === 2
-                ? 'Learning Your Rhythm'
-                : chapterProgress.currentChapter === 3
-                ? 'Making Traditions'
-                : chapterProgress.currentChapter === 4
-                ? 'A Home Full of Stories'
-                : 'Always Finding Each Other'}
+                  ? 'Learning Your Rhythm'
+                  : chapterProgress.currentChapter === 3
+                    ? 'Making Traditions'
+                    : chapterProgress.currentChapter === 4
+                      ? 'A Home Full of Stories'
+                      : 'Always Finding Each Other'}
             </strong>
           </div>
-          <p style={{ fontSize: '13px', color: 'var(--ink-soft)', margin: '2px 0 0' }}>
+          <p
+            style={{
+              fontSize: '13px',
+              color: 'var(--ink-soft)',
+              margin: '2px 0 0',
+            }}
+          >
             {chapterProgress.readablePrompt}
           </p>
 
@@ -173,10 +188,22 @@ export function CupidotHomeArea({
           >
             <span style={{ fontSize: '18px' }}>✨</span>
             <div>
-              <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--ink)' }}>
+              <div
+                style={{
+                  fontSize: '14px',
+                  fontWeight: 800,
+                  color: 'var(--ink)',
+                }}
+              >
                 {homeState.growthSparks} sparks
               </div>
-              <div style={{ fontSize: '10px', color: 'var(--ink-soft)', textTransform: 'uppercase' }}>
+              <div
+                style={{
+                  fontSize: '10px',
+                  color: 'var(--ink-soft)',
+                  textTransform: 'uppercase',
+                }}
+              >
                 Zero streak loss
               </div>
             </div>
@@ -237,7 +264,9 @@ export function CupidotHomeArea({
                 marginBottom: '16px',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div
+                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
                 <span
                   style={{
                     width: '10px',
@@ -282,22 +311,35 @@ export function CupidotHomeArea({
               {activeRoomCode
                 ? `Resume Date Night in Room ${activeRoomCode}`
                 : partnerSafePresence === 'here'
-                ? 'Both of you are here in sanctuary.'
-                : 'A quiet evening in Our Space.'}
+                  ? 'Both of you are here in sanctuary.'
+                  : 'A quiet evening in Our Space.'}
             </h3>
-            <p style={{ fontSize: '13.5px', color: 'var(--ink-soft)', lineHeight: 1.5, margin: '0 0 20px' }}>
+            <p
+              style={{
+                fontSize: '13.5px',
+                color: 'var(--ink-soft)',
+                lineHeight: 1.5,
+                margin: '0 0 20px',
+              }}
+            >
               {activeRoomCode
                 ? 'Your date night room is waiting right where you left off. Jump straight back into tonight’s moments.'
                 : partnerSafePresence === 'here'
-                ? 'Start a shared date night room, sit together in quiet presence, or exchange a 2-minute quick spark.'
-                : 'Even while your person is away, Cupidot keeps your sanctuary cozy. You can leave a quick spark, browse memories, or relax.'}
+                  ? 'Start a shared date night room, sit together in quiet presence, or exchange a 2-minute quick spark.'
+                  : 'Even while your person is away, Cupidot keeps your sanctuary cozy. You can leave a quick spark, browse memories, or relax.'}
             </p>
           </div>
 
           {/* Primary Action Buttons */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div
+            style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
+          >
             {activeRoomCode ? (
-              <Link className="btn btn-primary" href={`/room/${activeRoomCode}`} style={{ justifyContent: 'center' }}>
+              <Link
+                className="btn btn-primary"
+                href={`/room/${activeRoomCode}`}
+                style={{ justifyContent: 'center' }}
+              >
                 Resume Date Night ▷
               </Link>
             ) : onStartRoom ? (
@@ -344,13 +386,34 @@ export function CupidotHomeArea({
             boxShadow: 'var(--shadow-soft)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '14px',
+            }}
+          >
             <div>
-              <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 800, color: 'var(--pink)' }}>
+              <span
+                style={{
+                  fontSize: '11px',
+                  fontFamily: 'var(--font-mono)',
+                  fontWeight: 800,
+                  color: 'var(--pink)',
+                }}
+              >
                 RITUAL CORNER
               </span>
-              <h4 style={{ margin: '2px 0 0', fontSize: '16px', color: 'var(--ink)' }}>
-                {homeState.upcomingRitual?.title || 'Sunday Morning Check-in ☕'}
+              <h4
+                style={{
+                  margin: '2px 0 0',
+                  fontSize: '16px',
+                  color: 'var(--ink)',
+                }}
+              >
+                {homeState.upcomingRitual?.title ||
+                  'Sunday Morning Check-in ☕'}
               </h4>
             </div>
             <button
@@ -363,7 +426,14 @@ export function CupidotHomeArea({
             </button>
           </div>
 
-          <p style={{ fontSize: '12.5px', color: 'var(--ink-soft)', margin: '0 0 14px', lineHeight: 1.45 }}>
+          <p
+            style={{
+              fontSize: '12.5px',
+              color: 'var(--ink-soft)',
+              margin: '0 0 14px',
+              lineHeight: 1.45,
+            }}
+          >
             {homeState.upcomingRitual?.purpose ||
               'A gentle recurring pause to listen and support each other. Zero streaks, no pressure if missed.'}
           </p>
@@ -383,7 +453,9 @@ export function CupidotHomeArea({
             <button
               type="button"
               className="btn btn-ghost"
-              onClick={() => snoozeRitual(homeState.upcomingRitual?.id || 'default', 24)}
+              onClick={() =>
+                snoozeRitual(homeState.upcomingRitual?.id || 'default', 24)
+              }
               style={{ fontSize: '12px', padding: '6px 12px' }}
             >
               Snooze (+1 day) 💤
@@ -409,12 +481,32 @@ export function CupidotHomeArea({
             boxShadow: 'var(--shadow-soft)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '12px',
+            }}
+          >
             <div>
-              <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 800, color: 'var(--blue)' }}>
+              <span
+                style={{
+                  fontSize: '11px',
+                  fontFamily: 'var(--font-mono)',
+                  fontWeight: 800,
+                  color: 'var(--blue)',
+                }}
+              >
                 HOME COLLECTION
               </span>
-              <h4 style={{ margin: '2px 0 0', fontSize: '16px', color: 'var(--ink)' }}>
+              <h4
+                style={{
+                  margin: '2px 0 0',
+                  fontSize: '16px',
+                  color: 'var(--ink)',
+                }}
+              >
                 Decor &amp; Souvenirs ({unlockedRewards.length} Unlocked)
               </h4>
             </div>
@@ -452,15 +544,30 @@ export function CupidotHomeArea({
                   alignItems: 'center',
                   padding: '8px 4px',
                   borderRadius: '12px',
-                  border: reward.placedInRoom ? '1.5px solid var(--pink)' : '1px solid var(--line)',
-                  background: reward.placedInRoom ? 'rgba(255, 78, 120, 0.08)' : 'var(--paper)',
+                  border: reward.placedInRoom
+                    ? '1.5px solid var(--pink)'
+                    : '1px solid var(--line)',
+                  background: reward.placedInRoom
+                    ? 'rgba(255, 78, 120, 0.08)'
+                    : 'var(--paper)',
                   cursor: 'pointer',
                   position: 'relative',
                 }}
                 title={`${reward.name} · ${reward.placedInRoom ? 'Placed in room (tap to remove)' : 'Tap to place in room'}`}
               >
                 <span style={{ fontSize: '20px' }}>{reward.icon}</span>
-                <span style={{ fontSize: '9px', fontWeight: 700, marginTop: '2px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '58px' }}>
+                <span
+                  style={{
+                    fontSize: '9px',
+                    fontWeight: 700,
+                    marginTop: '2px',
+                    textAlign: 'center',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    maxWidth: '58px',
+                  }}
+                >
                   {reward.name}
                 </span>
                 {reward.placedInRoom && (
@@ -479,8 +586,16 @@ export function CupidotHomeArea({
               </button>
             ))}
           </div>
-          <span style={{ fontSize: '11px', color: 'var(--ink-soft)', marginTop: '8px', display: 'block' }}>
-            Tap an item to place or remove it from your shared room. Undo anytime.
+          <span
+            style={{
+              fontSize: '11px',
+              color: 'var(--ink-soft)',
+              marginTop: '8px',
+              display: 'block',
+            }}
+          >
+            Tap an item to place or remove it from your shared room. Undo
+            anytime.
           </span>
         </div>
       </div>
@@ -492,7 +607,12 @@ export function CupidotHomeArea({
         activeRoomCode={activeRoomCode}
         onStartRoom={onStartRoom}
         partnerName={partnerB}
-        onSparkAwarded={() => triggerGrowthSpark('shared_activity_completed', `togetherness-${Date.now()}`)}
+        onSparkAwarded={() =>
+          triggerGrowthSpark(
+            'shared_activity_completed',
+            `togetherness-${Date.now()}`,
+          )
+        }
       />
 
       <YourRoomYourRulesModal

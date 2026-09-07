@@ -33,14 +33,26 @@ export function StampCard({
         justifyContent: 'space-between',
         minHeight: '260px',
         background: stamp.pastelBg,
-        border: isUnlocked ? `1.5px solid ${stamp.inkColor}33` : '1.5px dashed var(--line)',
+        border: isUnlocked
+          ? `1.5px solid ${stamp.inkColor}33`
+          : '1.5px dashed var(--line)',
       }}
     >
       {/* Cute Washi Tape Graphic */}
-      <div className="passport-washi-tape" style={{ background: `${stamp.inkColor}25` }} />
+      <div
+        className="passport-washi-tape"
+        style={{ background: `${stamp.inkColor}25` }}
+      />
 
       {/* Top Category Badge */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '8px',
+        }}
+      >
         <span
           style={{
             fontSize: '10.5px',
@@ -85,13 +97,25 @@ export function StampCard({
       </div>
 
       {/* Stamp Center Emblem */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', margin: '8px 0' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '16px',
+          margin: '8px 0',
+        }}
+      >
         <div
           style={{
             width: '70px',
             height: '70px',
-            borderRadius: stamp.sealShape === 'circle' || stamp.sealShape === 'heart' ? '50%' : '16px',
-            border: isUnlocked ? `3.5px dashed ${stamp.inkColor}` : '2px dashed #CBD5E1',
+            borderRadius:
+              stamp.sealShape === 'circle' || stamp.sealShape === 'heart'
+                ? '50%'
+                : '16px',
+            border: isUnlocked
+              ? `3.5px dashed ${stamp.inkColor}`
+              : '2px dashed #CBD5E1',
             background: isUnlocked ? '#FFFFFF' : 'rgba(0,0,0,0.02)',
             display: 'flex',
             flexDirection: 'column',
@@ -144,7 +168,13 @@ export function StampCard({
           >
             {stamp.koreanTitle}
           </div>
-          <div style={{ fontSize: '12px', color: 'var(--ink-soft)', lineHeight: 1.4 }}>
+          <div
+            style={{
+              fontSize: '12px',
+              color: 'var(--ink-soft)',
+              lineHeight: 1.4,
+            }}
+          >
             {stamp.description}
           </div>
         </div>

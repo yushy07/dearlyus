@@ -28,7 +28,7 @@ describe('Romance Spectrum & Effective Level Ceiling', () => {
       computeEffectiveRomanceLevel({
         partnerALevel: 'romantic',
         partnerBLevel: 'romantic',
-      })
+      }),
     ).toBe('romantic');
 
     // Partner A chooses Cheeky (Level 3), Partner B chooses Quiet (Level 0)
@@ -36,7 +36,7 @@ describe('Romance Spectrum & Effective Level Ceiling', () => {
       computeEffectiveRomanceLevel({
         partnerALevel: 'cheeky',
         partnerBLevel: 'quiet',
-      })
+      }),
     ).toBe('quiet');
 
     // Partner A chooses Spicy (Level 5), Partner B chooses Warm (Level 1)
@@ -44,7 +44,7 @@ describe('Romance Spectrum & Effective Level Ceiling', () => {
       computeEffectiveRomanceLevel({
         partnerALevel: 'spicy',
         partnerBLevel: 'warm',
-      })
+      }),
     ).toBe('warm');
   });
 
@@ -114,7 +114,11 @@ describe('Romance Spectrum & Effective Level Ceiling', () => {
     };
 
     // Partner B privately lowers intensity to Warm
-    const { updatedPref, announcement } = downgradeRomanceLevel(initialPref, 'warm', 'B');
+    const { updatedPref, announcement } = downgradeRomanceLevel(
+      initialPref,
+      'warm',
+      'B',
+    );
 
     expect(updatedPref.partnerBLevel).toBe('warm');
     expect(updatedPref.effectiveLevel).toBe('warm');
@@ -155,7 +159,14 @@ describe('Curated Dialogue Library & Voice Identity', () => {
       'refuse_unsafe',
     ];
 
-    const levels: RomanceLevel[] = ['quiet', 'warm', 'romantic', 'cheeky', 'flirty', 'spicy'];
+    const levels: RomanceLevel[] = [
+      'quiet',
+      'warm',
+      'romantic',
+      'cheeky',
+      'flirty',
+      'spicy',
+    ];
 
     for (const intent of intents) {
       for (const level of levels) {
@@ -170,11 +181,15 @@ describe('Curated Dialogue Library & Voice Identity', () => {
 
   it('returns signature non-judgmental lines for difficult moments', () => {
     const skip = handleActivitySkip();
-    expect(skip.message).toBe('Skipped. Let’s choose something that feels better.');
+    expect(skip.message).toBe(
+      'Skipped. Let’s choose something that feels better.',
+    );
     expect(skip.options.length).toBeGreaterThanOrEqual(3);
 
     const boundaryRefusal = getCuratedDialogue('refuse_unsafe', 'romantic');
-    expect(boundaryRefusal).toContain("I keep all private drafts completely sealed");
+    expect(boundaryRefusal).toContain(
+      'I keep all private drafts completely sealed',
+    );
   });
 });
 
@@ -251,7 +266,9 @@ describe('Prompt Injection & Safety Boundary Handling', () => {
     for (const prompt of sneakyPrompts) {
       const result = handleSafetyBoundary(prompt);
       expect(result.isSafe).toBe(false);
-      expect(result.response).toContain("I can't peek at anything your partner hasn't chosen to share.");
+      expect(result.response).toContain(
+        "I can't peek at anything your partner hasn't chosen to share.",
+      );
     }
   });
 
@@ -339,7 +356,9 @@ describe('AI Structured Output Validation & Firewall', () => {
       maxRomanceLevel: 'romantic',
     });
     expect(validatedInjection.isValid).toBe(false);
-    expect(validatedInjection.rejectionReason).toBe('message_contains_system_injection');
+    expect(validatedInjection.rejectionReason).toBe(
+      'message_contains_system_injection',
+    );
   });
 
   it('rejects unsupported action IDs not present in the allow-list', () => {
@@ -373,7 +392,7 @@ describe('No Invented Context & Durable Authority Isolation', () => {
       {
         allowedIntents: ['reveal'],
         maxRomanceLevel: 'romantic',
-      }
+      },
     );
 
     expect(valid.isValid).toBe(true);

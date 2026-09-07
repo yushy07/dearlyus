@@ -33,10 +33,10 @@
   position: relative;
   width: min(470px, 100%);
   overflow: hidden;
-  background: rgba(255, 255, 255, .94);
+  background: rgba(255, 255, 255, 0.94);
   border: 1px solid var(--line);
   border-radius: 24px;
-  box-shadow: 0 24px 70px rgba(28, 25, 36, .12);
+  box-shadow: 0 24px 70px rgba(28, 25, 36, 0.12);
   padding: 46px 42px 38px;
   text-align: center;
 }
@@ -76,15 +76,21 @@
   box-shadow: var(--shadow);
 }
 
-.dot:first-child { left: 10px; background: var(--pink); }
-.dot:last-child { right: 10px; background: var(--blue); }
+.dot:first-child {
+  left: 10px;
+  background: var(--pink);
+}
+.dot:last-child {
+  right: 10px;
+  background: var(--blue);
+}
 
 .eyebrow {
   color: var(--pink);
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 800;
-  letter-spacing: .12em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
@@ -92,7 +98,7 @@
   font-family: var(--font-serif);
   font-size: clamp(34px, 7vw, 48px);
   line-height: 1.05;
-  letter-spacing: -.04em;
+  letter-spacing: -0.04em;
   margin: 12px 0 14px;
 }
 
@@ -116,22 +122,30 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
-  box-shadow: 0 4px 14px rgba(28, 25, 36, .06);
-  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+  box-shadow: 0 4px 14px rgba(28, 25, 36, 0.06);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .googleButton:hover:not(:disabled) {
   transform: translateY(-2px);
-  border-color: rgba(255, 78, 120, .4);
-  box-shadow: -8px 9px 24px var(--pink-glow), 8px 9px 24px var(--blue-glow);
+  border-color: rgba(255, 78, 120, 0.4);
+  box-shadow:
+    -8px 9px 24px var(--pink-glow),
+    8px 9px 24px var(--blue-glow);
 }
 
-.googleButton:disabled { opacity: .65; cursor: wait; }
+.googleButton:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
 
 .error {
   color: #a61b3b;
   background: var(--pink-tint);
-  border: 1px solid rgba(255, 78, 120, .25);
+  border: 1px solid rgba(255, 78, 120, 0.25);
   border-radius: 10px;
   padding: 10px 12px;
   margin-bottom: 14px;
@@ -145,10 +159,20 @@
   margin-top: 22px;
 }
 
-.finePrint a { text-decoration: underline; text-underline-offset: 3px; }
+.finePrint a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 
 @media (max-width: 560px) {
-  .card { padding: 38px 24px 30px; border-radius: 20px; }
-  .header { min-height: 66px; }
-  .stage { padding-top: 20px; }
+  .card {
+    padding: 38px 24px 30px;
+    border-radius: 20px;
+  }
+  .header {
+    min-height: 66px;
+  }
+  .stage {
+    padding-top: 20px;
+  }
 }

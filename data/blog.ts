@@ -6,7 +6,8 @@ export const BLOG_POSTS: Record<string, BlogPostData> = {
     category: 'Date Night Guides',
     readTime: '6 min read',
     title: '7 fun LDR online dates that aren’t watching Netflix',
-    summary: 'Active, shared things to do instead of another muted stream — a synced photobooth, the same recipe in two kitchens, brain-teaser duels, a joint vision board.',
+    summary:
+      'Active, shared things to do instead of another muted stream — a synced photobooth, the same recipe in two kitchens, brain-teaser duels, a joint vision board.',
     image: '/august/hero.webp',
     date: 'August 14, 2026',
     author: 'Mia & Alex (Dearly Us Founders)',
@@ -32,7 +33,8 @@ export const BLOG_POSTS: Record<string, BlogPostData> = {
     category: 'Inside the numbers',
     readTime: '5 min read',
     title: '3 games that saved our long distance relationship',
-    summary: 'The three most-played games on Dearly Us — a quiz that never repeats a question, a live shared sketchpad, and an arcade that puts your face in the game.',
+    summary:
+      'The three most-played games on Dearly Us — a quiz that never repeats a question, a live shared sketchpad, and an arcade that puts your face in the game.',
     image: '/photos/quiz-duo.webp',
     date: 'July 28, 2026',
     author: 'Alex (Dearly Us Team)',
@@ -53,7 +55,8 @@ export const BLOG_POSTS: Record<string, BlogPostData> = {
     category: 'Tutorial',
     readTime: '5 min read',
     title: 'How to use our online photobooth for couple keepsakes',
-    summary: 'Six steps from a room code to a strip you both took at the same second — with theme packs and backdrops laid out so you can try them here first.',
+    summary:
+      'Six steps from a room code to a strip you both took at the same second — with theme packs and backdrops laid out so you can try them here first.',
     image: '/august/c-booth.webp',
     date: 'June 19, 2026',
     author: 'Mia (Dearly Us Team)',

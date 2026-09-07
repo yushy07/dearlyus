@@ -54,7 +54,11 @@ function initials(name: string) {
 }
 
 function Avatar({ url, name }: { url?: string | null; name: string }) {
-  return url ? <img src={url} alt={`${name}'s Google profile`} /> : <>{initials(name)}</>;
+  return url ? (
+    <img src={url} alt={`${name}'s Google profile`} />
+  ) : (
+    <>{initials(name)}</>
+  );
 }
 
 export default function ProfilePage() {
@@ -89,17 +93,27 @@ export default function ProfilePage() {
   const [timezone, setTimezone] = useState('');
   const [spaceName, setSpaceName] = useState('Our Space');
   const [inviteCode, setInviteCode] = useState(
-    searchParams.get('invite')?.replace(/[^a-z0-9]/gi, '').toUpperCase() || ''
+    searchParams
+      .get('invite')
+      ?.replace(/[^a-z0-9]/gi, '')
+      .toUpperCase() || '',
   );
   const [editing, setEditing] = useState(false);
   const [busy, setBusy] = useState('');
-  const [notice, setNotice] = useState<{ kind: 'error' | 'success'; text: string } | null>(null);
+  const [notice, setNotice] = useState<{
+    kind: 'error' | 'success';
+    text: string;
+  } | null>(null);
   const [disconnectModalOpen, setDisconnectModalOpen] = useState(false);
-  const [selectedKeepsake, setSelectedKeepsake] = useState<Keepsake | null>(null);
+  const [selectedKeepsake, setSelectedKeepsake] = useState<Keepsake | null>(
+    null,
+  );
   const [capsuleModalOpen, setCapsuleModalOpen] = useState(false);
   const [dismissedResumePrompt, setDismissedResumePrompt] = useState(false);
   const [now, setNow] = useState(() => new Date());
-  const [activeTab, setActiveTab] = useState<'all' | 'keepsakes' | 'rituals' | 'settings'>('all');
+  const [activeTab, setActiveTab] = useState<
+    'all' | 'keepsakes' | 'rituals' | 'settings'
+  >('all');
   const [flutterActive, setFlutterActive] = useState(false);
 
   const triggerHeartFlutter = () => {
@@ -113,7 +127,9 @@ export default function ProfilePage() {
   };
 
   // Preferences form state
-  const [prefMood, setPrefMood] = useState<'playful' | 'romantic' | 'deep' | 'cozy'>('playful');
+  const [prefMood, setPrefMood] = useState<
+    'playful' | 'romantic' | 'deep' | 'cozy'
+  >('playful');
   const [prefDuration, setPrefDuration] = useState<15 | 30 | 45 | 60 | 90>(30);
   const [prefAmbient, setPrefAmbient] = useState(false);
   const [prefReducedMotion, setPrefReducedMotion] = useState(false);
@@ -123,7 +139,9 @@ export default function ProfilePage() {
     if (profile) {
       setDisplayName(profile.displayName);
       setCity(profile.city);
-      setTimezone(profile.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone);
+      setTimezone(
+        profile.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+      );
     }
   }, [profile]);
 
@@ -145,16 +163,28 @@ export default function ProfilePage() {
   // Check URL connected flag
   useEffect(() => {
     if (searchParams.get('connected') === 'true') {
-      setNotice({ kind: 'success', text: 'You’re connected. Welcome to your shared Our Space! ♡' });
+      setNotice({
+        kind: 'success',
+        text: 'You’re connected. Welcome to your shared Our Space! ♡',
+      });
     }
   }, [searchParams]);
 
-  const userLocalTime = useMemo(() => formatLocalTime(timezone || profile?.timezone, now), [timezone, profile?.timezone, now]);
-  const partnerLocalTime = useMemo(() => partner?.timezone ? formatLocalTime(partner.timezone, now) : null, [partner?.timezone, now]);
+  const userLocalTime = useMemo(
+    () => formatLocalTime(timezone || profile?.timezone, now),
+    [timezone, profile?.timezone, now],
+  );
+  const partnerLocalTime = useMemo(
+    () => (partner?.timezone ? formatLocalTime(partner.timezone, now) : null),
+    [partner?.timezone, now],
+  );
 
   const handleSaveProfile = async () => {
     if (!displayName.trim() || !city.trim()) {
-      setNotice({ kind: 'error', text: 'Please add your display name and city.' });
+      setNotice({
+        kind: 'error',
+        text: 'Please add your display name and city.',
+      });
       return;
     }
     setBusy('profile');
@@ -164,7 +194,10 @@ export default function ProfilePage() {
       setEditing(false);
       setNotice({ kind: 'success', text: 'Your side is up to date.' });
     } catch {
-      setNotice({ kind: 'error', text: 'Profile could not be saved. Please try again.' });
+      setNotice({
+        kind: 'error',
+        text: 'Profile could not be saved. Please try again.',
+      });
     } finally {
       setBusy('');
     }
@@ -175,9 +208,15 @@ export default function ProfilePage() {
     setNotice(null);
     try {
       await createSpace(spaceName);
-      setNotice({ kind: 'success', text: 'Your space is ready. Send the private invitation to your person!' });
+      setNotice({
+        kind: 'success',
+        text: 'Your space is ready. Send the private invitation to your person!',
+      });
     } catch (err: any) {
-      setNotice({ kind: 'error', text: err?.message || 'Could not create space.' });
+      setNotice({
+        kind: 'error',
+        text: err?.message || 'Could not create space.',
+      });
     } finally {
       setBusy('');
     }
@@ -189,9 +228,15 @@ export default function ProfilePage() {
     setNotice(null);
     try {
       await joinSpace(inviteCode);
-      setNotice({ kind: 'success', text: 'You are connected. Welcome to your shared space!' });
+      setNotice({
+        kind: 'success',
+        text: 'You are connected. Welcome to your shared space!',
+      });
     } catch (err: any) {
-      setNotice({ kind: 'error', text: err?.message || 'Invalid or expired invitation.' });
+      setNotice({
+        kind: 'error',
+        text: err?.message || 'Invalid or expired invitation.',
+      });
     } finally {
       setBusy('');
     }
@@ -202,9 +247,15 @@ export default function ProfilePage() {
     setNotice(null);
     try {
       await regenerateInvite();
-      setNotice({ kind: 'success', text: 'A fresh private invitation is ready.' });
+      setNotice({
+        kind: 'success',
+        text: 'A fresh private invitation is ready.',
+      });
     } catch (err: any) {
-      setNotice({ kind: 'error', text: err?.message || 'Could not refresh invite.' });
+      setNotice({
+        kind: 'error',
+        text: err?.message || 'Could not refresh invite.',
+      });
     } finally {
       setBusy('');
     }
@@ -217,7 +268,10 @@ export default function ProfilePage() {
       await revokeInvite();
       setNotice({ kind: 'success', text: 'The invitation was revoked.' });
     } catch (err: any) {
-      setNotice({ kind: 'error', text: err?.message || 'Could not revoke invite.' });
+      setNotice({
+        kind: 'error',
+        text: err?.message || 'Could not revoke invite.',
+      });
     } finally {
       setBusy('');
     }
@@ -228,7 +282,10 @@ export default function ProfilePage() {
     const url = `${window.location.origin}/invite/${space.invite.code}`;
     await navigator.clipboard.writeText(url);
     sounds.playPop();
-    setNotice({ kind: 'success', text: 'Private invite link copied. Send it only to your person.' });
+    setNotice({
+      kind: 'success',
+      text: 'Private invite link copied. Send it only to your person.',
+    });
   };
 
   const copyInviteCode = async () => {
@@ -249,7 +306,10 @@ export default function ProfilePage() {
         reducedMotion: prefReducedMotion,
         aiConsent: preferences?.aiConsent ?? false,
       });
-      setNotice({ kind: 'success', text: 'Your shared date-night defaults are saved.' });
+      setNotice({
+        kind: 'success',
+        text: 'Your shared date-night defaults are saved.',
+      });
     } catch {
       setNotice({ kind: 'error', text: 'Could not save preferences.' });
     } finally {
@@ -278,7 +338,10 @@ export default function ProfilePage() {
       a.download = `dearly-us-space-export-${Date.now()}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      setNotice({ kind: 'success', text: 'Data export downloaded successfully.' });
+      setNotice({
+        kind: 'success',
+        text: 'Data export downloaded successfully.',
+      });
     } catch {
       setNotice({ kind: 'error', text: 'Could not export space data.' });
     }
@@ -301,7 +364,9 @@ export default function ProfilePage() {
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '32px', marginBottom: '10px' }}>♡</div>
           <h2>Opening your space…</h2>
-          <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>Taking you to sign-in…</p>
+          <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>
+            Taking you to sign-in…
+          </p>
         </div>
       </main>
     );
@@ -311,7 +376,13 @@ export default function ProfilePage() {
   if (!profile?.onboardingCompleted) {
     return (
       <main className={styles.page}>
-        <Navbar rightAction={<Link className="btn btn-ghost" href="/">Back home</Link>} />
+        <Navbar
+          rightAction={
+            <Link className="btn btn-ghost" href="/">
+              Back home
+            </Link>
+          }
+        />
         <div className={styles.setupShell}>
           <div className={styles.setupCard}>
             <div className={styles.setupStamp}>
@@ -321,19 +392,31 @@ export default function ProfilePage() {
             <div className={styles.setupBody}>
               <div className={styles.eyebrow}>Your side of the story</div>
               <h1>Let&apos;s make this feel like yours.</h1>
-              <p>Start with you. Your person can join through a private invitation after your profile is ready.</p>
+              <p>
+                Start with you. Your person can join through a private
+                invitation after your profile is ready.
+              </p>
               {notice && (
-                <div className={`${styles.notice} ${notice.kind === 'error' ? styles.noticeError : styles.noticeSuccess}`}>
+                <div
+                  className={`${styles.notice} ${notice.kind === 'error' ? styles.noticeError : styles.noticeSuccess}`}
+                >
                   {notice.text}
                 </div>
               )}
               <div className={styles.onboardingAvatar}>
                 <div className={styles.avatar}>
-                  <Avatar url={profile?.avatarUrl} name={displayName || 'You'} />
+                  <Avatar
+                    url={profile?.avatarUrl}
+                    name={displayName || 'You'}
+                  />
                 </div>
                 <div>
                   <strong>Your Google profile photo</strong>
-                  <span>{profile?.avatarUrl ? 'Ready to use as your Dearly Us avatar.' : 'We’ll use your initials until Google provides a photo.'}</span>
+                  <span>
+                    {profile?.avatarUrl
+                      ? 'Ready to use as your Dearly Us avatar.'
+                      : 'We’ll use your initials until Google provides a photo.'}
+                  </span>
                 </div>
               </div>
               <div className={styles.formGrid} style={{ marginTop: 20 }}>
@@ -366,11 +449,20 @@ export default function ProfilePage() {
                   onChange={(e) => setTimezone(e.target.value)}
                   placeholder="e.g. America/New_York or Asia/Kolkata"
                 />
-                <div className={styles.help}>Suggested automatically from this device. You can change it anytime.</div>
+                <div className={styles.help}>
+                  Suggested automatically from this device. You can change it
+                  anytime.
+                </div>
               </div>
               <div className={styles.formActions}>
-                <button className="btn btn-primary" onClick={handleSaveProfile} disabled={busy === 'profile'}>
-                  {busy === 'profile' ? 'Saving your place…' : 'Save and enter my space →'}
+                <button
+                  className="btn btn-primary"
+                  onClick={handleSaveProfile}
+                  disabled={busy === 'profile'}
+                >
+                  {busy === 'profile'
+                    ? 'Saving your place…'
+                    : 'Save and enter my space →'}
                 </button>
               </div>
             </div>
@@ -380,7 +472,10 @@ export default function ProfilePage() {
     );
   }
 
-  const inviteUrl = space?.invite && typeof window !== 'undefined' ? `${window.location.origin}/invite/${space.invite.code}` : '';
+  const inviteUrl =
+    space?.invite && typeof window !== 'undefined'
+      ? `${window.location.origin}/invite/${space.invite.code}`
+      : '';
 
   return (
     <div className={styles.page}>
@@ -393,7 +488,8 @@ export default function ProfilePage() {
             Welcome to <span>{space?.name || 'Our Space'}</span>
           </h1>
           <p className={styles.heroCopy}>
-            Your account, your person, and every little date-night keepsake—held together in one warm, private place.
+            Your account, your person, and every little date-night keepsake—held
+            together in one warm, private place.
           </p>
 
           {/* Quick Metrics Ribbon */}
@@ -419,9 +515,7 @@ export default function ProfilePage() {
             <div className={styles.statBox}>
               <span className={styles.statIcon}>✨</span>
               <div>
-                <div className={styles.statValue}>
-                  {milestones.length}/7
-                </div>
+                <div className={styles.statValue}>{milestones.length}/7</div>
                 <div className={styles.statLabel}>Constellation stars</div>
               </div>
             </div>
@@ -430,7 +524,8 @@ export default function ProfilePage() {
               <div>
                 <div className={styles.statValue}>
                   {preferences?.preferredMood
-                    ? preferences.preferredMood.charAt(0).toUpperCase() + preferences.preferredMood.slice(1)
+                    ? preferences.preferredMood.charAt(0).toUpperCase() +
+                      preferences.preferredMood.slice(1)
                     : 'Romantic'}
                 </div>
                 <div className={styles.statLabel}>Date night rhythm</div>
@@ -474,7 +569,10 @@ export default function ProfilePage() {
 
       <main className={styles.content}>
         {notice && (
-          <div className={`${styles.notice} ${notice.kind === 'error' ? styles.noticeError : styles.noticeSuccess}`} role="status">
+          <div
+            className={`${styles.notice} ${notice.kind === 'error' ? styles.noticeError : styles.noticeSuccess}`}
+            role="status"
+          >
             {notice.text}
           </div>
         )}
@@ -497,7 +595,8 @@ export default function ProfilePage() {
         {space?.activeRoomCode && !dismissedResumePrompt && (
           <section
             style={{
-              background: 'linear-gradient(135deg, rgba(225, 91, 124, 0.1), rgba(67, 126, 235, 0.12))',
+              background:
+                'linear-gradient(135deg, rgba(225, 91, 124, 0.1), rgba(67, 126, 235, 0.12))',
               border: '1px solid rgba(225, 91, 124, 0.28)',
               borderRadius: '20px',
               padding: '18px 24px',
@@ -511,14 +610,26 @@ export default function ProfilePage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
               <span style={{ fontSize: '28px' }}>✨</span>
               <div>
-                <strong style={{ fontSize: '15px', color: 'var(--ink)' }}>Continue previous date night?</strong>
-                <p style={{ margin: '3px 0 0', fontSize: '13px', color: 'var(--ink-soft)' }}>
-                  Room <strong>{space.activeRoomCode}</strong> is still waiting. Pick up right where you two left off!
+                <strong style={{ fontSize: '15px', color: 'var(--ink)' }}>
+                  Continue previous date night?
+                </strong>
+                <p
+                  style={{
+                    margin: '3px 0 0',
+                    fontSize: '13px',
+                    color: 'var(--ink-soft)',
+                  }}
+                >
+                  Room <strong>{space.activeRoomCode}</strong> is still waiting.
+                  Pick up right where you two left off!
                 </p>
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <Link className="btn btn-primary" href={`/room/${space.activeRoomCode}`}>
+              <Link
+                className="btn btn-primary"
+                href={`/room/${space.activeRoomCode}`}
+              >
                 Resume Date Night ▷
               </Link>
               <button
@@ -545,7 +656,10 @@ export default function ProfilePage() {
             <div className={styles.verified}>✦ Signed in with Google</div>
           </div>
           <div className={styles.actions}>
-            <button className="btn btn-ghost" onClick={() => setEditing((v) => !v)}>
+            <button
+              className="btn btn-ghost"
+              onClick={() => setEditing((v) => !v)}
+            >
               {editing ? 'Close editor' : 'Edit profile'}
             </button>
             <button className="btn btn-ghost" onClick={handleSignOut}>
@@ -566,19 +680,37 @@ export default function ProfilePage() {
             <div className={styles.formGrid}>
               <div className={styles.field}>
                 <label>Display name</label>
-                <input className={styles.input} value={displayName} onChange={(e) => setDisplayName(e.target.value)} maxLength={60} />
+                <input
+                  className={styles.input}
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  maxLength={60}
+                />
               </div>
               <div className={styles.field}>
                 <label>City</label>
-                <input className={styles.input} value={city} onChange={(e) => setCity(e.target.value)} maxLength={80} />
+                <input
+                  className={styles.input}
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  maxLength={80}
+                />
               </div>
               <div className={styles.field} style={{ gridColumn: '1/-1' }}>
                 <label>Timezone</label>
-                <input className={styles.input} value={timezone} onChange={(e) => setTimezone(e.target.value)} />
+                <input
+                  className={styles.input}
+                  value={timezone}
+                  onChange={(e) => setTimezone(e.target.value)}
+                />
               </div>
             </div>
             <div className={styles.formActions}>
-              <button className="btn btn-primary" onClick={handleSaveProfile} disabled={busy === 'profile'}>
+              <button
+                className="btn btn-primary"
+                onClick={handleSaveProfile}
+                disabled={busy === 'profile'}
+              >
                 {busy === 'profile' ? 'Saving…' : 'Save changes'}
               </button>
             </div>
@@ -611,7 +743,9 @@ export default function ProfilePage() {
               <div className={styles.spaceEmpty}>
                 <h3>Make it ours.</h3>
                 <p>
-                  Create a private space, or enter the single-use invite code your person sent you. Exactly two Google accounts share one space.
+                  Create a private space, or enter the single-use invite code
+                  your person sent you. Exactly two Google accounts share one
+                  space.
                 </p>
                 <div className={styles.field} style={{ marginTop: 16 }}>
                   <label>Space name</label>
@@ -623,7 +757,11 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div className={styles.choiceRow}>
-                  <button className="btn btn-primary" disabled={Boolean(busy)} onClick={handleCreateSpace}>
+                  <button
+                    className="btn btn-primary"
+                    disabled={Boolean(busy)}
+                    onClick={handleCreateSpace}
+                  >
                     {busy === 'create' ? 'Creating…' : 'Create our space'}
                   </button>
                 </div>
@@ -631,11 +769,19 @@ export default function ProfilePage() {
                   <input
                     className={styles.input}
                     value={inviteCode}
-                    onChange={(e) => setInviteCode(e.target.value.replace(/[^a-z0-9]/gi, '').toUpperCase())}
+                    onChange={(e) =>
+                      setInviteCode(
+                        e.target.value.replace(/[^a-z0-9]/gi, '').toUpperCase(),
+                      )
+                    }
                     placeholder="Paste invite code"
                     maxLength={10}
                   />
-                  <button className="btn btn-ghost" disabled={!inviteCode || Boolean(busy)} onClick={handleJoinSpace}>
+                  <button
+                    className="btn btn-ghost"
+                    disabled={!inviteCode || Boolean(busy)}
+                    onClick={handleJoinSpace}
+                  >
                     {busy === 'join' ? 'Joining…' : 'Join with invite'}
                   </button>
                 </div>
@@ -654,9 +800,14 @@ export default function ProfilePage() {
                 <div className={styles.partnerLine}>
                   <div className={styles.person}>
                     <div className={styles.personAvatar}>
-                      <Avatar url={ownMember?.avatarUrl || profile.avatarUrl} name={ownMember?.displayName || profile.displayName} />
+                      <Avatar
+                        url={ownMember?.avatarUrl || profile.avatarUrl}
+                        name={ownMember?.displayName || profile.displayName}
+                      />
                     </div>
-                    <strong>{ownMember?.displayName || profile.displayName}</strong>
+                    <strong>
+                      {ownMember?.displayName || profile.displayName}
+                    </strong>
                     <small>{ownMember?.city || profile.city}</small>
                   </div>
                   <div
@@ -674,7 +825,8 @@ export default function ProfilePage() {
                           transform: 'translateX(-50%)',
                           fontSize: '24px',
                           pointerEvents: 'none',
-                          filter: 'drop-shadow(0 4px 10px rgba(255, 78, 120, 0.4))',
+                          filter:
+                            'drop-shadow(0 4px 10px rgba(255, 78, 120, 0.4))',
                         }}
                       >
                         💖
@@ -683,10 +835,21 @@ export default function ProfilePage() {
                   </div>
                   <div className={styles.person}>
                     <div className={styles.personAvatar}>
-                      {partner ? <Avatar url={partner.avatarUrl} name={partner.displayName} /> : '?'}
+                      {partner ? (
+                        <Avatar
+                          url={partner.avatarUrl}
+                          name={partner.displayName}
+                        />
+                      ) : (
+                        '?'
+                      )}
                     </div>
                     <strong>{partner?.displayName || 'Your person'}</strong>
-                    <small>{partner ? `${partner.city} ${partnerLocalTime ? `· ${partnerLocalTime}` : ''}` : 'Invite pending'}</small>
+                    <small>
+                      {partner
+                        ? `${partner.city} ${partnerLocalTime ? `· ${partnerLocalTime}` : ''}`
+                        : 'Invite pending'}
+                    </small>
                   </div>
                 </div>
 
@@ -695,34 +858,63 @@ export default function ProfilePage() {
                   <div className={styles.waiting}>
                     <div className={styles.invitePanel}>
                       <div>
-                        <div className={styles.miniLabel}>Private Invitation · Single Use</div>
-                        <div className={styles.code} style={{ margin: '10px 0' }}>
+                        <div className={styles.miniLabel}>
+                          Private Invitation · Single Use
+                        </div>
+                        <div
+                          className={styles.code}
+                          style={{ margin: '10px 0' }}
+                        >
                           {space.invite?.code || 'NO ACTIVE INVITE'}
                         </div>
                         {space.invite && (
                           <div className={styles.help}>
-                            Valid until {new Date(space.invite.expiresAt).toLocaleString()}.
+                            Valid until{' '}
+                            {new Date(space.invite.expiresAt).toLocaleString()}.
                           </div>
                         )}
                       </div>
                       {inviteUrl && (
                         <div className={styles.inviteQr}>
-                          <QRCodeSVG text={inviteUrl} size={128} fgColor="#1C1924" bgColor="#FFFFFF" />
+                          <QRCodeSVG
+                            text={inviteUrl}
+                            size={128}
+                            fgColor="#1C1924"
+                            bgColor="#FFFFFF"
+                          />
                         </div>
                       )}
                     </div>
                     <div className={styles.choiceRow}>
-                      <button className="btn btn-primary" onClick={copyInviteLink} disabled={!space.invite}>
+                      <button
+                        className="btn btn-primary"
+                        onClick={copyInviteLink}
+                        disabled={!space.invite}
+                      >
                         Copy invite link
                       </button>
-                      <button className="btn btn-ghost" onClick={copyInviteCode} disabled={!space.invite}>
+                      <button
+                        className="btn btn-ghost"
+                        onClick={copyInviteCode}
+                        disabled={!space.invite}
+                      >
                         Copy code
                       </button>
-                      <button className="btn btn-ghost" disabled={Boolean(busy)} onClick={handleRegenerateInvite}>
-                        {busy === 'invite' ? 'Refreshing…' : 'Make fresh invite'}
+                      <button
+                        className="btn btn-ghost"
+                        disabled={Boolean(busy)}
+                        onClick={handleRegenerateInvite}
+                      >
+                        {busy === 'invite'
+                          ? 'Refreshing…'
+                          : 'Make fresh invite'}
                       </button>
                       {space.invite && (
-                        <button className="btn btn-ghost" disabled={Boolean(busy)} onClick={handleRevokeInvite}>
+                        <button
+                          className="btn btn-ghost"
+                          disabled={Boolean(busy)}
+                          onClick={handleRevokeInvite}
+                        >
                           {busy === 'revoke' ? 'Revoking…' : 'Revoke invite'}
                         </button>
                       )}
@@ -733,8 +925,14 @@ export default function ProfilePage() {
                 {/* Connected: Start Date Night */}
                 {partner && (
                   <div className={styles.choiceRow}>
-                    <button className="btn btn-primary" onClick={handleStartRoom} disabled={Boolean(busy)}>
-                      {busy === 'room' ? 'Opening lobby…' : 'Start or continue date night ▷'}
+                    <button
+                      className="btn btn-primary"
+                      onClick={handleStartRoom}
+                      disabled={Boolean(busy)}
+                    >
+                      {busy === 'room'
+                        ? 'Opening lobby…'
+                        : 'Start or continue date night ▷'}
                     </button>
                     <Link className="btn btn-ghost" href="/activity">
                       Browse activities
@@ -749,32 +947,53 @@ export default function ProfilePage() {
         {/* Shared Room Status & Continue Date Night Action */}
         <section className={`${styles.card} ${styles.roomCard}`}>
           <div>
-            <div className={styles.miniLabel}>Shared room · tonight&apos;s session</div>
+            <div className={styles.miniLabel}>
+              Shared room · tonight&apos;s session
+            </div>
             <div className={styles.roomCode}>
               <i className={styles.liveDot} />
-              <span className={styles.code}>{space?.activeRoomCode || 'Create a space first'}</span>
+              <span className={styles.code}>
+                {space?.activeRoomCode || 'Create a space first'}
+              </span>
               {space?.activeRoomCode && (
-                <button className="btn btn-ghost" onClick={() => navigator.clipboard.writeText(space.activeRoomCode || '')}>
+                <button
+                  className="btn btn-ghost"
+                  onClick={() =>
+                    navigator.clipboard.writeText(space.activeRoomCode || '')
+                  }
+                >
                   Copy code
                 </button>
               )}
             </div>
             <p className={styles.help}>
-              Rooms power live activities. Your couple space and memories stay permanent even when refreshing this room.
+              Rooms power live activities. Your couple space and memories stay
+              permanent even when refreshing this room.
             </p>
           </div>
           <div className={styles.actions}>
             {space?.activeRoomCode ? (
-              <Link className="btn btn-primary" href={`/room/${space.activeRoomCode}`}>
+              <Link
+                className="btn btn-primary"
+                href={`/room/${space.activeRoomCode}`}
+              >
                 Enter room lobby ▷
               </Link>
             ) : space ? (
-              <button className="btn btn-primary" onClick={handleStartRoom} disabled={Boolean(busy)}>
+              <button
+                className="btn btn-primary"
+                onClick={handleStartRoom}
+                disabled={Boolean(busy)}
+              >
                 Start date night ▷
               </button>
             ) : null}
             {space && (
-              <button className="btn btn-ghost" disabled={Boolean(busy)} onClick={() => rotateRoom()}>
+              <button
+                className="btn btn-ghost"
+                disabled={Boolean(busy)}
+                onClick={() => rotateRoom()}
+              >
                 {busy === 'room' ? 'Rotating…' : 'Fresh room'}
               </button>
             )}
@@ -805,7 +1024,10 @@ export default function ProfilePage() {
                   <p>Keepsakes deliberately saved by you two.</p>
                 </div>
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  <button className="btn btn-primary" onClick={() => setCapsuleModalOpen(true)}>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => setCapsuleModalOpen(true)}
+                  >
                     Seal Capsule 📦
                   </button>
                   <Link className="btn btn-ghost" href="/photobooth">
@@ -825,17 +1047,39 @@ export default function ProfilePage() {
                     >
                       <div
                         className={styles.keepsakePreview}
-                        style={item.previewUrl ? { backgroundImage: `url(${item.previewUrl})` } : undefined}
+                        style={
+                          item.previewUrl
+                            ? { backgroundImage: `url(${item.previewUrl})` }
+                            : undefined
+                        }
                       >
-                        {item.previewUrl ? null : KEEPSAKE_ICONS[item.kind] || '♡'}
+                        {item.previewUrl
+                          ? null
+                          : KEEPSAKE_ICONS[item.kind] || '♡'}
                       </div>
                       <div className={styles.keepsakeBody}>
                         <strong>{item.title}</strong>
-                        <small>{new Date(item.createdAt).toLocaleDateString()}</small>
+                        <small>
+                          {new Date(item.createdAt).toLocaleDateString()}
+                        </small>
                         {item.caption && <p>{item.caption}</p>}
                       </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 12px 12px' }}>
-                        <span style={{ fontSize: '11px', color: 'var(--pink)', fontWeight: 700 }}>Inspect keepsake ↗</span>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          padding: '0 12px 12px',
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: '11px',
+                            color: 'var(--pink)',
+                            fontWeight: 700,
+                          }}
+                        >
+                          Inspect keepsake ↗
+                        </span>
                         <button
                           className={styles.keepsakeDelete}
                           style={{ margin: 0 }}
@@ -855,10 +1099,17 @@ export default function ProfilePage() {
                     <div className={styles.emptyIcon}>💌</div>
                     <h3>Your first keepsake is waiting for you.</h3>
                     <p>
-                      Take a photostrip, collect a passport stamp, or finish a date-night activity to begin your shared shelf.
+                      Take a photostrip, collect a passport stamp, or finish a
+                      date-night activity to begin your shared shelf.
                     </p>
-                    <div className={styles.choiceRow} style={{ justifyContent: 'center' }}>
-                      <button className="btn btn-primary" onClick={() => setCapsuleModalOpen(true)}>
+                    <div
+                      className={styles.choiceRow}
+                      style={{ justifyContent: 'center' }}
+                    >
+                      <button
+                        className="btn btn-primary"
+                        onClick={() => setCapsuleModalOpen(true)}
+                      >
                         Create Date Night Capsule 📦
                       </button>
                       <Link className="btn btn-ghost" href="/photobooth">
@@ -910,7 +1161,9 @@ export default function ProfilePage() {
               <div className={styles.settingsCopy}>
                 <strong>AI-powered follow-ups (Cupidot)</strong>
                 <p>
-                  Choose whether your entered names and answers can be used for personalized follow-up questions. Camera feeds, photos, and hidden answers are never shared.
+                  Choose whether your entered names and answers can be used for
+                  personalized follow-up questions. Camera feeds, photos, and
+                  hidden answers are never shared.
                 </p>
               </div>
               <div style={{ maxWidth: 360 }}>
@@ -923,7 +1176,10 @@ export default function ProfilePage() {
               <div className={styles.settingsRow}>
                 <div className={styles.settingsCopy}>
                   <strong>Shared date-night defaults</strong>
-                  <p>These choices follow your couple space to the lobby on every device.</p>
+                  <p>
+                    These choices follow your couple space to the lobby on every
+                    device.
+                  </p>
                 </div>
                 <div className={styles.preferenceControls}>
                   <select
@@ -937,7 +1193,9 @@ export default function ProfilePage() {
                   </select>
                   <select
                     value={prefDuration}
-                    onChange={(e) => setPrefDuration(Number(e.target.value) as any)}
+                    onChange={(e) =>
+                      setPrefDuration(Number(e.target.value) as any)
+                    }
                   >
                     <option value={15}>15 minutes</option>
                     <option value={30}>30 minutes</option>
@@ -945,7 +1203,14 @@ export default function ProfilePage() {
                     <option value={60}>60 minutes</option>
                     <option value={90}>90 minutes</option>
                   </select>
-                  <label style={{ gridColumn: '1/-1', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <label
+                    style={{
+                      gridColumn: '1/-1',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }}
+                  >
                     <input
                       type="checkbox"
                       checked={prefAmbient}
@@ -953,7 +1218,14 @@ export default function ProfilePage() {
                     />
                     <span>Ambient audio on date nights</span>
                   </label>
-                  <label style={{ gridColumn: '1/-1', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <label
+                    style={{
+                      gridColumn: '1/-1',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }}
+                  >
                     <input
                       type="checkbox"
                       checked={prefReducedMotion}
@@ -977,7 +1249,10 @@ export default function ProfilePage() {
             <div className={styles.settingsRow}>
               <div className={styles.settingsCopy}>
                 <strong>Export your space data</strong>
-                <p>Download a complete, readable JSON archive of your space, profile, preferences, milestones, and keepsake metadata.</p>
+                <p>
+                  Download a complete, readable JSON archive of your space,
+                  profile, preferences, milestones, and keepsake metadata.
+                </p>
               </div>
               <button className="btn btn-ghost" onClick={handleExportData}>
                 Download JSON export ⤓
@@ -990,7 +1265,9 @@ export default function ProfilePage() {
                 <div className={styles.settingsCopy}>
                   <strong>Couple space separation</strong>
                   <p style={{ color: '#9d1738' }}>
-                    Separation is a protected account action. Request it and we will confirm the effect on your shared history before anything changes.
+                    Separation is a protected account action. Request it and we
+                    will confirm the effect on your shared history before
+                    anything changes.
                   </p>
                 </div>
                 <button
@@ -1007,13 +1284,19 @@ export default function ProfilePage() {
             <div className={styles.settingsRow}>
               <div className={styles.settingsCopy}>
                 <strong>Privacy &amp; Account lifecycle</strong>
-                <p>Read what is stored locally vs in Supabase, or request permanent deletion of your account.</p>
+                <p>
+                  Read what is stored locally vs in Supabase, or request
+                  permanent deletion of your account.
+                </p>
               </div>
               <div className={styles.actions}>
                 <Link className="btn btn-ghost" href="/privacy">
                   Privacy policy
                 </Link>
-                <a className="btn btn-ghost" href="mailto:hello@dearlyus.love?subject=Delete%20my%20Dearly%20Us%20account">
+                <a
+                  className="btn btn-ghost"
+                  href="mailto:hello@dearlyus.love?subject=Delete%20my%20Dearly%20Us%20account"
+                >
                   Request deletion
                 </a>
                 <button className="btn btn-ghost" onClick={handleSignOut}>
@@ -1052,14 +1335,40 @@ export default function ProfilePage() {
               border: '1px solid var(--line)',
             }}
           >
-            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '24px', color: '#9d1738', margin: '0 0 10px' }}>
+            <h3
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: '24px',
+                color: '#9d1738',
+                margin: '0 0 10px',
+              }}
+            >
               Disconnect couple space?
             </h3>
-            <p style={{ fontSize: '13.5px', color: 'var(--ink-soft)', lineHeight: 1.55 }}>
-              Separation from <strong>{space?.name}</strong> is not performed in the browser. Send a request first; the final protected process will explain what happens to shared history before it changes anything.
+            <p
+              style={{
+                fontSize: '13.5px',
+                color: 'var(--ink-soft)',
+                lineHeight: 1.55,
+              }}
+            >
+              Separation from <strong>{space?.name}</strong> is not performed in
+              the browser. Send a request first; the final protected process
+              will explain what happens to shared history before it changes
+              anything.
             </p>
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '24px' }}>
-              <button className="btn btn-ghost" onClick={() => setDisconnectModalOpen(false)}>
+            <div
+              style={{
+                display: 'flex',
+                gap: '10px',
+                justifyContent: 'flex-end',
+                marginTop: '24px',
+              }}
+            >
+              <button
+                className="btn btn-ghost"
+                onClick={() => setDisconnectModalOpen(false)}
+              >
                 Cancel
               </button>
               <a

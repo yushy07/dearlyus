@@ -49,7 +49,15 @@ export function ConnectionRibbon({
       }}
     >
       {/* Left Partner */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '6px' }}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          textAlign: 'center',
+          gap: '6px',
+        }}
+      >
         <div style={{ position: 'relative' }}>
           <div
             style={{
@@ -61,7 +69,9 @@ export function ConnectionRibbon({
               overflow: 'hidden',
               background: 'linear-gradient(135deg, var(--pink), var(--blue))',
               border: `3px solid ${leftReady ? '#10B981' : 'var(--line)'}`,
-              boxShadow: leftReady ? '0 0 14px rgba(16, 185, 129, 0.4)' : '0 2px 8px rgba(0,0,0,0.06)',
+              boxShadow: leftReady
+                ? '0 0 14px rgba(16, 185, 129, 0.4)'
+                : '0 2px 8px rgba(0,0,0,0.06)',
               transition: 'all 0.3s ease',
             }}
           >
@@ -86,10 +96,29 @@ export function ConnectionRibbon({
             </span>
           )}
         </div>
-        <strong style={{ fontFamily: 'var(--font-display)', fontSize: '18px', marginTop: '4px' }}>{leftName}</strong>
-        {leftLocation && <small style={{ color: 'var(--ink-soft)', fontSize: '11px' }}>{leftLocation}</small>}
+        <strong
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: '18px',
+            marginTop: '4px',
+          }}
+        >
+          {leftName}
+        </strong>
+        {leftLocation && (
+          <small style={{ color: 'var(--ink-soft)', fontSize: '11px' }}>
+            {leftLocation}
+          </small>
+        )}
         {leftTime && (
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--pink)', fontWeight: 700 }}>
+          <div
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '11px',
+              color: 'var(--pink)',
+              fontWeight: 700,
+            }}
+          >
             {leftTime}
           </div>
         )}
@@ -124,7 +153,9 @@ export function ConnectionRibbon({
                 ? 'linear-gradient(90deg, var(--pink), var(--blue), var(--pink))'
                 : 'var(--line)',
               backgroundSize: '200% 100%',
-              animation: partnerOnline ? 'ribbon-flow 3s linear infinite' : 'none',
+              animation: partnerOnline
+                ? 'ribbon-flow 3s linear infinite'
+                : 'none',
               transition: 'background 0.4s ease',
             }}
           />
@@ -136,9 +167,13 @@ export function ConnectionRibbon({
               width: '28px',
               height: '28px',
               borderRadius: '50%',
-              background: partnerOnline ? 'linear-gradient(135deg, var(--pink), #FF85A1)' : 'var(--paper)',
+              background: partnerOnline
+                ? 'linear-gradient(135deg, var(--pink), #FF85A1)'
+                : 'var(--paper)',
               border: `2px solid ${partnerOnline ? '#FFF' : 'var(--line)'}`,
-              boxShadow: partnerOnline ? '0 0 10px rgba(255, 78, 120, 0.5)' : 'none',
+              boxShadow: partnerOnline
+                ? '0 0 10px rgba(255, 78, 120, 0.5)'
+                : 'none',
               color: partnerOnline ? '#FFF' : 'var(--ink-soft)',
               display: 'grid',
               placeItems: 'center',
@@ -161,12 +196,24 @@ export function ConnectionRibbon({
             color: partnerOnline ? '#10B981' : 'var(--ink-soft)',
           }}
         >
-          {partnerOnline ? 'Together In Room' : connected ? 'Partner Offline' : 'Waiting for Partner'}
+          {partnerOnline
+            ? 'Together In Room'
+            : connected
+              ? 'Partner Offline'
+              : 'Waiting for Partner'}
         </span>
       </div>
 
       {/* Right Partner */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '6px' }}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          textAlign: 'center',
+          gap: '6px',
+        }}
+      >
         <div style={{ position: 'relative' }}>
           <div
             style={{
@@ -178,7 +225,9 @@ export function ConnectionRibbon({
               overflow: 'hidden',
               background: 'linear-gradient(135deg, var(--blue), #5BA2F4)',
               border: `3px solid ${rightReady ? '#10B981' : 'var(--line)'}`,
-              boxShadow: rightReady ? '0 0 14px rgba(16, 185, 129, 0.4)' : '0 2px 8px rgba(0,0,0,0.06)',
+              boxShadow: rightReady
+                ? '0 0 14px rgba(16, 185, 129, 0.4)'
+                : '0 2px 8px rgba(0,0,0,0.06)',
               filter: partnerOnline ? 'none' : 'grayscale(0.5)',
               opacity: partnerOnline ? 1 : 0.7,
               transition: 'all 0.3s ease',
@@ -205,10 +254,29 @@ export function ConnectionRibbon({
             </span>
           )}
         </div>
-        <strong style={{ fontFamily: 'var(--font-display)', fontSize: '18px', marginTop: '4px' }}>{rightName}</strong>
-        {rightLocation && <small style={{ color: 'var(--ink-soft)', fontSize: '11px' }}>{rightLocation}</small>}
+        <strong
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: '18px',
+            marginTop: '4px',
+          }}
+        >
+          {rightName}
+        </strong>
+        {rightLocation && (
+          <small style={{ color: 'var(--ink-soft)', fontSize: '11px' }}>
+            {rightLocation}
+          </small>
+        )}
         {rightTime && (
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--blue)', fontWeight: 700 }}>
+          <div
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '11px',
+              color: 'var(--blue)',
+              fontWeight: 700,
+            }}
+          >
             {rightTime}
           </div>
         )}

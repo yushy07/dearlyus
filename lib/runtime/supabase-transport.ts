@@ -28,7 +28,9 @@ export class SupabaseActivityTransport implements ActivityTransport {
   private roomId: string = '';
   private eventHandlers = new Set<(event: StandardActivityEvent) => void>();
   private transientHandlers = new Map<string, Set<(payload: any) => void>>();
-  private recoveryStateHandlers = new Set<(state: StandardRecoveryState) => void>();
+  private recoveryStateHandlers = new Set<
+    (state: StandardRecoveryState) => void
+  >();
   private roomChannel: any = null;
   private transientChannel: any = null;
 
@@ -40,7 +42,10 @@ export class SupabaseActivityTransport implements ActivityTransport {
     this.roomId = roomId;
   }
 
-  public async connect(sessionId: string, currentUserId: string): Promise<void> {
+  public async connect(
+    sessionId: string,
+    currentUserId: string,
+  ): Promise<void> {
     this.sessionId = sessionId;
     this.currentUserId = currentUserId;
     const supabase = getSupabase();
@@ -59,7 +64,12 @@ export class SupabaseActivityTransport implements ActivityTransport {
         },
         (change: any) => {
           const row = change.new;
-          if (this.sessionId && row.session_id && row.session_id !== this.sessionId) return;
+          if (
+            this.sessionId &&
+            row.session_id &&
+            row.session_id !== this.sessionId
+          )
+            return;
 
           const event: StandardActivityEvent = {
             id: row.id,
@@ -80,7 +90,7 @@ export class SupabaseActivityTransport implements ActivityTransport {
               console.error('Error in supabase event handler:', err);
             }
           });
-        }
+        },
       )
       .subscribe((status: string) => {
         if (status === 'SUBSCRIBED') {
@@ -115,7 +125,8 @@ export class SupabaseActivityTransport implements ActivityTransport {
     const supabase = getSupabase();
     if (supabase) {
       if (this.roomChannel) void supabase.removeChannel(this.roomChannel);
-      if (this.transientChannel) void supabase.removeChannel(this.transientChannel);
+      if (this.transientChannel)
+        void supabase.removeChannel(this.transientChannel);
     }
     this.roomChannel = null;
     this.transientChannel = null;
@@ -127,11 +138,16 @@ export class SupabaseActivityTransport implements ActivityTransport {
   public async sendEvent(
     type: string,
     payload: unknown,
-    expectedRevision?: number
+    expectedRevision?: number,
   ): Promise<StandardActivityEvent | null> {
     if (!this.sessionId) return null;
     try {
-      const result = await appendActivityEvent(this.sessionId, type, payload, expectedRevision);
+      const result = await appendActivityEvent(
+        this.sessionId,
+        type,
+        payload,
+        expectedRevision,
+      );
       if (!result.accepted) return null;
       return null; // Event will arrive via postgres_changes subscription
     } catch (err) {
@@ -151,25 +167,34 @@ export class SupabaseActivityTransport implements ActivityTransport {
   }
 
   public async requestRecovery(
-    afterSequence = 0
-  ): Promise<{ snapshot: any; events: StandardActivityEvent[]; lastSequence?: number } | null> {
+    afterSequence = 0,
+  ): Promise<{
+    snapshot: any;
+    events: StandardActivityEvent[];
+    lastSequence?: number;
+  } | null> {
     if (!this.sessionId) return null;
     this.notifyRecoveryState('loading_snapshot');
     try {
-      const recovery = await recoverActivitySession(this.sessionId, afterSequence);
+      const recovery = await recoverActivitySession(
+        this.sessionId,
+        afterSequence,
+      );
       if (!recovery) return null;
 
-      const events: StandardActivityEvent[] = (recovery.events || []).map((evt: any) => ({
-        id: evt.id,
-        sequence: Number(evt.sequence),
-        schemaVersion: Number(evt.schemaVersion || 1),
-        senderId: evt.senderId,
-        activityType: evt.activityType || recovery.activityType || 'unknown',
-        type: evt.type,
-        payload: evt.payload,
-        clientCreatedAt: evt.clientCreatedAt,
-        createdAt: evt.createdAt || new Date().toISOString(),
-      }));
+      const events: StandardActivityEvent[] = (recovery.events || []).map(
+        (evt: any) => ({
+          id: evt.id,
+          sequence: Number(evt.sequence),
+          schemaVersion: Number(evt.schemaVersion || 1),
+          senderId: evt.senderId,
+          activityType: evt.activityType || recovery.activityType || 'unknown',
+          type: evt.type,
+          payload: evt.payload,
+          clientCreatedAt: evt.clientCreatedAt,
+          createdAt: evt.createdAt || new Date().toISOString(),
+        }),
+      );
 
       this.notifyRecoveryState('recovered');
       return {
@@ -184,7 +209,9 @@ export class SupabaseActivityTransport implements ActivityTransport {
     }
   }
 
-  public async completeSession(resultSnapshot: Record<string, unknown>): Promise<void> {
+  public async completeSession(
+    resultSnapshot: Record<string, unknown>,
+  ): Promise<void> {
     if (!this.sessionId) return;
     await completeActivitySession(this.sessionId, resultSnapshot);
   }
@@ -199,7 +226,10 @@ export class SupabaseActivityTransport implements ActivityTransport {
     return () => this.eventHandlers.delete(handler);
   }
 
-  public onTransient(event: string, handler: (payload: any) => void): () => void {
+  public onTransient(
+    event: string,
+    handler: (payload: any) => void,
+  ): () => void {
     if (!this.transientHandlers.has(event)) {
       this.transientHandlers.set(event, new Set());
     }
@@ -209,7 +239,9 @@ export class SupabaseActivityTransport implements ActivityTransport {
     };
   }
 
-  public onRecoveryStateChange(handler: (state: StandardRecoveryState) => void): () => void {
+  public onRecoveryStateChange(
+    handler: (state: StandardRecoveryState) => void,
+  ): () => void {
     this.recoveryStateHandlers.add(handler);
     return () => this.recoveryStateHandlers.delete(handler);
   }
@@ -219,12 +251,21 @@ export class SupabaseActivityTransport implements ActivityTransport {
   }
 
   public privateVault: PrivateVault = {
-    lockAnswer: async (roundNumber: number, answerPayload: unknown): Promise<PrivateLockResult> => {
+    lockAnswer: async (
+      roundNumber: number,
+      answerPayload: unknown,
+    ): Promise<PrivateLockResult> => {
       if (!this.sessionId) throw new Error('Transport not connected.');
-      return await lockPrivateAnswer(this.sessionId, roundNumber, answerPayload);
+      return await lockPrivateAnswer(
+        this.sessionId,
+        roundNumber,
+        answerPayload,
+      );
     },
 
-    revealAnswers: async (roundNumber: number): Promise<PrivateRevealResult> => {
+    revealAnswers: async (
+      roundNumber: number,
+    ): Promise<PrivateRevealResult> => {
       if (!this.sessionId) throw new Error('Transport not connected.');
       const result = await revealPrivateAnswers(this.sessionId, roundNumber);
       return {

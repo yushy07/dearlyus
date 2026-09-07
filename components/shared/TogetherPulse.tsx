@@ -131,9 +131,15 @@ export function TogetherPulse({
   const config = configFactory(partnerName);
   const textLabel = customLabel || config.label;
 
-  const isLive = ['connected', 'online', 'choosing', 'writing', 'drawing', 'locked_in', 'ready_to_reveal'].includes(
-    state
-  );
+  const isLive = [
+    'connected',
+    'online',
+    'choosing',
+    'writing',
+    'drawing',
+    'locked_in',
+    'ready_to_reveal',
+  ].includes(state);
 
   return (
     <div
@@ -177,7 +183,8 @@ export function TogetherPulse({
               borderRadius: '50%',
               background: config.color,
               opacity: 0.5,
-              animation: 'together-pulse-ring 1.8s cubic-bezier(0.24, 0, 0.38, 1) infinite',
+              animation:
+                'together-pulse-ring 1.8s cubic-bezier(0.24, 0, 0.38, 1) infinite',
             }}
           />
         )}
@@ -193,7 +200,9 @@ export function TogetherPulse({
         />
       </span>
 
-      <span style={{ display: 'inline-block', lineHeight: 1 }}>{textLabel}</span>
+      <span style={{ display: 'inline-block', lineHeight: 1 }}>
+        {textLabel}
+      </span>
     </div>
   );
 }

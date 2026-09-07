@@ -2,7 +2,13 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ShinyText, SpotlightCard, GlowBadge, ScrollProgress, ScrollReveal } from '@/components/ui';
+import {
+  ShinyText,
+  SpotlightCard,
+  GlowBadge,
+  ScrollProgress,
+  ScrollReveal,
+} from '@/components/ui';
 import { useCoupleProfile } from '@/lib/couple';
 import { sounds } from '@/lib/sound';
 
@@ -16,15 +22,25 @@ const CATEGORIES = [
 
 export default function ActivityPage() {
   const { partnerA, partnerB } = useCoupleProfile();
-  const [selectedCategory, setSelectedCategory] = useState<'all' | 'duels' | 'keepsakes' | 'quizzes' | 'travel'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<
+    'all' | 'duels' | 'keepsakes' | 'quizzes' | 'travel'
+  >('all');
 
-  const handleSelectCategory = (catId: 'all' | 'duels' | 'keepsakes' | 'quizzes' | 'travel') => {
+  const handleSelectCategory = (
+    catId: 'all' | 'duels' | 'keepsakes' | 'quizzes' | 'travel',
+  ) => {
     sounds.playPop();
     setSelectedCategory(catId);
   };
 
   return (
-    <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '60px' }}>
+    <div
+      style={{
+        background: 'var(--paper)',
+        minHeight: '100vh',
+        paddingBottom: '60px',
+      }}
+    >
       <ScrollProgress />
       <main
         style={{
@@ -65,8 +81,24 @@ export default function ActivityPage() {
           >
             dearly us
             <span style={{ display: 'inline-flex', gap: '4px' }}>
-              <i style={{ width: '9px', height: '9px', borderRadius: '50%', background: 'var(--pink)', display: 'block' }}></i>
-              <i style={{ width: '9px', height: '9px', borderRadius: '50%', background: 'var(--blue)', display: 'block' }}></i>
+              <i
+                style={{
+                  width: '9px',
+                  height: '9px',
+                  borderRadius: '50%',
+                  background: 'var(--pink)',
+                  display: 'block',
+                }}
+              ></i>
+              <i
+                style={{
+                  width: '9px',
+                  height: '9px',
+                  borderRadius: '50%',
+                  background: 'var(--blue)',
+                  display: 'block',
+                }}
+              ></i>
             </span>
           </Link>
           <Link
@@ -85,16 +117,40 @@ export default function ActivityPage() {
             }}
             aria-label="Your profile"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2" />
-              <path d="M4 21c0-4 3.6-6.5 8-6.5S20 17 20 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <circle
+                cx="12"
+                cy="8"
+                r="4"
+                stroke="currentColor"
+                strokeWidth="2"
+              />
+              <path
+                d="M4 21c0-4 3.6-6.5 8-6.5S20 17 20 21"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
             </svg>
           </Link>
         </header>
 
         {/* Heading */}
         <ScrollReveal animation="fade-up">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '0 4px' }}>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              padding: '0 4px',
+            }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <GlowBadge text="22 Realtime Dates Live" size="sm" />
             </div>
@@ -108,10 +164,14 @@ export default function ActivityPage() {
               }}
             >
               Pick an <span style={{ color: 'var(--pink)' }}>activity</span> for{' '}
-              <span style={{ color: 'var(--blue)' }}>{partnerA} &amp; {partnerB}</span>.
+              <span style={{ color: 'var(--blue)' }}>
+                {partnerA} &amp; {partnerB}
+              </span>
+              .
             </h1>
             <p style={{ color: 'var(--ink-soft)', fontSize: '15px' }}>
-              Realtime games &amp; dates for two screens in two places — played in one shared room, at the same second.
+              Realtime games &amp; dates for two screens in two places — played
+              in one shared room, at the same second.
             </p>
           </div>
         </ScrollReveal>
@@ -135,19 +195,28 @@ export default function ActivityPage() {
                 style={{
                   padding: '8px 16px',
                   borderRadius: '20px',
-                  border: active ? '1px solid var(--pink)' : '1px solid var(--line)',
-                  background: active ? 'linear-gradient(135deg, var(--pink), var(--blue))' : '#FFFFFF',
+                  border: active
+                    ? '1px solid var(--pink)'
+                    : '1px solid var(--line)',
+                  background: active
+                    ? 'linear-gradient(135deg, var(--pink), var(--blue))'
+                    : '#FFFFFF',
                   color: active ? '#FFFFFF' : 'var(--ink)',
                   fontSize: '13px',
                   fontWeight: active ? 700 : 500,
                   whiteSpace: 'nowrap',
                   cursor: 'pointer',
-                  boxShadow: active ? '0 4px 12px rgba(255, 78, 120, 0.25)' : 'var(--shadow-soft)',
+                  boxShadow: active
+                    ? '0 4px 12px rgba(255, 78, 120, 0.25)'
+                    : 'var(--shadow-soft)',
                   transition: 'all 0.15s ease',
                   flexShrink: 0,
                 }}
               >
-                {cat.label} <span style={{ opacity: 0.8, fontSize: '11px' }}>({cat.count})</span>
+                {cat.label}{' '}
+                <span style={{ opacity: 0.8, fontSize: '11px' }}>
+                  ({cat.count})
+                </span>
               </button>
             );
           })}
@@ -163,7 +232,8 @@ export default function ActivityPage() {
             gap: '6px',
             padding: '22px',
             borderRadius: '16px',
-            background: 'linear-gradient(135deg, #1E1B4B 0%, #2E1065 60%, #1E1B4B 100%)',
+            background:
+              'linear-gradient(135deg, #1E1B4B 0%, #2E1065 60%, #1E1B4B 100%)',
             border: '2px solid rgba(253, 230, 138, 0.45)',
             boxShadow: '0 12px 30px rgba(46, 16, 101, 0.25)',
             color: '#FFFFFF',
@@ -173,19 +243,53 @@ export default function ActivityPage() {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '18px' }}>🌸</span>
-            <span style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: '#FDE68A', fontWeight: 800, letterSpacing: '1.5px' }}>
+            <span
+              style={{
+                fontSize: '10.5px',
+                fontFamily: 'var(--font-mono)',
+                color: '#FDE68A',
+                fontWeight: 800,
+                letterSpacing: '1.5px',
+              }}
+            >
               대한민국 · COUPLE SOUVENIR PASSPORT
             </span>
           </div>
 
-          <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '20px', letterSpacing: '-.02em', margin: '2px 0' }}>
+          <h2
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontWeight: 800,
+              fontSize: '20px',
+              letterSpacing: '-.02em',
+              margin: '2px 0',
+            }}
+          >
             Date Passport &amp; Stamps 💮
           </h2>
-          <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '13.5px', maxWidth: '36ch', lineHeight: 1.4 }}>
-            Earn authentic Korean rubber ink seals and collect sweet memory notes for every date you finish!
+          <p
+            style={{
+              color: 'rgba(255, 255, 255, 0.8)',
+              fontSize: '13.5px',
+              maxWidth: '36ch',
+              lineHeight: 1.4,
+            }}
+          >
+            Earn authentic Korean rubber ink seals and collect sweet memory
+            notes for every date you finish!
           </p>
 
-          <div style={{ marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px', color: '#FDE68A', fontWeight: 800, fontSize: '13px' }}>
+          <div
+            style={{
+              marginTop: '6px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              color: '#FDE68A',
+              fontWeight: 800,
+              fontSize: '13px',
+            }}
+          >
             <span>Open Couple Passport</span>
             <span>→</span>
           </div>
@@ -211,7 +315,16 @@ export default function ActivityPage() {
             }}
           >
             <span>💮</span>
-            <span style={{ fontSize: '7px', color: '#FDE68A', fontWeight: 900, fontFamily: 'monospace' }}>OFFICIAL</span>
+            <span
+              style={{
+                fontSize: '7px',
+                color: '#FDE68A',
+                fontWeight: 900,
+                fontFamily: 'monospace',
+              }}
+            >
+              OFFICIAL
+            </span>
           </div>
         </Link>
 
@@ -225,19 +338,36 @@ export default function ActivityPage() {
             gap: '6px',
             padding: '22px',
             borderRadius: '14px',
-            background: 'linear-gradient(120deg, var(--pink-tint), var(--blue-tint))',
+            background:
+              'linear-gradient(120deg, var(--pink-tint), var(--blue-tint))',
             overflow: 'hidden',
             border: '1px solid var(--line)',
             boxShadow: 'var(--shadow-soft)',
           }}
         >
-          <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '22px', letterSpacing: '-.02em' }}>
+          <h2
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontWeight: 800,
+              fontSize: '22px',
+              letterSpacing: '-.02em',
+            }}
+          >
             Photobooth
           </h2>
-          <p style={{ color: 'var(--ink)', opacity: 0.75, fontSize: '14px', maxWidth: '30ch' }}>
+          <p
+            style={{
+              color: 'var(--ink)',
+              opacity: 0.75,
+              fontSize: '14px',
+              maxWidth: '30ch',
+            }}
+          >
             One shared countdown, both of you in every frame of the strip.
           </p>
-          <span style={{ marginTop: '8px', fontWeight: 700, fontSize: '15px' }}>Open the booth ▷</span>
+          <span style={{ marginTop: '8px', fontWeight: 700, fontSize: '15px' }}>
+            Open the booth ▷
+          </span>
 
           {/* Miniature Photo Strip Illustration */}
           <div
@@ -256,10 +386,46 @@ export default function ActivityPage() {
             }}
             aria-hidden="true"
           >
-            <i style={{ display: 'block', width: '44px', height: '32px', background: 'linear-gradient(120deg, var(--pink), var(--blue))', opacity: 0.65, borderRadius: '2px' }}></i>
-            <i style={{ display: 'block', width: '44px', height: '32px', background: 'linear-gradient(120deg, var(--pink), var(--blue))', opacity: 0.45, borderRadius: '2px' }}></i>
-            <i style={{ display: 'block', width: '44px', height: '32px', background: 'linear-gradient(120deg, var(--pink), var(--blue))', opacity: 0.55, borderRadius: '2px' }}></i>
-            <i style={{ display: 'block', width: '44px', height: '32px', background: 'linear-gradient(120deg, var(--pink), var(--blue))', opacity: 0.35, borderRadius: '2px' }}></i>
+            <i
+              style={{
+                display: 'block',
+                width: '44px',
+                height: '32px',
+                background: 'linear-gradient(120deg, var(--pink), var(--blue))',
+                opacity: 0.65,
+                borderRadius: '2px',
+              }}
+            ></i>
+            <i
+              style={{
+                display: 'block',
+                width: '44px',
+                height: '32px',
+                background: 'linear-gradient(120deg, var(--pink), var(--blue))',
+                opacity: 0.45,
+                borderRadius: '2px',
+              }}
+            ></i>
+            <i
+              style={{
+                display: 'block',
+                width: '44px',
+                height: '32px',
+                background: 'linear-gradient(120deg, var(--pink), var(--blue))',
+                opacity: 0.55,
+                borderRadius: '2px',
+              }}
+            ></i>
+            <i
+              style={{
+                display: 'block',
+                width: '44px',
+                height: '32px',
+                background: 'linear-gradient(120deg, var(--pink), var(--blue))',
+                opacity: 0.35,
+                borderRadius: '2px',
+              }}
+            ></i>
           </div>
         </Link>
 
@@ -278,7 +444,13 @@ export default function ActivityPage() {
           Games for two
         </span>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: '12px',
+          }}
+        >
           {[
             {
               href: '/quiz',
@@ -287,10 +459,24 @@ export default function ActivityPage() {
               desc: 'guess each other, score at the end',
               category: 'quizzes',
               icon: (
-                <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
-                  <path d="M10 7a3.5 3.5 0 013.6 3.6c0 2.6-3.6 3.4-3.6 6" stroke="#FF7BA3" strokeWidth="2.4" strokeLinecap="round" />
+                <svg
+                  viewBox="0 0 34 34"
+                  fill="none"
+                  style={{ width: '26px', height: '26px' }}
+                >
+                  <path
+                    d="M10 7a3.5 3.5 0 013.6 3.6c0 2.6-3.6 3.4-3.6 6"
+                    stroke="#FF7BA3"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                  />
                   <circle cx="10" cy="22" r="1.7" fill="#FF7BA3" />
-                  <path d="M24 28s-6-3.6-6-8.2a3 3 0 015.2-2.1 3 3 0 015.2 2.1C28.4 24.4 24 28 24 28z" stroke="#5FA0FF" strokeWidth="2.4" strokeLinejoin="round" />
+                  <path
+                    d="M24 28s-6-3.6-6-8.2a3 3 0 015.2-2.1 3 3 0 015.2 2.1C28.4 24.4 24 28 24 28z"
+                    stroke="#5FA0FF"
+                    strokeWidth="2.4"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               ),
             },
@@ -301,7 +487,14 @@ export default function ActivityPage() {
               desc: 'third-wheel host reacts & adapts questions',
               category: 'quizzes',
               icon: (
-                <span style={{ fontSize: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span
+                  style={{
+                    fontSize: '26px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
                   🎙️
                 </span>
               ),
@@ -313,14 +506,37 @@ export default function ActivityPage() {
               desc: 'lose the minigame, pick your fate',
               category: 'duels',
               icon: (
-                <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
-                  <rect x="4" y="10" width="17" height="17" rx="3" stroke="#17181C" strokeWidth="2.4" />
+                <svg
+                  viewBox="0 0 34 34"
+                  fill="none"
+                  style={{ width: '26px', height: '26px' }}
+                >
+                  <rect
+                    x="4"
+                    y="10"
+                    width="17"
+                    height="17"
+                    rx="3"
+                    stroke="#17181C"
+                    strokeWidth="2.4"
+                  />
                   <circle cx="9.5" cy="15.5" r="1.6" fill="#5FA0FF" />
                   <circle cx="15.5" cy="15.5" r="1.6" fill="#5FA0FF" />
                   <circle cx="9.5" cy="21.5" r="1.6" fill="#5FA0FF" />
                   <circle cx="15.5" cy="21.5" r="1.6" fill="#5FA0FF" />
-                  <path d="M25 15s-5-3.2-5-6.4a2.6 2.6 0 014.5-1.8A2.6 2.6 0 0129 8.6C29 11.8 25 15 25 15z" stroke="#FF7BA3" strokeWidth="2.4" strokeLinejoin="round" />
-                  <path d="M24 19l2 3.2-3.2 1 2 3.2" stroke="#FF7BA3" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path
+                    d="M25 15s-5-3.2-5-6.4a2.6 2.6 0 014.5-1.8A2.6 2.6 0 0129 8.6C29 11.8 25 15 25 15z"
+                    stroke="#FF7BA3"
+                    strokeWidth="2.4"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M24 19l2 3.2-3.2 1 2 3.2"
+                    stroke="#FF7BA3"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               ),
             },
@@ -331,10 +547,37 @@ export default function ActivityPage() {
               desc: 'the questions you keep avoiding',
               category: 'quizzes',
               icon: (
-                <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
-                  <rect x="4" y="8" width="14" height="20" rx="2.5" transform="rotate(-8 4 8)" stroke="#5FA0FF" strokeWidth="2.4" />
-                  <rect x="13" y="6" width="15" height="21" rx="2.5" fill="#fff" stroke="#17181C" strokeWidth="2.4" />
-                  <path d="M20.5 20s-4.5-2.7-4.5-5.6a2.2 2.2 0 013.8-1.5 2.2 2.2 0 013.8 1.5c0 2.9-3.1 5.6-3.1 5.6z" stroke="#FF7BA3" strokeWidth="2.4" strokeLinejoin="round" />
+                <svg
+                  viewBox="0 0 34 34"
+                  fill="none"
+                  style={{ width: '26px', height: '26px' }}
+                >
+                  <rect
+                    x="4"
+                    y="8"
+                    width="14"
+                    height="20"
+                    rx="2.5"
+                    transform="rotate(-8 4 8)"
+                    stroke="#5FA0FF"
+                    strokeWidth="2.4"
+                  />
+                  <rect
+                    x="13"
+                    y="6"
+                    width="15"
+                    height="21"
+                    rx="2.5"
+                    fill="#fff"
+                    stroke="#17181C"
+                    strokeWidth="2.4"
+                  />
+                  <path
+                    d="M20.5 20s-4.5-2.7-4.5-5.6a2.2 2.2 0 013.8-1.5 2.2 2.2 0 013.8 1.5c0 2.9-3.1 5.6-3.1 5.6z"
+                    stroke="#FF7BA3"
+                    strokeWidth="2.4"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               ),
             },
@@ -345,11 +588,44 @@ export default function ActivityPage() {
               desc: 'same questions, head to head',
               category: 'duels',
               icon: (
-                <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
-                  <rect x="4" y="4" width="11" height="11" rx="2" stroke="#FF7BA3" strokeWidth="2.4" />
-                  <rect x="19" y="4" width="11" height="11" rx="2" stroke="#5FA0FF" strokeWidth="2.4" />
-                  <rect x="4" y="19" width="11" height="11" rx="2" stroke="#5FA0FF" strokeWidth="2.4" />
-                  <path d="M21 24.5h7M24.5 21v7" stroke="#FF7BA3" strokeWidth="2.4" strokeLinecap="round" />
+                <svg
+                  viewBox="0 0 34 34"
+                  fill="none"
+                  style={{ width: '26px', height: '26px' }}
+                >
+                  <rect
+                    x="4"
+                    y="4"
+                    width="11"
+                    height="11"
+                    rx="2"
+                    stroke="#FF7BA3"
+                    strokeWidth="2.4"
+                  />
+                  <rect
+                    x="19"
+                    y="4"
+                    width="11"
+                    height="11"
+                    rx="2"
+                    stroke="#5FA0FF"
+                    strokeWidth="2.4"
+                  />
+                  <rect
+                    x="4"
+                    y="19"
+                    width="11"
+                    height="11"
+                    rx="2"
+                    stroke="#5FA0FF"
+                    strokeWidth="2.4"
+                  />
+                  <path
+                    d="M21 24.5h7M24.5 21v7"
+                    stroke="#FF7BA3"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                  />
                 </svg>
               ),
             },
@@ -360,10 +636,24 @@ export default function ActivityPage() {
               desc: 'famous riddles, talk it out',
               category: 'duels',
               icon: (
-                <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
-                  <path d="M13 5a6 6 0 016.2 6.2c0 4.4-6.2 5.8-6.2 10.2" stroke="#FF7BA3" strokeWidth="2.4" strokeLinecap="round" />
+                <svg
+                  viewBox="0 0 34 34"
+                  fill="none"
+                  style={{ width: '26px', height: '26px' }}
+                >
+                  <path
+                    d="M13 5a6 6 0 016.2 6.2c0 4.4-6.2 5.8-6.2 10.2"
+                    stroke="#FF7BA3"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                  />
                   <circle cx="13" cy="27" r="2" fill="#FF7BA3" />
-                  <path d="M24 16l2 4.2 4.6.6-3.4 3.2.9 4.6L24 26.4l-4.1 2.2.9-4.6-3.4-3.2 4.6-.6z" stroke="#5FA0FF" strokeWidth="2.4" strokeLinejoin="round" />
+                  <path
+                    d="M24 16l2 4.2 4.6.6-3.4 3.2.9 4.6L24 26.4l-4.1 2.2.9-4.6-3.4-3.2 4.6-.6z"
+                    stroke="#5FA0FF"
+                    strokeWidth="2.4"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               ),
             },
@@ -374,9 +664,23 @@ export default function ActivityPage() {
               desc: 'math & science, versus or co-op',
               category: 'duels',
               icon: (
-                <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
-                  <path d="M14 5h6M15 5v8l7 12a2.5 2.5 0 01-2.2 3.8H11.2A2.5 2.5 0 019 25l7-12V5" stroke="#17181C" strokeWidth="2.4" strokeLinejoin="round" />
-                  <path d="M12 21h10" stroke="#5FA0FF" strokeWidth="2.4" strokeLinecap="round" />
+                <svg
+                  viewBox="0 0 34 34"
+                  fill="none"
+                  style={{ width: '26px', height: '26px' }}
+                >
+                  <path
+                    d="M14 5h6M15 5v8l7 12a2.5 2.5 0 01-2.2 3.8H11.2A2.5 2.5 0 019 25l7-12V5"
+                    stroke="#17181C"
+                    strokeWidth="2.4"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M12 21h10"
+                    stroke="#5FA0FF"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                  />
                   <circle cx="15" cy="24.5" r="1.4" fill="#FF7BA3" />
                   <circle cx="19" cy="25.5" r="1.1" fill="#FF7BA3" />
                 </svg>
@@ -388,13 +692,41 @@ export default function ActivityPage() {
               desc: 'tiny retro tap games',
               category: 'duels',
               icon: (
-                <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
-                  <rect x="4" y="7" width="26" height="17" rx="3" stroke="#17181C" strokeWidth="2.4" />
-                  <circle cx="11" cy="15" r="3" stroke="#FF7BA3" strokeWidth="2.4" />
-                  <path d="M11 12v-4" stroke="#FF7BA3" strokeWidth="2.4" strokeLinecap="round" />
+                <svg
+                  viewBox="0 0 34 34"
+                  fill="none"
+                  style={{ width: '26px', height: '26px' }}
+                >
+                  <rect
+                    x="4"
+                    y="7"
+                    width="26"
+                    height="17"
+                    rx="3"
+                    stroke="#17181C"
+                    strokeWidth="2.4"
+                  />
+                  <circle
+                    cx="11"
+                    cy="15"
+                    r="3"
+                    stroke="#FF7BA3"
+                    strokeWidth="2.4"
+                  />
+                  <path
+                    d="M11 12v-4"
+                    stroke="#FF7BA3"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                  />
                   <circle cx="22" cy="14" r="1.6" fill="#5FA0FF" />
                   <circle cx="26" cy="17" r="1.6" fill="#5FA0FF" />
-                  <path d="M11 28h12" stroke="#17181C" strokeWidth="2.4" strokeLinecap="round" />
+                  <path
+                    d="M11 28h12"
+                    stroke="#17181C"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                  />
                 </svg>
               ),
             },
@@ -404,11 +736,41 @@ export default function ActivityPage() {
               desc: 'argue it out, AI judges',
               category: 'duels',
               icon: (
-                <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
-                  <rect x="3" y="5" width="17" height="13" rx="3" stroke="#FF7BA3" strokeWidth="2.4" />
-                  <path d="M9 18l-2 4 5-2" stroke="#FF7BA3" strokeWidth="2.4" strokeLinejoin="round" />
-                  <rect x="14" y="14" width="17" height="13" rx="3" stroke="#5FA0FF" strokeWidth="2.4" />
-                  <path d="M25 27l2 4-5-2" stroke="#5FA0FF" strokeWidth="2.4" strokeLinejoin="round" />
+                <svg
+                  viewBox="0 0 34 34"
+                  fill="none"
+                  style={{ width: '26px', height: '26px' }}
+                >
+                  <rect
+                    x="3"
+                    y="5"
+                    width="17"
+                    height="13"
+                    rx="3"
+                    stroke="#FF7BA3"
+                    strokeWidth="2.4"
+                  />
+                  <path
+                    d="M9 18l-2 4 5-2"
+                    stroke="#FF7BA3"
+                    strokeWidth="2.4"
+                    strokeLinejoin="round"
+                  />
+                  <rect
+                    x="14"
+                    y="14"
+                    width="17"
+                    height="13"
+                    rx="3"
+                    stroke="#5FA0FF"
+                    strokeWidth="2.4"
+                  />
+                  <path
+                    d="M25 27l2 4-5-2"
+                    stroke="#5FA0FF"
+                    strokeWidth="2.4"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               ),
             },
@@ -418,10 +780,32 @@ export default function ActivityPage() {
               desc: 'same prompt, two canvases',
               category: 'keepsakes',
               icon: (
-                <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
-                  <rect x="4" y="4" width="26" height="26" rx="3" stroke="#17181C" strokeWidth="2.4" />
-                  <path d="M22 8l4 4-12 12-4 1 1-4z" stroke="#FF7BA3" strokeWidth="2.4" strokeLinejoin="round" />
-                  <path d="M7 27c3-5 6 1 9-3" stroke="#5FA0FF" strokeWidth="2.4" strokeLinecap="round" />
+                <svg
+                  viewBox="0 0 34 34"
+                  fill="none"
+                  style={{ width: '26px', height: '26px' }}
+                >
+                  <rect
+                    x="4"
+                    y="4"
+                    width="26"
+                    height="26"
+                    rx="3"
+                    stroke="#17181C"
+                    strokeWidth="2.4"
+                  />
+                  <path
+                    d="M22 8l4 4-12 12-4 1 1-4z"
+                    stroke="#FF7BA3"
+                    strokeWidth="2.4"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M7 27c3-5 6 1 9-3"
+                    stroke="#5FA0FF"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                  />
                 </svg>
               ),
             },
@@ -431,12 +815,41 @@ export default function ActivityPage() {
               desc: 'plead your case, get a verdict',
               category: 'duels',
               icon: (
-                <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
-                  <path d="M17 5v22" stroke="#17181C" strokeWidth="2.4" strokeLinecap="round" />
-                  <path d="M6 12h22" stroke="#17181C" strokeWidth="2.4" strokeLinecap="round" />
-                  <path d="M6 12l-3 7h6z" stroke="#FF7BA3" strokeWidth="2.4" strokeLinejoin="round" />
-                  <path d="M28 12l-3 7h6z" stroke="#5FA0FF" strokeWidth="2.4" strokeLinejoin="round" />
-                  <path d="M12 29h10" stroke="#17181C" strokeWidth="2.4" strokeLinecap="round" />
+                <svg
+                  viewBox="0 0 34 34"
+                  fill="none"
+                  style={{ width: '26px', height: '26px' }}
+                >
+                  <path
+                    d="M17 5v22"
+                    stroke="#17181C"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M6 12h22"
+                    stroke="#17181C"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M6 12l-3 7h6z"
+                    stroke="#FF7BA3"
+                    strokeWidth="2.4"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M28 12l-3 7h6z"
+                    stroke="#5FA0FF"
+                    strokeWidth="2.4"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M12 29h10"
+                    stroke="#17181C"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                  />
                 </svg>
               ),
             },
@@ -447,7 +860,14 @@ export default function ActivityPage() {
               desc: 'daily romantic weather & keepsake card',
               category: 'travel',
               icon: (
-                <span style={{ fontSize: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span
+                  style={{
+                    fontSize: '26px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
                   🌦️
                 </span>
               ),
@@ -458,10 +878,30 @@ export default function ActivityPage() {
               desc: 'race to find it, snap it',
               category: 'duels',
               icon: (
-                <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
-                  <circle cx="15" cy="15" r="9" stroke="#FF7BA3" strokeWidth="2.4" />
-                  <path d="M21.5 21.5l7 7" stroke="#5FA0FF" strokeWidth="2.4" strokeLinecap="round" />
-                  <path d="M15 11v8M11 15h8" stroke="#5FA0FF" strokeWidth="2.4" strokeLinecap="round" />
+                <svg
+                  viewBox="0 0 34 34"
+                  fill="none"
+                  style={{ width: '26px', height: '26px' }}
+                >
+                  <circle
+                    cx="15"
+                    cy="15"
+                    r="9"
+                    stroke="#FF7BA3"
+                    strokeWidth="2.4"
+                  />
+                  <path
+                    d="M21.5 21.5l7 7"
+                    stroke="#5FA0FF"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M15 11v8M11 15h8"
+                    stroke="#5FA0FF"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                  />
                 </svg>
               ),
             },
@@ -472,10 +912,32 @@ export default function ActivityPage() {
               desc: 'same personality test, one score',
               category: 'quizzes',
               icon: (
-                <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
-                  <path d="M13 25S4 19.4 4 13.6A4.2 4.2 0 0111.6 11" stroke="#FF7BA3" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M21 25s9-5.6 9-11.4A4.2 4.2 0 0022.4 11" stroke="#5FA0FF" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M12 17h3l2-3 3 6 2-3h3" stroke="#17181C" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                <svg
+                  viewBox="0 0 34 34"
+                  fill="none"
+                  style={{ width: '26px', height: '26px' }}
+                >
+                  <path
+                    d="M13 25S4 19.4 4 13.6A4.2 4.2 0 0111.6 11"
+                    stroke="#FF7BA3"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M21 25s9-5.6 9-11.4A4.2 4.2 0 0022.4 11"
+                    stroke="#5FA0FF"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M12 17h3l2-3 3 6 2-3h3"
+                    stroke="#17181C"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               ),
             },
@@ -486,11 +948,36 @@ export default function ActivityPage() {
               desc: 'design it together — vision board',
               category: 'keepsakes',
               icon: (
-                <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
-                  <circle cx="17" cy="19" r="6" stroke="#FF7BA3" strokeWidth="2.4" />
-                  <path d="M4 25h26" stroke="#17181C" strokeWidth="2.4" strokeLinecap="round" />
-                  <path d="M17 7v3M7 11l2 2M27 11l-2 2" stroke="#5FA0FF" strokeWidth="2.4" strokeLinecap="round" />
-                  <path d="M9 29h16" stroke="#5FA0FF" strokeWidth="2.4" strokeLinecap="round" />
+                <svg
+                  viewBox="0 0 34 34"
+                  fill="none"
+                  style={{ width: '26px', height: '26px' }}
+                >
+                  <circle
+                    cx="17"
+                    cy="19"
+                    r="6"
+                    stroke="#FF7BA3"
+                    strokeWidth="2.4"
+                  />
+                  <path
+                    d="M4 25h26"
+                    stroke="#17181C"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M17 7v3M7 11l2 2M27 11l-2 2"
+                    stroke="#5FA0FF"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M9 29h16"
+                    stroke="#5FA0FF"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                  />
                 </svg>
               ),
             },
@@ -501,16 +988,45 @@ export default function ActivityPage() {
               desc: 'gift page sealed in heart QR',
               category: 'keepsakes',
               icon: (
-                <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
-                  <rect x="6" y="14" width="22" height="14" rx="2" stroke="#17181C" strokeWidth="2.4" />
-                  <rect x="4" y="9" width="26" height="5" rx="1.5" stroke="#17181C" strokeWidth="2.4" />
+                <svg
+                  viewBox="0 0 34 34"
+                  fill="none"
+                  style={{ width: '26px', height: '26px' }}
+                >
+                  <rect
+                    x="6"
+                    y="14"
+                    width="22"
+                    height="14"
+                    rx="2"
+                    stroke="#17181C"
+                    strokeWidth="2.4"
+                  />
+                  <rect
+                    x="4"
+                    y="9"
+                    width="26"
+                    height="5"
+                    rx="1.5"
+                    stroke="#17181C"
+                    strokeWidth="2.4"
+                  />
                   <path d="M17 9v19" stroke="#FF7BA3" strokeWidth="2.4" />
-                  <path d="M17 9c-4.5 0-6.5-5-3-5 2 0 3 2.5 3 5zm0 0c4.5 0 6.5-5 3-5-2 0-3 2.5-3 5z" stroke="#FF7BA3" strokeWidth="2.4" strokeLinejoin="round" />
+                  <path
+                    d="M17 9c-4.5 0-6.5-5-3-5 2 0 3 2.5 3 5zm0 0c4.5 0 6.5-5 3-5-2 0-3 2.5-3 5z"
+                    stroke="#FF7BA3"
+                    strokeWidth="2.4"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               ),
             },
           ]
-            .filter((card) => selectedCategory === 'all' || card.category === selectedCategory)
+            .filter(
+              (card) =>
+                selectedCategory === 'all' ||
+                card.category === selectedCategory,
+            )
             .map((card, idx) => (
               <Link
                 key={idx}
@@ -552,20 +1068,30 @@ export default function ActivityPage() {
                         padding: '2px 6px',
                         borderRadius: '4px',
                         color: '#fff',
-                        background: 'linear-gradient(100deg, var(--pink), var(--blue))',
+                        background:
+                          'linear-gradient(100deg, var(--pink), var(--blue))',
                       }}
                     >
                       {card.badge}
                     </span>
                   )}
                 </h3>
-                <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--ink-soft)' }}>{card.desc}</p>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: '12.5px',
+                    color: 'var(--ink-soft)',
+                  }}
+                >
+                  {card.desc}
+                </p>
               </Link>
             ))}
         </div>
 
         {/* Section: More */}
-        {(selectedCategory === 'all' || ['keepsakes', 'duels', 'travel'].includes(selectedCategory)) && (
+        {(selectedCategory === 'all' ||
+          ['keepsakes', 'duels', 'travel'].includes(selectedCategory)) && (
           <>
             <span
               style={{
@@ -591,11 +1117,41 @@ export default function ActivityPage() {
                   category: 'keepsakes',
                   desc: 'your photobooth strips on paper — tape them down, write notes',
                   icon: (
-                    <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
-                      <rect x="5" y="5" width="24" height="24" rx="2" stroke="#17181C" strokeWidth="2.4" />
-                      <path d="M11 3v5" stroke="#FF7BA3" strokeWidth="2.4" strokeLinecap="round" />
-                      <rect x="10" y="11" width="7" height="11" rx="1" stroke="#5FA0FF" strokeWidth="2.4" />
-                      <path d="M20 14h5M20 19h4M20 24h6" stroke="#FF7BA3" strokeWidth="2.4" strokeLinecap="round" />
+                    <svg
+                      viewBox="0 0 34 34"
+                      fill="none"
+                      style={{ width: '26px', height: '26px' }}
+                    >
+                      <rect
+                        x="5"
+                        y="5"
+                        width="24"
+                        height="24"
+                        rx="2"
+                        stroke="#17181C"
+                        strokeWidth="2.4"
+                      />
+                      <path
+                        d="M11 3v5"
+                        stroke="#FF7BA3"
+                        strokeWidth="2.4"
+                        strokeLinecap="round"
+                      />
+                      <rect
+                        x="10"
+                        y="11"
+                        width="7"
+                        height="11"
+                        rx="1"
+                        stroke="#5FA0FF"
+                        strokeWidth="2.4"
+                      />
+                      <path
+                        d="M20 14h5M20 19h4M20 24h6"
+                        stroke="#FF7BA3"
+                        strokeWidth="2.4"
+                        strokeLinecap="round"
+                      />
                     </svg>
                   ),
                 },
@@ -606,11 +1162,40 @@ export default function ActivityPage() {
                   category: 'keepsakes',
                   desc: 'write now, delivered years from now to both of you',
                   icon: (
-                    <svg viewBox="0 0 34 34" fill="none" style={{ width: '26px', height: '26px' }}>
-                      <rect x="4" y="8" width="26" height="18" rx="2" stroke="#17181C" strokeWidth="2.4" />
-                      <path d="M4 10l13 9 13-9" stroke="#5FA0FF" strokeWidth="2.4" strokeLinejoin="round" />
-                      <circle cx="27" cy="8" r="4.5" fill="#FFF" stroke="#FF7BA3" strokeWidth="2.2" />
-                      <path d="M27 6v2.2l1.5 1" stroke="#FF7BA3" strokeWidth="2" strokeLinecap="round" />
+                    <svg
+                      viewBox="0 0 34 34"
+                      fill="none"
+                      style={{ width: '26px', height: '26px' }}
+                    >
+                      <rect
+                        x="4"
+                        y="8"
+                        width="26"
+                        height="18"
+                        rx="2"
+                        stroke="#17181C"
+                        strokeWidth="2.4"
+                      />
+                      <path
+                        d="M4 10l13 9 13-9"
+                        stroke="#5FA0FF"
+                        strokeWidth="2.4"
+                        strokeLinejoin="round"
+                      />
+                      <circle
+                        cx="27"
+                        cy="8"
+                        r="4.5"
+                        fill="#FFF"
+                        stroke="#FF7BA3"
+                        strokeWidth="2.2"
+                      />
+                      <path
+                        d="M27 6v2.2l1.5 1"
+                        stroke="#FF7BA3"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      />
                     </svg>
                   ),
                 },
@@ -655,7 +1240,11 @@ export default function ActivityPage() {
                   icon: <span style={{ fontSize: '24px' }}>🌙</span>,
                 },
               ]
-                .filter((item) => selectedCategory === 'all' || item.category === selectedCategory)
+                .filter(
+                  (item) =>
+                    selectedCategory === 'all' ||
+                    item.category === selectedCategory,
+                )
                 .map((item, idx) => (
                   <Link
                     key={idx}
@@ -684,8 +1273,16 @@ export default function ActivityPage() {
                     >
                       {item.icon}
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                      <h3 style={{ fontSize: '16px', fontWeight: 800, margin: 0 }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '2px',
+                      }}
+                    >
+                      <h3
+                        style={{ fontSize: '16px', fontWeight: 800, margin: 0 }}
+                      >
                         {item.title}{' '}
                         {item.badge && (
                           <span
@@ -695,16 +1292,33 @@ export default function ActivityPage() {
                               padding: '2px 6px',
                               borderRadius: '4px',
                               color: '#fff',
-                              background: 'linear-gradient(100deg, var(--pink), var(--blue))',
+                              background:
+                                'linear-gradient(100deg, var(--pink), var(--blue))',
                             }}
                           >
                             {item.badge}
                           </span>
                         )}
                       </h3>
-                      <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--ink-soft)' }}>{item.desc}</p>
+                      <p
+                        style={{
+                          margin: 0,
+                          fontSize: '12.5px',
+                          color: 'var(--ink-soft)',
+                        }}
+                      >
+                        {item.desc}
+                      </p>
                     </div>
-                    <span style={{ marginLeft: 'auto', fontSize: '18px', color: 'var(--ink-soft)' }}>▷</span>
+                    <span
+                      style={{
+                        marginLeft: 'auto',
+                        fontSize: '18px',
+                        color: 'var(--ink-soft)',
+                      }}
+                    >
+                      ▷
+                    </span>
                   </Link>
                 ))}
             </div>
@@ -712,7 +1326,15 @@ export default function ActivityPage() {
         )}
 
         {/* Footer info */}
-        <div style={{ textAlign: 'center', color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)', fontSize: '12px', marginTop: '20px' }}>
+        <div
+          style={{
+            textAlign: 'center',
+            color: 'var(--ink-soft)',
+            fontFamily: 'var(--font-mono)',
+            fontSize: '12px',
+            marginTop: '20px',
+          }}
+        >
           <Link href="/" style={{ textDecoration: 'underline' }}>
             ← back to home
           </Link>{' '}

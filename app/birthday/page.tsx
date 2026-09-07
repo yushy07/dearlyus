@@ -9,7 +9,9 @@ import { QRCodeSVG } from '@/lib/qrcode';
 export default function BirthdayPage() {
   const { partnerA, partnerB } = useCoupleProfile();
   const [partnerName, setPartnerName] = useState(partnerB);
-  const [customMsg, setCustomMsg] = useState('Happy Birthday my love! Even with miles between us, you are the closest thing to my heart.');
+  const [customMsg, setCustomMsg] = useState(
+    'Happy Birthday my love! Even with miles between us, you are the closest thing to my heart.',
+  );
   const [revealed, setRevealed] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -19,7 +21,10 @@ export default function BirthdayPage() {
 
   const copyLink = async () => {
     try {
-      const url = typeof window !== 'undefined' ? window.location.href : 'http://localhost:3000/birthday';
+      const url =
+        typeof window !== 'undefined'
+          ? window.location.href
+          : 'http://localhost:3000/birthday';
       await navigator.clipboard.writeText(url);
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
@@ -29,7 +34,13 @@ export default function BirthdayPage() {
   };
 
   return (
-    <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px' }}>
+    <div
+      style={{
+        background: 'var(--paper)',
+        minHeight: '100vh',
+        paddingBottom: '80px',
+      }}
+    >
       <header className="bar">
         <div className="wrap">
           <Link className="brand" href="/">
@@ -48,11 +59,15 @@ export default function BirthdayPage() {
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '720px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <CoupleNameBar />
-          <h1 style={{ fontSize: 'clamp(28px, 4vw, 42px)', marginBottom: '10px' }}>
-            A personalized gift page, <span className="grad">made for them</span>.
+          <h1
+            style={{ fontSize: 'clamp(28px, 4vw, 42px)', marginBottom: '10px' }}
+          >
+            A personalized gift page,{' '}
+            <span className="grad">made for them</span>.
           </h1>
           <p style={{ color: 'var(--ink-soft)', fontSize: '16px' }}>
-            Generate a romantic birthday landing page with photo strips, music, and a scannable heart QR code.
+            Generate a romantic birthday landing page with photo strips, music,
+            and a scannable heart QR code.
           </p>
         </div>
 
@@ -68,7 +83,15 @@ export default function BirthdayPage() {
           {!revealed ? (
             <div style={{ display: 'grid', gap: '20px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    marginBottom: '6px',
+                  }}
+                >
                   Birthday Person&apos;s Name:
                 </label>
                 <input
@@ -86,7 +109,15 @@ export default function BirthdayPage() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    marginBottom: '6px',
+                  }}
+                >
                   Birthday Wish Message:
                 </label>
                 <textarea
@@ -104,17 +135,33 @@ export default function BirthdayPage() {
                 />
               </div>
 
-              <button className="btn btn-grad" onClick={() => setRevealed(true)} style={{ justifyContent: 'center', padding: '14px' }}>
+              <button
+                className="btn btn-grad"
+                onClick={() => setRevealed(true)}
+                style={{ justifyContent: 'center', padding: '14px' }}
+              >
                 Generate Birthday Page &amp; QR Code 🎂
               </button>
             </div>
           ) : (
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '48px', marginBottom: '8px' }}>🎂✨🎉</div>
-              <h2 style={{ fontSize: '32px', fontWeight: 800, margin: '10px 0' }}>
+              <div style={{ fontSize: '48px', marginBottom: '8px' }}>
+                🎂✨🎉
+              </div>
+              <h2
+                style={{ fontSize: '32px', fontWeight: 800, margin: '10px 0' }}
+              >
                 Happy Birthday, {partnerName}!
               </h2>
-              <p style={{ fontSize: '17px', color: '#3A3B45', lineHeight: 1.6, maxWidth: '44ch', margin: '0 auto 28px' }}>
+              <p
+                style={{
+                  fontSize: '17px',
+                  color: '#3A3B45',
+                  lineHeight: 1.6,
+                  maxWidth: '44ch',
+                  margin: '0 auto 28px',
+                }}
+              >
                 &ldquo;{customMsg}&rdquo;
               </p>
 
@@ -134,21 +181,42 @@ export default function BirthdayPage() {
                 }}
               >
                 <QRCodeSVG
-                  text={typeof window !== 'undefined' ? window.location.href : 'http://localhost:3000/birthday'}
+                  text={
+                    typeof window !== 'undefined'
+                      ? window.location.href
+                      : 'http://localhost:3000/birthday'
+                  }
                   size={140}
                   fgColor="#E11D48"
                   bgColor="#FFFFFF"
                 />
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--pink)', fontWeight: 700, marginTop: '8px' }}>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '10px',
+                    color: 'var(--pink)',
+                    fontWeight: 700,
+                    marginTop: '8px',
+                  }}
+                >
                   SCAN WITH CAMERA
                 </span>
               </div>
 
-              <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '12px',
+                  justifyContent: 'center',
+                }}
+              >
                 <button className="btn btn-primary" onClick={copyLink}>
                   {copied ? '✓ Link Copied!' : 'Copy Gift Link 🔗'}
                 </button>
-                <button className="btn btn-ghost" onClick={() => setRevealed(false)}>
+                <button
+                  className="btn btn-ghost"
+                  onClick={() => setRevealed(false)}
+                >
                   Edit Message ✏️
                 </button>
               </div>

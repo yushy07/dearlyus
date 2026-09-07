@@ -12,9 +12,12 @@ export function useAiConsent() {
 
   useEffect(() => {
     const persisted = preferences?.aiConsent;
-    setHasAiConsent(persisted ?? localStorage.getItem(AI_CONSENT_KEY) === 'true');
+    setHasAiConsent(
+      persisted ?? localStorage.getItem(AI_CONSENT_KEY) === 'true',
+    );
     setIsLoaded(true);
-    const syncConsent = () => setHasAiConsent(localStorage.getItem(AI_CONSENT_KEY) === 'true');
+    const syncConsent = () =>
+      setHasAiConsent(localStorage.getItem(AI_CONSENT_KEY) === 'true');
     window.addEventListener('dearly_ai_consent_changed', syncConsent);
     window.addEventListener('storage', syncConsent);
     return () => {

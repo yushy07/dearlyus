@@ -64,7 +64,8 @@ export function ReactionBursts() {
     // 2. 14 Radial 3D Orbiting Sprites exploding in a 360-degree cone towards viewer
     const spriteCount = 14;
     for (let i = 0; i < spriteCount; i++) {
-      const angle = (i / spriteCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
+      const angle =
+        (i / spriteCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
       const distance = Math.random() * 260 + 140;
 
       // Mix in matching secondary sparkle icons
@@ -120,8 +121,14 @@ export function ReactionBursts() {
     const isInteractive = (target: EventTarget | null) => {
       if (!target || !(target instanceof HTMLElement)) return false;
       const tag = target.tagName.toUpperCase();
-      if (['BUTTON', 'INPUT', 'TEXTAREA', 'SELECT', 'A'].includes(tag)) return true;
-      if (target.closest('button, input, textarea, select, a, [role="button"], .no-heart-burst')) return true;
+      if (['BUTTON', 'INPUT', 'TEXTAREA', 'SELECT', 'A'].includes(tag))
+        return true;
+      if (
+        target.closest(
+          'button, input, textarea, select, a, [role="button"], .no-heart-burst',
+        )
+      )
+        return true;
       return false;
     };
 
@@ -156,7 +163,9 @@ export function ReactionBursts() {
   useEffect(() => {
     if (particles.length === 0) return;
     const timer = setTimeout(() => {
-      setParticles((prev) => prev.filter((p) => Date.now() - lastBurstTime < 2400));
+      setParticles((prev) =>
+        prev.filter((p) => Date.now() - lastBurstTime < 2400),
+      );
     }, 2200);
     return () => clearTimeout(timer);
   }, [particles, lastBurstTime]);
@@ -200,9 +209,15 @@ export function ReactionBursts() {
               ['--duration' as string]: `${p.durationMs}ms`,
             }}
           >
-            <span className="particle-3d-glyph particle-3d-glyph--back">{p.emoji}</span>
-            <span className="particle-3d-glyph particle-3d-glyph--middle">{p.emoji}</span>
-            <span className="particle-3d-glyph particle-3d-glyph--front">{p.emoji}</span>
+            <span className="particle-3d-glyph particle-3d-glyph--back">
+              {p.emoji}
+            </span>
+            <span className="particle-3d-glyph particle-3d-glyph--middle">
+              {p.emoji}
+            </span>
+            <span className="particle-3d-glyph particle-3d-glyph--front">
+              {p.emoji}
+            </span>
           </div>
         ))}
       </div>
@@ -248,11 +263,14 @@ export function ReactionBursts() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   cursor: 'pointer',
-                  transition: 'transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), background 0.15s ease',
+                  transition:
+                    'transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), background 0.15s ease',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'scale(1.4) translateZ(20px)';
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.16)';
+                  e.currentTarget.style.transform =
+                    'scale(1.4) translateZ(20px)';
+                  e.currentTarget.style.background =
+                    'rgba(255, 255, 255, 0.16)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'scale(1)';
@@ -282,7 +300,9 @@ export function ReactionBursts() {
               : 'rgba(16, 18, 24, 0.90)',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
-            border: isExpanded ? '1px solid #FFFFFF' : '1px solid rgba(255, 255, 255, 0.2)',
+            border: isExpanded
+              ? '1px solid #FFFFFF'
+              : '1px solid rgba(255, 255, 255, 0.2)',
             color: '#FFFFFF',
             fontSize: '18px',
             display: 'flex',
@@ -294,7 +314,11 @@ export function ReactionBursts() {
               : '0 8px 24px rgba(0, 0, 0, 0.35)',
             transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
           }}
-          title={isExpanded ? 'Hide reactions' : 'Send a flying reaction burst to your partner'}
+          title={
+            isExpanded
+              ? 'Hide reactions'
+              : 'Send a flying reaction burst to your partner'
+          }
           aria-label={isExpanded ? 'Hide reactions' : 'Send reaction'}
         >
           {isExpanded ? '✕' : '💖'}

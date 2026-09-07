@@ -14,23 +14,48 @@ interface MatchQuestion {
 
 const QUESTIONS: MatchQuestion[] = [
   {
-    title: 'How do you prefer to spend a Saturday evening together on FaceTime?',
+    title:
+      'How do you prefer to spend a Saturday evening together on FaceTime?',
     category: 'Vibe & Energy',
     options: [
-      { text: 'Deep uninterrupted conversation for hours with dim lighting', trait: 'Intimacy' },
-      { text: 'Playing games, laughing loud and being goofy', trait: 'Playfulness' },
-      { text: 'Co-working / reading in quiet, comforting presence', trait: 'Harmony' },
-      { text: 'Planning future trips, itineraries, and big dreams', trait: 'Ambition' },
+      {
+        text: 'Deep uninterrupted conversation for hours with dim lighting',
+        trait: 'Intimacy',
+      },
+      {
+        text: 'Playing games, laughing loud and being goofy',
+        trait: 'Playfulness',
+      },
+      {
+        text: 'Co-working / reading in quiet, comforting presence',
+        trait: 'Harmony',
+      },
+      {
+        text: 'Planning future trips, itineraries, and big dreams',
+        trait: 'Ambition',
+      },
     ],
   },
   {
     title: 'When you disagree, what is your instinctive approach?',
     category: 'Communication',
     options: [
-      { text: 'Talk it out immediately until everything is resolved', trait: 'Direct' },
-      { text: 'Take a short breath to reflect, then discuss calmly', trait: 'Measured' },
-      { text: 'Use gentle humor to diffuse tension first', trait: 'Playfulness' },
-      { text: 'Write a heartfelt note explaining your feelings', trait: 'Intimacy' },
+      {
+        text: 'Talk it out immediately until everything is resolved',
+        trait: 'Direct',
+      },
+      {
+        text: 'Take a short breath to reflect, then discuss calmly',
+        trait: 'Measured',
+      },
+      {
+        text: 'Use gentle humor to diffuse tension first',
+        trait: 'Playfulness',
+      },
+      {
+        text: 'Write a heartfelt note explaining your feelings',
+        trait: 'Intimacy',
+      },
     ],
   },
   {
@@ -38,19 +63,41 @@ const QUESTIONS: MatchQuestion[] = [
     category: 'Love Language',
     options: [
       { text: 'Falling asleep with the call on all night', trait: 'Intimacy' },
-      { text: 'Surprise food delivery or care packages in the mail', trait: 'Thoughtful' },
-      { text: 'Waking up to a long romantic morning voice memo', trait: 'Affirmation' },
-      { text: 'Having a countdown widget on both home screens', trait: 'Devotion' },
+      {
+        text: 'Surprise food delivery or care packages in the mail',
+        trait: 'Thoughtful',
+      },
+      {
+        text: 'Waking up to a long romantic morning voice memo',
+        trait: 'Affirmation',
+      },
+      {
+        text: 'Having a countdown widget on both home screens',
+        trait: 'Devotion',
+      },
     ],
   },
   {
-    title: 'What is your shared dream aesthetic for your first real apartment together?',
+    title:
+      'What is your shared dream aesthetic for your first real apartment together?',
     category: 'Future Vision',
     options: [
-      { text: 'Cozy plants, books, warm lamps, and espresso machine', trait: 'Cozy' },
-      { text: 'Modern minimalist, big windows, and sunset view', trait: 'Modern' },
-      { text: 'Artistic, colorful, full of travel souvenirs & prints', trait: 'Creative' },
-      { text: 'A big kitchen with a huge dining table for hosting', trait: 'Warmth' },
+      {
+        text: 'Cozy plants, books, warm lamps, and espresso machine',
+        trait: 'Cozy',
+      },
+      {
+        text: 'Modern minimalist, big windows, and sunset view',
+        trait: 'Modern',
+      },
+      {
+        text: 'Artistic, colorful, full of travel souvenirs & prints',
+        trait: 'Creative',
+      },
+      {
+        text: 'A big kitchen with a huge dining table for hosting',
+        trait: 'Warmth',
+      },
     ],
   },
 ];
@@ -63,7 +110,11 @@ export default function MatchPage() {
   const [activePartner, setActivePartner] = useState<1 | 2>(1);
   const [calculated, setCalculated] = useState(false);
   const [matchScore, setMatchScore] = useState(94);
-  const [subScores, setSubScores] = useState({ intimacy: 96, banter: 94, future: 95 });
+  const [subScores, setSubScores] = useState({
+    intimacy: 96,
+    banter: 94,
+    future: 95,
+  });
   const runtime = useActivityRuntime({
     sessionId: `mock-match-${roomCode || 'local'}`,
     activityType: 'match',
@@ -73,14 +124,23 @@ export default function MatchPage() {
   });
 
   useEffect(() => {
-    const snapshot = runtime.snapshot as { pairIndex?: number; score?: number; completed?: boolean };
-    if (typeof snapshot.pairIndex === 'number') setQIndex(Math.min(snapshot.pairIndex, QUESTIONS.length - 1));
-    if (typeof snapshot.score === 'number') setMatchScore(Math.min(100, 88 + snapshot.score * 3));
+    const snapshot = runtime.snapshot as {
+      pairIndex?: number;
+      score?: number;
+      completed?: boolean;
+    };
+    if (typeof snapshot.pairIndex === 'number')
+      setQIndex(Math.min(snapshot.pairIndex, QUESTIONS.length - 1));
+    if (typeof snapshot.score === 'number')
+      setMatchScore(Math.min(100, 88 + snapshot.score * 3));
     if (snapshot.completed) setCalculated(true);
   }, [runtime.snapshot]);
 
   const handlePick = (optionIndex: number) => {
-    void runtime.sendEvent('match_select', { optionIndex, partner: activePartner });
+    void runtime.sendEvent('match_select', {
+      optionIndex,
+      partner: activePartner,
+    });
     if (activePartner === 1) {
       setPartner1Picks([...partner1Picks, optionIndex]);
       if (qIndex + 1 < QUESTIONS.length) {
@@ -103,9 +163,20 @@ export default function MatchPage() {
         const finalScore = Math.min(100, 88 + matches * 3);
         void runtime.sendEvent('match_reveal', { isMatch: matches > 0 });
         void runtime.sendEvent('match_next', {});
-        const intimacy = Math.min(100, 90 + (partner1Picks[0] === nextPicks[0] ? 8 : 2) + (partner1Picks[2] === nextPicks[2] ? 2 : 0));
-        const banter = Math.min(100, 89 + (partner1Picks[1] === nextPicks[1] ? 8 : 3));
-        const future = Math.min(100, 91 + (partner1Picks[3] === nextPicks[3] ? 8 : 2));
+        const intimacy = Math.min(
+          100,
+          90 +
+            (partner1Picks[0] === nextPicks[0] ? 8 : 2) +
+            (partner1Picks[2] === nextPicks[2] ? 2 : 0),
+        );
+        const banter = Math.min(
+          100,
+          89 + (partner1Picks[1] === nextPicks[1] ? 8 : 3),
+        );
+        const future = Math.min(
+          100,
+          91 + (partner1Picks[3] === nextPicks[3] ? 8 : 2),
+        );
         setMatchScore(finalScore);
         setSubScores({ intimacy, banter, future });
         setCalculated(true);
@@ -114,7 +185,13 @@ export default function MatchPage() {
   };
 
   return (
-    <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px' }}>
+    <div
+      style={{
+        background: 'var(--paper)',
+        minHeight: '100vh',
+        paddingBottom: '80px',
+      }}
+    >
       <header className="bar">
         <div className="wrap">
           <Link className="brand" href="/">
@@ -133,11 +210,14 @@ export default function MatchPage() {
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '720px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <CoupleNameBar />
-          <h1 style={{ fontSize: 'clamp(28px, 4vw, 40px)', marginBottom: '10px' }}>
+          <h1
+            style={{ fontSize: 'clamp(28px, 4vw, 40px)', marginBottom: '10px' }}
+          >
             Calculate your <span className="grad">LDR synergy score</span>.
           </h1>
           <p style={{ color: 'var(--ink-soft)', fontSize: '16px' }}>
-            Answer 4 quick romance &amp; communication questions to discover your harmony profile.
+            Answer 4 quick romance &amp; communication questions to discover
+            your harmony profile.
           </p>
         </div>
 
@@ -151,7 +231,14 @@ export default function MatchPage() {
               boxShadow: 'var(--shadow-lg)',
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '20px',
+              }}
+            >
               <span
                 style={{
                   fontFamily: 'var(--font-mono)',
@@ -160,17 +247,39 @@ export default function MatchPage() {
                   color: activePartner === 1 ? 'var(--pink)' : 'var(--blue)',
                 }}
               >
-                {activePartner === 1 ? `🌸 ${partnerA} Answering` : `🔷 ${partnerB} Answering`}
+                {activePartner === 1
+                  ? `🌸 ${partnerA} Answering`
+                  : `🔷 ${partnerB} Answering`}
               </span>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--ink-soft)' }}>
+              <span
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '12px',
+                  color: 'var(--ink-soft)',
+                }}
+              >
                 Question {qIndex + 1} of {QUESTIONS.length}
               </span>
             </div>
 
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', textTransform: 'uppercase', color: 'var(--ink-soft)', marginBottom: '6px' }}>
+            <div
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '11px',
+                textTransform: 'uppercase',
+                color: 'var(--ink-soft)',
+                marginBottom: '6px',
+              }}
+            >
               {QUESTIONS[qIndex].category}
             </div>
-            <h2 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '24px' }}>
+            <h2
+              style={{
+                fontSize: '20px',
+                fontWeight: 800,
+                marginBottom: '24px',
+              }}
+            >
               {QUESTIONS[qIndex].title}
             </h2>
 
@@ -208,7 +317,13 @@ export default function MatchPage() {
             }}
           >
             <span style={{ fontSize: '52px' }}>✨</span>
-            <h2 style={{ fontSize: '32px', fontWeight: 800, margin: '14px 0 6px' }}>
+            <h2
+              style={{
+                fontSize: '32px',
+                fontWeight: 800,
+                margin: '14px 0 6px',
+              }}
+            >
               Electric Soul Connection
             </h2>
             <div
@@ -233,29 +348,97 @@ export default function MatchPage() {
                 textAlign: 'left',
               }}
             >
-              <div style={{ background: 'var(--paper)', padding: '14px', borderRadius: '10px', border: '1px solid var(--line)' }}>
-                <strong style={{ display: 'block', fontSize: '13px', color: 'var(--pink)' }}>Intimacy &amp; Care</strong>
-                <div style={{ fontSize: '20px', fontWeight: 800 }}>{subScores.intimacy}%</div>
-                <small style={{ color: 'var(--ink-soft)' }}>Exceptional warmth</small>
+              <div
+                style={{
+                  background: 'var(--paper)',
+                  padding: '14px',
+                  borderRadius: '10px',
+                  border: '1px solid var(--line)',
+                }}
+              >
+                <strong
+                  style={{
+                    display: 'block',
+                    fontSize: '13px',
+                    color: 'var(--pink)',
+                  }}
+                >
+                  Intimacy &amp; Care
+                </strong>
+                <div style={{ fontSize: '20px', fontWeight: 800 }}>
+                  {subScores.intimacy}%
+                </div>
+                <small style={{ color: 'var(--ink-soft)' }}>
+                  Exceptional warmth
+                </small>
               </div>
-              <div style={{ background: 'var(--paper)', padding: '14px', borderRadius: '10px', border: '1px solid var(--line)' }}>
-                <strong style={{ display: 'block', fontSize: '13px', color: 'var(--blue)' }}>Banter &amp; Play</strong>
-                <div style={{ fontSize: '20px', fontWeight: 800 }}>{subScores.banter}%</div>
-                <small style={{ color: 'var(--ink-soft)' }}>Endless laughter</small>
+              <div
+                style={{
+                  background: 'var(--paper)',
+                  padding: '14px',
+                  borderRadius: '10px',
+                  border: '1px solid var(--line)',
+                }}
+              >
+                <strong
+                  style={{
+                    display: 'block',
+                    fontSize: '13px',
+                    color: 'var(--blue)',
+                  }}
+                >
+                  Banter &amp; Play
+                </strong>
+                <div style={{ fontSize: '20px', fontWeight: 800 }}>
+                  {subScores.banter}%
+                </div>
+                <small style={{ color: 'var(--ink-soft)' }}>
+                  Endless laughter
+                </small>
               </div>
-              <div style={{ background: 'var(--paper)', padding: '14px', borderRadius: '10px', border: '1px solid var(--line)' }}>
-                <strong style={{ display: 'block', fontSize: '13px', color: '#7a4dd6' }}>Future Alignment</strong>
-                <div style={{ fontSize: '20px', fontWeight: 800 }}>{subScores.future}%</div>
-                <small style={{ color: 'var(--ink-soft)' }}>Shared life goals</small>
+              <div
+                style={{
+                  background: 'var(--paper)',
+                  padding: '14px',
+                  borderRadius: '10px',
+                  border: '1px solid var(--line)',
+                }}
+              >
+                <strong
+                  style={{
+                    display: 'block',
+                    fontSize: '13px',
+                    color: '#7a4dd6',
+                  }}
+                >
+                  Future Alignment
+                </strong>
+                <div style={{ fontSize: '20px', fontWeight: 800 }}>
+                  {subScores.future}%
+                </div>
+                <small style={{ color: 'var(--ink-soft)' }}>
+                  Shared life goals
+                </small>
               </div>
             </div>
 
-            <p style={{ color: 'var(--ink-soft)', fontSize: '15px', lineHeight: 1.6, maxWidth: '50ch', margin: '0 auto 28px' }}>
-              Your communication style handles distance gracefully. You both prioritize quality presence and reassurance,
-              making the separation feel small compared to your bond.
+            <p
+              style={{
+                color: 'var(--ink-soft)',
+                fontSize: '15px',
+                lineHeight: 1.6,
+                maxWidth: '50ch',
+                margin: '0 auto 28px',
+              }}
+            >
+              Your communication style handles distance gracefully. You both
+              prioritize quality presence and reassurance, making the separation
+              feel small compared to your bond.
             </p>
 
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+            <div
+              style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}
+            >
               <button
                 className="btn btn-grad"
                 onClick={() => {

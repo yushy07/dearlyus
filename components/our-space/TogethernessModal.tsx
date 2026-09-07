@@ -24,9 +24,12 @@ export function TogethernessModal({
   onSparkAwarded,
 }: TogethernessModalProps) {
   const router = useRouter();
-  const [selectedMode, setSelectedMode] = useState<TogethernessMode>('quick_spark');
+  const [selectedMode, setSelectedMode] =
+    useState<TogethernessMode>('quick_spark');
   const [quietMinutes, setQuietMinutes] = useState<15 | 30 | 45 | 60>(30);
-  const [quietAmbience, setQuietAmbience] = useState<'rain' | 'fire' | 'warm'>('warm');
+  const [quietAmbience, setQuietAmbience] = useState<'rain' | 'fire' | 'warm'>(
+    'warm',
+  );
   const [quietActive, setQuietActive] = useState(false);
   const [quietSecondsLeft, setQuietSecondsLeft] = useState(30 * 60);
 
@@ -153,7 +156,14 @@ export function TogethernessModal({
         }}
       >
         {/* Modal Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '20px',
+          }}
+        >
           <div>
             <span
               style={{
@@ -167,7 +177,15 @@ export function TogethernessModal({
             >
               Togetherness Modes
             </span>
-            <h2 id="togetherness-modal-title" style={{ fontFamily: 'var(--font-display)', fontSize: '24px', margin: '2px 0 0', color: 'var(--ink)' }}>
+            <h2
+              id="togetherness-modal-title"
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: '24px',
+                margin: '2px 0 0',
+                color: 'var(--ink)',
+              }}
+            >
               How do you two want to connect?
             </h2>
           </div>
@@ -212,16 +230,38 @@ export function TogethernessModal({
                   alignItems: 'center',
                   padding: '10px 6px',
                   borderRadius: '16px',
-                  border: isSelected ? '1.5px solid var(--pink)' : '1px solid var(--line)',
-                  background: isSelected ? 'rgba(255, 78, 120, 0.08)' : 'var(--paper-raised)',
+                  border: isSelected
+                    ? '1.5px solid var(--pink)'
+                    : '1px solid var(--line)',
+                  background: isSelected
+                    ? 'rgba(255, 78, 120, 0.08)'
+                    : 'var(--paper-raised)',
                   color: isSelected ? 'var(--pink)' : 'var(--ink)',
                   cursor: 'pointer',
                   transition: 'all 0.15s ease',
                 }}
               >
-                <span style={{ fontSize: '20px', marginBottom: '4px' }}>{mode.icon}</span>
-                <strong style={{ fontSize: '11px', textAlign: 'center', lineHeight: 1.2 }}>{mode.name}</strong>
-                <span style={{ fontSize: '9.5px', color: 'var(--ink-soft)', marginTop: '2px' }}>{mode.duration}</span>
+                <span style={{ fontSize: '20px', marginBottom: '4px' }}>
+                  {mode.icon}
+                </span>
+                <strong
+                  style={{
+                    fontSize: '11px',
+                    textAlign: 'center',
+                    lineHeight: 1.2,
+                  }}
+                >
+                  {mode.name}
+                </strong>
+                <span
+                  style={{
+                    fontSize: '9.5px',
+                    color: 'var(--ink-soft)',
+                    marginTop: '2px',
+                  }}
+                >
+                  {mode.duration}
+                </span>
               </button>
             );
           })}
@@ -231,18 +271,64 @@ export function TogethernessModal({
 
         {/* 1. Quick Spark */}
         {selectedMode === 'quick_spark' && (
-          <div style={{ background: 'var(--paper)', borderRadius: '20px', padding: '20px', border: '1px solid var(--line)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+          <div
+            style={{
+              background: 'var(--paper)',
+              borderRadius: '20px',
+              padding: '20px',
+              border: '1px solid var(--line)',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginBottom: '8px',
+              }}
+            >
               <span style={{ fontSize: '20px' }}>⚡</span>
-              <strong style={{ fontSize: '15px' }}>Quick Spark · 2-minute connection</strong>
+              <strong style={{ fontSize: '15px' }}>
+                Quick Spark · 2-minute connection
+              </strong>
             </div>
-            <p style={{ fontSize: '13px', color: 'var(--ink-soft)', margin: '0 0 16px' }}>
-              Designed for busy days across time zones. Exchange one tiny playful thought.
+            <p
+              style={{
+                fontSize: '13px',
+                color: 'var(--ink-soft)',
+                margin: '0 0 16px',
+              }}
+            >
+              Designed for busy days across time zones. Exchange one tiny
+              playful thought.
             </p>
 
-            <div style={{ background: '#FFFFFF', padding: '16px', borderRadius: '14px', border: '1px solid var(--line)', marginBottom: '14px' }}>
-              <span style={{ fontSize: '12px', color: 'var(--pink)', fontWeight: 700 }}>Prompt #{quickSparkQuestionIdx + 1}</span>
-              <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--ink)', margin: '6px 0 0' }}>
+            <div
+              style={{
+                background: '#FFFFFF',
+                padding: '16px',
+                borderRadius: '14px',
+                border: '1px solid var(--line)',
+                marginBottom: '14px',
+              }}
+            >
+              <span
+                style={{
+                  fontSize: '12px',
+                  color: 'var(--pink)',
+                  fontWeight: 700,
+                }}
+              >
+                Prompt #{quickSparkQuestionIdx + 1}
+              </span>
+              <p
+                style={{
+                  fontSize: '15px',
+                  fontWeight: 600,
+                  color: 'var(--ink)',
+                  margin: '6px 0 0',
+                }}
+              >
                 {QUICK_SPARK_PROMPTS[quickSparkQuestionIdx]}
               </p>
             </div>
@@ -264,13 +350,21 @@ export function TogethernessModal({
                   }}
                   maxLength={140}
                 />
-                <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: '8px',
+                    justifyContent: 'flex-end',
+                  }}
+                >
                   <button
                     type="button"
                     className="btn btn-ghost"
                     onClick={() => {
                       sounds.playPop();
-                      setQuickSparkQuestionIdx((prev) => (prev + 1) % QUICK_SPARK_PROMPTS.length);
+                      setQuickSparkQuestionIdx(
+                        (prev) => (prev + 1) % QUICK_SPARK_PROMPTS.length,
+                      );
                     }}
                     style={{ fontSize: '12px' }}
                   >
@@ -294,9 +388,18 @@ export function TogethernessModal({
             ) : (
               <div style={{ textAlign: 'center', padding: '16px 0' }}>
                 <span style={{ fontSize: '32px' }}>💖</span>
-                <h4 style={{ margin: '8px 0 4px', color: 'var(--ink)' }}>Spark Sent to {partnerName}!</h4>
-                <p style={{ fontSize: '13px', color: 'var(--ink-soft)', margin: 0 }}>
-                  A sweet little spark was left in your shared sanctuary. +1 growth spark awarded!
+                <h4 style={{ margin: '8px 0 4px', color: 'var(--ink)' }}>
+                  Spark Sent to {partnerName}!
+                </h4>
+                <p
+                  style={{
+                    fontSize: '13px',
+                    color: 'var(--ink-soft)',
+                    margin: 0,
+                  }}
+                >
+                  A sweet little spark was left in your shared sanctuary. +1
+                  growth spark awarded!
                 </p>
               </div>
             )}
@@ -305,17 +408,52 @@ export function TogethernessModal({
 
         {/* 2. Date Night */}
         {selectedMode === 'date_night' && (
-          <div style={{ background: 'var(--paper)', borderRadius: '20px', padding: '20px', border: '1px solid var(--line)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+          <div
+            style={{
+              background: 'var(--paper)',
+              borderRadius: '20px',
+              padding: '20px',
+              border: '1px solid var(--line)',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginBottom: '8px',
+              }}
+            >
               <span style={{ fontSize: '20px' }}>🌹</span>
-              <strong style={{ fontSize: '15px' }}>Date Night · Multi-activity shared room</strong>
+              <strong style={{ fontSize: '15px' }}>
+                Date Night · Multi-activity shared room
+              </strong>
             </div>
-            <p style={{ fontSize: '13px', color: 'var(--ink-soft)', margin: '0 0 16px' }}>
-              Enter the synchronized lobby with ambient soundscapes, activity queue, and sealed answer reveals.
+            <p
+              style={{
+                fontSize: '13px',
+                color: 'var(--ink-soft)',
+                margin: '0 0 16px',
+              }}
+            >
+              Enter the synchronized lobby with ambient soundscapes, activity
+              queue, and sealed answer reveals.
             </p>
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-              <button type="button" className="btn btn-primary" onClick={handleLaunchMode}>
-                {activeRoomCode ? 'Resume Date Night Room ▷' : 'Start Date Night Room ▷'}
+            <div
+              style={{
+                display: 'flex',
+                gap: '10px',
+                justifyContent: 'flex-end',
+              }}
+            >
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleLaunchMode}
+              >
+                {activeRoomCode
+                  ? 'Resume Date Night Room ▷'
+                  : 'Start Date Night Room ▷'}
               </button>
             </div>
           </div>
@@ -323,24 +461,70 @@ export function TogethernessModal({
 
         {/* 3. Quiet Together */}
         {selectedMode === 'quiet_together' && (
-          <div style={{ background: 'var(--paper)', borderRadius: '20px', padding: '20px', border: '1px solid var(--line)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+          <div
+            style={{
+              background: 'var(--paper)',
+              borderRadius: '20px',
+              padding: '20px',
+              border: '1px solid var(--line)',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginBottom: '8px',
+              }}
+            >
               <span style={{ fontSize: '20px' }}>☕</span>
-              <strong style={{ fontSize: '15px' }}>Quiet Together · Shared peaceful presence</strong>
+              <strong style={{ fontSize: '15px' }}>
+                Quiet Together · Shared peaceful presence
+              </strong>
             </div>
-            <p style={{ fontSize: '13px', color: 'var(--ink-soft)', margin: '0 0 16px' }}>
-              No prompts, no games, no performance. Study, read, or wind down together with soothing audio.
+            <p
+              style={{
+                fontSize: '13px',
+                color: 'var(--ink-soft)',
+                margin: '0 0 16px',
+              }}
+            >
+              No prompts, no games, no performance. Study, read, or wind down
+              together with soothing audio.
             </p>
 
             {!quietActive ? (
               <div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '12px',
+                    marginBottom: '16px',
+                  }}
+                >
                   <div>
-                    <label style={{ fontSize: '12px', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Duration</label>
+                    <label
+                      style={{
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        display: 'block',
+                        marginBottom: '6px',
+                      }}
+                    >
+                      Duration
+                    </label>
                     <select
                       value={quietMinutes}
-                      onChange={(e) => setQuietMinutes(Number(e.target.value) as any)}
-                      style={{ width: '100%', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--line)' }}
+                      onChange={(e) =>
+                        setQuietMinutes(Number(e.target.value) as any)
+                      }
+                      style={{
+                        width: '100%',
+                        padding: '8px 12px',
+                        borderRadius: '10px',
+                        border: '1px solid var(--line)',
+                      }}
                     >
                       <option value={15}>15 minutes</option>
                       <option value={30}>30 minutes</option>
@@ -349,11 +533,25 @@ export function TogethernessModal({
                     </select>
                   </div>
                   <div>
-                    <label style={{ fontSize: '12px', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Ambience</label>
+                    <label
+                      style={{
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        display: 'block',
+                        marginBottom: '6px',
+                      }}
+                    >
+                      Ambience
+                    </label>
                     <select
                       value={quietAmbience}
                       onChange={(e) => setQuietAmbience(e.target.value as any)}
-                      style={{ width: '100%', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--line)' }}
+                      style={{
+                        width: '100%',
+                        padding: '8px 12px',
+                        borderRadius: '10px',
+                        border: '1px solid var(--line)',
+                      }}
                     >
                       <option value="warm">Warm Hearth 🪵</option>
                       <option value="rain">Window Rain 🌧️</option>
@@ -363,7 +561,11 @@ export function TogethernessModal({
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <button type="button" className="btn btn-primary" onClick={handleStartQuiet}>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={handleStartQuiet}
+                  >
                     Begin Quiet Session ▷
                   </button>
                 </div>
@@ -379,12 +581,25 @@ export function TogethernessModal({
                     marginBottom: '8px',
                   }}
                 >
-                  {Math.floor(quietSecondsLeft / 60)}:{(quietSecondsLeft % 60).toString().padStart(2, '0')}
+                  {Math.floor(quietSecondsLeft / 60)}:
+                  {(quietSecondsLeft % 60).toString().padStart(2, '0')}
                 </div>
-                <p style={{ fontSize: '13px', color: 'var(--ink-soft)', margin: '0 0 16px' }}>
-                  Sitting together peacefully. Cupidot is keeping watch over your quiet sanctuary.
+                <p
+                  style={{
+                    fontSize: '13px',
+                    color: 'var(--ink-soft)',
+                    margin: '0 0 16px',
+                  }}
+                >
+                  Sitting together peacefully. Cupidot is keeping watch over
+                  your quiet sanctuary.
                 </p>
-                <button type="button" className="btn btn-ghost" onClick={handleStopQuiet} style={{ fontSize: '12px' }}>
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={handleStopQuiet}
+                  style={{ fontSize: '12px' }}
+                >
                   End session peacefully ⏸
                 </button>
               </div>
@@ -394,23 +609,75 @@ export function TogethernessModal({
 
         {/* 4. Deep Connection */}
         {selectedMode === 'deep_connection' && (
-          <div style={{ background: 'var(--paper)', borderRadius: '20px', padding: '20px', border: '1px solid var(--line)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+          <div
+            style={{
+              background: 'var(--paper)',
+              borderRadius: '20px',
+              padding: '20px',
+              border: '1px solid var(--line)',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginBottom: '8px',
+              }}
+            >
               <span style={{ fontSize: '20px' }}>🌊</span>
-              <strong style={{ fontSize: '15px' }}>Deep Connection · Slower heart-to-heart</strong>
+              <strong style={{ fontSize: '15px' }}>
+                Deep Connection · Slower heart-to-heart
+              </strong>
             </div>
-            <p style={{ fontSize: '13px', color: 'var(--ink-soft)', margin: '0 0 16px' }}>
-              Tender questions to explore over voice call or private notes. Skipping is always neutral.
+            <p
+              style={{
+                fontSize: '13px',
+                color: 'var(--ink-soft)',
+                margin: '0 0 16px',
+              }}
+            >
+              Tender questions to explore over voice call or private notes.
+              Skipping is always neutral.
             </p>
 
-            <div style={{ background: '#FFFFFF', padding: '16px', borderRadius: '14px', border: '1px solid var(--line)', marginBottom: '16px' }}>
-              <span style={{ fontSize: '12px', color: 'var(--blue)', fontWeight: 700 }}>Gentle Prompt #{deepPromptIdx + 1}</span>
-              <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--ink)', margin: '6px 0 0' }}>
+            <div
+              style={{
+                background: '#FFFFFF',
+                padding: '16px',
+                borderRadius: '14px',
+                border: '1px solid var(--line)',
+                marginBottom: '16px',
+              }}
+            >
+              <span
+                style={{
+                  fontSize: '12px',
+                  color: 'var(--blue)',
+                  fontWeight: 700,
+                }}
+              >
+                Gentle Prompt #{deepPromptIdx + 1}
+              </span>
+              <p
+                style={{
+                  fontSize: '15px',
+                  fontWeight: 600,
+                  color: 'var(--ink)',
+                  margin: '6px 0 0',
+                }}
+              >
                 {DEEP_PROMPTS[deepPromptIdx]}
               </p>
             </div>
 
-            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+            <div
+              style={{
+                display: 'flex',
+                gap: '8px',
+                justifyContent: 'flex-end',
+              }}
+            >
               <button
                 type="button"
                 className="btn btn-ghost"
@@ -422,7 +689,11 @@ export function TogethernessModal({
               >
                 Skip gently 🕊️
               </button>
-              <Link className="btn btn-primary" href="/cards" style={{ fontSize: '12px' }}>
+              <Link
+                className="btn btn-primary"
+                href="/cards"
+                style={{ fontSize: '12px' }}
+              >
                 Open Vulnerability Cards →
               </Link>
             </div>
@@ -431,25 +702,70 @@ export function TogethernessModal({
 
         {/* 5. Make Something */}
         {selectedMode === 'make_something' && (
-          <div style={{ background: 'var(--paper)', borderRadius: '20px', padding: '20px', border: '1px solid var(--line)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+          <div
+            style={{
+              background: 'var(--paper)',
+              borderRadius: '20px',
+              padding: '20px',
+              border: '1px solid var(--line)',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginBottom: '8px',
+              }}
+            >
               <span style={{ fontSize: '20px' }}>🎨</span>
-              <strong style={{ fontSize: '15px' }}>Make Something · Create together</strong>
+              <strong style={{ fontSize: '15px' }}>
+                Make Something · Create together
+              </strong>
             </div>
-            <p style={{ fontSize: '13px', color: 'var(--ink-soft)', margin: '0 0 16px' }}>
-              Pick a creative canvas. Finished pieces can be turned into mutually approved keepsakes.
+            <p
+              style={{
+                fontSize: '13px',
+                color: 'var(--ink-soft)',
+                margin: '0 0 16px',
+              }}
+            >
+              Pick a creative canvas. Finished pieces can be turned into
+              mutually approved keepsakes.
             </p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-              <Link className="btn btn-ghost" href="/draw" style={{ justifyContent: 'center' }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '10px',
+              }}
+            >
+              <Link
+                className="btn btn-ghost"
+                href="/draw"
+                style={{ justifyContent: 'center' }}
+              >
                 Draw Together ✎
               </Link>
-              <Link className="btn btn-ghost" href="/photobooth" style={{ justifyContent: 'center' }}>
+              <Link
+                className="btn btn-ghost"
+                href="/photobooth"
+                style={{ justifyContent: 'center' }}
+              >
                 Take Photostrip 📸
               </Link>
-              <Link className="btn btn-ghost" href="/letter" style={{ justifyContent: 'center' }}>
+              <Link
+                className="btn btn-ghost"
+                href="/letter"
+                style={{ justifyContent: 'center' }}
+              >
                 Capsule Letter 💌
               </Link>
-              <Link className="btn btn-ghost" href="/scrapbook" style={{ justifyContent: 'center' }}>
+              <Link
+                className="btn btn-ghost"
+                href="/scrapbook"
+                style={{ justifyContent: 'center' }}
+              >
                 Scrapbook Page 📖
               </Link>
             </div>
@@ -458,16 +774,43 @@ export function TogethernessModal({
 
         {/* 6. Surprise Us */}
         {selectedMode === 'surprise_us' && (
-          <div style={{ background: 'var(--paper)', borderRadius: '20px', padding: '20px', border: '1px solid var(--line)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+          <div
+            style={{
+              background: 'var(--paper)',
+              borderRadius: '20px',
+              padding: '20px',
+              border: '1px solid var(--line)',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginBottom: '8px',
+              }}
+            >
               <span style={{ fontSize: '20px' }}>🎲</span>
-              <strong style={{ fontSize: '15px' }}>Surprise Us · Tailored choice</strong>
+              <strong style={{ fontSize: '15px' }}>
+                Surprise Us · Tailored choice
+              </strong>
             </div>
-            <p style={{ fontSize: '13px', color: 'var(--ink-soft)', margin: '0 0 16px' }}>
-              Let Dearly Us select an activity based on your saved mood defaults and available time.
+            <p
+              style={{
+                fontSize: '13px',
+                color: 'var(--ink-soft)',
+                margin: '0 0 16px',
+              }}
+            >
+              Let Dearly Us select an activity based on your saved mood defaults
+              and available time.
             </p>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <button type="button" className="btn btn-primary" onClick={handleLaunchMode}>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleLaunchMode}
+              >
                 Roll Tonight’s Date 🎲
               </button>
             </div>

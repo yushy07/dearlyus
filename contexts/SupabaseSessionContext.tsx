@@ -1,6 +1,12 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useMemo,
+} from 'react';
 import type { Session, User, SupabaseClient } from '@supabase/supabase-js';
 import { getSupabase } from '@/lib/supabase';
 
@@ -14,9 +20,14 @@ export interface SupabaseSessionContextValue {
   refreshSession: () => Promise<void>;
 }
 
-const SupabaseSessionContext = createContext<SupabaseSessionContextValue | null>(null);
+const SupabaseSessionContext =
+  createContext<SupabaseSessionContextValue | null>(null);
 
-export function SupabaseSessionProvider({ children }: { children: React.ReactNode }) {
+export function SupabaseSessionProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -42,12 +53,14 @@ export function SupabaseSessionProvider({ children }: { children: React.ReactNod
       setLoading(false);
     });
 
-    const { data: authListener } = client.auth.onAuthStateChange((_event, newSession) => {
-      if (!isMounted) return;
-      setSession(newSession);
-      setUser(newSession?.user ?? null);
-      setLoading(false);
-    });
+    const { data: authListener } = client.auth.onAuthStateChange(
+      (_event, newSession) => {
+        if (!isMounted) return;
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
+        setLoading(false);
+      },
+    );
 
     return () => {
       isMounted = false;
@@ -79,16 +92,22 @@ export function SupabaseSessionProvider({ children }: { children: React.ReactNod
       signOut,
       refreshSession,
     }),
-    [supabase, user, session, loading, error]
+    [supabase, user, session, loading, error],
   );
 
-  return <SupabaseSessionContext.Provider value={value}>{children}</SupabaseSessionContext.Provider>;
+  return (
+    <SupabaseSessionContext.Provider value={value}>
+      {children}
+    </SupabaseSessionContext.Provider>
+  );
 }
 
 export function useSupabaseSession() {
   const context = useContext(SupabaseSessionContext);
   if (!context) {
-    throw new Error('useSupabaseSession must be used within a SupabaseSessionProvider');
+    throw new Error(
+      'useSupabaseSession must be used within a SupabaseSessionProvider',
+    );
   }
   return context;
 }

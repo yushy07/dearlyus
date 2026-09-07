@@ -43,10 +43,21 @@ export interface QuizSnapshot {
 }
 
 export type QuizEvent =
-  | { type: 'quiz_start'; payload: { packId: string; packTitle: string; totalRounds: number; questions?: QuizQuestionData[] } }
+  | {
+      type: 'quiz_start';
+      payload: {
+        packId: string;
+        packTitle: string;
+        totalRounds: number;
+        questions?: QuizQuestionData[];
+      };
+    }
   | { type: 'answer_locked'; payload: { roundNumber: number; locked: boolean } }
   | { type: 'reveal_ready'; payload: { roundNumber: number } }
-  | { type: 'answers_revealed'; payload: { roundNumber: number; isMatch?: boolean } }
+  | {
+      type: 'answers_revealed';
+      payload: { roundNumber: number; isMatch?: boolean };
+    }
   | { type: 'quiz_next'; payload: { nextRound: number } }
   | { type: 'gentle_skip'; payload: { roundNumber: number; skippedAt: string } }
   | { type: 'reaction_sent'; payload: { emoji: string; roundNumber?: number } };
@@ -73,7 +84,10 @@ export const QUIZ_PRIVATE_FIELDS = [
   'answers[].answer',
 ] as const;
 
-export const quizActivityDefinition: ActivityDefinition<QuizSnapshot, QuizEvent> = {
+export const quizActivityDefinition: ActivityDefinition<
+  QuizSnapshot,
+  QuizEvent
+> = {
   activityType: 'quiz',
   schemaVersion: 1,
 
@@ -95,7 +109,9 @@ export const quizActivityDefinition: ActivityDefinition<QuizSnapshot, QuizEvent>
       totalRounds: Number(options.totalRounds || 6),
       history: [],
       completed: false,
-      questions: Array.isArray(options.questions) ? (options.questions as QuizQuestionData[]) : undefined,
+      questions: Array.isArray(options.questions)
+        ? (options.questions as QuizQuestionData[])
+        : undefined,
     };
   },
 
@@ -110,11 +126,16 @@ export const quizActivityDefinition: ActivityDefinition<QuizSnapshot, QuizEvent>
     // Strict privacy rule: Answer values must NEVER appear in generic event payloads
     if (event.type === 'answer_locked') {
       const payload = event.payload as any;
-      if ('answer' in payload || 'answerIndex' in payload || 'choice' in payload) {
+      if (
+        'answer' in payload ||
+        'answerIndex' in payload ||
+        'choice' in payload
+      ) {
         return {
           valid: false,
           code: 'PRIVATE_DATA_LEAK',
-          message: 'Answer values must be sealed and cannot be included in answer_locked payload.',
+          message:
+            'Answer values must be sealed and cannot be included in answer_locked payload.',
         };
       }
     }
@@ -125,7 +146,8 @@ export const quizActivityDefinition: ActivityDefinition<QuizSnapshot, QuizEvent>
         return {
           valid: false,
           code: 'PRIVATE_DATA_LEAK',
-          message: 'Answer values and records must never be included in an answers_revealed event.',
+          message:
+            'Answer values and records must never be included in an answers_revealed event.',
         };
       }
     }
@@ -179,7 +201,12 @@ export const quizActivityDefinition: ActivityDefinition<QuizSnapshot, QuizEvent>
           ...snapshot,
           status: 'revealed',
           matches: isMatch ? snapshot.matches + 1 : snapshot.matches,
-          history: [...snapshot.history.filter((h) => h.roundIndex !== snapshot.currentRound), record],
+          history: [
+            ...snapshot.history.filter(
+              (h) => h.roundIndex !== snapshot.currentRound,
+            ),
+            record,
+          ],
         };
       }
 
@@ -200,7 +227,12 @@ export const quizActivityDefinition: ActivityDefinition<QuizSnapshot, QuizEvent>
         return {
           ...snapshot,
           status: 'revealed',
-          history: [...snapshot.history.filter((h) => h.roundIndex !== snapshot.currentRound), skipRecord],
+          history: [
+            ...snapshot.history.filter(
+              (h) => h.roundIndex !== snapshot.currentRound,
+            ),
+            skipRecord,
+          ],
         };
       }
 
@@ -221,7 +253,11 @@ export const quizActivityDefinition: ActivityDefinition<QuizSnapshot, QuizEvent>
     }
   },
 
-  transitionRules(snapshot: QuizSnapshot, action: string, userId: string): boolean {
+  transitionRules(
+    snapshot: QuizSnapshot,
+    action: string,
+    userId: string,
+  ): boolean {
     if (!userId) return false;
     if (action === 'quiz_next') {
       return snapshot.status === 'revealed';
@@ -257,7 +293,10 @@ export const quizActivityDefinition: ActivityDefinition<QuizSnapshot, QuizEvent>
       history: QuizRoundRecord[];
     };
 
-    const matchRate = summary.totalRounds > 0 ? Math.round((summary.matches / summary.totalRounds) * 100) : 100;
+    const matchRate =
+      summary.totalRounds > 0
+        ? Math.round((summary.matches / summary.totalRounds) * 100)
+        : 100;
 
     return {
       kind: 'activity',
@@ -279,5 +318,7 @@ export const quizActivityDefinition: ActivityDefinition<QuizSnapshot, QuizEvent>
   },
 };
 
-export const quizActivityAdapter: RealtimeActivityAdapter<QuizSnapshot, QuizEvent> =
-  createAdapterFromDefinition(quizActivityDefinition);
+export const quizActivityAdapter: RealtimeActivityAdapter<
+  QuizSnapshot,
+  QuizEvent
+> = createAdapterFromDefinition(quizActivityDefinition);

@@ -1,23 +1,26 @@
 /* Dearly Us Color & Design System Tokens */
 :root {
-  --pink: #FF4E78;
-  --pink-tint: rgba(255, 78, 120, 0.10);
+  --pink: #ff4e78;
+  --pink-tint: rgba(255, 78, 120, 0.1);
   --pink-glow: rgba(255, 78, 120, 0.32);
-  --blue: #437EEB;
-  --blue-tint: rgba(67, 126, 235, 0.10);
+  --blue: #437eeb;
+  --blue-tint: rgba(67, 126, 235, 0.1);
   --blue-glow: rgba(67, 126, 235, 0.32);
-  --amber: #F59E0B;
-  --green: #10B981;
-  --gold: #E5A93C;
-  --gold-light: #FDE68A;
-  
-  --paper: #FAF8F5;
-  --paper-raised: #FFFFFF;
-  --paper-subtle: #F3EFEA;
-  --ink: #1C1924;
-  --ink-soft: #6A6576;
-  --line: #E8E2D9;
-  
-  --font-display: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'Space Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  --amber: #f59e0b;
+  --green: #10b981;
+  --gold: #e5a93c;
+  --gold-light: #fde68a;
+
+  --paper: #faf8f5;
+  --paper-raised: #ffffff;
+  --paper-subtle: #f3efea;
+  --ink: #1c1924;
+  --ink-soft: #6a6576;
+  --line: #e8e2d9;
+
+  --font-display:
+    'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    sans-serif;
+  --font-mono:
+    'Space Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
 }

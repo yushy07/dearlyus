@@ -1,21 +1,48 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useRef,
+} from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { Navbar, AiConsentToggle, TogetherPulse, ConnectionRibbon } from '@/components/shared';
+import {
+  Navbar,
+  AiConsentToggle,
+  TogetherPulse,
+  ConnectionRibbon,
+} from '@/components/shared';
 import { QRCodeSVG } from '@/lib/qrcode';
 import { sounds } from '@/lib/sound';
-import { ActiveRoomProvider, useActiveRoom } from '@/contexts/ActiveRoomContext';
+import {
+  ActiveRoomProvider,
+  useActiveRoom,
+} from '@/contexts/ActiveRoomContext';
 import { PresenceProvider, useRoomPresence } from '@/contexts/PresenceContext';
-import { ActivitySessionProvider, useActivitySession } from '@/contexts/ActivitySessionContext';
+import {
+  ActivitySessionProvider,
+  useActivitySession,
+} from '@/contexts/ActivitySessionContext';
 import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
 import { useSupabaseSession } from '@/contexts/SupabaseSessionContext';
 import styles from './room.module.css';
 
 const ACTIVITIES = [
-  { id: 'quiz', name: 'Couple Quiz', icon: '♡', copy: 'Lock answers privately and reveal them together.' },
-  { id: 'draw', name: 'Draw Together', icon: '✎', copy: 'Share one live canvas across the distance.' },
+  {
+    id: 'quiz',
+    name: 'Couple Quiz',
+    icon: '♡',
+    copy: 'Lock answers privately and reveal them together.',
+  },
+  {
+    id: 'draw',
+    name: 'Draw Together',
+    icon: '✎',
+    copy: 'Share one live canvas across the distance.',
+  },
 ] as const;
 
 const MOODS = [
@@ -56,8 +83,21 @@ function RoomLobbyInner({ code }: { code: string }) {
   const router = useRouter();
   const { user } = useSupabaseSession();
   const { profile, partner, preferences, savePreferences } = useCoupleSpace();
-  const { room, isHost, loading: roomLoading, error: roomError, setReady, leaveRoom } = useActiveRoom();
-  const { connectionState, partnerOnline, partnerInteraction, myInteraction, setInteraction } = useRoomPresence();
+  const {
+    room,
+    isHost,
+    loading: roomLoading,
+    error: roomError,
+    setReady,
+    leaveRoom,
+  } = useActiveRoom();
+  const {
+    connectionState,
+    partnerOnline,
+    partnerInteraction,
+    myInteraction,
+    setInteraction,
+  } = useRoomPresence();
   const { startActivity, session } = useActivitySession();
 
   const [selectedActivity, setSelectedActivity] = useState<string>('quiz');
@@ -85,7 +125,8 @@ function RoomLobbyInner({ code }: { code: string }) {
   useEffect(() => {
     if (preferences) {
       if (preferences.preferredMood) setMood(preferences.preferredMood);
-      if (preferences.defaultDurationMinutes) setDuration(preferences.defaultDurationMinutes);
+      if (preferences.defaultDurationMinutes)
+        setDuration(preferences.defaultDurationMinutes);
       setAmbientAudio(preferences.ambientAudioEnabled);
     }
   }, [preferences]);
@@ -149,7 +190,8 @@ function RoomLobbyInner({ code }: { code: string }) {
           preferredMood: mood as any,
           defaultDurationMinutes: duration as any,
           ambientAudioEnabled: ambientAudio,
-          reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+          reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)')
+            .matches,
           aiConsent: preferences?.aiConsent ?? false,
         });
 
@@ -163,14 +205,27 @@ function RoomLobbyInner({ code }: { code: string }) {
           ambientAudioEnabled: ambientAudio,
         });
 
-        router.push(`/${result.activityType}?room=${encodeURIComponent(code)}&session=${result.sessionId}`);
+        router.push(
+          `/${result.activityType}?room=${encodeURIComponent(code)}&session=${result.sessionId}`,
+        );
       } catch (err: any) {
-        setError(err?.message || 'Activity could not start. Please refresh and try again.');
+        setError(
+          err?.message ||
+            'Activity could not start. Please refresh and try again.',
+        );
         setBusy('');
         setCountdown(null);
       }
     },
-    [savePreferences, mood, duration, ambientAudio, startActivity, router, code]
+    [
+      savePreferences,
+      mood,
+      duration,
+      ambientAudio,
+      startActivity,
+      router,
+      code,
+    ],
   );
 
   const startCountdown = () => {
@@ -187,7 +242,8 @@ function RoomLobbyInner({ code }: { code: string }) {
         sounds.playCountdownBeep(true);
         setCountdown(current);
       } else {
-        if (countdownTimerRef.current) window.clearInterval(countdownTimerRef.current);
+        if (countdownTimerRef.current)
+          window.clearInterval(countdownTimerRef.current);
         sounds.playCelebration();
         setCountdown(0);
         void triggerStartActivity(selectedActivity);
@@ -204,7 +260,10 @@ function RoomLobbyInner({ code }: { code: string }) {
     }
   };
 
-  const roomUrl = typeof window !== 'undefined' ? `${window.location.origin}/room/${code}` : '';
+  const roomUrl =
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/room/${code}`
+      : '';
   const copyRoomLink = async () => {
     await navigator.clipboard.writeText(roomUrl);
     setCopied(true);
@@ -221,15 +280,30 @@ function RoomLobbyInner({ code }: { code: string }) {
     if (partnerInteraction === 'writing') return 'writing';
     if (partnerInteraction === 'drawing') return 'drawing';
     return 'online';
-  }, [connectionState, partnerOnline, partnerMember?.ready, ownMember?.ready, partnerInteraction]);
+  }, [
+    connectionState,
+    partnerOnline,
+    partnerMember?.ready,
+    ownMember?.ready,
+    partnerInteraction,
+  ]);
 
   if (roomLoading) {
     return (
       <main className={styles.loading}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px' }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '14px',
+          }}
+        >
           <div style={{ fontSize: '36px' }}>♡</div>
           <h2>Opening your date night lobby…</h2>
-          <p style={{ color: 'var(--ink-soft)' }}>Verifying your private couple space room.</p>
+          <p style={{ color: 'var(--ink-soft)' }}>
+            Verifying your private couple space room.
+          </p>
         </div>
       </main>
     );
@@ -260,10 +334,19 @@ function RoomLobbyInner({ code }: { code: string }) {
         roomCode={code}
         rightAction={
           <div className={styles.navActions}>
-            <button className="btn btn-ghost" onClick={() => setShareOpen((v) => !v)} style={{ fontSize: '13px' }}>
+            <button
+              className="btn btn-ghost"
+              onClick={() => setShareOpen((v) => !v)}
+              style={{ fontSize: '13px' }}
+            >
               {shareOpen ? 'Close link' : 'Share room'}
             </button>
-            <button className="btn btn-ghost" onClick={handleLeave} disabled={Boolean(busy)} style={{ fontSize: '13px' }}>
+            <button
+              className="btn btn-ghost"
+              onClick={handleLeave}
+              disabled={Boolean(busy)}
+              style={{ fontSize: '13px' }}
+            >
               Leave lobby
             </button>
           </div>
@@ -290,7 +373,8 @@ function RoomLobbyInner({ code }: { code: string }) {
               <div className={styles.eyebrow}>Private Room Link</div>
               <h2>Bring your person into the lobby.</h2>
               <p>
-                Only your connected partner can join this room. Stranger access is rejected automatically by the database.
+                Only your connected partner can join this room. Stranger access
+                is rejected automatically by the database.
               </p>
               <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
                 <button className="btn btn-primary" onClick={copyRoomLink}>
@@ -313,7 +397,12 @@ function RoomLobbyInner({ code }: { code: string }) {
               </div>
             </div>
             <div className={styles.qr}>
-              <QRCodeSVG text={roomUrl} size={140} fgColor="#1C1924" bgColor="#FFFFFF" />
+              <QRCodeSVG
+                text={roomUrl}
+                size={140}
+                fgColor="#1C1924"
+                bgColor="#FFFFFF"
+              />
             </div>
           </section>
         )}
@@ -324,22 +413,36 @@ function RoomLobbyInner({ code }: { code: string }) {
           partnerOnline={partnerOnline}
           leftAvatar={
             profile?.avatarUrl ? (
-              <img src={profile.avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img
+                src={profile.avatarUrl}
+                alt=""
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
             ) : (
-              <span style={{ color: '#fff', fontWeight: 900 }}>{initials(profile?.displayName || 'You')}</span>
+              <span style={{ color: '#fff', fontWeight: 900 }}>
+                {initials(profile?.displayName || 'You')}
+              </span>
             )
           }
           rightAvatar={
             partner?.avatarUrl ? (
-              <img src={partner.avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img
+                src={partner.avatarUrl}
+                alt=""
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
             ) : (
-              <span style={{ color: '#fff', fontWeight: 900 }}>{initials(partner?.displayName || 'Partner')}</span>
+              <span style={{ color: '#fff', fontWeight: 900 }}>
+                {initials(partner?.displayName || 'Partner')}
+              </span>
             )
           }
           leftName={profile?.displayName || 'You'}
           rightName={partner?.displayName || 'Your person'}
           leftLocation={profile?.city || 'Your city'}
-          rightLocation={partner?.city || (partnerOnline ? 'Connected' : 'Waiting…')}
+          rightLocation={
+            partner?.city || (partnerOnline ? 'Connected' : 'Waiting…')
+          }
           leftTime={userLocalTime}
           rightTime={partnerLocalTime}
           leftReady={Boolean(ownMember?.ready)}
@@ -348,7 +451,10 @@ function RoomLobbyInner({ code }: { code: string }) {
 
         {/* Live Together Pulse Status */}
         <div className={styles.pulseWrap}>
-          <TogetherPulse state={pulseState} partnerName={partner?.displayName || 'Your person'} />
+          <TogetherPulse
+            state={pulseState}
+            partnerName={partner?.displayName || 'Your person'}
+          />
         </div>
 
         {/* Resumable Session Banner */}
@@ -356,7 +462,10 @@ function RoomLobbyInner({ code }: { code: string }) {
           <div className={styles.resumeCard} style={{ marginTop: '20px' }}>
             <div className={styles.resumeInfo}>
               <h4>Active session in progress</h4>
-              <p>You have an ongoing date night activity that can be resumed right where you left it.</p>
+              <p>
+                You have an ongoing date night activity that can be resumed
+                right where you left it.
+              </p>
             </div>
             <Link
               className="btn btn-primary"
@@ -404,7 +513,11 @@ function RoomLobbyInner({ code }: { code: string }) {
             >
               <span>🎲</span>
               <strong>Surprise us!</strong>
-              <small>{isRollingSurprise ? 'Rolling the dice…' : 'Let Dearly Us choose your moment tonight.'}</small>
+              <small>
+                {isRollingSurprise
+                  ? 'Rolling the dice…'
+                  : 'Let Dearly Us choose your moment tonight.'}
+              </small>
             </button>
           </div>
 
@@ -422,7 +535,10 @@ function RoomLobbyInner({ code }: { code: string }) {
 
             <label>
               Duration together
-              <select value={duration} onChange={(e) => setDuration(Number(e.target.value))}>
+              <select
+                value={duration}
+                onChange={(e) => setDuration(Number(e.target.value))}
+              >
                 {DURATIONS.map((d) => (
                   <option key={d} value={d}>
                     {d} minutes
@@ -446,8 +562,15 @@ function RoomLobbyInner({ code }: { code: string }) {
 
           <div className={styles.consent}>
             <strong>Cupidot AI Follow-ups Consent</strong>
-            <p style={{ fontSize: '12px', color: 'var(--ink-soft)', margin: '0 0 10px' }}>
-              Personalized follow-ups use only shared answers. Private answers and images are never sent.
+            <p
+              style={{
+                fontSize: '12px',
+                color: 'var(--ink-soft)',
+                margin: '0 0 10px',
+              }}
+            >
+              Personalized follow-ups use only shared answers. Private answers
+              and images are never sent.
             </p>
             <AiConsentToggle />
           </div>
@@ -471,8 +594,8 @@ function RoomLobbyInner({ code }: { code: string }) {
               {countdown !== null
                 ? 'Starting…'
                 : bothReady
-                ? `Start ${ACTIVITIES.find((a) => a.id === selectedActivity)?.name || 'Date'} →`
-                : 'Waiting for both hearts to be ready'}
+                  ? `Start ${ACTIVITIES.find((a) => a.id === selectedActivity)?.name || 'Date'} →`
+                  : 'Waiting for both hearts to be ready'}
             </button>
           </div>
         </section>
@@ -480,10 +603,18 @@ function RoomLobbyInner({ code }: { code: string }) {
 
       {/* Synchronized Countdown Overlay */}
       {countdown !== null && (
-        <div className={styles.countdownOverlay} role="dialog" aria-modal="true">
-          <div className={styles.countdownNumber}>{countdown > 0 ? countdown : '♡'}</div>
+        <div
+          className={styles.countdownOverlay}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className={styles.countdownNumber}>
+            {countdown > 0 ? countdown : '♡'}
+          </div>
           <div className={styles.countdownSubtitle}>
-            {countdown > 0 ? 'Getting cozy…' : `Starting ${ACTIVITIES.find((a) => a.id === selectedActivity)?.name}!`}
+            {countdown > 0
+              ? 'Getting cozy…'
+              : `Starting ${ACTIVITIES.find((a) => a.id === selectedActivity)?.name}!`}
           </div>
         </div>
       )}
@@ -493,7 +624,9 @@ function RoomLobbyInner({ code }: { code: string }) {
 
 export default function RoomLobbyPage() {
   const params = useParams<{ code: string }>();
-  const code = String(params?.code || '').replace(/[^a-z0-9]/gi, '').toUpperCase();
+  const code = String(params?.code || '')
+    .replace(/[^a-z0-9]/gi, '')
+    .toUpperCase();
 
   return (
     <ActiveRoomProvider initialRoomCode={code}>

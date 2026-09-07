@@ -21,7 +21,10 @@ export function PassportBookletCover({
   progressPercent,
 }: PassportBookletCoverProps) {
   return (
-    <div className="passport-blush-cover" style={{ padding: '36px 30px', color: '#FFFFFF' }}>
+    <div
+      className="passport-blush-cover"
+      style={{ padding: '36px 30px', color: '#FFFFFF' }}
+    >
       {/* Gold Crest & Passport Title */}
       <div
         style={{
@@ -40,7 +43,8 @@ export function PassportBookletCover({
               width: '64px',
               height: '64px',
               borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(253, 230, 138, 0.35) 0%, rgba(212, 175, 55, 0.1) 100%)',
+              background:
+                'radial-gradient(circle, rgba(253, 230, 138, 0.35) 0%, rgba(212, 175, 55, 0.1) 100%)',
               border: '2px solid #FDE68A',
               display: 'flex',
               alignItems: 'center',
@@ -63,15 +67,35 @@ export function PassportBookletCover({
             >
               대한민국 연인 여권 · REPUBLIC OF LOVE
             </div>
-            <div style={{ fontSize: '24px', fontWeight: 900, letterSpacing: '-0.2px', marginTop: '2px' }}>
+            <div
+              style={{
+                fontSize: '24px',
+                fontWeight: 900,
+                letterSpacing: '-0.2px',
+                marginTop: '2px',
+              }}
+            >
               {profile.partner1} &amp; {profile.partner2}
             </div>
           </div>
         </div>
 
         {/* Passport Serial & Rank Badge */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-          <div style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'rgba(255, 255, 255, 0.65)' }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-end',
+            gap: '4px',
+          }}
+        >
+          <div
+            style={{
+              fontSize: '10.5px',
+              fontFamily: 'var(--font-mono)',
+              color: 'rgba(255, 255, 255, 0.65)',
+            }}
+          >
             PASSPORT ID
           </div>
           <div
@@ -103,11 +127,25 @@ export function PassportBookletCover({
 
       {/* Passport Progress Bar */}
       <div style={{ marginTop: '24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '8px' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            fontSize: '13px',
+            marginBottom: '8px',
+          }}
+        >
           <span style={{ color: 'rgba(255,255,255,0.85)' }}>
-            Souvenir Date Stamps Unlocked ({unlockedCount}/{totalCount} Completed)
+            Souvenir Date Stamps Unlocked ({unlockedCount}/{totalCount}{' '}
+            Completed)
           </span>
-          <span style={{ color: '#FDE68A', fontWeight: 800, fontFamily: 'var(--font-mono)' }}>
+          <span
+            style={{
+              color: '#FDE68A',
+              fontWeight: 800,
+              fontFamily: 'var(--font-mono)',
+            }}
+          >
             {progressPercent}% Complete
           </span>
         </div>
@@ -134,7 +172,11 @@ export function PassportBookletCover({
       </div>
 
       {/* 3D Satin Ribbon Bookmark */}
-      <div className="passport-satin-ribbon" title="Satin Bookmark Ribbon" aria-hidden="true" />
+      <div
+        className="passport-satin-ribbon"
+        title="Satin Bookmark Ribbon"
+        aria-hidden="true"
+      />
     </div>
   );
 }

@@ -26,21 +26,30 @@ export function AuthButton() {
   // 1. Signed Out
   if (!user) {
     return (
-      <Link className="btn btn-ghost" href="/login" style={{ fontSize: '13px', padding: '6px 14px' }}>
+      <Link
+        className="btn btn-ghost"
+        href="/login"
+        style={{ fontSize: '13px', padding: '6px 14px' }}
+      >
         Sign in with Google
       </Link>
     );
   }
 
-  const displayName = profile?.displayName || user.user_metadata?.full_name || user.email || 'You';
+  const displayName =
+    profile?.displayName ||
+    user.user_metadata?.full_name ||
+    user.email ||
+    'You';
   const avatar = profile?.avatarUrl || user.user_metadata?.avatar_url || null;
-  const initials = displayName
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part: string) => part[0])
-    .join('')
-    .toUpperCase() || '♡';
+  const initials =
+    displayName
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part: string) => part[0])
+      .join('')
+      .toUpperCase() || '♡';
 
   // 2. Signed In but Unpaired
   if (!space || !partnerConnected) {
@@ -66,7 +75,15 @@ export function AuthButton() {
               background: 'linear-gradient(135deg, var(--pink), var(--blue))',
             }}
           >
-            {avatar ? <img src={avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initials}
+            {avatar ? (
+              <img
+                src={avatar}
+                alt=""
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            ) : (
+              initials
+            )}
           </span>
           My Space
         </Link>
@@ -113,7 +130,15 @@ export function AuthButton() {
             background: 'linear-gradient(135deg, var(--pink), var(--blue))',
           }}
         >
-          {avatar ? <img src={avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initials}
+          {avatar ? (
+            <img
+              src={avatar}
+              alt=""
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          ) : (
+            initials
+          )}
         </span>
         <span>Our Space</span>
         {partner && (
@@ -130,7 +155,14 @@ export function AuthButton() {
               gap: '4px',
             }}
           >
-            <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#10B981' }} />
+            <span
+              style={{
+                width: 5,
+                height: 5,
+                borderRadius: '50%',
+                background: '#10B981',
+              }}
+            />
             {partner.displayName}
           </span>
         )}

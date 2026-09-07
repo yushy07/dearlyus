@@ -109,7 +109,8 @@ export function SecretAnswerSeal({
           <div className={styles.skipIcon}>🕊️</div>
           <h3 className={styles.skipTitle}>Moment Skipped Gently</h3>
           <p className={styles.skipDesc}>
-            No reasons needed, no pressure given. Ready whenever you two want to step into the next prompt.
+            No reasons needed, no pressure given. Ready whenever you two want to
+            step into the next prompt.
           </p>
         </div>
       </div>
@@ -118,12 +119,18 @@ export function SecretAnswerSeal({
 
   // 2. If answers are already revealed
   if (revealed && revealedAnswers && revealedAnswers.length > 0) {
-    const partnerAnsItem = revealedAnswers.find((a) => a.userId !== currentUserId) || revealedAnswers[1];
-    const myAnsItem = revealedAnswers.find((a) => a.userId === currentUserId) || revealedAnswers[0];
+    const partnerAnsItem =
+      revealedAnswers.find((a) => a.userId !== currentUserId) ||
+      revealedAnswers[1];
+    const myAnsItem =
+      revealedAnswers.find((a) => a.userId === currentUserId) ||
+      revealedAnswers[0];
 
     const myFormatted = formatAnswer(myAnsItem?.answer ?? myDraftAnswer);
     const partnerFormatted = formatAnswer(partnerAnsItem?.answer);
-    const isExactMatch = myFormatted.trim().toLowerCase() === partnerFormatted.trim().toLowerCase() && myFormatted.length > 0;
+    const isExactMatch =
+      myFormatted.trim().toLowerCase() ===
+        partnerFormatted.trim().toLowerCase() && myFormatted.length > 0;
 
     return (
       <div className={styles.sealContainer}>
@@ -147,15 +154,22 @@ export function SecretAnswerSeal({
             <div className={styles.partnerBox}>
               <div className={styles.partnerBoxHeader}>
                 <span className={styles.partnerName}>{myName}</span>
-                <span style={{ fontSize: '0.8rem', color: '#9CA3AF' }}>🔒 Sealed</span>
+                <span style={{ fontSize: '0.8rem', color: '#9CA3AF' }}>
+                  🔒 Sealed
+                </span>
               </div>
               <div className={styles.partnerAnswerText}>{myFormatted}</div>
             </div>
 
-            <div className={styles.partnerBox} style={{ borderColor: 'rgba(245, 158, 11, 0.35)' }}>
+            <div
+              className={styles.partnerBox}
+              style={{ borderColor: 'rgba(245, 158, 11, 0.35)' }}
+            >
               <div className={styles.partnerBoxHeader}>
                 <span className={styles.partnerName}>{partnerName}</span>
-                <span style={{ fontSize: '0.8rem', color: '#F59E0B' }}>✨ Shared</span>
+                <span style={{ fontSize: '0.8rem', color: '#F59E0B' }}>
+                  ✨ Shared
+                </span>
               </div>
               <div className={styles.partnerAnswerText}>{partnerFormatted}</div>
             </div>
@@ -163,7 +177,14 @@ export function SecretAnswerSeal({
 
           {/* Post-reveal reactions */}
           <div className={styles.reactionsBar}>
-            <span style={{ fontSize: '0.82rem', color: '#881337', fontWeight: 600, marginRight: '0.4rem' }}>
+            <span
+              style={{
+                fontSize: '0.82rem',
+                color: '#881337',
+                fontWeight: 600,
+                marginRight: '0.4rem',
+              }}
+            >
               React together:
             </span>
             {DEFAULT_REACTIONS.map(({ emoji, label }) => {
@@ -177,7 +198,17 @@ export function SecretAnswerSeal({
                   title={label}
                 >
                   <span>{emoji}</span>
-                  {count > 0 && <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#BE123C' }}>{count}</span>}
+                  {count > 0 && (
+                    <span
+                      style={{
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        color: '#BE123C',
+                      }}
+                    >
+                      {count}
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -192,12 +223,18 @@ export function SecretAnswerSeal({
     return (
       <div className={styles.sealContainer}>
         <div className={styles.sealHeader}>
-          <span className={`${styles.lockPill} ${bothLocked ? styles.pillBothReady : styles.pillLocked}`}>
-            {bothLocked ? '✨ Both Answers Locked' : '🔒 Answer Sealed & Private'}
+          <span
+            className={`${styles.lockPill} ${bothLocked ? styles.pillBothReady : styles.pillLocked}`}
+          >
+            {bothLocked
+              ? '✨ Both Answers Locked'
+              : '🔒 Answer Sealed & Private'}
           </span>
 
           <div className={styles.partnerStatus}>
-            <span className={`${styles.statusDot} ${partnerLocked ? styles.dotLocked : styles.dotThinking}`} />
+            <span
+              className={`${styles.statusDot} ${partnerLocked ? styles.dotLocked : styles.dotThinking}`}
+            />
             <span>
               {partnerLocked
                 ? `${partnerName} is locked in! ✨`
@@ -238,7 +275,15 @@ export function SecretAnswerSeal({
                 <span>✨ Reveal Together ✨</span>
               </button>
             ) : (
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: '#9F1239', fontSize: '0.88rem' }}>
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  color: '#9F1239',
+                  fontSize: '0.88rem',
+                }}
+              >
                 <span className={`${styles.statusDot} ${styles.dotThinking}`} />
                 <span>Awaiting {partnerName} to lock in...</span>
               </div>
@@ -247,8 +292,15 @@ export function SecretAnswerSeal({
         </div>
 
         {onSkip && !bothLocked && (
-          <div className={styles.actionRow} style={{ justifyContent: 'center' }}>
-            <button type="button" onClick={handleGentleSkip} className={styles.btnSkip}>
+          <div
+            className={styles.actionRow}
+            style={{ justifyContent: 'center' }}
+          >
+            <button
+              type="button"
+              onClick={handleGentleSkip}
+              className={styles.btnSkip}
+            >
               <span>🕊️ Gentle Skip</span>
             </button>
           </div>
@@ -266,7 +318,9 @@ export function SecretAnswerSeal({
         </span>
 
         <div className={styles.partnerStatus}>
-          <span className={`${styles.statusDot} ${partnerLocked ? styles.dotLocked : styles.dotThinking}`} />
+          <span
+            className={`${styles.statusDot} ${partnerLocked ? styles.dotLocked : styles.dotThinking}`}
+          />
           <span>
             {partnerLocked
               ? `${partnerName} has locked their pick! 🔒`
@@ -288,7 +342,12 @@ export function SecretAnswerSeal({
         </button>
 
         {onSkip && (
-          <button type="button" onClick={handleGentleSkip} className={styles.btnSkip} title="No reason required">
+          <button
+            type="button"
+            onClick={handleGentleSkip}
+            className={styles.btnSkip}
+            title="No reason required"
+          >
             <span>🕊️ Gentle Skip</span>
           </button>
         )}

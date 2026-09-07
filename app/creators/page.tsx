@@ -28,12 +28,30 @@ export default function CreatorsPage() {
   };
 
   return (
-    <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px', color: 'var(--ink)' }}>
-      <Ribbon text={<>🎬 Dearly Us Creator Community · <b>Share Your Date Nights &amp; Get Featured Worldwide</b></>} />
+    <div
+      style={{
+        background: 'var(--paper)',
+        minHeight: '100vh',
+        paddingBottom: '80px',
+        color: 'var(--ink)',
+      }}
+    >
+      <Ribbon
+        text={
+          <>
+            🎬 Dearly Us Creator Community ·{' '}
+            <b>Share Your Date Nights &amp; Get Featured Worldwide</b>
+          </>
+        }
+      />
 
       <Navbar
         rightAction={
-          <Link className="btn btn-ghost" href="/photobooth" style={{ padding: '6px 12px', fontSize: '13px' }}>
+          <Link
+            className="btn btn-ghost"
+            href="/photobooth"
+            style={{ padding: '6px 12px', fontSize: '13px' }}
+          >
             Open Booth ▷
           </Link>
         }
@@ -63,13 +81,29 @@ export default function CreatorsPage() {
         >
           🎬 Creator Community
         </span>
-        <h1 style={{ fontSize: 'clamp(28px, 4.5vw, 42px)', margin: '0 0 14px', fontWeight: 800 }}>
+        <h1
+          style={{
+            fontSize: 'clamp(28px, 4.5vw, 42px)',
+            margin: '0 0 14px',
+            fontWeight: 800,
+          }}
+        >
           Create Content.
           <br />
           Inspire Couples Worldwide.
         </h1>
-        <p style={{ fontSize: '16px', maxWidth: '560px', margin: '0 auto', opacity: 0.9, lineHeight: 1.6 }}>
-          We&apos;re Dearly Us — the online photobooth &amp; date-night games platform for couples. Share your sessions on TikTok or Instagram, and get featured on our global showcase!
+        <p
+          style={{
+            fontSize: '16px',
+            maxWidth: '560px',
+            margin: '0 auto',
+            opacity: 0.9,
+            lineHeight: 1.6,
+          }}
+        >
+          We&apos;re Dearly Us — the online photobooth &amp; date-night games
+          platform for couples. Share your sessions on TikTok or Instagram, and
+          get featured on our global showcase!
         </p>
       </div>
 
@@ -85,7 +119,14 @@ export default function CreatorsPage() {
             border: '1px solid var(--line)',
           }}
         >
-          <h2 style={{ fontSize: '22px', fontWeight: 800, marginTop: 0, marginBottom: '12px' }}>
+          <h2
+            style={{
+              fontSize: '22px',
+              fontWeight: 800,
+              marginTop: 0,
+              marginBottom: '12px',
+            }}
+          >
             📹 Submit Your Published Video
           </h2>
           <div
@@ -99,13 +140,24 @@ export default function CreatorsPage() {
               lineHeight: 1.5,
             }}
           >
-            Submit your video URL below. Once approved by our team, you&apos;ll be featured on the Dearly Us homepage and official channels!
+            Submit your video URL below. Once approved by our team, you&apos;ll
+            be featured on the Dearly Us homepage and official channels!
           </div>
 
           {!videoSubmitted ? (
-            <form onSubmit={handleVideoSubmit} style={{ display: 'grid', gap: '16px' }}>
+            <form
+              onSubmit={handleVideoSubmit}
+              style={{ display: 'grid', gap: '16px' }}
+            >
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '6px' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    marginBottom: '6px',
+                  }}
+                >
                   Video URL (TikTok / Instagram Reel / YouTube Shorts)
                 </label>
                 <input
@@ -124,9 +176,22 @@ export default function CreatorsPage() {
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '12px',
+                }}
+              >
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '6px' }}>
+                  <label
+                    style={{
+                      display: 'block',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      marginBottom: '6px',
+                    }}
+                  >
                     Your Email
                   </label>
                   <input
@@ -145,7 +210,14 @@ export default function CreatorsPage() {
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '6px' }}>
+                  <label
+                    style={{
+                      display: 'block',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      marginBottom: '6px',
+                    }}
+                  >
                     Creator Handle
                   </label>
                   <input
@@ -168,7 +240,12 @@ export default function CreatorsPage() {
               <button
                 type="submit"
                 className="btn btn-grad"
-                style={{ padding: '14px', fontSize: '15px', fontWeight: 700, marginTop: '8px' }}
+                style={{
+                  padding: '14px',
+                  fontSize: '15px',
+                  fontWeight: 700,
+                  marginTop: '8px',
+                }}
               >
                 Submit Video for Feature ▷
               </button>
@@ -184,9 +261,14 @@ export default function CreatorsPage() {
               }}
             >
               <div style={{ fontSize: '32px', marginBottom: '8px' }}>🎉</div>
-              <h3 style={{ margin: '0 0 6px', color: '#166534', fontWeight: 800 }}>Submission Received!</h3>
+              <h3
+                style={{ margin: '0 0 6px', color: '#166534', fontWeight: 800 }}
+              >
+                Submission Received!
+              </h3>
               <p style={{ margin: 0, fontSize: '14px', color: '#15803D' }}>
-                We will review your video within 24 hours and feature your session on our official feeds.
+                We will review your video within 24 hours and feature your
+                session on our official feeds.
               </p>
             </div>
           )}
@@ -202,17 +284,43 @@ export default function CreatorsPage() {
             border: '1px solid var(--line)',
           }}
         >
-          <h2 style={{ fontSize: '22px', fontWeight: 800, marginTop: 0, marginBottom: '12px' }}>
+          <h2
+            style={{
+              fontSize: '22px',
+              fontWeight: 800,
+              marginTop: 0,
+              marginBottom: '12px',
+            }}
+          >
             🤝 Join the Ambassador Network
           </h2>
-          <p style={{ color: 'var(--ink-soft)', fontSize: '14.5px', marginTop: 0, marginBottom: '20px', lineHeight: 1.5 }}>
-            Are you a content creator focused on relationships, long-distance love, or aesthetic vlogs? Join our official community!
+          <p
+            style={{
+              color: 'var(--ink-soft)',
+              fontSize: '14.5px',
+              marginTop: 0,
+              marginBottom: '20px',
+              lineHeight: 1.5,
+            }}
+          >
+            Are you a content creator focused on relationships, long-distance
+            love, or aesthetic vlogs? Join our official community!
           </p>
 
           {!registered ? (
-            <form onSubmit={handleRegisterSubmit} style={{ display: 'grid', gap: '16px' }}>
+            <form
+              onSubmit={handleRegisterSubmit}
+              style={{ display: 'grid', gap: '16px' }}
+            >
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '6px' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    marginBottom: '6px',
+                  }}
+                >
                   Full Name
                 </label>
                 <input
@@ -231,9 +339,22 @@ export default function CreatorsPage() {
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '12px',
+                }}
+              >
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '6px' }}>
+                  <label
+                    style={{
+                      display: 'block',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      marginBottom: '6px',
+                    }}
+                  >
                     Email
                   </label>
                   <input
@@ -252,7 +373,14 @@ export default function CreatorsPage() {
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '6px' }}>
+                  <label
+                    style={{
+                      display: 'block',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      marginBottom: '6px',
+                    }}
+                  >
                     WhatsApp / Telegram
                   </label>
                   <input
@@ -273,7 +401,14 @@ export default function CreatorsPage() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '6px' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    marginBottom: '6px',
+                  }}
+                >
                   Primary Social Handle
                 </label>
                 <input
@@ -293,7 +428,14 @@ export default function CreatorsPage() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '6px' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    marginBottom: '6px',
+                  }}
+                >
                   Link to Profile / Media Kit
                 </label>
                 <input
@@ -314,7 +456,12 @@ export default function CreatorsPage() {
               <button
                 type="submit"
                 className="btn btn-primary"
-                style={{ padding: '14px', fontSize: '15px', fontWeight: 700, marginTop: '8px' }}
+                style={{
+                  padding: '14px',
+                  fontSize: '15px',
+                  fontWeight: 700,
+                  marginTop: '8px',
+                }}
               >
                 Apply as Creator Ambassador ▷
               </button>
@@ -330,9 +477,14 @@ export default function CreatorsPage() {
               }}
             >
               <div style={{ fontSize: '32px', marginBottom: '8px' }}>💌</div>
-              <h3 style={{ margin: '0 0 6px', color: '#166534', fontWeight: 800 }}>Application Submitted!</h3>
+              <h3
+                style={{ margin: '0 0 6px', color: '#166534', fontWeight: 800 }}
+              >
+                Application Submitted!
+              </h3>
               <p style={{ margin: 0, fontSize: '14px', color: '#15803D' }}>
-                Thank you for applying. We will reach out to you via WhatsApp or Email within 48 hours!
+                Thank you for applying. We will reach out to you via WhatsApp or
+                Email within 48 hours!
               </p>
             </div>
           )}

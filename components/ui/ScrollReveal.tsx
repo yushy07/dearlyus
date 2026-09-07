@@ -38,7 +38,7 @@ export function ScrollReveal({
       {
         threshold,
         rootMargin: '0px 0px -40px 0px',
-      }
+      },
     );
 
     observer.observe(el);
@@ -52,10 +52,10 @@ export function ScrollReveal({
     animation === 'scale'
       ? 'reveal-scale'
       : animation === 'slide-left'
-      ? 'reveal-slide-left'
-      : animation === 'slide-right'
-      ? 'reveal-slide-right'
-      : 'reveal-fade-up';
+        ? 'reveal-slide-left'
+        : animation === 'slide-right'
+          ? 'reveal-slide-right'
+          : 'reveal-fade-up';
 
   const staggerClass = stagger ? 'reveal-stagger' : '';
 

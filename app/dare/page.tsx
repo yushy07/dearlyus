@@ -8,12 +8,36 @@ import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 import { Confetti } from '@/components/shared/Confetti';
 
 const MINIGAMES = [
-  { id: 'tap', name: '⚡ Fast Tap Duel', desc: 'Tap as fast as you can in 5 seconds — reach maximum CPS to win!' },
-  { id: 'reaction', name: '🎯 Reaction Rush', desc: 'Watch the traffic lights: 🔴 Ready... 🟡 Steady... 🟢 GO! Tap in under 300ms.' },
-  { id: 'coin', name: '🪙 3D Coin Flip', desc: 'Heads or Tails — dramatic 3D spin through the air.' },
-  { id: 'dice', name: '🎲 High Rollers', desc: 'Roll double dice for both players — highest total takes the round.' },
-  { id: 'rps', name: '✂️ Rock Paper Scissors', desc: 'Live 3-second countdown shootout on camera!' },
-  { id: 'timer', name: '⏱️ Blind 5.00s Clock', desc: 'Clock hides after 2.00s! Rely purely on your internal rhythm to stop at 5.00s.' },
+  {
+    id: 'tap',
+    name: '⚡ Fast Tap Duel',
+    desc: 'Tap as fast as you can in 5 seconds — reach maximum CPS to win!',
+  },
+  {
+    id: 'reaction',
+    name: '🎯 Reaction Rush',
+    desc: 'Watch the traffic lights: 🔴 Ready... 🟡 Steady... 🟢 GO! Tap in under 300ms.',
+  },
+  {
+    id: 'coin',
+    name: '🪙 3D Coin Flip',
+    desc: 'Heads or Tails — dramatic 3D spin through the air.',
+  },
+  {
+    id: 'dice',
+    name: '🎲 High Rollers',
+    desc: 'Roll double dice for both players — highest total takes the round.',
+  },
+  {
+    id: 'rps',
+    name: '✂️ Rock Paper Scissors',
+    desc: 'Live 3-second countdown shootout on camera!',
+  },
+  {
+    id: 'timer',
+    name: '⏱️ Blind 5.00s Clock',
+    desc: 'Clock hides after 2.00s! Rely purely on your internal rhythm to stop at 5.00s.',
+  },
 ];
 
 const TRUTHS = [
@@ -86,23 +110,35 @@ export default function DarePage() {
     transportMode: 'mock',
   });
   const [selectedGame, setSelectedGame] = useState(MINIGAMES[0]);
-  const [gameState, setGameState] = useState<'idle' | 'playing' | 'result'>('idle');
+  const [gameState, setGameState] = useState<'idle' | 'playing' | 'result'>(
+    'idle',
+  );
   const [tapCount, setTapCount] = useState(0);
   const [timeLeft, setTimeLeft] = useState(5);
   const [partnerLoser, setPartnerLoser] = useState<string>(partnerB);
-  const [activeCardType, setActiveCardType] = useState<'truth' | 'dare' | null>(null);
+  const [activeCardType, setActiveCardType] = useState<'truth' | 'dare' | null>(
+    null,
+  );
   const [cardPrompt, setCardPrompt] = useState<string>('');
   const [confettiActive, setConfettiActive] = useState(false);
 
   // Minigame states
-  const [reactionStage, setReactionStage] = useState<'red' | 'yellow' | 'green' | 'early' | 'clicked'>('red');
+  const [reactionStage, setReactionStage] = useState<
+    'red' | 'yellow' | 'green' | 'early' | 'clicked'
+  >('red');
   const [reactionMs, setReactionMs] = useState<number | null>(null);
   const [coinFlipping, setCoinFlipping] = useState(false);
   const [coinSide, setCoinSide] = useState<'Heads' | 'Tails' | null>(null);
   const [diceRolling, setDiceRolling] = useState(false);
-  const [diceResults, setDiceResults] = useState<{ you: number[]; partner: number[] }>({ you: [3, 4], partner: [2, 5] });
+  const [diceResults, setDiceResults] = useState<{
+    you: number[];
+    partner: number[];
+  }>({ you: [3, 4], partner: [2, 5] });
   const [rpsCountdown, setRpsCountdown] = useState<number | null>(null);
-  const [rpsResults, setRpsResults] = useState<{ you: string; partner: string } | null>(null);
+  const [rpsResults, setRpsResults] = useState<{
+    you: string;
+    partner: string;
+  } | null>(null);
   const [timerStopSec, setTimerStopSec] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
 
@@ -248,7 +284,11 @@ export default function DarePage() {
   };
 
   const handleRpsPick = (pick: 'Rock' | 'Paper' | 'Scissors') => {
-    const opts: Array<'Rock' | 'Paper' | 'Scissors'> = ['Rock', 'Paper', 'Scissors'];
+    const opts: Array<'Rock' | 'Paper' | 'Scissors'> = [
+      'Rock',
+      'Paper',
+      'Scissors',
+    ];
     const pPick = opts[Math.floor(Math.random() * opts.length)];
     setRpsResults({ you: pick, partner: pPick });
     setGameState('result');
@@ -289,18 +329,47 @@ export default function DarePage() {
   const currentCps = (tapCount / Math.max(0.2, 5 - timeLeft)).toFixed(1);
 
   return (
-    <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px', color: 'var(--ink)' }}>
+    <div
+      style={{
+        background: 'var(--paper)',
+        minHeight: '100vh',
+        paddingBottom: '80px',
+        color: 'var(--ink)',
+      }}
+    >
       <Confetti active={confettiActive} />
 
       <header className="bar">
-        <div className="wrap" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div
+          className="wrap"
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <Link className="brand" href="/" onClick={() => sounds.playPop()} aria-label="Dearly Us Home">
+            <Link
+              className="brand"
+              href="/"
+              onClick={() => sounds.playPop()}
+              aria-label="Dearly Us Home"
+            >
               <span className="brand-emblem" aria-hidden="true">
                 <svg width="28" height="28" viewBox="0 0 128 128" fill="none">
                   <rect width="128" height="128" rx="36" fill="#1C1924" />
-                  <path d="M64 77 C51 93 29 86 29 64 C29 45 48 38 64 58" stroke="#FF4E78" strokeWidth="12" strokeLinecap="round" />
-                  <path d="M64 58 C80 38 99 45 99 64 C99 86 77 93 64 77" stroke="#437EEB" strokeWidth="12" strokeLinecap="round" />
+                  <path
+                    d="M64 77 C51 93 29 86 29 64 C29 45 48 38 64 58"
+                    stroke="#FF4E78"
+                    strokeWidth="12"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M64 58 C80 38 99 45 99 64 C99 86 77 93 64 77"
+                    stroke="#437EEB"
+                    strokeWidth="12"
+                    strokeLinecap="round"
+                  />
                   <circle cx="64" cy="67" r="5" fill="#FFFFFF" />
                 </svg>
               </span>
@@ -327,10 +396,16 @@ export default function DarePage() {
                 gap: '6px',
               }}
             >
-              <span>{partnerA} vs {partnerB}</span>
+              <span>
+                {partnerA} vs {partnerB}
+              </span>
             </span>
 
-            <Link className="btn btn-ghost" href="/activity" onClick={() => sounds.playPop()}>
+            <Link
+              className="btn btn-ghost"
+              href="/activity"
+              onClick={() => sounds.playPop()}
+            >
               Activities ▷
             </Link>
           </div>
@@ -340,16 +415,27 @@ export default function DarePage() {
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '760px' }}>
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
           <span className="eyebrow">Truth or Dare · 6 Interactive Arenas</span>
-          <h1 style={{ fontSize: 'clamp(28px, 4vw, 42px)', marginBottom: '8px' }}>
+          <h1
+            style={{ fontSize: 'clamp(28px, 4vw, 42px)', marginBottom: '8px' }}
+          >
             Lose the minigame, <span className="grad">face your dare</span>.
           </h1>
           <p style={{ color: 'var(--ink-soft)', fontSize: '15px' }}>
-            Fast reflex challenges with custom physics and animations. Loser faces a spicy truth or dare!
+            Fast reflex challenges with custom physics and animations. Loser
+            faces a spicy truth or dare!
           </p>
         </div>
 
         {/* Minigames Selector Tabs */}
-        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '12px', marginBottom: '24px' }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: '8px',
+            overflowX: 'auto',
+            paddingBottom: '12px',
+            marginBottom: '24px',
+          }}
+        >
           {MINIGAMES.map((game) => (
             <button
               key={game.id}
@@ -363,9 +449,14 @@ export default function DarePage() {
               style={{
                 padding: '10px 16px',
                 borderRadius: '12px',
-                border: selectedGame.id === game.id ? '2px solid var(--pink)' : '1px solid var(--line)',
-                background: selectedGame.id === game.id ? 'var(--pink-tint)' : '#fff',
-                color: selectedGame.id === game.id ? 'var(--pink)' : 'var(--ink)',
+                border:
+                  selectedGame.id === game.id
+                    ? '2px solid var(--pink)'
+                    : '1px solid var(--line)',
+                background:
+                  selectedGame.id === game.id ? 'var(--pink-tint)' : '#fff',
+                color:
+                  selectedGame.id === game.id ? 'var(--pink)' : 'var(--ink)',
                 fontWeight: 700,
                 fontSize: '13px',
                 whiteSpace: 'nowrap',
@@ -391,8 +482,20 @@ export default function DarePage() {
             overflow: 'hidden',
           }}
         >
-          <h2 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '6px' }}>{selectedGame.name}</h2>
-          <p style={{ color: 'var(--ink-soft)', fontSize: '15px', marginBottom: '24px', maxWidth: '540px', margin: '0 auto 24px' }}>
+          <h2
+            style={{ fontSize: '24px', fontWeight: 800, marginBottom: '6px' }}
+          >
+            {selectedGame.name}
+          </h2>
+          <p
+            style={{
+              color: 'var(--ink-soft)',
+              fontSize: '15px',
+              marginBottom: '24px',
+              maxWidth: '540px',
+              margin: '0 auto 24px',
+            }}
+          >
             {selectedGame.desc}
           </p>
 
@@ -410,7 +513,11 @@ export default function DarePage() {
               <button
                 className="btn btn-grad"
                 onClick={handleStartRound}
-                style={{ padding: '14px 36px', fontSize: '18px', borderRadius: '14px' }}
+                style={{
+                  padding: '14px 36px',
+                  fontSize: '18px',
+                  borderRadius: '14px',
+                }}
               >
                 Start Duel Round ▷
               </button>
@@ -422,12 +529,41 @@ export default function DarePage() {
             <div style={{ padding: '20px 0' }}>
               {/* 1. Fast Tap Arena */}
               {selectedGame.id === 'tap' && (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px' }}>
-                  <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '28px', fontWeight: 900, color: 'var(--pink)' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '14px',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '20px',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: '28px',
+                        fontWeight: 900,
+                        color: 'var(--pink)',
+                      }}
+                    >
                       00:0{timeLeft}s
                     </span>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '16px', background: 'var(--paper-raised)', padding: '4px 10px', borderRadius: '8px', border: '1px solid var(--line)' }}>
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: '16px',
+                        background: 'var(--paper-raised)',
+                        padding: '4px 10px',
+                        borderRadius: '8px',
+                        border: '1px solid var(--line)',
+                      }}
+                    >
                       ⚡ {currentCps} CPS
                     </span>
                   </div>
@@ -441,7 +577,8 @@ export default function DarePage() {
                       width: '150px',
                       height: '150px',
                       borderRadius: '50%',
-                      background: 'linear-gradient(135deg, var(--pink), var(--blue))',
+                      background:
+                        'linear-gradient(135deg, var(--pink), var(--blue))',
                       color: '#fff',
                       border: 'none',
                       fontSize: '32px',
@@ -453,8 +590,11 @@ export default function DarePage() {
                       userSelect: 'none',
                     }}
                   >
-                    TAP!<br />
-                    <span style={{ fontSize: '20px', opacity: 0.9 }}>{tapCount}</span>
+                    TAP!
+                    <br />
+                    <span style={{ fontSize: '20px', opacity: 0.9 }}>
+                      {tapCount}
+                    </span>
                   </button>
                   <p style={{ color: 'var(--ink-soft)', fontSize: '13px' }}>
                     Target: 24 taps (4.8 CPS) to avoid the punishment!
@@ -475,8 +615,8 @@ export default function DarePage() {
                       reactionStage === 'green'
                         ? '#10B981'
                         : reactionStage === 'yellow'
-                        ? '#F59E0B'
-                        : '#EF4444',
+                          ? '#F59E0B'
+                          : '#EF4444',
                     color: '#fff',
                     cursor: 'pointer',
                     userSelect: 'none',
@@ -484,18 +624,62 @@ export default function DarePage() {
                     transition: 'background 0.12s ease',
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '16px' }}>
-                    <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: reactionStage === 'red' ? '#fff' : 'rgba(255,255,255,0.3)', border: '2px solid rgba(0,0,0,0.2)' }} />
-                    <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: reactionStage === 'yellow' ? '#fff' : 'rgba(255,255,255,0.3)', border: '2px solid rgba(0,0,0,0.2)' }} />
-                    <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: reactionStage === 'green' ? '#fff' : 'rgba(255,255,255,0.3)', border: '2px solid rgba(0,0,0,0.2)' }} />
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      gap: '12px',
+                      marginBottom: '16px',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '22px',
+                        height: '22px',
+                        borderRadius: '50%',
+                        background:
+                          reactionStage === 'red'
+                            ? '#fff'
+                            : 'rgba(255,255,255,0.3)',
+                        border: '2px solid rgba(0,0,0,0.2)',
+                      }}
+                    />
+                    <div
+                      style={{
+                        width: '22px',
+                        height: '22px',
+                        borderRadius: '50%',
+                        background:
+                          reactionStage === 'yellow'
+                            ? '#fff'
+                            : 'rgba(255,255,255,0.3)',
+                        border: '2px solid rgba(0,0,0,0.2)',
+                      }}
+                    />
+                    <div
+                      style={{
+                        width: '22px',
+                        height: '22px',
+                        borderRadius: '50%',
+                        background:
+                          reactionStage === 'green'
+                            ? '#fff'
+                            : 'rgba(255,255,255,0.3)',
+                        border: '2px solid rgba(0,0,0,0.2)',
+                      }}
+                    />
                   </div>
                   <div style={{ fontSize: '24px', fontWeight: 900 }}>
                     {reactionStage === 'green' && '⚡ TAP NOW! ⚡'}
                     {reactionStage === 'yellow' && 'GET STEADY...'}
                     {reactionStage === 'red' && 'WAIT FOR GREEN...'}
                   </div>
-                  <div style={{ fontSize: '13px', opacity: 0.9, marginTop: '6px' }}>
-                    {reactionStage === 'green' ? 'Click as fast as humanly possible!' : 'Do NOT tap early or you forfeit!'}
+                  <div
+                    style={{ fontSize: '13px', opacity: 0.9, marginTop: '6px' }}
+                  >
+                    {reactionStage === 'green'
+                      ? 'Click as fast as humanly possible!'
+                      : 'Do NOT tap early or you forfeit!'}
                   </div>
                 </div>
               )}
@@ -520,7 +704,13 @@ export default function DarePage() {
                   >
                     🪙
                   </div>
-                  <h3 style={{ fontSize: '20px', fontWeight: 800, marginTop: '16px' }}>
+                  <h3
+                    style={{
+                      fontSize: '20px',
+                      fontWeight: 800,
+                      marginTop: '16px',
+                    }}
+                  >
                     Spinning through the air...
                   </h3>
                   <p style={{ color: 'var(--ink-soft)', fontSize: '14px' }}>
@@ -532,12 +722,39 @@ export default function DarePage() {
               {/* 4. High Rollers Dice */}
               {selectedGame.id === 'dice' && (
                 <div style={{ padding: '24px 0' }}>
-                  <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', marginBottom: '16px' }}>
-                    <div style={{ animation: diceRolling ? 'bounce 0.4s infinite' : 'none' }}>
-                      <DiceFace val={diceRolling ? Math.floor(Math.random() * 6) + 1 : 6} />
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '20px',
+                      justifyContent: 'center',
+                      marginBottom: '16px',
+                    }}
+                  >
+                    <div
+                      style={{
+                        animation: diceRolling
+                          ? 'bounce 0.4s infinite'
+                          : 'none',
+                      }}
+                    >
+                      <DiceFace
+                        val={
+                          diceRolling ? Math.floor(Math.random() * 6) + 1 : 6
+                        }
+                      />
                     </div>
-                    <div style={{ animation: diceRolling ? 'bounce 0.4s infinite 0.1s' : 'none' }}>
-                      <DiceFace val={diceRolling ? Math.floor(Math.random() * 6) + 1 : 5} />
+                    <div
+                      style={{
+                        animation: diceRolling
+                          ? 'bounce 0.4s infinite 0.1s'
+                          : 'none',
+                      }}
+                    >
+                      <DiceFace
+                        val={
+                          diceRolling ? Math.floor(Math.random() * 6) + 1 : 5
+                        }
+                      />
                     </div>
                   </div>
                   <h3 style={{ fontSize: '20px', fontWeight: 800 }}>
@@ -551,19 +768,44 @@ export default function DarePage() {
                 <div>
                   {rpsCountdown !== null ? (
                     <div style={{ padding: '20px 0' }}>
-                      <div style={{ fontSize: '72px', fontWeight: 900, color: 'var(--pink)', animation: 'bounce 0.5s infinite' }}>
+                      <div
+                        style={{
+                          fontSize: '72px',
+                          fontWeight: 900,
+                          color: 'var(--pink)',
+                          animation: 'bounce 0.5s infinite',
+                        }}
+                      >
                         {rpsCountdown}
                       </div>
-                      <h3 style={{ fontSize: '22px', fontWeight: 800, marginTop: '8px' }}>
+                      <h3
+                        style={{
+                          fontSize: '22px',
+                          fontWeight: 800,
+                          marginTop: '8px',
+                        }}
+                      >
                         Get your hand ready on camera!
                       </h3>
                     </div>
                   ) : (
                     <div>
-                      <h3 style={{ fontSize: '18px', fontWeight: 800, marginBottom: '16px' }}>
+                      <h3
+                        style={{
+                          fontSize: '18px',
+                          fontWeight: 800,
+                          marginBottom: '16px',
+                        }}
+                      >
                         Shoot your choice:
                       </h3>
-                      <div style={{ display: 'flex', gap: '14px', justifyContent: 'center' }}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          gap: '14px',
+                          justifyContent: 'center',
+                        }}
+                      >
                         {[
                           { id: 'Rock', icon: '🪨', label: 'Rock' },
                           { id: 'Paper', icon: '📄', label: 'Paper' },
@@ -604,17 +846,30 @@ export default function DarePage() {
                       marginBottom: '10px',
                     }}
                   >
-                    {timerStopSec >= 2.0 && timerRunning ? '??:??s' : `${timerStopSec.toFixed(2)}s`}
+                    {timerStopSec >= 2.0 && timerRunning
+                      ? '??:??s'
+                      : `${timerStopSec.toFixed(2)}s`}
                   </div>
                   {timerStopSec >= 2.0 && timerRunning && (
-                    <div style={{ color: '#EF4444', fontWeight: 700, fontSize: '14px', marginBottom: '14px' }}>
+                    <div
+                      style={{
+                        color: '#EF4444',
+                        fontWeight: 700,
+                        fontSize: '14px',
+                        marginBottom: '14px',
+                      }}
+                    >
                       🙈 BLIND MODE ACTIVATED! Count 3, 4, 5 in your head!
                     </div>
                   )}
                   <button
                     className="btn btn-grad"
                     onClick={handleStopTimer}
-                    style={{ padding: '16px 40px', fontSize: '18px', borderRadius: '14px' }}
+                    style={{
+                      padding: '16px 40px',
+                      fontSize: '18px',
+                      borderRadius: '14px',
+                    }}
                   >
                     ⏹️ STOP AT EXACTLY 5.00s!
                   </button>
@@ -627,34 +882,80 @@ export default function DarePage() {
           {gameState === 'result' && !activeCardType && (
             <div style={{ padding: '20px 0' }}>
               <div style={{ fontSize: '48px', marginBottom: '8px' }}>💥</div>
-              <h3 style={{ fontSize: '26px', fontWeight: 900, marginBottom: '6px' }}>
-                <span style={{ color: 'var(--pink)' }}>{partnerLoser}</span> Lost the Round!
+              <h3
+                style={{
+                  fontSize: '26px',
+                  fontWeight: 900,
+                  marginBottom: '6px',
+                }}
+              >
+                <span style={{ color: 'var(--pink)' }}>{partnerLoser}</span>{' '}
+                Lost the Round!
               </h3>
 
               {/* Game specific breakdown */}
               {selectedGame.id === 'tap' && (
-                <p style={{ color: 'var(--ink-soft)', fontSize: '15px', marginBottom: '18px' }}>
+                <p
+                  style={{
+                    color: 'var(--ink-soft)',
+                    fontSize: '15px',
+                    marginBottom: '18px',
+                  }}
+                >
                   Scored {tapCount} taps ({currentCps} CPS). Needed 24 to win!
                 </p>
               )}
               {selectedGame.id === 'reaction' && reactionStage === 'early' && (
-                <p style={{ color: '#EF4444', fontSize: '15px', fontWeight: 700, marginBottom: '18px' }}>
+                <p
+                  style={{
+                    color: '#EF4444',
+                    fontSize: '15px',
+                    fontWeight: 700,
+                    marginBottom: '18px',
+                  }}
+                >
                   False start penalty! Tapped before green light flashed!
                 </p>
               )}
               {selectedGame.id === 'reaction' && reactionMs && (
-                <p style={{ color: 'var(--ink-soft)', fontSize: '15px', marginBottom: '18px' }}>
-                  Reaction time: <b>{reactionMs}ms</b> ({reactionMs < 280 ? '⚡ Lightning fast!' : reactionMs < 360 ? '👍 Decent speed' : '😴 Sluggish!'}).
+                <p
+                  style={{
+                    color: 'var(--ink-soft)',
+                    fontSize: '15px',
+                    marginBottom: '18px',
+                  }}
+                >
+                  Reaction time: <b>{reactionMs}ms</b> (
+                  {reactionMs < 280
+                    ? '⚡ Lightning fast!'
+                    : reactionMs < 360
+                      ? '👍 Decent speed'
+                      : '😴 Sluggish!'}
+                  ).
                 </p>
               )}
               {selectedGame.id === 'coin' && coinSide && (
-                <p style={{ color: 'var(--ink-soft)', fontSize: '15px', marginBottom: '18px' }}>
+                <p
+                  style={{
+                    color: 'var(--ink-soft)',
+                    fontSize: '15px',
+                    marginBottom: '18px',
+                  }}
+                >
                   Landed on: <b>{coinSide}</b>!
                 </p>
               )}
               {selectedGame.id === 'dice' && (
                 <div style={{ marginBottom: '18px' }}>
-                  <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', alignItems: 'center', marginBottom: '8px' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '10px',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      marginBottom: '8px',
+                    }}
+                  >
                     <span>{partnerA}:</span>
                     <DiceFace val={diceResults.you[0]} />
                     <DiceFace val={diceResults.you[1]} />
@@ -668,20 +969,47 @@ export default function DarePage() {
                 </div>
               )}
               {selectedGame.id === 'rps' && rpsResults && (
-                <p style={{ color: 'var(--ink-soft)', fontSize: '15px', marginBottom: '18px' }}>
-                  {partnerA}: <b>{rpsResults.you}</b> vs {partnerB}: <b>{rpsResults.partner}</b>
+                <p
+                  style={{
+                    color: 'var(--ink-soft)',
+                    fontSize: '15px',
+                    marginBottom: '18px',
+                  }}
+                >
+                  {partnerA}: <b>{rpsResults.you}</b> vs {partnerB}:{' '}
+                  <b>{rpsResults.partner}</b>
                 </p>
               )}
               {selectedGame.id === 'timer' && (
-                <p style={{ color: 'var(--ink-soft)', fontSize: '15px', marginBottom: '18px' }}>
-                  Stopped at: <b>{timerStopSec.toFixed(2)}s</b> (off by {Math.abs(5.0 - timerStopSec).toFixed(2)}s!).
+                <p
+                  style={{
+                    color: 'var(--ink-soft)',
+                    fontSize: '15px',
+                    marginBottom: '18px',
+                  }}
+                >
+                  Stopped at: <b>{timerStopSec.toFixed(2)}s</b> (off by{' '}
+                  {Math.abs(5.0 - timerStopSec).toFixed(2)}s!).
                 </p>
               )}
 
-              <p style={{ color: 'var(--ink)', fontSize: '16px', fontWeight: 700, marginBottom: '20px' }}>
+              <p
+                style={{
+                  color: 'var(--ink)',
+                  fontSize: '16px',
+                  fontWeight: 700,
+                  marginBottom: '20px',
+                }}
+              >
                 {partnerLoser}, pick your punishment:
               </p>
-              <div style={{ display: 'flex', gap: '14px', justifyContent: 'center' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '14px',
+                  justifyContent: 'center',
+                }}
+              >
                 <button
                   className="btn"
                   onClick={pickTruth}
@@ -700,7 +1028,11 @@ export default function DarePage() {
                 <button
                   className="btn btn-grad"
                   onClick={pickDare}
-                  style={{ padding: '14px 28px', fontSize: '16px', borderRadius: '12px' }}
+                  style={{
+                    padding: '14px 28px',
+                    fontSize: '16px',
+                    borderRadius: '12px',
+                  }}
                 >
                   🔥 Pick a Dare
                 </button>
@@ -715,7 +1047,10 @@ export default function DarePage() {
                 marginTop: '20px',
                 padding: '28px 24px',
                 borderRadius: '16px',
-                background: activeCardType === 'truth' ? 'var(--blue-tint)' : 'var(--pink-tint)',
+                background:
+                  activeCardType === 'truth'
+                    ? 'var(--blue-tint)'
+                    : 'var(--pink-tint)',
                 border: `2px solid ${activeCardType === 'truth' ? 'var(--blue)' : 'var(--pink)'}`,
                 boxShadow: 'var(--shadow-md)',
               }}
@@ -726,17 +1061,32 @@ export default function DarePage() {
                   fontFamily: 'var(--font-mono)',
                   fontSize: '12px',
                   fontWeight: 800,
-                  color: activeCardType === 'truth' ? 'var(--blue)' : 'var(--pink)',
+                  color:
+                    activeCardType === 'truth' ? 'var(--blue)' : 'var(--pink)',
                   textTransform: 'uppercase',
                   marginBottom: '10px',
                 }}
               >
-                {activeCardType === 'truth' ? '💬 Truth for ' : '🔥 Dare for '} {partnerLoser}
+                {activeCardType === 'truth' ? '💬 Truth for ' : '🔥 Dare for '}{' '}
+                {partnerLoser}
               </span>
-              <h3 style={{ fontSize: '20px', fontWeight: 800, lineHeight: 1.4, marginBottom: '20px' }}>
+              <h3
+                style={{
+                  fontSize: '20px',
+                  fontWeight: 800,
+                  lineHeight: 1.4,
+                  marginBottom: '20px',
+                }}
+              >
                 &ldquo;{cardPrompt}&rdquo;
               </h3>
-              <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '10px',
+                  justifyContent: 'center',
+                }}
+              >
                 <button
                   className="btn btn-grad"
                   onClick={() => {

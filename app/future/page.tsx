@@ -13,14 +13,49 @@ interface VisionItem {
 }
 
 const VISION_ELEMENTS: VisionItem[] = [
-  { id: '1', category: 'Home', title: 'Cozy Loft with Big Windows', emoji: '🏡' },
+  {
+    id: '1',
+    category: 'Home',
+    title: 'Cozy Loft with Big Windows',
+    emoji: '🏡',
+  },
   { id: '2', category: 'Pets', title: 'Fluffy Golden Retriever', emoji: '🐕' },
-  { id: '3', category: 'Travel', title: 'Cherry Blossom Trip in Japan', emoji: '🌸' },
-  { id: '4', category: 'Milestone', title: 'Sunset Beach Wedding', emoji: '💍' },
-  { id: '5', category: 'Ritual', title: 'Sunday Morning Coffee & Vinyls', emoji: '☕' },
-  { id: '6', category: 'Career', title: 'Both Working in Same City', emoji: '💼' },
-  { id: '7', category: 'Travel', title: 'Euro-rail Summer Roadtrip', emoji: '🚆' },
-  { id: '8', category: 'Home', title: 'Big Plant Balcony with Fairy Lights', emoji: '🌿' },
+  {
+    id: '3',
+    category: 'Travel',
+    title: 'Cherry Blossom Trip in Japan',
+    emoji: '🌸',
+  },
+  {
+    id: '4',
+    category: 'Milestone',
+    title: 'Sunset Beach Wedding',
+    emoji: '💍',
+  },
+  {
+    id: '5',
+    category: 'Ritual',
+    title: 'Sunday Morning Coffee & Vinyls',
+    emoji: '☕',
+  },
+  {
+    id: '6',
+    category: 'Career',
+    title: 'Both Working in Same City',
+    emoji: '💼',
+  },
+  {
+    id: '7',
+    category: 'Travel',
+    title: 'Euro-rail Summer Roadtrip',
+    emoji: '🚆',
+  },
+  {
+    id: '8',
+    category: 'Home',
+    title: 'Big Plant Balcony with Fairy Lights',
+    emoji: '🌿',
+  },
 ];
 
 export default function FuturePage() {
@@ -83,7 +118,13 @@ export default function FuturePage() {
   };
 
   return (
-    <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px' }}>
+    <div
+      style={{
+        background: 'var(--paper)',
+        minHeight: '100vh',
+        paddingBottom: '80px',
+      }}
+    >
       <header className="bar">
         <div className="wrap">
           <Link className="brand" href="/">
@@ -102,11 +143,14 @@ export default function FuturePage() {
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '860px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <CoupleNameBar />
-          <h1 style={{ fontSize: 'clamp(28px, 4vw, 42px)', marginBottom: '10px' }}>
+          <h1
+            style={{ fontSize: 'clamp(28px, 4vw, 42px)', marginBottom: '10px' }}
+          >
             Design your future <span className="grad">together</span>.
           </h1>
           <p style={{ color: 'var(--ink-soft)', fontSize: '16px' }}>
-            Pick and pin your dreams — homes, travel, pets, milestones — into a shared scrapbook vision board.
+            Pick and pin your dreams — homes, travel, pets, milestones — into a
+            shared scrapbook vision board.
           </p>
         </div>
 
@@ -122,9 +166,24 @@ export default function FuturePage() {
             position: 'relative',
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-            <h2 style={{ fontSize: '20px', fontWeight: 800 }}>{partnerA} &amp; {partnerB}&apos;s Life Vision</h2>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--ink-soft)' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '24px',
+            }}
+          >
+            <h2 style={{ fontSize: '20px', fontWeight: 800 }}>
+              {partnerA} &amp; {partnerB}&apos;s Life Vision
+            </h2>
+            <span
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '12px',
+                color: 'var(--ink-soft)',
+              }}
+            >
               {boardItems.length} Dreams Pinned
             </span>
           </div>
@@ -168,17 +227,45 @@ export default function FuturePage() {
                 >
                   ✕
                 </button>
-                <div style={{ fontSize: '28px', marginBottom: '8px' }}>{item.emoji}</div>
-                <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--pink)', textTransform: 'uppercase', fontWeight: 700 }}>
+                <div style={{ fontSize: '28px', marginBottom: '8px' }}>
+                  {item.emoji}
+                </div>
+                <div
+                  style={{
+                    fontSize: '11px',
+                    fontFamily: 'var(--font-mono)',
+                    color: 'var(--pink)',
+                    textTransform: 'uppercase',
+                    fontWeight: 700,
+                  }}
+                >
                   {item.category}
                 </div>
-                <h4 style={{ fontSize: '14px', fontWeight: 700, margin: '4px 0 0' }}>{item.title}</h4>
+                <h4
+                  style={{
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    margin: '4px 0 0',
+                  }}
+                >
+                  {item.title}
+                </h4>
               </div>
             ))}
           </div>
 
-          <div style={{ marginTop: '24px', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-            <button className="btn btn-grad" onClick={() => saveBoard(boardItems)}>
+          <div
+            style={{
+              marginTop: '24px',
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'flex-end',
+            }}
+          >
+            <button
+              className="btn btn-grad"
+              onClick={() => saveBoard(boardItems)}
+            >
               {saved ? '✓ Saved to Shared Album!' : 'Save Vision Board 💾'}
             </button>
           </div>
@@ -194,8 +281,19 @@ export default function FuturePage() {
             boxShadow: 'var(--shadow)',
           }}
         >
-          <h3 style={{ fontSize: '17px', fontWeight: 800, marginBottom: '14px' }}>Ideas to pin to your board:</h3>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '20px' }}>
+          <h3
+            style={{ fontSize: '17px', fontWeight: 800, marginBottom: '14px' }}
+          >
+            Ideas to pin to your board:
+          </h3>
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '10px',
+              marginBottom: '20px',
+            }}
+          >
             {VISION_ELEMENTS.map((el) => (
               <button
                 key={el.id}

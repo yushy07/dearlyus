@@ -1,6 +1,14 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useCallback, useMemo, useRef } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+} from 'react';
 import { useSupabaseSession } from './SupabaseSessionContext';
 import { useActiveRoom } from './ActiveRoomContext';
 import {
@@ -32,17 +40,24 @@ export interface ActivitySessionContextValue {
   sessionState: StandardSessionState;
   recoveryState: StandardRecoveryState;
   getServerNow: () => number;
-  startActivity: (activityType: string, options?: Record<string, unknown>) => Promise<{ sessionId: string; activityType: string }>;
+  startActivity: (
+    activityType: string,
+    options?: Record<string, unknown>,
+  ) => Promise<{ sessionId: string; activityType: string }>;
   sendEvent: (type: string, payload: unknown) => Promise<ActivityEvent | null>;
   sendTransient: (event: string, payload: unknown) => void;
   recover: (afterSequence?: number) => Promise<void>;
   completeActivity: (resultSnapshot: Record<string, unknown>) => Promise<void>;
   setPaused: (paused: boolean) => Promise<void>;
   registerEventHandler: (handler: (event: ActivityEvent) => void) => () => void;
-  registerTransientHandler: (event: string, handler: (payload: any) => void) => () => void;
+  registerTransientHandler: (
+    event: string,
+    handler: (payload: any) => void,
+  ) => () => void;
 }
 
-const ActivitySessionContext = createContext<ActivitySessionContextValue | null>(null);
+const ActivitySessionContext =
+  createContext<ActivitySessionContextValue | null>(null);
 
 export function ActivitySessionProvider({
   children,
@@ -57,17 +72,25 @@ export function ActivitySessionProvider({
   const { room } = useActiveRoom();
 
   const [session, setSession] = useState<ActivitySession | null>(null);
-  const [sessionId, setSessionId] = useState<string | null>(initialSessionId || room?.currentSessionId || null);
-  const [activityType, setActivityType] = useState<string | null>(initialActivityType || null);
+  const [sessionId, setSessionId] = useState<string | null>(
+    initialSessionId || room?.currentSessionId || null,
+  );
+  const [activityType, setActivityType] = useState<string | null>(
+    initialActivityType || null,
+  );
   const [revision, setRevision] = useState<number>(0);
   const [lastSequence, setLastSequence] = useState<number>(0);
   const [events, setEvents] = useState<ActivityEvent[]>([]);
   const [lastEvent, setLastEvent] = useState<ActivityEvent | null>(null);
-  const [loading, setLoading] = useState<boolean>(Boolean(initialSessionId || room?.currentSessionId));
+  const [loading, setLoading] = useState<boolean>(
+    Boolean(initialSessionId || room?.currentSessionId),
+  );
   const [isReplaying, setIsReplaying] = useState(false);
   const [serverTimeOffset, setServerTimeOffset] = useState<number>(0);
-  const [sessionState, setSessionState] = useState<StandardSessionState>('drafting');
-  const [recoveryState, setRecoveryState] = useState<StandardRecoveryState>('idle');
+  const [sessionState, setSessionState] =
+    useState<StandardSessionState>('drafting');
+  const [recoveryState, setRecoveryState] =
+    useState<StandardRecoveryState>('idle');
 
   const seenEventIds = useRef<Set<string>>(new Set());
   const lastSequenceRef = useRef<number>(0);
@@ -75,28 +98,36 @@ export function ActivitySessionProvider({
 
   // Transient channel ref and handler registry
   const transientChannelRef = useRef<any>(null);
-  const transientHandlers = useRef<Map<string, Set<(payload: any) => void>>>(new Map());
+  const transientHandlers = useRef<Map<string, Set<(payload: any) => void>>>(
+    new Map(),
+  );
 
   const getServerNow = useCallback(() => {
     return Date.now() + serverTimeOffset;
   }, [serverTimeOffset]);
 
-  const registerEventHandler = useCallback((handler: (event: ActivityEvent) => void) => {
-    eventHandlers.current.add(handler);
-    return () => {
-      eventHandlers.current.delete(handler);
-    };
-  }, []);
+  const registerEventHandler = useCallback(
+    (handler: (event: ActivityEvent) => void) => {
+      eventHandlers.current.add(handler);
+      return () => {
+        eventHandlers.current.delete(handler);
+      };
+    },
+    [],
+  );
 
-  const registerTransientHandler = useCallback((event: string, handler: (payload: any) => void) => {
-    if (!transientHandlers.current.has(event)) {
-      transientHandlers.current.set(event, new Set());
-    }
-    transientHandlers.current.get(event)!.add(handler);
-    return () => {
-      transientHandlers.current.get(event)?.delete(handler);
-    };
-  }, []);
+  const registerTransientHandler = useCallback(
+    (event: string, handler: (payload: any) => void) => {
+      if (!transientHandlers.current.has(event)) {
+        transientHandlers.current.set(event, new Set());
+      }
+      transientHandlers.current.get(event)!.add(handler);
+      return () => {
+        transientHandlers.current.get(event)?.delete(handler);
+      };
+    },
+    [],
+  );
 
   const sendTransient = useCallback((event: string, payload: unknown) => {
     if (transientChannelRef.current) {
@@ -114,9 +145,12 @@ export function ActivitySessionProvider({
     seenEventIds.current.add(event.id);
 
     // 2. Detect event gap and request replay
-    if (event.sequence > lastSequenceRef.current + 1 && lastSequenceRef.current > 0) {
+    if (
+      event.sequence > lastSequenceRef.current + 1 &&
+      lastSequenceRef.current > 0
+    ) {
       console.warn(
-        `[ActivitySession] Event gap detected: last=${lastSequenceRef.current}, incoming=${event.sequence}. Requesting replay.`
+        `[ActivitySession] Event gap detected: last=${lastSequenceRef.current}, incoming=${event.sequence}. Requesting replay.`,
       );
       void recover(lastSequenceRef.current);
     }
@@ -188,7 +222,7 @@ export function ActivitySessionProvider({
         setLoading(false);
       }
     },
-    [sessionId, room?.currentSessionId, user, dispatchEvent]
+    [sessionId, room?.currentSessionId, user, dispatchEvent],
   );
 
   useEffect(() => {
@@ -234,7 +268,8 @@ export function ActivitySessionProvider({
         },
         (change: any) => {
           const row = change.new;
-          if (sessionId && row.session_id && row.session_id !== sessionId) return;
+          if (sessionId && row.session_id && row.session_id !== sessionId)
+            return;
 
           dispatchEvent({
             id: row.id,
@@ -246,7 +281,7 @@ export function ActivitySessionProvider({
             clientCreatedAt: row.client_created_at,
             createdAt: row.created_at,
           });
-        }
+        },
       )
       .subscribe((status: string) => {
         if (status === 'SUBSCRIBED') {
@@ -292,7 +327,10 @@ export function ActivitySessionProvider({
     };
   }, [supabase, room?.id]);
 
-  const startActivityHandler = async (type: string, options: Record<string, unknown> = {}) => {
+  const startActivityHandler = async (
+    type: string,
+    options: Record<string, unknown> = {},
+  ) => {
     if (!room?.code || !user || !supabase) {
       // Local mock fallback for development and local testing
       const mockId = `mock-${Date.now()}`;
@@ -319,13 +357,19 @@ export function ActivitySessionProvider({
       setEvents([]);
       setSessionState('active');
       setRecoveryState('recovered');
-      return { sessionId: started.sessionId, activityType: started.activityType };
+      return {
+        sessionId: started.sessionId,
+        activityType: started.activityType,
+      };
     } finally {
       setLoading(false);
     }
   };
 
-  const sendEventHandler = async (type: string, payload: unknown): Promise<ActivityEvent | null> => {
+  const sendEventHandler = async (
+    type: string,
+    payload: unknown,
+  ): Promise<ActivityEvent | null> => {
     const activeSessionId = sessionId || room?.currentSessionId;
     if (!activeSessionId) return null;
 
@@ -346,7 +390,12 @@ export function ActivitySessionProvider({
     }
 
     try {
-      const result = await rpcAppendActivityEvent(activeSessionId, type, payload, revision || undefined);
+      const result = await rpcAppendActivityEvent(
+        activeSessionId,
+        type,
+        payload,
+        revision || undefined,
+      );
       if (!result.accepted) return null;
 
       setRevision(result.revision);
@@ -360,7 +409,9 @@ export function ActivitySessionProvider({
     }
   };
 
-  const completeActivityHandler = async (resultSnapshot: Record<string, unknown>) => {
+  const completeActivityHandler = async (
+    resultSnapshot: Record<string, unknown>,
+  ) => {
     const activeSessionId = sessionId || room?.currentSessionId;
     if (!activeSessionId) return;
     setSessionState('completed');
@@ -423,10 +474,14 @@ export function ActivitySessionProvider({
       setPausedHandler,
       registerEventHandler,
       registerTransientHandler,
-    ]
+    ],
   );
 
-  return <ActivitySessionContext.Provider value={value}>{children}</ActivitySessionContext.Provider>;
+  return (
+    <ActivitySessionContext.Provider value={value}>
+      {children}
+    </ActivitySessionContext.Provider>
+  );
 }
 
 const defaultActivitySessionValue: ActivitySessionContextValue = {

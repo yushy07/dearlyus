@@ -47,7 +47,7 @@ export function sanitizeSafeAudioUrl(url?: string | null): string | undefined {
         return encodeURI(trimmed);
       }
     } catch {
-      if (/^blob:https?:\/\/[a-zA-Z0-9.\-_:]+\/[a-zA-Z0-9\-]+$/i.test(trimmed)) {
+      if (/^blob:https?:\/\/[a-zA-Z0-9._:-]+\/[a-zA-Z0-9-]+$/i.test(trimmed)) {
         return encodeURI(trimmed);
       }
     }
@@ -65,8 +65,12 @@ export function sanitizeSafeAudioUrl(url?: string | null): string | undefined {
   }
 
   // Allow safe relative paths (e.g. /audio/whisper.mp3)
-  if (trimmed.startsWith('/') && !trimmed.startsWith('//') && !trimmed.startsWith('/\\')) {
-    if (/^\/[a-zA-Z0-9_\-./]+$/i.test(trimmed) && !trimmed.includes('..')) {
+  if (
+    trimmed.startsWith('/') &&
+    !trimmed.startsWith('//') &&
+    !trimmed.startsWith('/\\')
+  ) {
+    if (/^\/[a-zA-Z0-9_./-]+$/i.test(trimmed) && !trimmed.includes('..')) {
       return encodeURI(trimmed);
     }
     return undefined;

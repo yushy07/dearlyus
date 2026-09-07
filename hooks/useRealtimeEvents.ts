@@ -9,8 +9,12 @@ export interface UseRealtimeEventsOptions {
   onEvent?: (event: ActivityEvent) => void;
 }
 
-export function useRealtimeEvents({ filterType, onEvent }: UseRealtimeEventsOptions = {}) {
-  const { events, lastEvent, sendEvent, registerEventHandler } = useActivitySession();
+export function useRealtimeEvents({
+  filterType,
+  onEvent,
+}: UseRealtimeEventsOptions = {}) {
+  const { events, lastEvent, sendEvent, registerEventHandler } =
+    useActivitySession();
   const onEventRef = useRef(onEvent);
   onEventRef.current = onEvent;
 
@@ -22,7 +26,7 @@ export function useRealtimeEvents({ filterType, onEvent }: UseRealtimeEventsOpti
       }
       return type === filterType || type.startsWith(filterType);
     },
-    [filterType]
+    [filterType],
   );
 
   useEffect(() => {
@@ -38,10 +42,12 @@ export function useRealtimeEvents({ filterType, onEvent }: UseRealtimeEventsOpti
     async (type: string, payload: unknown) => {
       return sendEvent(type, payload);
     },
-    [sendEvent]
+    [sendEvent],
   );
 
-  const filteredEvents = filterType ? events.filter((e) => matchesFilter(e.type)) : events;
+  const filteredEvents = filterType
+    ? events.filter((e) => matchesFilter(e.type))
+    : events;
 
   return {
     events: filteredEvents,

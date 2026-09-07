@@ -62,7 +62,13 @@ export interface DatePlan {
   name: string;
   duration: string;
   mood: string;
-  activities: { title: string; desc: string; href: string; icon: string; time: string }[];
+  activities: {
+    title: string;
+    desc: string;
+    href: string;
+    icon: string;
+    time: string;
+  }[];
   spotifyPlaylist: string;
 }
 
@@ -81,4 +87,3 @@ export interface BlogPostData {
 
 export type { CoupleProfile } from '@/lib/couple';
 export type { Keepsake } from '@/lib/domain';
-

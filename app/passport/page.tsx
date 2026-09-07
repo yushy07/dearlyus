@@ -41,7 +41,9 @@ export default function PassportPage() {
   } = usePassport();
 
   const [activeCategory, setActiveCategory] = useState<string>('All');
-  const [selectedStamp, setSelectedStamp] = useState<PassportStamp | null>(null);
+  const [selectedStamp, setSelectedStamp] = useState<PassportStamp | null>(
+    null,
+  );
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [tempNoteText, setTempNoteText] = useState<string>('');
   const [animatingStampId, setAnimatingStampId] = useState<string | null>(null);
@@ -132,7 +134,11 @@ export default function PassportPage() {
     ctx.textAlign = 'center';
     ctx.fillStyle = '#FDE68A';
     ctx.font = 'bold 22px Pretendard, sans-serif';
-    ctx.fillText('🌸 대한민국 연인 여권 · REPUBLIC OF LOVE OFFICIAL PASSPORT', 600, 90);
+    ctx.fillText(
+      '🌸 대한민국 연인 여권 · REPUBLIC OF LOVE OFFICIAL PASSPORT',
+      600,
+      90,
+    );
 
     // Couple Names
     ctx.fillStyle = '#FFFFFF';
@@ -142,14 +148,24 @@ export default function PassportPage() {
     // Flight Route & Date
     ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
     ctx.font = 'bold 20px monospace';
-    ctx.fillText(`${profile.originCity}  ✈️ ➔ 💖  ${profile.destinationCity}`, 600, 200);
+    ctx.fillText(
+      `${profile.originCity}  ✈️ ➔ 💖  ${profile.destinationCity}`,
+      600,
+      200,
+    );
 
     ctx.fillStyle = '#FDE68A';
     ctx.font = 'bold 16px monospace';
-    ctx.fillText(`FLIGHT: ANG-${roomCode}-2026 · SEAT: ${profile.seatNumber} · DATE: ${profile.anniversaryDate}`, 600, 235);
+    ctx.fillText(
+      `FLIGHT: ANG-${roomCode}-2026 · SEAT: ${profile.seatNumber} · DATE: ${profile.anniversaryDate}`,
+      600,
+      235,
+    );
 
     // 4 Unlocked Souvenir Stamps Cards
-    const unlockedList = stamps.filter((s) => unlockedIds.includes(s.id)).slice(0, 4);
+    const unlockedList = stamps
+      .filter((s) => unlockedIds.includes(s.id))
+      .slice(0, 4);
     unlockedList.forEach((stamp, idx) => {
       const cardX = 70 + idx * 268;
       const cardY = 280;
@@ -194,7 +210,11 @@ export default function PassportPage() {
     // Footer Barcode & Serial
     ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
     ctx.font = '14px monospace';
-    ctx.fillText(`DEARLY US SOUVENIR LOVE PASSPORT · ROOM: ${roomCode}`, 600, 690);
+    ctx.fillText(
+      `DEARLY US SOUVENIR LOVE PASSPORT · ROOM: ${roomCode}`,
+      600,
+      690,
+    );
 
     const a = document.createElement('a');
     a.download = `dearly-us-passport-${profile.partner1}-${profile.partner2}.png`;
@@ -202,15 +222,29 @@ export default function PassportPage() {
     a.click();
   };
 
-  const categories = ['All', 'Photobooth', 'Games & Duels', 'Keepsakes', 'Milestones'];
+  const categories = [
+    'All',
+    'Photobooth',
+    'Games & Duels',
+    'Keepsakes',
+    'Milestones',
+  ];
 
-  const filteredStamps = activeCategory === 'All'
-    ? stamps
-    : stamps.filter((s) => s.category === activeCategory);
+  const filteredStamps =
+    activeCategory === 'All'
+      ? stamps
+      : stamps.filter((s) => s.category === activeCategory);
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--paper)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-      
+    <div
+      style={{
+        minHeight: '100vh',
+        background: 'var(--paper)',
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'relative',
+      }}
+    >
       {/* Celebration Confetti Cannon Shower */}
       {confetti.length > 0 && (
         <div
@@ -230,7 +264,8 @@ export default function PassportPage() {
                 left: `${c.x}vw`,
                 top: `${c.y}vh`,
                 fontSize: `${c.scale * 24}px`,
-                animation: 'confetti-fall 2.6s cubic-bezier(0.25, 1, 0.5, 1) forwards',
+                animation:
+                  'confetti-fall 2.6s cubic-bezier(0.25, 1, 0.5, 1) forwards',
                 transform: `rotate(${c.rot}deg)`,
                 filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.15))',
               }}
@@ -263,11 +298,33 @@ export default function PassportPage() {
           }}
         >
           <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
-            <span className="brand" style={{ fontSize: '22px', fontWeight: 900 }}>
+            <span
+              className="brand"
+              style={{ fontSize: '22px', fontWeight: 900 }}
+            >
               dearly us
               <span className="dots" style={{ marginLeft: '4px' }}>
-                <i className="p" style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: 'var(--pink)', marginRight: '3px' }}></i>
-                <i className="b" style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: 'var(--blue)' }}></i>
+                <i
+                  className="p"
+                  style={{
+                    display: 'inline-block',
+                    width: '6px',
+                    height: '6px',
+                    borderRadius: '50%',
+                    background: 'var(--pink)',
+                    marginRight: '3px',
+                  }}
+                ></i>
+                <i
+                  className="b"
+                  style={{
+                    display: 'inline-block',
+                    width: '6px',
+                    height: '6px',
+                    borderRadius: '50%',
+                    background: 'var(--blue)',
+                  }}
+                ></i>
               </span>
             </span>
           </Link>
@@ -303,11 +360,26 @@ export default function PassportPage() {
 
       {/* Main Passport Content */}
       <main style={{ flex: 1, padding: '40px 20px 80px' }}>
-        <div style={{ maxWidth: '980px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '32px' }}>
-          
+        <div
+          style={{
+            maxWidth: '980px',
+            margin: '0 auto',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '32px',
+          }}
+        >
           {/* Header Banner */}
           <ScrollReveal animation="fade-up">
-            <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+            <div
+              style={{
+                textAlign: 'center',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '10px',
+              }}
+            >
               <div
                 style={{
                   display: 'inline-flex',
@@ -327,11 +399,26 @@ export default function PassportPage() {
                 <span>🌸</span>
                 <span>대한민국 · OFFICIAL SOUVENIR LOVE PASSPORT</span>
               </div>
-              <h1 style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 900, letterSpacing: '-0.5px' }}>
+              <h1
+                style={{
+                  fontSize: 'clamp(28px, 4vw, 44px)',
+                  fontWeight: 900,
+                  letterSpacing: '-0.5px',
+                }}
+              >
                 Couple Date Passport &amp; Love Stamps
               </h1>
-              <p style={{ color: 'var(--ink-soft)', fontSize: '16px', maxWidth: '580px', lineHeight: 1.6 }}>
-                Every date night leaves a permanent stamp in your story. Collect authentic Korean ink seals, write romantic memory notes, and customize your couple travel ticket! 💌
+              <p
+                style={{
+                  color: 'var(--ink-soft)',
+                  fontSize: '16px',
+                  maxWidth: '580px',
+                  lineHeight: 1.6,
+                }}
+              >
+                Every date night leaves a permanent stamp in your story. Collect
+                authentic Korean ink seals, write romantic memory notes, and
+                customize your couple travel ticket! 💌
               </p>
             </div>
           </ScrollReveal>
@@ -366,7 +453,14 @@ export default function PassportPage() {
           </ScrollReveal>
 
           {/* Category Filter Chips */}
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <div
+            style={{
+              display: 'flex',
+              gap: '8px',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+            }}
+          >
             {categories.map((cat) => (
               <button
                 key={cat}
@@ -380,10 +474,17 @@ export default function PassportPage() {
                   fontSize: '13px',
                   fontWeight: 800,
                   cursor: 'pointer',
-                  border: activeCategory === cat ? 'none' : '1px solid var(--line)',
-                  background: activeCategory === cat ? 'var(--ink)' : 'var(--paper-raised)',
+                  border:
+                    activeCategory === cat ? 'none' : '1px solid var(--line)',
+                  background:
+                    activeCategory === cat
+                      ? 'var(--ink)'
+                      : 'var(--paper-raised)',
                   color: activeCategory === cat ? '#FFFFFF' : 'var(--ink-soft)',
-                  boxShadow: activeCategory === cat ? '0 4px 14px rgba(0,0,0,0.15)' : 'none',
+                  boxShadow:
+                    activeCategory === cat
+                      ? '0 4px 14px rgba(0,0,0,0.15)'
+                      : 'none',
                   transition: 'all 0.15s ease',
                 }}
               >
@@ -439,11 +540,18 @@ export default function PassportPage() {
             }}
           >
             <div>
-              <div style={{ fontSize: '18px', fontWeight: 900, marginBottom: '4px' }}>
+              <div
+                style={{
+                  fontSize: '18px',
+                  fontWeight: 900,
+                  marginBottom: '4px',
+                }}
+              >
                 Share Your Couple Passport with Partner 💌
               </div>
               <p style={{ fontSize: '14px', color: 'var(--ink-soft)' }}>
-                Send your date collection strip to your partner so you both celebrate every milestone together.
+                Send your date collection strip to your partner so you both
+                celebrate every milestone together.
               </p>
             </div>
 
@@ -473,7 +581,9 @@ export default function PassportPage() {
                 onClick={() => {
                   sounds.playPop();
                   if (typeof navigator !== 'undefined') {
-                    navigator.clipboard.writeText(typeof window !== 'undefined' ? window.location.href : '');
+                    navigator.clipboard.writeText(
+                      typeof window !== 'undefined' ? window.location.href : '',
+                    );
                     setCopiedLink(true);
                     setTimeout(() => setCopiedLink(false), 2000);
                   }
@@ -486,7 +596,9 @@ export default function PassportPage() {
                   borderRadius: '24px',
                 }}
               >
-                {copiedLink ? '✓ Link Copied to Clipboard!' : 'Copy Passport Link 📋'}
+                {copiedLink
+                  ? '✓ Link Copied to Clipboard!'
+                  : 'Copy Passport Link 📋'}
               </button>
             </div>
           </div>
@@ -533,7 +645,10 @@ export default function PassportPage() {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Washi Tape Header */}
-            <div className="passport-washi-tape" style={{ background: `${selectedStamp.inkColor}30`, top: '-9px' }} />
+            <div
+              className="passport-washi-tape"
+              style={{ background: `${selectedStamp.inkColor}30`, top: '-9px' }}
+            />
 
             {/* Ink Stamp Seal */}
             <div
@@ -555,13 +670,35 @@ export default function PassportPage() {
               <span style={{ fontSize: '38px' }}>{selectedStamp.icon}</span>
             </div>
 
-            <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: selectedStamp.inkColor, fontWeight: 800, letterSpacing: '1px' }}>
+            <div
+              style={{
+                fontSize: '11px',
+                fontFamily: 'var(--font-mono)',
+                color: selectedStamp.inkColor,
+                fontWeight: 800,
+                letterSpacing: '1px',
+              }}
+            >
               OFFICIAL DATE MEMORY CERTIFICATE
             </div>
-            <h3 style={{ fontSize: '24px', fontWeight: 900, color: 'var(--ink)', margin: '4px 0 2px' }}>
+            <h3
+              style={{
+                fontSize: '24px',
+                fontWeight: 900,
+                color: 'var(--ink)',
+                margin: '4px 0 2px',
+              }}
+            >
               {selectedStamp.title}
             </h3>
-            <div style={{ fontSize: '13px', fontFamily: 'var(--font-mono)', color: 'var(--ink-soft)', marginBottom: '12px' }}>
+            <div
+              style={{
+                fontSize: '13px',
+                fontFamily: 'var(--font-mono)',
+                color: 'var(--ink-soft)',
+                marginBottom: '12px',
+              }}
+            >
               {selectedStamp.koreanTitle}
             </div>
 
@@ -582,14 +719,35 @@ export default function PassportPage() {
 
             {/* Couple Custom Memory Note Box */}
             <div style={{ textAlign: 'left', marginBottom: '22px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                <span style={{ fontSize: '11.5px', fontWeight: 800, color: 'var(--ink)', textTransform: 'uppercase' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '6px',
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: '11.5px',
+                    fontWeight: 800,
+                    color: 'var(--ink)',
+                    textTransform: 'uppercase',
+                  }}
+                >
                   💌 Your Couple Memory Note:
                 </span>
                 {editingNoteId !== selectedStamp.id && (
                   <button
                     onClick={() => setEditingNoteId(selectedStamp.id)}
-                    style={{ background: 'none', border: 'none', color: 'var(--pink)', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--pink)',
+                      fontSize: '11.5px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                    }}
                   >
                     ✎ Edit Note
                   </button>
@@ -597,7 +755,13 @@ export default function PassportPage() {
               </div>
 
               {editingNoteId === selectedStamp.id ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                  }}
+                >
                   <textarea
                     value={tempNoteText}
                     onChange={(e) => setTempNoteText(e.target.value)}
@@ -616,7 +780,12 @@ export default function PassportPage() {
                   <button
                     onClick={() => handleSaveNote(selectedStamp.id)}
                     className="btn btn-grad"
-                    style={{ padding: '8px', borderRadius: '8px', fontSize: '12px', fontWeight: 700 }}
+                    style={{
+                      padding: '8px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                    }}
                   >
                     Save Memory Note 💖
                   </button>
@@ -642,7 +811,13 @@ export default function PassportPage() {
               <Link
                 href={selectedStamp.route}
                 className="btn btn-grad"
-                style={{ flex: 1, padding: '12px', fontSize: '13px', borderRadius: '12px', fontWeight: 800 }}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  fontSize: '13px',
+                  borderRadius: '12px',
+                  fontWeight: 800,
+                }}
               >
                 Replay Date Activity ▷
               </Link>

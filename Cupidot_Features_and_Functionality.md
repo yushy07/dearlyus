@@ -62,16 +62,16 @@ Suggestions can be skipped, reminders muted, rituals rescheduled, AI disabled, a
 
 ## 3. Cupidot's product roles
 
-| Role | Function |
-|---|---|
-| Shared pet | Reacts to the couple's safe shared actions and develops through their journey. |
-| Welcome companion | Makes returning to Our Space feel warm, whether one or both partners are present. |
-| Date-night guide | Helps the couple choose, begin, pause, resume, and complete activities. |
-| Ritual keeper | Supports couple-created recurring moments without guilt or pressure. |
-| Memory curator | Offers to turn completed moments into mutually approved keepsakes. |
-| Room steward | Explains presence, readiness, waiting, connection loss, and recovery. |
-| Celebration companion | Recognizes milestones and creates small shared celebrations. |
-| Consent guardian | Makes privacy, AI, voice, camera, media, and notification controls understandable. |
+| Role                  | Function                                                                           |
+| --------------------- | ---------------------------------------------------------------------------------- |
+| Shared pet            | Reacts to the couple's safe shared actions and develops through their journey.     |
+| Welcome companion     | Makes returning to Our Space feel warm, whether one or both partners are present.  |
+| Date-night guide      | Helps the couple choose, begin, pause, resume, and complete activities.            |
+| Ritual keeper         | Supports couple-created recurring moments without guilt or pressure.               |
+| Memory curator        | Offers to turn completed moments into mutually approved keepsakes.                 |
+| Room steward          | Explains presence, readiness, waiting, connection loss, and recovery.              |
+| Celebration companion | Recognizes milestones and creates small shared celebrations.                       |
+| Consent guardian      | Makes privacy, AI, voice, camera, media, and notification controls understandable. |
 
 ---
 
@@ -145,16 +145,16 @@ Cupidot has readable momentary states, not a psychological diagnosis of the rela
 
 ### Recommended mood set
 
-| Mood | Typical safe trigger | Product purpose |
-|---|---|---|
-| Cozy | Quiet time, late evening, returning after a break | Makes low-energy visits feel valid. |
-| Curious | A new activity or unopened memory is available | Encourages exploration. |
-| Playful | Games, reactions, surprise mode | Supports light connection. |
-| Excited | Both partners arrive or begin date night | Marks togetherness. |
-| Focused | Partners are writing, drawing, or choosing privately | Reduces interruption. |
-| Proud | A ritual, milestone, or activity is completed | Celebrates effort without scoring love. |
-| Dreamy | Memory review, constellation, future planning | Supports reflection. |
-| Resting | No current shared action or reduced-motion mode | Provides a calm default. |
+| Mood    | Typical safe trigger                                 | Product purpose                         |
+| ------- | ---------------------------------------------------- | --------------------------------------- |
+| Cozy    | Quiet time, late evening, returning after a break    | Makes low-energy visits feel valid.     |
+| Curious | A new activity or unopened memory is available       | Encourages exploration.                 |
+| Playful | Games, reactions, surprise mode                      | Supports light connection.              |
+| Excited | Both partners arrive or begin date night             | Marks togetherness.                     |
+| Focused | Partners are writing, drawing, or choosing privately | Reduces interruption.                   |
+| Proud   | A ritual, milestone, or activity is completed        | Celebrates effort without scoring love. |
+| Dreamy  | Memory review, constellation, future planning        | Supports reflection.                    |
+| Resting | No current shared action or reduced-motion mode      | Provides a calm default.                |
 
 ### Mood rules
 
@@ -306,11 +306,11 @@ Every activity should feel like part of one Cupidot-led system.
 
 ### Cupidot guidance modes
 
-| Mode | Behavior |
-|---|---|
-| Quiet | Only privacy, synchronization, error, and recovery guidance. |
+| Mode   | Behavior                                                                        |
+| ------ | ------------------------------------------------------------------------------- |
+| Quiet  | Only privacy, synchronization, error, and recovery guidance.                    |
 | Gentle | One introduction, important state guidance, and a completion response. Default. |
-| Host | Optional transitions, instructions, narration, and suggestions. |
+| Host   | Optional transitions, instructions, narration, and suggestions.                 |
 
 ### Activity-specific functions
 
@@ -630,16 +630,16 @@ Cupidot must not:
 
 Technical problems should feel like Cupidot is protecting the moment, not blaming the user.
 
-| Situation | User-facing response | Recovery action |
-|---|---|---|
-| Partner disconnects | “Holding your place while they reconnect.” | Pause, wait, or leave safely. |
-| Current user disconnects | “Bringing your room back.” | Reload snapshot and missing events. |
-| Duplicate action | No duplicate celebration or content. | Confirm the original result. |
-| Out-of-order update | “Catching up on one moment.” | Request and apply the missing sequence. |
-| AI unavailable | Continue with curated Cupidot content. | Retry later without blocking the date. |
-| Media upload interrupted | Keep the upload staged, not saved as a broken keepsake. | Resume or discard. |
-| Permission denied | Explain which feature is unavailable. | Continue with an alternative. |
-| Room expired/completed | Explain that the room is closed. | Return to Our Space or create a new room. |
+| Situation                | User-facing response                                    | Recovery action                           |
+| ------------------------ | ------------------------------------------------------- | ----------------------------------------- |
+| Partner disconnects      | “Holding your place while they reconnect.”              | Pause, wait, or leave safely.             |
+| Current user disconnects | “Bringing your room back.”                              | Reload snapshot and missing events.       |
+| Duplicate action         | No duplicate celebration or content.                    | Confirm the original result.              |
+| Out-of-order update      | “Catching up on one moment.”                            | Request and apply the missing sequence.   |
+| AI unavailable           | Continue with curated Cupidot content.                  | Retry later without blocking the date.    |
+| Media upload interrupted | Keep the upload staged, not saved as a broken keepsake. | Resume or discard.                        |
+| Permission denied        | Explain which feature is unavailable.                   | Continue with an alternative.             |
+| Room expired/completed   | Explain that the room is closed.                        | Return to Our Space or create a new room. |
 
 Drafts should remain local until durable saving succeeds. Retried operations must not duplicate answers, events, strokes, rewards, notifications, or keepsakes.
 

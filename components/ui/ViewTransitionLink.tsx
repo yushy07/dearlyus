@@ -41,7 +41,9 @@ export function ViewTransitionLink({
     }
 
     // If external link, let default behavior happen
-    const isExternal = typeof href === 'string' && (href.startsWith('http') || href.startsWith('//'));
+    const isExternal =
+      typeof href === 'string' &&
+      (href.startsWith('http') || href.startsWith('//'));
     if (isExternal || e.ctrlKey || e.metaKey || e.shiftKey) {
       return;
     }
@@ -57,7 +59,13 @@ export function ViewTransitionLink({
   };
 
   return (
-    <Link href={href} onClick={handleClick} className={className} style={style} {...props}>
+    <Link
+      href={href}
+      onClick={handleClick}
+      className={className}
+      style={style}
+      {...props}
+    >
       {children}
     </Link>
   );

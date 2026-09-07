@@ -21,22 +21,84 @@ interface StarNode {
 }
 
 const CONSTELLATION_NODES: StarNode[] = [
-  { id: 'first_connection', kind: 'space_created', title: 'First Star Connected', desc: 'When you two bonded your space', icon: '🌟', cx: 80, cy: 120 },
-  { id: 'first_date_night', kind: 'room_created', title: 'First Date Spark', desc: 'First shared date night room', icon: '🕯️', cx: 180, cy: 70 },
-  { id: 'first_quiz_match', kind: 'quiz_match', title: 'Telepathic Resonance', desc: 'First matched quiz response', icon: '💖', cx: 290, cy: 130 },
-  { id: 'first_drawing', kind: 'drawing_saved', title: 'First Shared Canvas', desc: 'First completed drawing artwork', icon: '🎨', cx: 390, cy: 80 },
-  { id: 'first_photostrip', kind: 'photostrip', title: 'Vintage Photostrip', desc: 'Captured your first photostrip together', icon: '📸', cx: 480, cy: 140 },
-  { id: 'first_letter', kind: 'letter', title: 'Wax-Sealed Letter', desc: 'Sealed a tender long-distance letter', icon: '💌', cx: 580, cy: 90 },
-  { id: 'starlight_horizon', kind: 'dates_milestone', title: 'Starlight Horizon', desc: 'Celebrated multiple date nights together', icon: '🌌', cx: 680, cy: 130 },
+  {
+    id: 'first_connection',
+    kind: 'space_created',
+    title: 'First Star Connected',
+    desc: 'When you two bonded your space',
+    icon: '🌟',
+    cx: 80,
+    cy: 120,
+  },
+  {
+    id: 'first_date_night',
+    kind: 'room_created',
+    title: 'First Date Spark',
+    desc: 'First shared date night room',
+    icon: '🕯️',
+    cx: 180,
+    cy: 70,
+  },
+  {
+    id: 'first_quiz_match',
+    kind: 'quiz_match',
+    title: 'Telepathic Resonance',
+    desc: 'First matched quiz response',
+    icon: '💖',
+    cx: 290,
+    cy: 130,
+  },
+  {
+    id: 'first_drawing',
+    kind: 'drawing_saved',
+    title: 'First Shared Canvas',
+    desc: 'First completed drawing artwork',
+    icon: '🎨',
+    cx: 390,
+    cy: 80,
+  },
+  {
+    id: 'first_photostrip',
+    kind: 'photostrip',
+    title: 'Vintage Photostrip',
+    desc: 'Captured your first photostrip together',
+    icon: '📸',
+    cx: 480,
+    cy: 140,
+  },
+  {
+    id: 'first_letter',
+    kind: 'letter',
+    title: 'Wax-Sealed Letter',
+    desc: 'Sealed a tender long-distance letter',
+    icon: '💌',
+    cx: 580,
+    cy: 90,
+  },
+  {
+    id: 'starlight_horizon',
+    kind: 'dates_milestone',
+    title: 'Starlight Horizon',
+    desc: 'Celebrated multiple date nights together',
+    icon: '🌌',
+    cx: 680,
+    cy: 130,
+  },
 ];
 
-export function RelationshipConstellation({ milestones }: RelationshipConstellationProps) {
+export function RelationshipConstellation({
+  milestones,
+}: RelationshipConstellationProps) {
   const [selectedStar, setSelectedStar] = useState<StarNode | null>(null);
 
   const isUnlocked = (node: StarNode) => {
     // If we have any milestones matching kind or if milestones exist
     if (node.id === 'first_connection') return true; // Always unlocked if on Our Space
-    const matching = milestones.find((m) => m.kind.toLowerCase().includes(node.kind) || node.kind.includes(m.kind.toLowerCase()));
+    const matching = milestones.find(
+      (m) =>
+        m.kind.toLowerCase().includes(node.kind) ||
+        node.kind.includes(m.kind.toLowerCase()),
+    );
     if (matching) return true;
     if (node.id === 'first_date_night' && milestones.length >= 1) return true;
     if (node.id === 'starlight_horizon' && milestones.length >= 3) return true;
@@ -44,7 +106,9 @@ export function RelationshipConstellation({ milestones }: RelationshipConstellat
   };
 
   const getMilestoneDate = (node: StarNode) => {
-    const matching = milestones.find((m) => m.kind.toLowerCase().includes(node.kind));
+    const matching = milestones.find((m) =>
+      m.kind.toLowerCase().includes(node.kind),
+    );
     if (matching?.occurredAt) {
       return new Date(matching.occurredAt).toLocaleDateString();
     }
@@ -56,7 +120,8 @@ export function RelationshipConstellation({ milestones }: RelationshipConstellat
   return (
     <div
       style={{
-        background: 'linear-gradient(145deg, #0F172A 0%, #1E1B4B 60%, #31103F 100%)',
+        background:
+          'linear-gradient(145deg, #0F172A 0%, #1E1B4B 60%, #31103F 100%)',
         borderRadius: '28px',
         padding: '28px',
         color: '#FFFFFF',
@@ -67,12 +132,40 @@ export function RelationshipConstellation({ milestones }: RelationshipConstellat
       }}
     >
       {/* Constellation Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '16px',
+          flexWrap: 'wrap',
+          gap: '12px',
+        }}
+      >
         <div>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#F472B6', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '12px',
+              color: '#F472B6',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              marginBottom: '4px',
+            }}
+          >
             <span>✦</span> Relationship Constellation
           </div>
-          <h3 style={{ fontSize: '20px', fontWeight: 800, margin: 0, letterSpacing: '-0.01em' }}>
+          <h3
+            style={{
+              fontSize: '20px',
+              fontWeight: 800,
+              margin: 0,
+              letterSpacing: '-0.01em',
+            }}
+          >
             Our Starlight Milestones
           </h3>
         </div>
@@ -93,17 +186,45 @@ export function RelationshipConstellation({ milestones }: RelationshipConstellat
         </div>
       </div>
 
-      <p style={{ fontSize: '13.5px', color: '#CBD5E1', maxWidth: '540px', margin: '0 0 16px', lineHeight: 1.5 }}>
-        Every shared date night, quiz match, and sealed artwork lights another star in your personal sky.
+      <p
+        style={{
+          fontSize: '13.5px',
+          color: '#CBD5E1',
+          maxWidth: '540px',
+          margin: '0 0 16px',
+          lineHeight: 1.5,
+        }}
+      >
+        Every shared date night, quiz match, and sealed artwork lights another
+        star in your personal sky.
       </p>
 
       {/* Alignment Progress Meter */}
       <div style={{ margin: '0 0 18px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 600, color: '#CBD5E1', marginBottom: '6px' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            fontSize: '12px',
+            fontWeight: 600,
+            color: '#CBD5E1',
+            marginBottom: '6px',
+          }}
+        >
           <span>Constellation Alignment</span>
-          <span style={{ color: '#FDE047' }}>{Math.round((unlockedCount / CONSTELLATION_NODES.length) * 100)}% Shining</span>
+          <span style={{ color: '#FDE047' }}>
+            {Math.round((unlockedCount / CONSTELLATION_NODES.length) * 100)}%
+            Shining
+          </span>
         </div>
-        <div style={{ height: '6px', background: 'rgba(255, 255, 255, 0.1)', borderRadius: '999px', overflow: 'hidden' }}>
+        <div
+          style={{
+            height: '6px',
+            background: 'rgba(255, 255, 255, 0.1)',
+            borderRadius: '999px',
+            overflow: 'hidden',
+          }}
+        >
           <div
             style={{
               height: '100%',
@@ -123,7 +244,8 @@ export function RelationshipConstellation({ milestones }: RelationshipConstellat
           position: 'relative',
           width: '100%',
           height: '210px',
-          background: 'radial-gradient(ellipse at center, rgba(99, 102, 241, 0.18) 0%, transparent 70%)',
+          background:
+            'radial-gradient(ellipse at center, rgba(99, 102, 241, 0.18) 0%, transparent 70%)',
           borderRadius: '20px',
           border: '1px solid rgba(255, 255, 255, 0.08)',
           overflow: 'hidden',
@@ -205,7 +327,9 @@ export function RelationshipConstellation({ milestones }: RelationshipConstellat
                     stroke="#F472B6"
                     strokeWidth={1.5}
                     opacity={0.6}
-                    style={{ animation: 'together-pulse-ring 2.4s infinite ease-out' }}
+                    style={{
+                      animation: 'together-pulse-ring 2.4s infinite ease-out',
+                    }}
                   />
                 )}
 
@@ -263,9 +387,13 @@ export function RelationshipConstellation({ milestones }: RelationshipConstellat
             }}
           >
             <span>{selectedStar.icon}</span>
-            <strong style={{ fontSize: '12.5px', color: '#FFFFFF' }}>{selectedStar.title}</strong>
+            <strong style={{ fontSize: '12.5px', color: '#FFFFFF' }}>
+              {selectedStar.title}
+            </strong>
             <span style={{ color: '#94A3B8', fontSize: '11.5px' }}>
-              {isUnlocked(selectedStar) ? `· ${getMilestoneDate(selectedStar)}` : `· ${selectedStar.desc}`}
+              {isUnlocked(selectedStar)
+                ? `· ${getMilestoneDate(selectedStar)}`
+                : `· ${selectedStar.desc}`}
             </span>
             <button
               type="button"
@@ -273,7 +401,13 @@ export function RelationshipConstellation({ milestones }: RelationshipConstellat
                 e.stopPropagation();
                 setSelectedStar(null);
               }}
-              style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer', padding: '0 2px' }}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#94A3B8',
+                cursor: 'pointer',
+                padding: '0 2px',
+              }}
             >
               ✕
             </button>
@@ -302,15 +436,26 @@ export function RelationshipConstellation({ milestones }: RelationshipConstellat
                 setSelectedStar(node);
               }}
               style={{
-                background: unlocked ? 'rgba(255, 78, 120, 0.12)' : 'rgba(255, 255, 255, 0.03)',
-                border: unlocked ? '1px solid rgba(244, 114, 182, 0.35)' : '1px solid rgba(255, 255, 255, 0.08)',
+                background: unlocked
+                  ? 'rgba(255, 78, 120, 0.12)'
+                  : 'rgba(255, 255, 255, 0.03)',
+                border: unlocked
+                  ? '1px solid rgba(244, 114, 182, 0.35)'
+                  : '1px solid rgba(255, 255, 255, 0.08)',
                 borderRadius: '16px',
                 padding: '12px',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: '6px',
+                }}
+              >
                 <span style={{ fontSize: '18px' }}>{node.icon}</span>
                 <span
                   style={{

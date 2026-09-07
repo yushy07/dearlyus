@@ -31,9 +31,11 @@ export const PASSPORT_STAMPS: PassportStamp[] = [
     inkColor: '#E11D48',
     pastelBg: '#FFF1F2',
     sealShape: 'heart',
-    description: 'Captured synchronized vintage photo strips in your shared Korean photobooth.',
+    description:
+      'Captured synchronized vintage photo strips in your shared Korean photobooth.',
     sweetQuote: '“Two screens, two smiles, one timeless memory.”',
-    defaultMemory: 'We took 4 silly poses and couldn’t stop laughing at the sticker props! 🎀',
+    defaultMemory:
+      'We took 4 silly poses and couldn’t stop laughing at the sticker props! 🎀',
     stampAngle: -4,
     route: '/photobooth',
     defaultUnlocked: true,
@@ -48,9 +50,11 @@ export const PASSPORT_STAMPS: PassportStamp[] = [
     inkColor: '#BE123C',
     pastelBg: '#FFE4E6',
     sealShape: 'circle',
-    description: 'Tested your romantic alignment and scored perfect soulmate resonance.',
+    description:
+      'Tested your romantic alignment and scored perfect soulmate resonance.',
     sweetQuote: '“Written in the stars, verified on date night.”',
-    defaultMemory: 'Our communication and laughter frequencies matched at 99.8%! ✨',
+    defaultMemory:
+      'Our communication and laughter frequencies matched at 99.8%! ✨',
     stampAngle: 3,
     route: '/match',
     defaultUnlocked: true,
@@ -65,9 +69,11 @@ export const PASSPORT_STAMPS: PassportStamp[] = [
     inkColor: '#B45309',
     pastelBg: '#FEF3C7',
     sealShape: 'crest',
-    description: 'Sealed a wax-stamped secret letter to unlock on your upcoming reunion day.',
+    description:
+      'Sealed a wax-stamped secret letter to unlock on your upcoming reunion day.',
     sweetQuote: '“Words to keep you warm across oceans and seasons.”',
-    defaultMemory: 'Sealed with digital gold wax to open on our 1-year anniversary! 🕊️',
+    defaultMemory:
+      'Sealed with digital gold wax to open on our 1-year anniversary! 🕊️',
     stampAngle: -6,
     route: '/letter',
     defaultUnlocked: true,
@@ -82,9 +88,11 @@ export const PASSPORT_STAMPS: PassportStamp[] = [
     inkColor: '#1D4ED8',
     pastelBg: '#EFF6FF',
     sealShape: 'crest',
-    description: 'Answered deep lore questions about favorite memories and secret habits.',
+    description:
+      'Answered deep lore questions about favorite memories and secret habits.',
     sweetQuote: '“Knowing you is my favorite ongoing study.”',
-    defaultMemory: 'You remembered my favorite comfort food and how I drink morning coffee! ☕',
+    defaultMemory:
+      'You remembered my favorite comfort food and how I drink morning coffee! ☕',
     stampAngle: 5,
     route: '/quiz',
     defaultUnlocked: true,
@@ -99,9 +107,11 @@ export const PASSPORT_STAMPS: PassportStamp[] = [
     inkColor: '#047857',
     pastelBg: '#ECFDF5',
     sealShape: 'circle',
-    description: 'Bridged miles and time zones to lock in your next reunion flight countdown.',
+    description:
+      'Bridged miles and time zones to lock in your next reunion flight countdown.',
     sweetQuote: '“No distance can outlast the gravity of our love.”',
-    defaultMemory: 'Counting down the exact days until we hold hands at airport gate 4B! 🧳',
+    defaultMemory:
+      'Counting down the exact days until we hold hands at airport gate 4B! 🧳',
     stampAngle: -2,
     route: '/timezone',
     defaultUnlocked: true,
@@ -116,9 +126,11 @@ export const PASSPORT_STAMPS: PassportStamp[] = [
     inkColor: '#7C3AED',
     pastelBg: '#FAF5FF',
     sealShape: 'octagon',
-    description: 'Battled head-to-head in speed puzzles without missing a single beat.',
+    description:
+      'Battled head-to-head in speed puzzles without missing a single beat.',
     sweetQuote: '“Best rivals in games, best partners in life.”',
-    defaultMemory: 'The photo puzzle round came down to 0.4 seconds! Rematch next week ⚡',
+    defaultMemory:
+      'The photo puzzle round came down to 0.4 seconds! Rematch next week ⚡',
     stampAngle: 4,
     route: '/iq',
     defaultUnlocked: true,
@@ -133,9 +145,11 @@ export const PASSPORT_STAMPS: PassportStamp[] = [
     inkColor: '#9F1239',
     pastelBg: '#FFF1F2',
     sealShape: 'circle',
-    description: 'Hosted an AI-guided multi-course virtual dinner date by candlelight.',
+    description:
+      'Hosted an AI-guided multi-course virtual dinner date by candlelight.',
     sweetQuote: '“Warm food in our hands, warm love in our hearts.”',
-    defaultMemory: 'We ordered the same pasta and played Tokyo Cafe jazz in the background 🎷',
+    defaultMemory:
+      'We ordered the same pasta and played Tokyo Cafe jazz in the background 🎷',
     stampAngle: -5,
     route: '/host',
     defaultUnlocked: false,
@@ -150,9 +164,11 @@ export const PASSPORT_STAMPS: PassportStamp[] = [
     inkColor: '#881337',
     pastelBg: '#FFF1F2',
     sealShape: 'heart',
-    description: 'Opened up through vulnerability cards and deep conversational prompts.',
+    description:
+      'Opened up through vulnerability cards and deep conversational prompts.',
     sweetQuote: '“Vulnerability is the purest form of romance.”',
-    defaultMemory: 'We talked until 3:00 AM about our biggest childhood dreams 🌙',
+    defaultMemory:
+      'We talked until 3:00 AM about our biggest childhood dreams 🌙',
     stampAngle: 6,
     route: '/cards',
     defaultUnlocked: false,
@@ -167,9 +183,11 @@ export const PASSPORT_STAMPS: PassportStamp[] = [
     inkColor: '#5B21B6',
     pastelBg: '#F3E8FF',
     sealShape: 'square',
-    description: 'Co-created a synchronized live sketch masterpiece together on one canvas.',
+    description:
+      'Co-created a synchronized live sketch masterpiece together on one canvas.',
     sweetQuote: '“Painting our future with colors of joy.”',
-    defaultMemory: 'You drew our dream little cottage with 2 golden retrievers 🐾',
+    defaultMemory:
+      'You drew our dream little cottage with 2 golden retrievers 🐾',
     stampAngle: -3,
     route: '/draw',
     defaultUnlocked: false,
@@ -184,9 +202,11 @@ export const PASSPORT_STAMPS: PassportStamp[] = [
     inkColor: '#BE185D',
     pastelBg: '#FDF2F8',
     sealShape: 'square',
-    description: 'Showcased matching couple outfits and walked the virtual fashion runway.',
+    description:
+      'Showcased matching couple outfits and walked the virtual fashion runway.',
     sweetQuote: '“Always matching in style and in soul.”',
-    defaultMemory: 'That matching beige oversized hoodie outfit was an absolute 10/10! 🧸',
+    defaultMemory:
+      'That matching beige oversized hoodie outfit was an absolute 10/10! 🧸',
     stampAngle: 3,
     route: '/fashion',
     defaultUnlocked: false,
@@ -201,9 +221,11 @@ export const PASSPORT_STAMPS: PassportStamp[] = [
     inkColor: '#075985',
     pastelBg: '#F0F9FF',
     sealShape: 'crest',
-    description: 'Checked off 5 real-world bucket list travel destinations to explore.',
+    description:
+      'Checked off 5 real-world bucket list travel destinations to explore.',
     sweetQuote: '“Every destination is home when I’m with you.”',
-    defaultMemory: 'Added Kyoto cherry blossom picnic & stargazing in Iceland to our list! 🌸',
+    defaultMemory:
+      'Added Kyoto cherry blossom picnic & stargazing in Iceland to our list! 🌸',
     stampAngle: -4,
     route: '/bucket',
     defaultUnlocked: false,
@@ -218,9 +240,11 @@ export const PASSPORT_STAMPS: PassportStamp[] = [
     inkColor: '#064E3B',
     pastelBg: '#ECFDF5',
     sealShape: 'circle',
-    description: 'Teamed up with live webcam avatars in multiplayer mini-game duels.',
+    description:
+      'Teamed up with live webcam avatars in multiplayer mini-game duels.',
     sweetQuote: '“Every game is better in cooperative two-player mode.”',
-    defaultMemory: 'You carried us in the bubble pop duel with a 15-combo streak! 🎮',
+    defaultMemory:
+      'You carried us in the bubble pop duel with a 15-combo streak! 🎮',
     stampAngle: 5,
     route: '/arcade',
     defaultUnlocked: false,
@@ -228,15 +252,18 @@ export const PASSPORT_STAMPS: PassportStamp[] = [
 ];
 
 export function getUnlockedStamps(): string[] {
-  if (typeof window === 'undefined') return PASSPORT_STAMPS.filter(s => s.defaultUnlocked).map(s => s.id);
+  if (typeof window === 'undefined')
+    return PASSPORT_STAMPS.filter((s) => s.defaultUnlocked).map((s) => s.id);
   try {
     const saved = localStorage.getItem('dearly_unlocked_stamps');
     if (saved) return JSON.parse(saved);
-    const defaults = PASSPORT_STAMPS.filter(s => s.defaultUnlocked).map(s => s.id);
+    const defaults = PASSPORT_STAMPS.filter((s) => s.defaultUnlocked).map(
+      (s) => s.id,
+    );
     localStorage.setItem('dearly_unlocked_stamps', JSON.stringify(defaults));
     return defaults;
   } catch {
-    return PASSPORT_STAMPS.filter(s => s.defaultUnlocked).map(s => s.id);
+    return PASSPORT_STAMPS.filter((s) => s.defaultUnlocked).map((s) => s.id);
   }
 }
 
@@ -305,11 +332,13 @@ export function getCoupleTicketProfile(): CoupleTicketProfile {
         originCity: couple.cityA || DEFAULT_PROFILE.originCity,
         destinationCity: couple.cityB || DEFAULT_PROFILE.destinationCity,
         ...parsed,
-        partner1: parsed.partner1 || couple.partnerA || DEFAULT_PROFILE.partner1,
-        partner2: parsed.partner2 || couple.partnerB || DEFAULT_PROFILE.partner2,
+        partner1:
+          parsed.partner1 || couple.partnerA || DEFAULT_PROFILE.partner1,
+        partner2:
+          parsed.partner2 || couple.partnerB || DEFAULT_PROFILE.partner2,
       };
     }
-    
+
     return {
       ...DEFAULT_PROFILE,
       partner1: couple.partnerA,
@@ -327,7 +356,10 @@ export function saveCoupleTicketProfile(profile: Partial<CoupleTicketProfile>) {
   try {
     const current = getCoupleTicketProfile();
     const updated = { ...current, ...profile };
-    localStorage.setItem('dearly_couple_ticket_profile', JSON.stringify(updated));
+    localStorage.setItem(
+      'dearly_couple_ticket_profile',
+      JSON.stringify(updated),
+    );
     if (profile.partner1) {
       localStorage.setItem('dearly_user_nickname', profile.partner1);
     }
@@ -336,4 +368,3 @@ export function saveCoupleTicketProfile(profile: Partial<CoupleTicketProfile>) {
     }
   } catch {}
 }
-

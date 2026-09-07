@@ -8,7 +8,11 @@ interface AuroraBackgroundProps {
   style?: React.CSSProperties;
 }
 
-export function AuroraBackground({ children, className = '', style = {} }: AuroraBackgroundProps) {
+export function AuroraBackground({
+  children,
+  className = '',
+  style = {},
+}: AuroraBackgroundProps) {
   return (
     <div
       className={className}

@@ -25,15 +25,28 @@ export function CustomRitualModal({
   initialRitual,
   onSaveRitual,
 }: CustomRitualModalProps) {
-  const [title, setTitle] = useState(initialRitual?.title || 'Sunday Morning Coffee Check-in ☕');
-  const [purpose, setPurpose] = useState(
-    initialRitual?.purpose || 'A gentle recurring pause to listen, share, and support each other.'
+  const [title, setTitle] = useState(
+    initialRitual?.title || 'Sunday Morning Coffee Check-in ☕',
   );
-  const [cadence, setCadence] = useState<CoupleRitual['cadence']>(initialRitual?.cadence || 'weekly');
-  const [timeOfDay, setTimeOfDay] = useState(initialRitual?.timeOfDay || '10:00');
-  const [remindersA, setRemindersA] = useState(initialRitual?.remindersEnabledA ?? true);
-  const [remindersB, setRemindersB] = useState(initialRitual?.remindersEnabledB ?? true);
-  const [suggestedMode, setSuggestedMode] = useState<TogethernessMode>(initialRitual?.suggestedMode || 'quick_spark');
+  const [purpose, setPurpose] = useState(
+    initialRitual?.purpose ||
+      'A gentle recurring pause to listen, share, and support each other.',
+  );
+  const [cadence, setCadence] = useState<CoupleRitual['cadence']>(
+    initialRitual?.cadence || 'weekly',
+  );
+  const [timeOfDay, setTimeOfDay] = useState(
+    initialRitual?.timeOfDay || '10:00',
+  );
+  const [remindersA, setRemindersA] = useState(
+    initialRitual?.remindersEnabledA ?? true,
+  );
+  const [remindersB, setRemindersB] = useState(
+    initialRitual?.remindersEnabledB ?? true,
+  );
+  const [suggestedMode, setSuggestedMode] = useState<TogethernessMode>(
+    initialRitual?.suggestedMode || 'quick_spark',
+  );
 
   if (!isOpen) return null;
 
@@ -91,7 +104,14 @@ export function CustomRitualModal({
         }}
       >
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '18px',
+          }}
+        >
           <div>
             <span
               style={{
@@ -105,23 +125,58 @@ export function CustomRitualModal({
             >
               Couple Tradition
             </span>
-            <h2 id="custom-ritual-title" style={{ fontFamily: 'var(--font-display)', fontSize: '22px', margin: '2px 0 0', color: 'var(--ink)' }}>
+            <h2
+              id="custom-ritual-title"
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: '22px',
+                margin: '2px 0 0',
+                color: 'var(--ink)',
+              }}
+            >
               Create a Gentle Shared Ritual
             </h2>
           </div>
-          <button type="button" className="btn btn-ghost" onClick={onClose} style={{ padding: '6px 12px', fontSize: '13px' }}>
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={onClose}
+            style={{ padding: '6px 12px', fontSize: '13px' }}
+          >
             ✕
           </button>
         </div>
 
-        <p style={{ fontSize: '13px', color: 'var(--ink-soft)', margin: '0 0 18px', lineHeight: 1.5 }}>
-          Rituals in Dearly Us are created by you two. There are no streaks, no guilt if life gets busy, and you can snooze or reschedule anytime.
+        <p
+          style={{
+            fontSize: '13px',
+            color: 'var(--ink-soft)',
+            margin: '0 0 18px',
+            lineHeight: 1.5,
+          }}
+        >
+          Rituals in Dearly Us are created by you two. There are no streaks, no
+          guilt if life gets busy, and you can snooze or reschedule anytime.
         </p>
 
         {/* Ritual Form */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '20px' }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '14px',
+            marginBottom: '20px',
+          }}
+        >
           <div>
-            <label style={{ fontSize: '12px', fontWeight: 700, display: 'block', marginBottom: '6px' }}>
+            <label
+              style={{
+                fontSize: '12px',
+                fontWeight: 700,
+                display: 'block',
+                marginBottom: '6px',
+              }}
+            >
               Ritual Name
             </label>
             <input
@@ -141,7 +196,14 @@ export function CustomRitualModal({
           </div>
 
           <div>
-            <label style={{ fontSize: '12px', fontWeight: 700, display: 'block', marginBottom: '6px' }}>
+            <label
+              style={{
+                fontSize: '12px',
+                fontWeight: 700,
+                display: 'block',
+                marginBottom: '6px',
+              }}
+            >
               Purpose or Intention
             </label>
             <input
@@ -160,15 +222,34 @@ export function CustomRitualModal({
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '12px',
+            }}
+          >
             <div>
-              <label style={{ fontSize: '12px', fontWeight: 700, display: 'block', marginBottom: '6px' }}>
+              <label
+                style={{
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  display: 'block',
+                  marginBottom: '6px',
+                }}
+              >
                 Rhythm & Cadence
               </label>
               <select
                 value={cadence}
                 onChange={(e) => setCadence(e.target.value as any)}
-                style={{ width: '100%', padding: '9px 12px', borderRadius: '12px', border: '1px solid var(--line)', fontSize: '13px' }}
+                style={{
+                  width: '100%',
+                  padding: '9px 12px',
+                  borderRadius: '12px',
+                  border: '1px solid var(--line)',
+                  fontSize: '13px',
+                }}
               >
                 <option value="weekly">Weekly moment 🕯️</option>
                 <option value="daily">Daily check-in 🌸</option>
@@ -178,14 +259,27 @@ export function CustomRitualModal({
             </div>
 
             <div>
-              <label style={{ fontSize: '12px', fontWeight: 700, display: 'block', marginBottom: '6px' }}>
+              <label
+                style={{
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  display: 'block',
+                  marginBottom: '6px',
+                }}
+              >
                 Time of Day
               </label>
               <input
                 type="time"
                 value={timeOfDay}
                 onChange={(e) => setTimeOfDay(e.target.value)}
-                style={{ width: '100%', padding: '8px 12px', borderRadius: '12px', border: '1px solid var(--line)', fontSize: '13px' }}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  borderRadius: '12px',
+                  border: '1px solid var(--line)',
+                  fontSize: '13px',
+                }}
               />
             </div>
           </div>
@@ -201,17 +295,41 @@ export function CustomRitualModal({
               color: 'var(--ink-soft)',
             }}
           >
-            <span>Timezone aware: {timeOfDay} for {partnerAName} ({timezoneA || 'Local'})</span>
-            {timezoneB && <span style={{ display: 'block', marginTop: '3px' }}>Adjusted for {partnerBName} ({timezoneB})</span>}
+            <span>
+              Timezone aware: {timeOfDay} for {partnerAName} (
+              {timezoneA || 'Local'})
+            </span>
+            {timezoneB && (
+              <span style={{ display: 'block', marginTop: '3px' }}>
+                Adjusted for {partnerBName} ({timezoneB})
+              </span>
+            )}
           </div>
 
           {/* Independent Reminder Controls */}
           <div>
-            <label style={{ fontSize: '12px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>
+            <label
+              style={{
+                fontSize: '12px',
+                fontWeight: 700,
+                display: 'block',
+                marginBottom: '8px',
+              }}
+            >
               Personal Reminders (Non-guilt, quiet-hour aware)
             </label>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer' }}>
+            <div
+              style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
+            >
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                }}
+              >
                 <input
                   type="checkbox"
                   checked={remindersA}
@@ -219,7 +337,15 @@ export function CustomRitualModal({
                 />
                 <span>Send gentle reminder to {partnerAName}</span>
               </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer' }}>
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                }}
+              >
                 <input
                   type="checkbox"
                   checked={remindersB}
@@ -232,11 +358,23 @@ export function CustomRitualModal({
         </div>
 
         {/* Actions */}
-        <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-          <button type="button" className="btn btn-ghost" onClick={onClose} style={{ fontSize: '13px' }}>
+        <div
+          style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}
+        >
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={onClose}
+            style={{ fontSize: '13px' }}
+          >
             Cancel
           </button>
-          <button type="button" className="btn btn-primary" onClick={handleSave} style={{ fontSize: '13px' }}>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={handleSave}
+            style={{ fontSize: '13px' }}
+          >
             Save Couple Ritual ♡
           </button>
         </div>

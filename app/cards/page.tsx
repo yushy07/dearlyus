@@ -2,9 +2,20 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Ribbon, Navbar, CoupleNameBar, AiConsentToggle, CupidotActivityGuidance } from '@/components/shared';
+import {
+  Ribbon,
+  Navbar,
+  CoupleNameBar,
+  AiConsentToggle,
+  CupidotActivityGuidance,
+} from '@/components/shared';
 import { sounds } from '@/lib/sound';
-import { SwipeDeck, GlowBadge, ScrollProgress, ScrollReveal } from '@/components/ui';
+import {
+  SwipeDeck,
+  GlowBadge,
+  ScrollProgress,
+  ScrollReveal,
+} from '@/components/ui';
 import { ScratchOffCard } from '@/components/cards/ScratchOffCard';
 import { useCoupleProfile } from '@/lib/couple';
 import { useAiConsent } from '@/lib/ai-consent';
@@ -18,12 +29,41 @@ interface Card {
 }
 
 const INITIAL_DECK: Card[] = [
-  { tier: 'Level 1 · Warm Up', category: 'Playful', prompt: 'What is a small detail about me that you noticed recently and never said aloud?' },
-  { tier: 'Level 1 · Warm Up', category: 'Habits', prompt: 'What is our funniest inside joke that nobody else in our lives would ever understand?' },
-  { tier: 'Level 2 · Deep Water', category: 'Feelings', prompt: 'When is a moment during the distance when you felt closest to me, even miles apart?' },
-  { tier: 'Level 2 · Deep Water', category: 'Vulnerability', prompt: 'What is a fear or worry you’ve had about our future that you haven’t fully shared yet?' },
-  { tier: 'Level 3 · Raw Truth', category: 'Devotion', prompt: 'What makes you confident that every single mile of this distance will be worth it?' },
-  { tier: 'Level 3 · Raw Truth', category: 'Love', prompt: 'How have you changed as a person since we fell in love?' },
+  {
+    tier: 'Level 1 · Warm Up',
+    category: 'Playful',
+    prompt:
+      'What is a small detail about me that you noticed recently and never said aloud?',
+  },
+  {
+    tier: 'Level 1 · Warm Up',
+    category: 'Habits',
+    prompt:
+      'What is our funniest inside joke that nobody else in our lives would ever understand?',
+  },
+  {
+    tier: 'Level 2 · Deep Water',
+    category: 'Feelings',
+    prompt:
+      'When is a moment during the distance when you felt closest to me, even miles apart?',
+  },
+  {
+    tier: 'Level 2 · Deep Water',
+    category: 'Vulnerability',
+    prompt:
+      'What is a fear or worry you’ve had about our future that you haven’t fully shared yet?',
+  },
+  {
+    tier: 'Level 3 · Raw Truth',
+    category: 'Devotion',
+    prompt:
+      'What makes you confident that every single mile of this distance will be worth it?',
+  },
+  {
+    tier: 'Level 3 · Raw Truth',
+    category: 'Love',
+    prompt: 'How have you changed as a person since we fell in love?',
+  },
 ];
 
 export default function CardsPage() {
@@ -37,7 +77,9 @@ export default function CardsPage() {
   const [partnerAnswer, setPartnerAnswer] = useState('');
   const [revealed, setRevealed] = useState(false);
   const [hostNote, setHostNote] = useState<string | null>(null);
-  const [sessionHistory, setSessionHistory] = useState<Array<{ question: string; answerA: string; answerB: string }>>([]);
+  const [sessionHistory, setSessionHistory] = useState<
+    Array<{ question: string; answerA: string; answerB: string }>
+  >([]);
   const runtime = useActivityRuntime({
     sessionId: `mock-cards-${roomCode || 'local'}`,
     activityType: 'cards',
@@ -47,8 +89,12 @@ export default function CardsPage() {
   });
 
   useEffect(() => {
-    const snapshot = runtime.snapshot as { cardIndex?: number; flipped?: boolean };
-    if (typeof snapshot.cardIndex === 'number') setCurrentIdx(snapshot.cardIndex % deck.length);
+    const snapshot = runtime.snapshot as {
+      cardIndex?: number;
+      flipped?: boolean;
+    };
+    if (typeof snapshot.cardIndex === 'number')
+      setCurrentIdx(snapshot.cardIndex % deck.length);
     if (typeof snapshot.flipped === 'boolean') setFlipped(snapshot.flipped);
   }, [runtime.snapshot, deck.length]);
 
@@ -70,7 +116,7 @@ export default function CardsPage() {
     setPartnerAnswer(
       myAnswer
         ? 'I feel the exact same way. That one evening on call changed everything for me too.'
-        : 'You bring so much light into my days.'
+        : 'You bring so much light into my days.',
     );
 
     const currentRoundData = {
@@ -85,12 +131,18 @@ export default function CardsPage() {
     if (!hasAiConsent) return;
 
     void generateAdaptiveQuestion({
-        partnerA: { name: partnerA, answer: myAnswer || 'Loving our late night talks' },
-        partnerB: { name: partnerB, answer: 'Feeling closest when we plan our future' },
-        mode: 'cards',
-        mood: 'deep',
-        aiConsent: true,
-        history: updatedHistory,
+      partnerA: {
+        name: partnerA,
+        answer: myAnswer || 'Loving our late night talks',
+      },
+      partnerB: {
+        name: partnerB,
+        answer: 'Feeling closest when we plan our future',
+      },
+      mode: 'cards',
+      mood: 'deep',
+      aiConsent: true,
+      history: updatedHistory,
     })
       .then((data: any) => {
         if (data?.question) {
@@ -111,8 +163,21 @@ export default function CardsPage() {
   };
 
   return (
-    <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '80px', color: 'var(--ink)' }}>
-      <Ribbon text={<>🎴 Honest Cards · <b>Vulnerable Conversations for Two Screens</b></>} />
+    <div
+      style={{
+        background: 'var(--paper)',
+        minHeight: '100vh',
+        paddingBottom: '80px',
+        color: 'var(--ink)',
+      }}
+    >
+      <Ribbon
+        text={
+          <>
+            🎴 Honest Cards · <b>Vulnerable Conversations for Two Screens</b>
+          </>
+        }
+      />
 
       <Navbar
         rightAction={
@@ -126,34 +191,58 @@ export default function CardsPage() {
               border: '1px solid var(--line)',
             }}
           >
-            Card <b>{currentIdx + 1} / {deck.length}</b>
+            Card{' '}
+            <b>
+              {currentIdx + 1} / {deck.length}
+            </b>
           </span>
         }
       />
 
       <main className="wrap" style={{ paddingTop: '36px', maxWidth: '720px' }}>
-        <div style={{ marginBottom: '18px' }}><AiConsentToggle /></div>
+        <div style={{ marginBottom: '18px' }}>
+          <AiConsentToggle />
+        </div>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <CoupleNameBar />
-          <h1 style={{ fontSize: 'clamp(28px, 4vw, 42px)', marginBottom: '10px' }}>
+          <h1
+            style={{ fontSize: 'clamp(28px, 4vw, 42px)', marginBottom: '10px' }}
+          >
             The questions you <span className="grad">keep avoiding</span>.
           </h1>
           <p style={{ color: 'var(--ink-soft)', fontSize: '16px' }}>
-            You both answer privately on your screens — then the card flips open at once.
+            You both answer privately on your screens — then the card flips open
+            at once.
           </p>
         </div>
 
         {/* Swipeable Card Stage with Scratch-Off Silver Foil */}
-        <div style={{ perspective: '1200px', margin: '0 auto 28px', maxWidth: '520px' }}>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
+        <div
+          style={{
+            perspective: '1200px',
+            margin: '0 auto 28px',
+            maxWidth: '520px',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              marginBottom: '10px',
+            }}
+          >
             <button
               onClick={() => {
                 sounds.playPop();
                 setScratchMode(!scratchMode);
               }}
               style={{
-                background: scratchMode ? 'var(--pink-tint)' : 'var(--paper-raised)',
-                border: scratchMode ? '1.5px solid var(--pink)' : '1px solid var(--line)',
+                background: scratchMode
+                  ? 'var(--pink-tint)'
+                  : 'var(--paper-raised)',
+                border: scratchMode
+                  ? '1.5px solid var(--pink)'
+                  : '1px solid var(--line)',
                 color: scratchMode ? 'var(--pink)' : 'var(--ink-soft)',
                 padding: '5px 14px',
                 borderRadius: '20px',
@@ -167,7 +256,11 @@ export default function CardsPage() {
               }}
             >
               <span>🪙</span>
-              <span>{scratchMode ? '✓ Silver Foil Scratch Mode' : 'Instant Card View'}</span>
+              <span>
+                {scratchMode
+                  ? '✓ Silver Foil Scratch Mode'
+                  : 'Instant Card View'}
+              </span>
             </button>
           </div>
 
@@ -178,10 +271,7 @@ export default function CardsPage() {
             privacyNote="No rush, no score, and no pressure to answer what you're not ready to share."
           />
 
-          <SwipeDeck
-            onSwipeRight={handleNext}
-            onSwipeLeft={handleNext}
-          >
+          <SwipeDeck onSwipeRight={handleNext} onSwipeLeft={handleNext}>
             {scratchMode ? (
               <ScratchOffCard resetKey={currentIdx}>
                 <div
@@ -196,7 +286,8 @@ export default function CardsPage() {
                     borderRadius: '20px',
                     padding: '48px 36px',
                     minHeight: '290px',
-                    boxShadow: '0 20px 40px rgba(0,0,0,0.08), 0 4px 12px rgba(255,123,163,0.06)',
+                    boxShadow:
+                      '0 20px 40px rgba(0,0,0,0.08), 0 4px 12px rgba(255,123,163,0.06)',
                     cursor: 'grab',
                     display: 'flex',
                     flexDirection: 'column',
@@ -207,8 +298,17 @@ export default function CardsPage() {
                   }}
                 >
                   <div>
-                    <div style={{ display: 'inline-flex', justifyContent: 'center', marginBottom: '8px' }}>
-                      <GlowBadge text={`${card.tier} · ${card.category}`} size="sm" />
+                    <div
+                      style={{
+                        display: 'inline-flex',
+                        justifyContent: 'center',
+                        marginBottom: '8px',
+                      }}
+                    >
+                      <GlowBadge
+                        text={`${card.tier} · ${card.category}`}
+                        size="sm"
+                      />
                     </div>
                     <h2
                       style={{
@@ -223,7 +323,17 @@ export default function CardsPage() {
                     </h2>
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', fontSize: '12px', color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginTop: '20px',
+                      fontSize: '12px',
+                      color: 'var(--ink-soft)',
+                      fontFamily: 'var(--font-mono)',
+                    }}
+                  >
                     <span>👆 Swipe left/right for next</span>
                     <span>{revealed ? '✓ Revealed' : 'Tap to flip'}</span>
                   </div>
@@ -242,7 +352,8 @@ export default function CardsPage() {
                   borderRadius: '20px',
                   padding: '48px 36px',
                   minHeight: '290px',
-                  boxShadow: '0 20px 40px rgba(0,0,0,0.08), 0 4px 12px rgba(255,123,163,0.06)',
+                  boxShadow:
+                    '0 20px 40px rgba(0,0,0,0.08), 0 4px 12px rgba(255,123,163,0.06)',
                   cursor: 'grab',
                   display: 'flex',
                   flexDirection: 'column',
@@ -253,8 +364,17 @@ export default function CardsPage() {
                 }}
               >
                 <div>
-                  <div style={{ display: 'inline-flex', justifyContent: 'center', marginBottom: '8px' }}>
-                    <GlowBadge text={`${card.tier} · ${card.category}`} size="sm" />
+                  <div
+                    style={{
+                      display: 'inline-flex',
+                      justifyContent: 'center',
+                      marginBottom: '8px',
+                    }}
+                  >
+                    <GlowBadge
+                      text={`${card.tier} · ${card.category}`}
+                      size="sm"
+                    />
                   </div>
                   <h2
                     style={{
@@ -269,7 +389,17 @@ export default function CardsPage() {
                   </h2>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', fontSize: '12px', color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginTop: '20px',
+                    fontSize: '12px',
+                    color: 'var(--ink-soft)',
+                    fontFamily: 'var(--font-mono)',
+                  }}
+                >
                   <span>👆 Swipe left/right for next</span>
                   <span>{revealed ? '✓ Revealed' : 'Tap to flip'}</span>
                 </div>
@@ -279,11 +409,28 @@ export default function CardsPage() {
         </div>
 
         {/* Inputs */}
-        <div style={{ background: '#FFFFFF', border: '1px solid var(--line)', borderRadius: '16px', padding: '24px', boxShadow: 'var(--shadow)', marginBottom: '24px' }}>
+        <div
+          style={{
+            background: '#FFFFFF',
+            border: '1px solid var(--line)',
+            borderRadius: '16px',
+            padding: '24px',
+            boxShadow: 'var(--shadow)',
+            marginBottom: '24px',
+          }}
+        >
           {!revealed ? (
             <div style={{ display: 'grid', gap: '16px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    marginBottom: '6px',
+                  }}
+                >
                   Your Private Answer ({partnerA}):
                 </label>
                 <textarea
@@ -291,27 +438,83 @@ export default function CardsPage() {
                   value={myAnswer}
                   onChange={(e) => setMyAnswer(e.target.value)}
                   placeholder={`Type your honest thoughts... ${partnerB} cannot see until both lock in.`}
-                  style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--line)', fontSize: '14.5px' }}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--line)',
+                    fontSize: '14.5px',
+                  }}
                 />
               </div>
               <button
                 onClick={handleReveal}
                 disabled={!myAnswer.trim()}
                 className="btn btn-primary"
-                style={{ padding: '12px', fontSize: '15px', justifyContent: 'center' }}
+                style={{
+                  padding: '12px',
+                  fontSize: '15px',
+                  justifyContent: 'center',
+                }}
               >
                 Lock In &amp; Reveal Answers 🔍
               </button>
             </div>
           ) : (
             <div style={{ display: 'grid', gap: '16px' }}>
-              <div style={{ background: 'var(--paper)', padding: '16px', borderRadius: '10px', border: '1px solid var(--line)' }}>
-                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--pink)' }}>🌸 {partnerA}&apos;s Answer:</div>
-                <p style={{ margin: '6px 0 0', fontSize: '15px', lineHeight: 1.5 }}>{myAnswer}</p>
+              <div
+                style={{
+                  background: 'var(--paper)',
+                  padding: '16px',
+                  borderRadius: '10px',
+                  border: '1px solid var(--line)',
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    color: 'var(--pink)',
+                  }}
+                >
+                  🌸 {partnerA}&apos;s Answer:
+                </div>
+                <p
+                  style={{
+                    margin: '6px 0 0',
+                    fontSize: '15px',
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {myAnswer}
+                </p>
               </div>
-              <div style={{ background: 'var(--paper)', padding: '16px', borderRadius: '10px', border: '1px solid var(--line)' }}>
-                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--blue)' }}>💙 {partnerB}&apos;s Answer:</div>
-                <p style={{ margin: '6px 0 0', fontSize: '15px', lineHeight: 1.5 }}>{partnerAnswer}</p>
+              <div
+                style={{
+                  background: 'var(--paper)',
+                  padding: '16px',
+                  borderRadius: '10px',
+                  border: '1px solid var(--line)',
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    color: 'var(--blue)',
+                  }}
+                >
+                  💙 {partnerB}&apos;s Answer:
+                </div>
+                <p
+                  style={{
+                    margin: '6px 0 0',
+                    fontSize: '15px',
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {partnerAnswer}
+                </p>
               </div>
 
               {hostNote && (
@@ -319,7 +522,8 @@ export default function CardsPage() {
                   style={{
                     padding: '12px 18px',
                     borderRadius: '14px',
-                    background: 'linear-gradient(135deg, #FFF5F8 0%, #FFFFFF 100%)',
+                    background:
+                      'linear-gradient(135deg, #FFF5F8 0%, #FFFFFF 100%)',
                     border: '1.5px solid rgba(255, 77, 128, 0.25)',
                     fontSize: '13px',
                     color: 'var(--ink)',
@@ -332,15 +536,33 @@ export default function CardsPage() {
                 >
                   <span style={{ fontSize: '20px' }}>ʚ🤖💘ɞ</span>
                   <div>
-                    <div style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', fontWeight: 800, color: '#FF4D80', textTransform: 'uppercase' }}>
+                    <div
+                      style={{
+                        fontSize: '10px',
+                        fontFamily: 'var(--font-mono)',
+                        fontWeight: 800,
+                        color: '#FF4D80',
+                        textTransform: 'uppercase',
+                      }}
+                    >
                       CUPIDOT&apos;S CHEEKY NOTE
                     </div>
-                    <span style={{ fontStyle: 'italic', fontWeight: 600 }}>&ldquo;{hostNote}&rdquo;</span>
+                    <span style={{ fontStyle: 'italic', fontWeight: 600 }}>
+                      &ldquo;{hostNote}&rdquo;
+                    </span>
                   </div>
                 </div>
               )}
 
-              <button onClick={handleNext} className="btn btn-grad" style={{ padding: '12px', fontSize: '15px', justifyContent: 'center' }}>
+              <button
+                onClick={handleNext}
+                className="btn btn-grad"
+                style={{
+                  padding: '12px',
+                  fontSize: '15px',
+                  justifyContent: 'center',
+                }}
+              >
                 Next Honest Card ▷
               </button>
             </div>

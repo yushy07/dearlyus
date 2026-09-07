@@ -7,12 +7,25 @@ test('local activity routes render without a backend', async ({ browser }) => {
   const partnerB = await context.newPage();
 
   await Promise.all([partnerA.goto('/quiz'), partnerB.goto('/quiz')]);
-  await expect(partnerA.getByRole('heading', { name: /Lock in privately/i })).toBeVisible();
-  await expect(partnerB.getByRole('heading', { name: /Lock in privately/i })).toBeVisible();
+  await expect(
+    partnerA.getByRole('heading', { name: /Lock in privately/i }),
+  ).toBeVisible();
+  await expect(
+    partnerB.getByRole('heading', { name: /Lock in privately/i }),
+  ).toBeVisible();
   await partnerA.goto('/draw');
   await expect(partnerA.getByRole('main').locator('canvas')).toBeVisible();
 
-  for (const route of ['/cards', '/host', '/match', '/court', '/dare', '/photobooth', '/passport', '/scrapbook']) {
+  for (const route of [
+    '/cards',
+    '/host',
+    '/match',
+    '/court',
+    '/dare',
+    '/photobooth',
+    '/passport',
+    '/scrapbook',
+  ]) {
     await partnerA.goto(route);
     await expect(partnerA.getByRole('main')).toBeVisible();
   }

@@ -5,7 +5,8 @@ import { useActivitySession } from '@/contexts/ActivitySessionContext';
 import { useRoomPresence } from '@/contexts/PresenceContext';
 
 export function useSessionRecovery() {
-  const { sessionId, lastSequence, recover, isReplaying } = useActivitySession();
+  const { sessionId, lastSequence, recover, isReplaying } =
+    useActivitySession();
   const { connectionState } = useRoomPresence();
 
   const handleReconnect = useCallback(async () => {

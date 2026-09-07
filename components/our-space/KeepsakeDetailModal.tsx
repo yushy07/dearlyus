@@ -13,7 +13,10 @@ export interface KeepsakeDetailModalProps {
   onDeleted?: () => void;
 }
 
-const KIND_LABELS: Record<Keepsake['kind'], { label: string; icon: string; color: string }> = {
+const KIND_LABELS: Record<
+  Keepsake['kind'],
+  { label: string; icon: string; color: string }
+> = {
   photostrip: { label: 'Photostrip', icon: '📸', color: '#BE123C' },
   passport: { label: 'Visa Stamp', icon: '💮', color: '#D97706' },
   receipt: { label: 'Thermal Receipt', icon: '🧾', color: '#059669' },
@@ -49,7 +52,11 @@ export function KeepsakeDetailModal({
 
   if (!isOpen || !keepsake) return null;
 
-  const config = KIND_LABELS[keepsake.kind] || { label: 'Keepsake', icon: '♡', color: '#BE123C' };
+  const config = KIND_LABELS[keepsake.kind] || {
+    label: 'Keepsake',
+    icon: '♡',
+    color: '#BE123C',
+  };
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -65,14 +72,17 @@ export function KeepsakeDetailModal({
     }
   };
 
-  const formattedDate = new Date(keepsake.createdAt).toLocaleDateString(undefined, {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  const formattedDate = new Date(keepsake.createdAt).toLocaleDateString(
+    undefined,
+    {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    },
+  );
 
   return (
     <div
@@ -109,7 +119,14 @@ export function KeepsakeDetailModal({
         }}
       >
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '20px',
+          }}
+        >
           <div
             style={{
               display: 'inline-flex',
@@ -167,7 +184,12 @@ export function KeepsakeDetailModal({
             <img
               src={(keepsake.previewUrl || keepsake.publicUrl)!}
               alt={keepsake.title}
-              style={{ width: '100%', height: 'auto', maxHeight: '340px', objectFit: 'contain' }}
+              style={{
+                width: '100%',
+                height: 'auto',
+                maxHeight: '340px',
+                objectFit: 'contain',
+              }}
             />
           </div>
         )}
@@ -175,11 +197,18 @@ export function KeepsakeDetailModal({
         {/* Title and Date */}
         <h2
           id="keepsake-detail-title"
-          style={{ fontSize: '22px', fontWeight: 800, color: '#111827', margin: '0 0 6px' }}
+          style={{
+            fontSize: '22px',
+            fontWeight: 800,
+            color: '#111827',
+            margin: '0 0 6px',
+          }}
         >
           {keepsake.title}
         </h2>
-        <div style={{ fontSize: '13px', color: '#6B7280', marginBottom: '16px' }}>
+        <div
+          style={{ fontSize: '13px', color: '#6B7280', marginBottom: '16px' }}
+        >
           {formattedDate}
         </div>
 
@@ -217,18 +246,41 @@ export function KeepsakeDetailModal({
                 textDecoration: 'none',
               }}
             >
-              <span>Revisit {keepsake.activityPath.replace('/', '')} activity →</span>
+              <span>
+                Revisit {keepsake.activityPath.replace('/', '')} activity →
+              </span>
             </Link>
           </div>
         )}
 
         {/* Metadata Details */}
         {keepsake.metadata && Object.keys(keepsake.metadata).length > 0 && (
-          <div style={{ background: '#F9FAFB', padding: '14px', borderRadius: '14px', marginBottom: '24px' }}>
-            <div style={{ fontSize: '11px', fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', marginBottom: '8px' }}>
+          <div
+            style={{
+              background: '#F9FAFB',
+              padding: '14px',
+              borderRadius: '14px',
+              marginBottom: '24px',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '11px',
+                fontWeight: 700,
+                color: '#9CA3AF',
+                textTransform: 'uppercase',
+                marginBottom: '8px',
+              }}
+            >
               Keepsake Details
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+                gap: '8px',
+              }}
+            >
               {Object.entries(keepsake.metadata)
                 .filter(([k]) => !['historySummary', 'isCapsule'].includes(k))
                 .map(([key, val]) => (
@@ -242,7 +294,15 @@ export function KeepsakeDetailModal({
         )}
 
         {/* Actions Row */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '16px', borderTop: '1px solid #F3F4F6' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingTop: '16px',
+            borderTop: '1px solid #F3F4F6',
+          }}
+        >
           <div>
             {!confirmDelete ? (
               <button
@@ -261,8 +321,12 @@ export function KeepsakeDetailModal({
                 🗑️ Discard from Shelf
               </button>
             ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '12px', color: '#991B1B' }}>Permanently remove?</span>
+              <div
+                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
+                <span style={{ fontSize: '12px', color: '#991B1B' }}>
+                  Permanently remove?
+                </span>
                 <button
                   type="button"
                   onClick={handleDelete}

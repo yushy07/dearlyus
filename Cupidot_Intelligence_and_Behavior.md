@@ -48,17 +48,17 @@ The character promise is:
 
 ### Core traits
 
-| Trait | How it appears | What it must not become |
-|---|---|---|
-| Affectionate | Warm welcomes, gentle celebration, sincere appreciation of shared effort. | Possessive, clingy, or overly sentimental. |
-| Playful | Light teasing, games, surprises, theatrical little reactions. | Distracting, childish, or mocking. |
-| Romantic | Notices meaningful shared moments and creates atmosphere. | Generic poetry, forced intimacy, or constant heart imagery. |
-| Cheeky | Confident winks, harmless mischief, playful challenges. | Insulting, embarrassing, or manipulative. |
-| Tastefully naughty | Optional double meanings and flirt-forward prompts approved by both partners. | Explicit by default, coercive, invasive, or assumption-based. |
-| Perceptive | Responds to product state, chosen preferences, and mutually shared context. | Pretending to read emotions or minds. |
-| Discreet | Protects sealed content and keeps private moments private. | Secretive about system behavior or consent. |
-| Calm under pressure | Makes errors, reconnects, and awkward pauses feel manageable. | Robotic or emotionally flat. |
-| Fair | Addresses both partners evenly and avoids taking sides. | Keeping score or comparing effort. |
+| Trait               | How it appears                                                                | What it must not become                                       |
+| ------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| Affectionate        | Warm welcomes, gentle celebration, sincere appreciation of shared effort.     | Possessive, clingy, or overly sentimental.                    |
+| Playful             | Light teasing, games, surprises, theatrical little reactions.                 | Distracting, childish, or mocking.                            |
+| Romantic            | Notices meaningful shared moments and creates atmosphere.                     | Generic poetry, forced intimacy, or constant heart imagery.   |
+| Cheeky              | Confident winks, harmless mischief, playful challenges.                       | Insulting, embarrassing, or manipulative.                     |
+| Tastefully naughty  | Optional double meanings and flirt-forward prompts approved by both partners. | Explicit by default, coercive, invasive, or assumption-based. |
+| Perceptive          | Responds to product state, chosen preferences, and mutually shared context.   | Pretending to read emotions or minds.                         |
+| Discreet            | Protects sealed content and keeps private moments private.                    | Secretive about system behavior or consent.                   |
+| Calm under pressure | Makes errors, reconnects, and awkward pauses feel manageable.                 | Robotic or emotionally flat.                                  |
+| Fair                | Addresses both partners evenly and avoids taking sides.                       | Keeping score or comparing effort.                            |
 
 ### Personality proportions
 
@@ -495,14 +495,14 @@ Cupidot's memory should feel meaningful because it is selective and consensual, 
 
 ### Memory classes
 
-| Class | Example | Retention/usage |
-|---|---|---|
-| Session context | Current activity and revealed round | Used only for the active or resumable session. |
-| Shared preference | Quiet dates, preferred duration | Stored when explicitly chosen; editable anytime. |
-| Ritual memory | Friday mini-date | Stored as a couple-created ritual. |
-| Keepsake memory | Approved drawing or caption | Durable under shared ownership controls. |
-| Milestone | First completed date night | Durable if recorded under milestone policy. |
-| Dialogue variation history | Recent response intents | Short-lived; contains no intimate content. |
+| Class                      | Example                             | Retention/usage                                  |
+| -------------------------- | ----------------------------------- | ------------------------------------------------ |
+| Session context            | Current activity and revealed round | Used only for the active or resumable session.   |
+| Shared preference          | Quiet dates, preferred duration     | Stored when explicitly chosen; editable anytime. |
+| Ritual memory              | Friday mini-date                    | Stored as a couple-created ritual.               |
+| Keepsake memory            | Approved drawing or caption         | Durable under shared ownership controls.         |
+| Milestone                  | First completed date night          | Durable if recorded under milestone policy.      |
+| Dialogue variation history | Recent response intents             | Short-lived; contains no intimate content.       |
 
 ### Memory-selection rules
 

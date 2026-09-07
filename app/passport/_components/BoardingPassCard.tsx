@@ -10,9 +10,16 @@ interface BoardingPassCardProps {
   onShareClick?: () => void;
 }
 
-export function BoardingPassCard({ profile, onEditClick, onShareClick }: BoardingPassCardProps) {
+export function BoardingPassCard({
+  profile,
+  onEditClick,
+  onShareClick,
+}: BoardingPassCardProps) {
   return (
-    <div className="passport-boarding-pass" style={{ padding: '24px 28px', color: 'var(--ink)' }}>
+    <div
+      className="passport-boarding-pass"
+      style={{ padding: '24px 28px', color: 'var(--ink)' }}
+    >
       {/* Header section with 3D gold wax seal */}
       <div
         style={{
@@ -27,7 +34,10 @@ export function BoardingPassCard({ profile, onEditClick, onShareClick }: Boardin
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <div className="gold-wax-seal-3d" title="Authentic Dearly Us Love Seal">
+          <div
+            className="gold-wax-seal-3d"
+            title="Authentic Dearly Us Love Seal"
+          >
             <span>💮</span>
           </div>
           <div>
@@ -48,20 +58,68 @@ export function BoardingPassCard({ profile, onEditClick, onShareClick }: Boardin
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', fontFamily: 'var(--font-mono)', flexWrap: 'wrap' }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: '12px',
+            alignItems: 'center',
+            fontFamily: 'var(--font-mono)',
+            flexWrap: 'wrap',
+          }}
+        >
           <div>
-            <div style={{ fontSize: '9px', color: 'var(--ink-soft)', textTransform: 'uppercase' }}>Passengers</div>
+            <div
+              style={{
+                fontSize: '9px',
+                color: 'var(--ink-soft)',
+                textTransform: 'uppercase',
+              }}
+            >
+              Passengers
+            </div>
             <div style={{ fontSize: '13px', fontWeight: 800 }}>
               {profile.partner1} &amp; {profile.partner2}
             </div>
           </div>
           <div>
-            <div style={{ fontSize: '9px', color: 'var(--ink-soft)', textTransform: 'uppercase' }}>Seat</div>
-            <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--pink)' }}>{profile.seatNumber}</div>
+            <div
+              style={{
+                fontSize: '9px',
+                color: 'var(--ink-soft)',
+                textTransform: 'uppercase',
+              }}
+            >
+              Seat
+            </div>
+            <div
+              style={{
+                fontSize: '13px',
+                fontWeight: 800,
+                color: 'var(--pink)',
+              }}
+            >
+              {profile.seatNumber}
+            </div>
           </div>
           <div>
-            <div style={{ fontSize: '9px', color: 'var(--ink-soft)', textTransform: 'uppercase' }}>Love Date</div>
-            <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--blue)' }}>{profile.anniversaryDate}</div>
+            <div
+              style={{
+                fontSize: '9px',
+                color: 'var(--ink-soft)',
+                textTransform: 'uppercase',
+              }}
+            >
+              Love Date
+            </div>
+            <div
+              style={{
+                fontSize: '13px',
+                fontWeight: 800,
+                color: 'var(--blue)',
+              }}
+            >
+              {profile.anniversaryDate}
+            </div>
           </div>
 
           <div style={{ display: 'flex', gap: '8px' }}>
@@ -120,16 +178,48 @@ export function BoardingPassCard({ profile, onEditClick, onShareClick }: Boardin
       </div>
 
       {/* Route Departure / Arrival Hub */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '16px',
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <div style={{ textAlign: 'left' }}>
-            <div style={{ fontSize: '10px', color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}>ORIGIN CITY</div>
-            <div style={{ fontSize: '15px', fontWeight: 900 }}>{profile.originCity}</div>
+            <div
+              style={{
+                fontSize: '10px',
+                color: 'var(--ink-soft)',
+                fontFamily: 'var(--font-mono)',
+              }}
+            >
+              ORIGIN CITY
+            </div>
+            <div style={{ fontSize: '15px', fontWeight: 900 }}>
+              {profile.originCity}
+            </div>
           </div>
-          <div style={{ fontSize: '20px', color: 'var(--pink)', padding: '0 8px' }}>✈️ ➔ 💖</div>
+          <div
+            style={{ fontSize: '20px', color: 'var(--pink)', padding: '0 8px' }}
+          >
+            ✈️ ➔ 💖
+          </div>
           <div style={{ textAlign: 'left' }}>
-            <div style={{ fontSize: '10px', color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}>DESTINATION</div>
-            <div style={{ fontSize: '15px', fontWeight: 900 }}>{profile.destinationCity}</div>
+            <div
+              style={{
+                fontSize: '10px',
+                color: 'var(--ink-soft)',
+                fontFamily: 'var(--font-mono)',
+              }}
+            >
+              DESTINATION
+            </div>
+            <div style={{ fontSize: '15px', fontWeight: 900 }}>
+              {profile.destinationCity}
+            </div>
           </div>
         </div>
 

@@ -53,7 +53,9 @@ export interface StandardEventMetadata {
 /**
  * Full standard activity event carrying payload and metadata.
  */
-export interface StandardActivityEvent<TPayload = unknown> extends StandardEventMetadata {
+export interface StandardActivityEvent<
+  TPayload = unknown,
+> extends StandardEventMetadata {
   type: string;
   payload: TPayload;
   clientCreatedAt?: string | null;
@@ -80,7 +82,11 @@ export interface ActivityDefinition<
   /** List of private fields that must never appear in public event payloads */
   privateFields: readonly string[];
   /** Transition guard checking if an action is valid in current state */
-  transitionRules: (snapshot: TSnapshot, action: string, userId: string) => boolean;
+  transitionRules: (
+    snapshot: TSnapshot,
+    action: string,
+    userId: string,
+  ) => boolean;
   /** Reconnect behavior strategy */
   reconnectBehavior: 'loading_snapshot' | 'replaying_missed_events' | 'hybrid';
   /** Pure state reducer applying a validated event to snapshot */
@@ -99,12 +105,15 @@ export interface ActivityDefinition<
 export function createAdapterFromDefinition<
   TSnapshot extends Record<string, unknown>,
   TEvent extends RealtimeActivityEvent,
->(definition: ActivityDefinition<TSnapshot, TEvent>): RealtimeActivityAdapter<TSnapshot, TEvent> {
+>(
+  definition: ActivityDefinition<TSnapshot, TEvent>,
+): RealtimeActivityAdapter<TSnapshot, TEvent> {
   return {
     activityType: definition.activityType,
     schemaVersion: definition.schemaVersion,
     definition: definition as ActivityDefinition<any, any>,
-    createInitialSnapshot: (input: StartActivityInput) => definition.initialSnapshot(input),
+    createInitialSnapshot: (input: StartActivityInput) =>
+      definition.initialSnapshot(input),
     validateEvent: (event: TEvent): ValidationResult => {
       if (definition.validateEvent) {
         return definition.validateEvent(event);
@@ -119,7 +128,8 @@ export function createAdapterFromDefinition<
       }
       return { valid: true };
     },
-    reduce: (snapshot: TSnapshot, event: TEvent) => definition.reduce(snapshot, event),
+    reduce: (snapshot: TSnapshot, event: TEvent) =>
+      definition.reduce(snapshot, event),
     canTransition: (snapshot: TSnapshot, action: string, userId: string) =>
       definition.transitionRules(snapshot, action, userId),
     summarize: (snapshot: TSnapshot) => definition.summarize(snapshot),

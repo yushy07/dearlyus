@@ -29,7 +29,10 @@ interface BusSessionState {
 
 const activeBuses = new Map<string, BusSessionState>();
 
-export function getOrCreateBus(sessionId: string, initialSnapshot?: any): BusSessionState {
+export function getOrCreateBus(
+  sessionId: string,
+  initialSnapshot?: any,
+): BusSessionState {
   if (!activeBuses.has(sessionId)) {
     activeBuses.set(sessionId, {
       events: [],
@@ -61,10 +64,15 @@ const browserStoragePrefix = 'dearly_mock_activity_bus:';
 const browserVaultPrefix = 'dearly_mock_activity_vault:';
 
 function isBrowserTransport() {
-  return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
+  return (
+    typeof window !== 'undefined' && typeof window.localStorage !== 'undefined'
+  );
 }
 
-function readBrowserBus(sessionId: string, initialSnapshot?: unknown): BusSessionState {
+function readBrowserBus(
+  sessionId: string,
+  initialSnapshot?: unknown,
+): BusSessionState {
   const key = `${browserStoragePrefix}${sessionId}`;
   const raw = window.localStorage.getItem(key);
   if (raw) {
@@ -77,8 +85,15 @@ function readBrowserBus(sessionId: string, initialSnapshot?: unknown): BusSessio
     } as BusSessionState;
   }
   const fresh: BusSessionState = {
-    events: [], lastSequence: 0, revision: 1, snapshot: initialSnapshot ?? {}, snapshotSequence: 0,
-    paused: false, completed: false, privateAnswers: new Map(), subscribers: new Set(),
+    events: [],
+    lastSequence: 0,
+    revision: 1,
+    snapshot: initialSnapshot ?? {},
+    snapshotSequence: 0,
+    paused: false,
+    completed: false,
+    privateAnswers: new Map(),
+    subscribers: new Set(),
   };
   writeBrowserBus(sessionId, fresh);
   return fresh;
@@ -86,11 +101,18 @@ function readBrowserBus(sessionId: string, initialSnapshot?: unknown): BusSessio
 
 function writeBrowserBus(sessionId: string, state: BusSessionState) {
   const key = `${browserStoragePrefix}${sessionId}`;
-  window.localStorage.setItem(key, JSON.stringify({
-    events: state.events, lastSequence: state.lastSequence, revision: state.revision,
-    snapshot: state.snapshot, snapshotSequence: state.snapshotSequence,
-    paused: state.paused, completed: state.completed,
-  }));
+  window.localStorage.setItem(
+    key,
+    JSON.stringify({
+      events: state.events,
+      lastSequence: state.lastSequence,
+      revision: state.revision,
+      snapshot: state.snapshot,
+      snapshotSequence: state.snapshotSequence,
+      paused: state.paused,
+      completed: state.completed,
+    }),
+  );
 }
 
 export class MockActivityTransport implements ActivityTransport {
@@ -99,7 +121,9 @@ export class MockActivityTransport implements ActivityTransport {
   private currentUserId: string = 'partner-a';
   private eventHandlers = new Set<(event: StandardActivityEvent) => void>();
   private transientHandlers = new Map<string, Set<(payload: any) => void>>();
-  private recoveryStateHandlers = new Set<(state: StandardRecoveryState) => void>();
+  private recoveryStateHandlers = new Set<
+    (state: StandardRecoveryState) => void
+  >();
   private options: MockTransportOptions;
   private channel: BroadcastChannel | null = null;
 
@@ -111,7 +135,10 @@ export class MockActivityTransport implements ActivityTransport {
     this.options = { ...this.options, ...opts };
   }
 
-  public async connect(sessionId: string, currentUserId: string): Promise<void> {
+  public async connect(
+    sessionId: string,
+    currentUserId: string,
+  ): Promise<void> {
     this.sessionId = sessionId;
     this.currentUserId = currentUserId;
     const bus = getOrCreateBus(sessionId, this.options.initialSnapshot);
@@ -122,7 +149,8 @@ export class MockActivityTransport implements ActivityTransport {
       this.channel.onmessage = (message) => {
         const data = message.data;
         if (data?.kind === 'event') this.dispatchIncomingEvent(data.event);
-        if (data?.kind === 'transient') this.dispatchIncomingTransient(data.event, data.payload);
+        if (data?.kind === 'transient')
+          this.dispatchIncomingTransient(data.event, data.payload);
       };
     }
     this.notifyRecoveryState('recovered');
@@ -143,9 +171,10 @@ export class MockActivityTransport implements ActivityTransport {
   public async sendEvent(
     type: string,
     payload: unknown,
-    _expectedRevision?: number
+    _expectedRevision?: number,
   ): Promise<StandardActivityEvent | null> {
-    if (!this.sessionId) throw new Error('Transport not connected to a session.');
+    if (!this.sessionId)
+      throw new Error('Transport not connected to a session.');
     const bus = isBrowserTransport()
       ? readBrowserBus(this.sessionId, this.options.initialSnapshot)
       : getOrCreateBus(this.sessionId);
@@ -188,7 +217,10 @@ export class MockActivityTransport implements ActivityTransport {
       this.options.duplicateNextEvent = false;
       // Send duplicate immediately to test client deduplication
       if (isBrowserTransport()) this.dispatchIncomingEvent(event);
-      else bus.subscribers.forEach((client) => client.dispatchIncomingEvent(event));
+      else
+        bus.subscribers.forEach((client) =>
+          client.dispatchIncomingEvent(event),
+        );
     }
 
     return event;
@@ -200,15 +232,21 @@ export class MockActivityTransport implements ActivityTransport {
       ? readBrowserBus(this.sessionId, this.options.initialSnapshot)
       : getOrCreateBus(this.sessionId);
     // Broadcast transient to other subscribers (not self)
-    if (isBrowserTransport()) this.channel?.postMessage({ kind: 'transient', event, payload });
-    else bus.subscribers.forEach((client) => {
-      if (client !== this) client.dispatchIncomingTransient(event, payload);
-    });
+    if (isBrowserTransport())
+      this.channel?.postMessage({ kind: 'transient', event, payload });
+    else
+      bus.subscribers.forEach((client) => {
+        if (client !== this) client.dispatchIncomingTransient(event, payload);
+      });
   }
 
   public async requestRecovery(
-    afterSequence = 0
-  ): Promise<{ snapshot: any; events: StandardActivityEvent[]; lastSequence?: number } | null> {
+    afterSequence = 0,
+  ): Promise<{
+    snapshot: any;
+    events: StandardActivityEvent[];
+    lastSequence?: number;
+  } | null> {
     if (!this.sessionId) return null;
     this.notifyRecoveryState('replaying_missed_events');
     const bus = isBrowserTransport()
@@ -221,7 +259,9 @@ export class MockActivityTransport implements ActivityTransport {
 
     // The retained snapshot already contains all events through snapshotSequence.
     // Replaying those again would double-apply reducers after a refresh.
-    const missed = bus.events.filter((e) => e.sequence > Math.max(afterSequence, bus.snapshotSequence));
+    const missed = bus.events.filter(
+      (e) => e.sequence > Math.max(afterSequence, bus.snapshotSequence),
+    );
     this.notifyRecoveryState('recovered');
     return {
       snapshot: bus.snapshot,
@@ -230,7 +270,9 @@ export class MockActivityTransport implements ActivityTransport {
     };
   }
 
-  public async completeSession(resultSnapshot: Record<string, unknown>): Promise<void> {
+  public async completeSession(
+    resultSnapshot: Record<string, unknown>,
+  ): Promise<void> {
     if (!this.sessionId) return;
     const bus = isBrowserTransport()
       ? readBrowserBus(this.sessionId, this.options.initialSnapshot)
@@ -241,7 +283,10 @@ export class MockActivityTransport implements ActivityTransport {
     if (isBrowserTransport()) writeBrowserBus(this.sessionId, bus);
   }
 
-  public updateSnapshot(snapshot: Record<string, unknown>, sequence: number): void {
+  public updateSnapshot(
+    snapshot: Record<string, unknown>,
+    sequence: number,
+  ): void {
     if (!this.sessionId) return;
     const bus = isBrowserTransport()
       ? readBrowserBus(this.sessionId, this.options.initialSnapshot)
@@ -264,7 +309,10 @@ export class MockActivityTransport implements ActivityTransport {
     return () => this.eventHandlers.delete(handler);
   }
 
-  public onTransient(event: string, handler: (payload: any) => void): () => void {
+  public onTransient(
+    event: string,
+    handler: (payload: any) => void,
+  ): () => void {
     if (!this.transientHandlers.has(event)) {
       this.transientHandlers.set(event, new Set());
     }
@@ -274,7 +322,9 @@ export class MockActivityTransport implements ActivityTransport {
     };
   }
 
-  public onRecoveryStateChange(handler: (state: StandardRecoveryState) => void): () => void {
+  public onRecoveryStateChange(
+    handler: (state: StandardRecoveryState) => void,
+  ): () => void {
     this.recoveryStateHandlers.add(handler);
     return () => this.recoveryStateHandlers.delete(handler);
   }
@@ -309,7 +359,10 @@ export class MockActivityTransport implements ActivityTransport {
 
   // Private answer vault implementation
   public privateVault: PrivateVault = {
-    lockAnswer: async (roundNumber: number, answerPayload: unknown): Promise<PrivateLockResult> => {
+    lockAnswer: async (
+      roundNumber: number,
+      answerPayload: unknown,
+    ): Promise<PrivateLockResult> => {
       if (!this.sessionId) throw new Error('Transport not connected.');
       const bus = isBrowserTransport()
         ? readBrowserBus(this.sessionId, this.options.initialSnapshot)
@@ -321,10 +374,14 @@ export class MockActivityTransport implements ActivityTransport {
       const roundMap = bus.privateAnswers.get(roundNumber)!;
       if (isBrowserTransport()) {
         const key = `${browserVaultPrefix}${this.sessionId}:${roundNumber}`;
-        const persisted = JSON.parse(window.localStorage.getItem(key) || '{}') as Record<string, unknown>;
+        const persisted = JSON.parse(
+          window.localStorage.getItem(key) || '{}',
+        ) as Record<string, unknown>;
         persisted[this.currentUserId] = answerPayload;
         window.localStorage.setItem(key, JSON.stringify(persisted));
-        Object.entries(persisted).forEach(([userId, answer]) => roundMap.set(userId, answer));
+        Object.entries(persisted).forEach(([userId, answer]) =>
+          roundMap.set(userId, answer),
+        );
       } else {
         roundMap.set(this.currentUserId, answerPayload);
       }
@@ -340,18 +397,28 @@ export class MockActivityTransport implements ActivityTransport {
       };
     },
 
-    revealAnswers: async (roundNumber: number): Promise<PrivateRevealResult> => {
+    revealAnswers: async (
+      roundNumber: number,
+    ): Promise<PrivateRevealResult> => {
       if (!this.sessionId) throw new Error('Transport not connected.');
       const bus = isBrowserTransport()
         ? readBrowserBus(this.sessionId, this.options.initialSnapshot)
         : getOrCreateBus(this.sessionId);
       const roundMap = bus.privateAnswers.get(roundNumber) || new Map();
       if (isBrowserTransport()) {
-        const persisted = JSON.parse(window.localStorage.getItem(`${browserVaultPrefix}${this.sessionId}:${roundNumber}`) || '{}') as Record<string, unknown>;
-        Object.entries(persisted).forEach(([userId, answer]) => roundMap.set(userId, answer));
+        const persisted = JSON.parse(
+          window.localStorage.getItem(
+            `${browserVaultPrefix}${this.sessionId}:${roundNumber}`,
+          ) || '{}',
+        ) as Record<string, unknown>;
+        Object.entries(persisted).forEach(([userId, answer]) =>
+          roundMap.set(userId, answer),
+        );
       }
       if (roundMap.size < 2) {
-        throw new Error('NOT_READY: both partners must lock before answers can be revealed.');
+        throw new Error(
+          'NOT_READY: both partners must lock before answers can be revealed.',
+        );
       }
 
       const answers: PrivateAnswerRecord[] = [];
@@ -375,7 +442,11 @@ export class MockActivityTransport implements ActivityTransport {
         ? readBrowserBus(this.sessionId, this.options.initialSnapshot)
         : getOrCreateBus(this.sessionId);
       if (isBrowserTransport()) {
-        const persisted = JSON.parse(window.localStorage.getItem(`${browserVaultPrefix}${this.sessionId}:${roundNumber}`) || '{}') as Record<string, unknown>;
+        const persisted = JSON.parse(
+          window.localStorage.getItem(
+            `${browserVaultPrefix}${this.sessionId}:${roundNumber}`,
+          ) || '{}',
+        ) as Record<string, unknown>;
         if (userId) return Object.hasOwn(persisted, userId);
         return Object.hasOwn(persisted, this.currentUserId);
       }
@@ -391,7 +462,15 @@ export class MockActivityTransport implements ActivityTransport {
         ? readBrowserBus(this.sessionId, this.options.initialSnapshot)
         : getOrCreateBus(this.sessionId);
       if (isBrowserTransport()) {
-        return Object.keys(JSON.parse(window.localStorage.getItem(`${browserVaultPrefix}${this.sessionId}:${roundNumber}`) || '{}')).length >= 2;
+        return (
+          Object.keys(
+            JSON.parse(
+              window.localStorage.getItem(
+                `${browserVaultPrefix}${this.sessionId}:${roundNumber}`,
+              ) || '{}',
+            ),
+          ).length >= 2
+        );
       }
       const roundMap = bus.privateAnswers.get(roundNumber);
       return Boolean(roundMap && roundMap.size >= 2);
@@ -403,7 +482,10 @@ export class MockActivityTransport implements ActivityTransport {
         ? readBrowserBus(this.sessionId, this.options.initialSnapshot)
         : getOrCreateBus(this.sessionId);
       bus.privateAnswers.delete(roundNumber);
-      if (isBrowserTransport()) window.localStorage.removeItem(`${browserVaultPrefix}${this.sessionId}:${roundNumber}`);
+      if (isBrowserTransport())
+        window.localStorage.removeItem(
+          `${browserVaultPrefix}${this.sessionId}:${roundNumber}`,
+        );
     },
   };
 }

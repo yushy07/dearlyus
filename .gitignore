@@ -25,6 +25,7 @@ playwright-server.log
 /.next/
 /.vinext/
 /.vite/
+/.nitro/
 /out/
 /dist/
 /dist-ssr/
@@ -85,6 +86,8 @@ desktop.ini
 # Temporary, Caches & Scratch
 .cache/
 .eslintcache
+.oxlintcache
+.rollup.cache/
 .stylelintcache
 .parcel-cache/
 .turbo/

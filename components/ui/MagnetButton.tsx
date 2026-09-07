@@ -16,7 +16,10 @@ export function MagnetButton({
   ...props
 }: MagnetButtonProps) {
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const [offset, setOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [offset, setOffset] = useState<{ x: number; y: number }>({
+    x: 0,
+    y: 0,
+  });
 
   const handleMouseMove = (e: MouseEvent<HTMLButtonElement>) => {
     if (!buttonRef.current) return;
@@ -43,7 +46,10 @@ export function MagnetButton({
       style={{
         ...style,
         transform: `translate3d(${offset.x}px, ${offset.y}px, 0)`,
-        transition: offset.x === 0 && offset.y === 0 ? 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)' : 'transform 0.08s ease-out',
+        transition:
+          offset.x === 0 && offset.y === 0
+            ? 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+            : 'transform 0.08s ease-out',
       }}
       {...props}
     >

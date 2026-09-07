@@ -1,7 +1,12 @@
 .page {
   min-height: 100vh;
-  background: radial-gradient(circle at 8% 20%, rgba(255, 78, 120, 0.1), transparent 28%),
-    radial-gradient(circle at 92% 75%, rgba(67, 126, 235, 0.1), transparent 30%),
+  background:
+    radial-gradient(circle at 8% 20%, rgba(255, 78, 120, 0.1), transparent 28%),
+    radial-gradient(
+      circle at 92% 75%,
+      rgba(67, 126, 235, 0.1),
+      transparent 30%
+    ),
     var(--paper);
   color: var(--ink);
   position: relative;
@@ -194,19 +199,31 @@
 
 .activitySelected {
   border-color: var(--pink) !important;
-  background: linear-gradient(135deg, var(--pink-tint), rgba(255, 255, 255, 0.95)) !important;
+  background: linear-gradient(
+    135deg,
+    var(--pink-tint),
+    rgba(255, 255, 255, 0.95)
+  ) !important;
   box-shadow: 0 8px 24px rgba(255, 78, 120, 0.2) !important;
 }
 
 .surpriseBtn {
-  background: linear-gradient(135deg, rgba(255, 78, 120, 0.09), rgba(67, 126, 235, 0.09));
+  background: linear-gradient(
+    135deg,
+    rgba(255, 78, 120, 0.09),
+    rgba(67, 126, 235, 0.09)
+  );
   border: 1.5px dashed var(--pink);
 }
 
 .surpriseBtnRolling {
   animation: shuffleCard 0.35s ease infinite;
   border-color: var(--pink) !important;
-  background: linear-gradient(135deg, var(--pink-tint), rgba(255, 255, 255, 0.95)) !important;
+  background: linear-gradient(
+    135deg,
+    var(--pink-tint),
+    rgba(255, 255, 255, 0.95)
+  ) !important;
 }
 
 .preferences {

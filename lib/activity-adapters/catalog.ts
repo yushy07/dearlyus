@@ -37,11 +37,12 @@ export const CARDS_DURABLE_EVENTS = [
   'gentle_skip',
 ] as const;
 
-export const CARDS_TRANSIENT_EVENTS = [
-  'cards_scratch_pos',
-] as const;
+export const CARDS_TRANSIENT_EVENTS = ['cards_scratch_pos'] as const;
 
-export const cardsActivityDefinition: ActivityDefinition<CardsSnapshot, RealtimeActivityEvent> = {
+export const cardsActivityDefinition: ActivityDefinition<
+  CardsSnapshot,
+  RealtimeActivityEvent
+> = {
   activityType: 'cards',
   schemaVersion: 1,
   durableEvents: CARDS_DURABLE_EVENTS,
@@ -66,7 +67,11 @@ export const cardsActivityDefinition: ActivityDefinition<CardsSnapshot, Realtime
   validateEvent(event): ValidationResult {
     return CARDS_DURABLE_EVENTS.includes(event.type as any)
       ? { valid: true }
-      : { valid: false, code: 'INVALID_EVENT', message: `Event ${event.type} not allowed for cards.` };
+      : {
+          valid: false,
+          code: 'INVALID_EVENT',
+          message: `Event ${event.type} not allowed for cards.`,
+        };
   },
 
   reduce(snapshot: CardsSnapshot, event): CardsSnapshot {
@@ -87,7 +92,11 @@ export const cardsActivityDefinition: ActivityDefinition<CardsSnapshot, Realtime
         };
       }
       case 'gentle_skip':
-        return { ...snapshot, cardIndex: snapshot.cardIndex + 1, flipped: false };
+        return {
+          ...snapshot,
+          cardIndex: snapshot.cardIndex + 1,
+          flipped: false,
+        };
       default:
         return snapshot;
     }
@@ -101,7 +110,11 @@ export const cardsActivityDefinition: ActivityDefinition<CardsSnapshot, Realtime
     return {
       activityType: 'cards',
       completed: snapshot.completed,
-      summary: { deckId: snapshot.deckId, cardsExplored: snapshot.cardIndex, totalCards: snapshot.totalCards },
+      summary: {
+        deckId: snapshot.deckId,
+        cardsExplored: snapshot.cardIndex,
+        totalCards: snapshot.totalCards,
+      },
     };
   },
 
@@ -110,7 +123,11 @@ export const cardsActivityDefinition: ActivityDefinition<CardsSnapshot, Realtime
     return {
       kind: 'activity',
       title: `Deck of Truths · ${sum.cardsExplored} Moments`,
-      metadata: { activityType: 'cards', deckId: sum.deckId, cardsExplored: sum.cardsExplored },
+      metadata: {
+        activityType: 'cards',
+        deckId: sum.deckId,
+        cardsExplored: sum.cardsExplored,
+      },
     };
   },
 };
@@ -140,11 +157,12 @@ export const HOST_DURABLE_EVENTS = [
   'host_finish',
 ] as const;
 
-export const HOST_TRANSIENT_EVENTS = [
-  'host_typing_presence',
-] as const;
+export const HOST_TRANSIENT_EVENTS = ['host_typing_presence'] as const;
 
-export const hostActivityDefinition: ActivityDefinition<HostSnapshot, RealtimeActivityEvent> = {
+export const hostActivityDefinition: ActivityDefinition<
+  HostSnapshot,
+  RealtimeActivityEvent
+> = {
   activityType: 'host',
   schemaVersion: 1,
   durableEvents: HOST_DURABLE_EVENTS,
@@ -169,22 +187,35 @@ export const hostActivityDefinition: ActivityDefinition<HostSnapshot, RealtimeAc
   validateEvent(event): ValidationResult {
     return HOST_DURABLE_EVENTS.includes(event.type as any)
       ? { valid: true }
-      : { valid: false, code: 'INVALID_EVENT', message: `Event ${event.type} not allowed for host.` };
+      : {
+          valid: false,
+          code: 'INVALID_EVENT',
+          message: `Event ${event.type} not allowed for host.`,
+        };
   },
 
   reduce(snapshot: HostSnapshot, event): HostSnapshot {
     switch (event.type) {
       case 'host_prompt_change': {
         const payload = (event.payload as Record<string, unknown>) || {};
-        return { ...snapshot, promptIndex: Number(payload.promptIndex ?? snapshot.promptIndex + 1) };
+        return {
+          ...snapshot,
+          promptIndex: Number(payload.promptIndex ?? snapshot.promptIndex + 1),
+        };
       }
       case 'host_speaker_switch': {
         const payload = (event.payload as Record<string, unknown>) || {};
-        return { ...snapshot, activeSpeaker: String(payload.activeSpeaker || '') };
+        return {
+          ...snapshot,
+          activeSpeaker: String(payload.activeSpeaker || ''),
+        };
       }
       case 'host_commentary': {
         const payload = (event.payload as Record<string, unknown>) || {};
-        return { ...snapshot, commentary: [...snapshot.commentary, String(payload.text || '')] };
+        return {
+          ...snapshot,
+          commentary: [...snapshot.commentary, String(payload.text || '')],
+        };
       }
       case 'host_finish':
         return { ...snapshot, status: 'completed', completed: true };
@@ -201,7 +232,11 @@ export const hostActivityDefinition: ActivityDefinition<HostSnapshot, RealtimeAc
     return {
       activityType: 'host',
       completed: snapshot.completed,
-      summary: { theme: snapshot.theme, promptsDiscussed: snapshot.promptIndex, commentaryCount: snapshot.commentary.length },
+      summary: {
+        theme: snapshot.theme,
+        promptsDiscussed: snapshot.promptIndex,
+        commentaryCount: snapshot.commentary.length,
+      },
     };
   },
 
@@ -210,7 +245,11 @@ export const hostActivityDefinition: ActivityDefinition<HostSnapshot, RealtimeAc
     return {
       kind: 'activity',
       title: `AI Host Night · ${sum.theme}`,
-      metadata: { activityType: 'host', theme: sum.theme, promptsDiscussed: sum.promptsDiscussed },
+      metadata: {
+        activityType: 'host',
+        theme: sum.theme,
+        promptsDiscussed: sum.promptsDiscussed,
+      },
     };
   },
 };
@@ -238,7 +277,10 @@ export const MATCH_DURABLE_EVENTS = [
   'match_next',
 ] as const;
 
-export const matchActivityDefinition: ActivityDefinition<MatchSnapshot, RealtimeActivityEvent> = {
+export const matchActivityDefinition: ActivityDefinition<
+  MatchSnapshot,
+  RealtimeActivityEvent
+> = {
   activityType: 'match',
   schemaVersion: 1,
   durableEvents: MATCH_DURABLE_EVENTS,
@@ -262,7 +304,11 @@ export const matchActivityDefinition: ActivityDefinition<MatchSnapshot, Realtime
   validateEvent(event): ValidationResult {
     return MATCH_DURABLE_EVENTS.includes(event.type as any)
       ? { valid: true }
-      : { valid: false, code: 'INVALID_EVENT', message: `Event ${event.type} not allowed for match.` };
+      : {
+          valid: false,
+          code: 'INVALID_EVENT',
+          message: `Event ${event.type} not allowed for match.`,
+        };
   },
 
   reduce(snapshot: MatchSnapshot, event): MatchSnapshot {
@@ -270,7 +316,10 @@ export const matchActivityDefinition: ActivityDefinition<MatchSnapshot, Realtime
       case 'match_reveal': {
         const payload = (event.payload as Record<string, unknown>) || {};
         const isMatch = Boolean(payload.isMatch);
-        return { ...snapshot, score: isMatch ? snapshot.score + 1 : snapshot.score };
+        return {
+          ...snapshot,
+          score: isMatch ? snapshot.score + 1 : snapshot.score,
+        };
       }
       case 'match_next': {
         const next = snapshot.pairIndex + 1;
@@ -304,7 +353,11 @@ export const matchActivityDefinition: ActivityDefinition<MatchSnapshot, Realtime
     return {
       kind: 'activity',
       title: `Match Telepathy · ${sum.score}/${sum.totalPairs}`,
-      metadata: { activityType: 'match', score: sum.score, totalPairs: sum.totalPairs },
+      metadata: {
+        activityType: 'match',
+        score: sum.score,
+        totalPairs: sum.totalPairs,
+      },
     };
   },
 };
@@ -337,7 +390,10 @@ export const COURT_DURABLE_EVENTS = [
   'court_close',
 ] as const;
 
-export const courtActivityDefinition: ActivityDefinition<CourtSnapshot, RealtimeActivityEvent> = {
+export const courtActivityDefinition: ActivityDefinition<
+  CourtSnapshot,
+  RealtimeActivityEvent
+> = {
   activityType: 'court',
   schemaVersion: 1,
   durableEvents: COURT_DURABLE_EVENTS,
@@ -351,7 +407,9 @@ export const courtActivityDefinition: ActivityDefinition<CourtSnapshot, Realtime
       activityType: 'court',
       schemaVersion: 1,
       status: 'active',
-      caseTitle: String(opts.caseTitle || 'The Case of the Missing Blankets 🧸'),
+      caseTitle: String(
+        opts.caseTitle || 'The Case of the Missing Blankets 🧸',
+      ),
       defendant: String(opts.defendant || 'Partner B'),
       plaintiff: String(opts.plaintiff || 'Partner A'),
       plea: '',
@@ -365,14 +423,22 @@ export const courtActivityDefinition: ActivityDefinition<CourtSnapshot, Realtime
   validateEvent(event): ValidationResult {
     return COURT_DURABLE_EVENTS.includes(event.type as any)
       ? { valid: true }
-      : { valid: false, code: 'INVALID_EVENT', message: `Event ${event.type} not allowed for court.` };
+      : {
+          valid: false,
+          code: 'INVALID_EVENT',
+          message: `Event ${event.type} not allowed for court.`,
+        };
   },
 
   reduce(snapshot: CourtSnapshot, event): CourtSnapshot {
     switch (event.type) {
       case 'court_plea': {
         const payload = (event.payload as Record<string, unknown>) || {};
-        return { ...snapshot, plea: String(payload.plea || ''), stage: 'arguments' };
+        return {
+          ...snapshot,
+          plea: String(payload.plea || ''),
+          stage: 'arguments',
+        };
       }
       case 'court_verdict': {
         const payload = (event.payload as Record<string, unknown>) || {};
@@ -384,7 +450,12 @@ export const courtActivityDefinition: ActivityDefinition<CourtSnapshot, Realtime
         };
       }
       case 'court_close':
-        return { ...snapshot, stage: 'closed', status: 'completed', completed: true };
+        return {
+          ...snapshot,
+          stage: 'closed',
+          status: 'completed',
+          completed: true,
+        };
       default:
         return snapshot;
     }
@@ -398,16 +469,28 @@ export const courtActivityDefinition: ActivityDefinition<CourtSnapshot, Realtime
     return {
       activityType: 'court',
       completed: snapshot.completed,
-      summary: { caseTitle: snapshot.caseTitle, verdict: snapshot.verdict, penalty: snapshot.penalty },
+      summary: {
+        caseTitle: snapshot.caseTitle,
+        verdict: snapshot.verdict,
+        penalty: snapshot.penalty,
+      },
     };
   },
 
   buildKeepsake(result: ActivityResult): KeepsakeDraft | null {
-    const sum = result.summary as { caseTitle: string; verdict: string; penalty: string };
+    const sum = result.summary as {
+      caseTitle: string;
+      verdict: string;
+      penalty: string;
+    };
     return {
       kind: 'activity',
       title: `Love Court Ruling · ${sum.caseTitle}`,
-      metadata: { activityType: 'court', verdict: sum.verdict, penalty: sum.penalty },
+      metadata: {
+        activityType: 'court',
+        verdict: sum.verdict,
+        penalty: sum.penalty,
+      },
     };
   },
 };
@@ -437,7 +520,10 @@ export const DARE_DURABLE_EVENTS = [
   'dare_finish',
 ] as const;
 
-export const dareActivityDefinition: ActivityDefinition<DareSnapshot, RealtimeActivityEvent> = {
+export const dareActivityDefinition: ActivityDefinition<
+  DareSnapshot,
+  RealtimeActivityEvent
+> = {
   activityType: 'dare',
   schemaVersion: 1,
   durableEvents: DARE_DURABLE_EVENTS,
@@ -451,7 +537,10 @@ export const dareActivityDefinition: ActivityDefinition<DareSnapshot, RealtimeAc
       activityType: 'dare',
       schemaVersion: 1,
       status: 'active',
-      currentDare: String(opts.currentDare || 'Sing the chorus of our favorite song without smiling! 🎤'),
+      currentDare: String(
+        opts.currentDare ||
+          'Sing the chorus of our favorite song without smiling! 🎤',
+      ),
       category: String(opts.category || 'Playful'),
       dareStatus: 'pending',
       completedCount: 0,
@@ -462,7 +551,11 @@ export const dareActivityDefinition: ActivityDefinition<DareSnapshot, RealtimeAc
   validateEvent(event): ValidationResult {
     return DARE_DURABLE_EVENTS.includes(event.type as any)
       ? { valid: true }
-      : { valid: false, code: 'INVALID_EVENT', message: `Event ${event.type} not allowed for dare.` };
+      : {
+          valid: false,
+          code: 'INVALID_EVENT',
+          message: `Event ${event.type} not allowed for dare.`,
+        };
   },
 
   reduce(snapshot: DareSnapshot, event): DareSnapshot {
@@ -470,12 +563,18 @@ export const dareActivityDefinition: ActivityDefinition<DareSnapshot, RealtimeAc
       case 'dare_accept':
         return { ...snapshot, dareStatus: 'accepted' };
       case 'dare_complete':
-        return { ...snapshot, dareStatus: 'completed', completedCount: snapshot.completedCount + 1 };
+        return {
+          ...snapshot,
+          dareStatus: 'completed',
+          completedCount: snapshot.completedCount + 1,
+        };
       case 'dare_reroll': {
         const payload = (event.payload as Record<string, unknown>) || {};
         return {
           ...snapshot,
-          currentDare: String(payload.newDare || 'Send a photo making your funniest face 🤪'),
+          currentDare: String(
+            payload.newDare || 'Send a photo making your funniest face 🤪',
+          ),
           dareStatus: 'pending',
         };
       }
@@ -535,7 +634,10 @@ export const PHOTOBOOTH_DURABLE_EVENTS = [
   'photo_finish',
 ] as const;
 
-export const photoboothActivityDefinition: ActivityDefinition<PhotoboothSnapshot, RealtimeActivityEvent> = {
+export const photoboothActivityDefinition: ActivityDefinition<
+  PhotoboothSnapshot,
+  RealtimeActivityEvent
+> = {
   activityType: 'photobooth',
   schemaVersion: 1,
   durableEvents: PHOTOBOOTH_DURABLE_EVENTS,
@@ -561,25 +663,50 @@ export const photoboothActivityDefinition: ActivityDefinition<PhotoboothSnapshot
   validateEvent(event): ValidationResult {
     return PHOTOBOOTH_DURABLE_EVENTS.includes(event.type as any)
       ? { valid: true }
-      : { valid: false, code: 'INVALID_EVENT', message: `Event ${event.type} not allowed for photobooth.` };
+      : {
+          valid: false,
+          code: 'INVALID_EVENT',
+          message: `Event ${event.type} not allowed for photobooth.`,
+        };
   },
 
   reduce(snapshot: PhotoboothSnapshot, event): PhotoboothSnapshot {
     switch (event.type) {
       case 'photo_start_countdown':
-        return { ...snapshot, photoboothStage: 'countdown', countdownSeconds: 3 };
+        return {
+          ...snapshot,
+          photoboothStage: 'countdown',
+          countdownSeconds: 3,
+        };
       case 'photo_tick': {
         const payload = (event.payload as Record<string, unknown>) || {};
-        return { ...snapshot, countdownSeconds: Number(payload.seconds ?? snapshot.countdownSeconds - 1) };
+        return {
+          ...snapshot,
+          countdownSeconds: Number(
+            payload.seconds ?? snapshot.countdownSeconds - 1,
+          ),
+        };
       }
       case 'photo_shutter':
-        return { ...snapshot, photoboothStage: 'flash', photoCount: snapshot.photoCount + 1 };
+        return {
+          ...snapshot,
+          photoboothStage: 'flash',
+          photoCount: snapshot.photoCount + 1,
+        };
       case 'photo_filter': {
         const payload = (event.payload as Record<string, unknown>) || {};
-        return { ...snapshot, activeFilter: String(payload.filter || snapshot.activeFilter) };
+        return {
+          ...snapshot,
+          activeFilter: String(payload.filter || snapshot.activeFilter),
+        };
       }
       case 'photo_finish':
-        return { ...snapshot, photoboothStage: 'review', status: 'completed', completed: true };
+        return {
+          ...snapshot,
+          photoboothStage: 'review',
+          status: 'completed',
+          completed: true,
+        };
       default:
         return snapshot;
     }
@@ -593,7 +720,10 @@ export const photoboothActivityDefinition: ActivityDefinition<PhotoboothSnapshot
     return {
       activityType: 'photobooth',
       completed: snapshot.completed,
-      summary: { photoCount: snapshot.photoCount, filter: snapshot.activeFilter },
+      summary: {
+        photoCount: snapshot.photoCount,
+        filter: snapshot.activeFilter,
+      },
     };
   },
 
@@ -602,7 +732,11 @@ export const photoboothActivityDefinition: ActivityDefinition<PhotoboothSnapshot
     return {
       kind: 'activity',
       title: `Vintage Photostrip · ${sum.photoCount} Shots`,
-      metadata: { activityType: 'photobooth', filter: sum.filter, count: sum.photoCount },
+      metadata: {
+        activityType: 'photobooth',
+        filter: sum.filter,
+        count: sum.photoCount,
+      },
     };
   },
 };
@@ -630,7 +764,10 @@ export const PASSPORT_DURABLE_EVENTS = [
   'page_turn',
 ] as const;
 
-export const passportActivityDefinition: ActivityDefinition<PassportSnapshot, RealtimeActivityEvent> = {
+export const passportActivityDefinition: ActivityDefinition<
+  PassportSnapshot,
+  RealtimeActivityEvent
+> = {
   activityType: 'passport',
   schemaVersion: 1,
   durableEvents: PASSPORT_DURABLE_EVENTS,
@@ -654,7 +791,11 @@ export const passportActivityDefinition: ActivityDefinition<PassportSnapshot, Re
   validateEvent(event): ValidationResult {
     return PASSPORT_DURABLE_EVENTS.includes(event.type as any)
       ? { valid: true }
-      : { valid: false, code: 'INVALID_EVENT', message: `Event ${event.type} not allowed for passport.` };
+      : {
+          valid: false,
+          code: 'INVALID_EVENT',
+          message: `Event ${event.type} not allowed for passport.`,
+        };
   },
 
   reduce(snapshot: PassportSnapshot, event): PassportSnapshot {
@@ -665,7 +806,10 @@ export const passportActivityDefinition: ActivityDefinition<PassportSnapshot, Re
         return { ...snapshot, entriesCount: snapshot.entriesCount + 1 };
       case 'page_turn': {
         const payload = (event.payload as Record<string, unknown>) || {};
-        return { ...snapshot, activePage: Number(payload.page ?? snapshot.activePage + 1) };
+        return {
+          ...snapshot,
+          activePage: Number(payload.page ?? snapshot.activePage + 1),
+        };
       }
       default:
         return snapshot;
@@ -680,7 +824,10 @@ export const passportActivityDefinition: ActivityDefinition<PassportSnapshot, Re
     return {
       activityType: 'passport',
       completed: true,
-      summary: { stampsCount: snapshot.stampsCount, entriesCount: snapshot.entriesCount },
+      summary: {
+        stampsCount: snapshot.stampsCount,
+        entriesCount: snapshot.entriesCount,
+      },
     };
   },
 
@@ -689,7 +836,11 @@ export const passportActivityDefinition: ActivityDefinition<PassportSnapshot, Re
     return {
       kind: 'activity',
       title: `Love Passport & Scrapbook · ${sum.stampsCount} Stamps`,
-      metadata: { activityType: 'passport', stamps: sum.stampsCount, entries: sum.entriesCount },
+      metadata: {
+        activityType: 'passport',
+        stamps: sum.stampsCount,
+        entries: sum.entriesCount,
+      },
     };
   },
 };
@@ -700,17 +851,18 @@ export const passportActivityAdapter: RealtimeActivityAdapter<PassportSnapshot> 
 // ==========================================
 // REGISTRY & EXPORTS
 // ==========================================
-export const catalogActivityAdapters: Record<string, RealtimeActivityAdapter> = {
-  cards: cardsActivityAdapter,
-  host: hostActivityAdapter,
-  match: matchActivityAdapter,
-  court: courtActivityAdapter,
-  debate: courtActivityAdapter,
-  dare: dareActivityAdapter,
-  photobooth: photoboothActivityAdapter,
-  passport: passportActivityAdapter,
-  scrapbook: passportActivityAdapter,
-};
+export const catalogActivityAdapters: Record<string, RealtimeActivityAdapter> =
+  {
+    cards: cardsActivityAdapter,
+    host: hostActivityAdapter,
+    match: matchActivityAdapter,
+    court: courtActivityAdapter,
+    debate: courtActivityAdapter,
+    dare: dareActivityAdapter,
+    photobooth: photoboothActivityAdapter,
+    passport: passportActivityAdapter,
+    scrapbook: passportActivityAdapter,
+  };
 
 export const catalogActivityDefinitions = {
   cards: cardsActivityDefinition,

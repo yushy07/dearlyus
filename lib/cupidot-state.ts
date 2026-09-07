@@ -39,7 +39,7 @@ export const PROHIBITED_GUILT_PHRASES = [
   'your partner is disappointed',
   'you are losing your streak',
   'why haven’t you replied',
-  'why haven\'t you replied',
+  "why haven't you replied",
   'missed streak',
   'streak broken',
   'neglected',
@@ -58,7 +58,7 @@ export function containsGuiltPhrasing(text: string): boolean {
 export function sanitizeSafePresence(
   onlineOrPayload?: boolean | Record<string, unknown>,
   interaction?: string | null,
-  isReconnecting = false
+  isReconnecting = false,
 ): SafePresenceState & { state: SafePresenceState } {
   const safeStates: SafePresenceState[] = [
     'here',
@@ -73,8 +73,13 @@ export function sanitizeSafePresence(
   let resolved: SafePresenceState = 'here';
 
   if (typeof onlineOrPayload === 'object' && onlineOrPayload !== null) {
-    const raw = typeof onlineOrPayload.state === 'string' ? onlineOrPayload.state : undefined;
-    resolved = safeStates.includes(raw as SafePresenceState) ? (raw as SafePresenceState) : 'here';
+    const raw =
+      typeof onlineOrPayload.state === 'string'
+        ? onlineOrPayload.state
+        : undefined;
+    resolved = safeStates.includes(raw as SafePresenceState)
+      ? (raw as SafePresenceState)
+      : 'here';
   } else {
     const online = Boolean(onlineOrPayload ?? true);
     if (isReconnecting) {
@@ -114,7 +119,8 @@ export const HOME_COLLECTION_CATALOG: HomeRewardItem[] = [
     name: 'Rose Velvet Floor Cushion',
     category: 'home_object',
     icon: '🛋️',
-    description: 'A plush corner cushion where Cupidot curls up for quiet evenings.',
+    description:
+      'A plush corner cushion where Cupidot curls up for quiet evenings.',
     unlockedAtChapter: 1,
   },
   {
@@ -122,7 +128,8 @@ export const HOME_COLLECTION_CATALOG: HomeRewardItem[] = [
     name: 'Heartleaf Philodendron',
     category: 'home_object',
     icon: '🪴',
-    description: 'A little shared plant that thrives on calm, intentional moments together.',
+    description:
+      'A little shared plant that thrives on calm, intentional moments together.',
     unlockedAtChapter: 1,
   },
   {
@@ -130,7 +137,8 @@ export const HOME_COLLECTION_CATALOG: HomeRewardItem[] = [
     name: '4-Cut Photostrip Frame',
     category: 'activity_souvenir',
     icon: '📸',
-    description: 'A polished acrylic frame preserving your first photobooth memories.',
+    description:
+      'A polished acrylic frame preserving your first photobooth memories.',
     unlockedAtChapter: 1,
   },
 
@@ -140,7 +148,8 @@ export const HOME_COLLECTION_CATALOG: HomeRewardItem[] = [
     name: 'Sunset Glass Lantern',
     category: 'home_object',
     icon: '🏮',
-    description: 'Casts a gentle amber light across the room during evening check-ins.',
+    description:
+      'Casts a gentle amber light across the room during evening check-ins.',
     unlockedAtChapter: 2,
   },
   {
@@ -148,7 +157,8 @@ export const HOME_COLLECTION_CATALOG: HomeRewardItem[] = [
     name: 'Telepathy Star Charm',
     category: 'activity_souvenir',
     icon: '✨',
-    description: 'Celebrates answers locked in secretly and revealed in tandem.',
+    description:
+      'Celebrates answers locked in secretly and revealed in tandem.',
     unlockedAtChapter: 2,
   },
   {
@@ -156,7 +166,8 @@ export const HOME_COLLECTION_CATALOG: HomeRewardItem[] = [
     name: 'Gentle Window Rain Ambience',
     category: 'ambient_theme',
     icon: '🌧️',
-    description: 'Soft raindrops tapping against the sanctuary glass for quiet sessions.',
+    description:
+      'Soft raindrops tapping against the sanctuary glass for quiet sessions.',
     unlockedAtChapter: 2,
   },
 
@@ -166,7 +177,8 @@ export const HOME_COLLECTION_CATALOG: HomeRewardItem[] = [
     name: 'Mini Cedar Memory Shelf',
     category: 'home_object',
     icon: '📚',
-    description: 'Holds time capsule letters, date receipts, and shared passport stamps.',
+    description:
+      'Holds time capsule letters, date receipts, and shared passport stamps.',
     unlockedAtChapter: 3,
   },
   {
@@ -174,7 +186,8 @@ export const HOME_COLLECTION_CATALOG: HomeRewardItem[] = [
     name: 'Dual Brush Palette',
     category: 'activity_souvenir',
     icon: '🎨',
-    description: 'Commemorates strokes drawn live on the same canvas across the miles.',
+    description:
+      'Commemorates strokes drawn live on the same canvas across the miles.',
     unlockedAtChapter: 3,
   },
   {
@@ -182,7 +195,8 @@ export const HOME_COLLECTION_CATALOG: HomeRewardItem[] = [
     name: 'Steaming Ceramic Teapot',
     category: 'ritual_symbol',
     icon: '🍵',
-    description: 'A warm tradition token for weekend check-ins and Sunday reviews.',
+    description:
+      'A warm tradition token for weekend check-ins and Sunday reviews.',
     unlockedAtChapter: 3,
   },
 
@@ -192,7 +206,8 @@ export const HOME_COLLECTION_CATALOG: HomeRewardItem[] = [
     name: 'Celestial Relationship Globe',
     category: 'home_object',
     icon: '🔮',
-    description: 'Glows with stars representing milestones you two deliberately pinned.',
+    description:
+      'Glows with stars representing milestones you two deliberately pinned.',
     unlockedAtChapter: 4,
   },
   {
@@ -200,7 +215,8 @@ export const HOME_COLLECTION_CATALOG: HomeRewardItem[] = [
     name: 'Crackling Hearth Light',
     category: 'ambient_theme',
     icon: '🪵',
-    description: 'Warm, flickering fireplace glow for late-night deep conversations.',
+    description:
+      'Warm, flickering fireplace glow for late-night deep conversations.',
     unlockedAtChapter: 4,
   },
 
@@ -210,7 +226,8 @@ export const HOME_COLLECTION_CATALOG: HomeRewardItem[] = [
     name: 'Dual Timezone Meridian Ring',
     category: 'home_object',
     icon: '🕰️',
-    description: 'A golden ring tracking sunrise and sunset across both of your horizons.',
+    description:
+      'A golden ring tracking sunrise and sunset across both of your horizons.',
     unlockedAtChapter: 5,
   },
   {
@@ -218,7 +235,8 @@ export const HOME_COLLECTION_CATALOG: HomeRewardItem[] = [
     name: 'Always Finding Each Other Key',
     category: 'ritual_symbol',
     icon: '🗝️',
-    description: 'Symbol of every flight boarded, call answered, and distance closed.',
+    description:
+      'Symbol of every flight boarded, call answered, and distance closed.',
     unlockedAtChapter: 5,
   },
 ];
@@ -256,8 +274,11 @@ export function getChapterProgress(growthSparks: number): {
   progressPercent: number;
   readablePrompt: string;
 } {
-  const currentChapter = Number(calculateChapter(growthSparks)) as CupidotChapter;
-  const nextChapter = currentChapter < 5 ? ((currentChapter + 1) as CupidotChapter) : null;
+  const currentChapter = Number(
+    calculateChapter(growthSparks),
+  ) as CupidotChapter;
+  const nextChapter =
+    currentChapter < 5 ? ((currentChapter + 1) as CupidotChapter) : null;
 
   if (!nextChapter) {
     return {
@@ -266,7 +287,8 @@ export function getChapterProgress(growthSparks: number): {
       currentSparks: growthSparks,
       neededForNext: 0,
       progressPercent: 100,
-      readablePrompt: 'Your shared sanctuary is rich with history and milestones. ♡',
+      readablePrompt:
+        'Your shared sanctuary is rich with history and milestones. ♡',
     };
   }
 
@@ -274,7 +296,10 @@ export function getChapterProgress(growthSparks: number): {
   const target = CHAPTER_DEFINITIONS[nextChapter].sparksRequired;
   const inChapterSparks = Math.max(0, growthSparks - currentBase);
   const totalInChapter = target - currentBase;
-  const progressPercent = Math.min(100, Math.round((inChapterSparks / totalInChapter) * 100));
+  const progressPercent = Math.min(
+    100,
+    Math.round((inChapterSparks / totalInChapter) * 100),
+  );
   const remaining = Math.max(0, target - growthSparks);
 
   const momentsWord = remaining === 1 ? 'shared moment' : 'shared moments';
@@ -315,7 +340,7 @@ export function awardGrowthSparks(
   actionTypeOrSessionCurrent: any,
   seenActionKeysOrEventId?: any,
   actionKeyOrProcessedSet?: any,
-  maybeActionKey?: string
+  maybeActionKey?: string,
 ): SparkAwardResult {
   let currentTotal = 0;
   let sessionCurrent = 0;
@@ -328,7 +353,10 @@ export function awardGrowthSparks(
     currentTotal = currentTotalOrSession;
     sessionCurrent = actionTypeOrSessionCurrent;
     actionType = String(seenActionKeysOrEventId || '');
-    seenActionKeys = actionKeyOrProcessedSet instanceof Set ? actionKeyOrProcessedSet : new Set<string>();
+    seenActionKeys =
+      actionKeyOrProcessedSet instanceof Set
+        ? actionKeyOrProcessedSet
+        : new Set<string>();
     actionKey = String(maybeActionKey || '');
   } else {
     // 4-argument style: (sessionCurrent, actionType, actionKey, seenActionKeys)
@@ -336,7 +364,10 @@ export function awardGrowthSparks(
     currentTotal = currentTotalOrSession;
     actionType = String(actionTypeOrSessionCurrent || '');
     actionKey = String(seenActionKeysOrEventId || '');
-    seenActionKeys = actionKeyOrProcessedSet instanceof Set ? actionKeyOrProcessedSet : new Set<string>();
+    seenActionKeys =
+      actionKeyOrProcessedSet instanceof Set
+        ? actionKeyOrProcessedSet
+        : new Set<string>();
   }
 
   // Idempotency check: duplicate event calls do not re-award
@@ -384,7 +415,10 @@ export function awardGrowthSparks(
     baseSparks = 10;
   }
 
-  const sparksToAdd = Math.min(baseSparks, SESSION_SPARK_SOFT_CAP - sessionCurrent);
+  const sparksToAdd = Math.min(
+    baseSparks,
+    SESSION_SPARK_SOFT_CAP - sessionCurrent,
+  );
   const nextTotal = currentTotal + sparksToAdd;
   const nextSession = sessionCurrent + sparksToAdd;
 
@@ -506,10 +540,11 @@ export function productStateToBehavior(
     isLateNight?: boolean;
     hasNewUnopenedMemory?: boolean;
     hasConsentAlert?: boolean;
-  } = {}
+  } = {},
 ): BehaviorResolution {
   if (context.hasConsentAlert) {
-    const cue = 'Privacy confirmed. Everything in your room stays sealed until you both choose.';
+    const cue =
+      'Privacy confirmed. Everything in your room stays sealed until you both choose.';
     return {
       productState: state,
       intent: 'privacy_confirmation',
@@ -530,7 +565,8 @@ export function productStateToBehavior(
       intent = 'recover_connection';
       mood = 'focused';
       priorityCategory = 'connection_recovery';
-      speechCue = 'Holding your place while connection restores. Nothing was lost.';
+      speechCue =
+        'Holding your place while connection restores. Nothing was lost.';
       break;
     case 'anticipating_reveal':
       intent = 'reveal_anticipation';
@@ -554,7 +590,8 @@ export function productStateToBehavior(
       intent = 'celebrate';
       mood = 'proud';
       priorityCategory = 'shared_milestone';
-      speechCue = 'Milestone celebrated together! A warm growth spark unlocked.';
+      speechCue =
+        'Milestone celebrated together! A warm growth spark unlocked.';
       break;
     case 'curating_memory':
       intent = 'curate_memory';
@@ -622,9 +659,16 @@ export function productStateToBehavior(
  */
 export function behaviorToPresentation(
   intent: import('@/types/cupidot').CupidotBehaviorIntent,
-  mood?: CupidotMood
+  mood?: CupidotMood,
 ): {
-  botState: 'idle' | 'happy' | 'love' | 'thinking' | 'talking' | 'sleeping' | 'celebration';
+  botState:
+    | 'idle'
+    | 'happy'
+    | 'love'
+    | 'thinking'
+    | 'talking'
+    | 'sleeping'
+    | 'celebration';
   face2D: string;
   animationHint: string;
   animationSpeed: number;
@@ -733,7 +777,7 @@ export function shouldSuppressDuplicateCelebration(
   celebrationId: string,
   lastTriggeredTimestamp = 0,
   currentTimestamp = Date.now(),
-  debounceMs = 5000
+  debounceMs = 5000,
 ): boolean {
   if (lastTriggeredTimestamp > 0) {
     return currentTimestamp - lastTriggeredTimestamp < debounceMs;
@@ -821,10 +865,16 @@ export function loadStoredCupidotHome(coupleId?: string): CupidotHomeState {
   return createDefaultHomeState();
 }
 
-export function saveStoredCupidotHome(state: CupidotHomeState, coupleId?: string): void {
+export function saveStoredCupidotHome(
+  state: CupidotHomeState,
+  coupleId?: string,
+): void {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem(`${STORAGE_KEY}_${coupleId || 'local'}`, JSON.stringify(state));
+    localStorage.setItem(
+      `${STORAGE_KEY}_${coupleId || 'local'}`,
+      JSON.stringify(state),
+    );
   } catch {}
 }
 
@@ -885,7 +935,10 @@ export function placeHomeDecor(placedIds: string[], decorId: string): string[] {
   return [...placedIds, decorId];
 }
 
-export function undoHomeDecorPlacement(placedIds: string[], decorId: string): string[] {
+export function undoHomeDecorPlacement(
+  placedIds: string[],
+  decorId: string,
+): string[] {
   return placedIds.filter((id) => id !== decorId);
 }
 
@@ -928,7 +981,10 @@ export function proposeMemorySeed(input: {
   };
 }
 
-export function approveMemorySeed(seed: MemorySeed, partnerId: string): MemorySeed {
+export function approveMemorySeed(
+  seed: MemorySeed,
+  partnerId: string,
+): MemorySeed {
   const isA = partnerId === seed.partnerAId;
   const isB = partnerId === seed.partnerBId;
   const approvedByPartnerA = isA ? true : seed.approvedByPartnerA;
@@ -943,22 +999,33 @@ export function approveMemorySeed(seed: MemorySeed, partnerId: string): MemorySe
   };
 }
 
-export function declineMemorySeed(seed: MemorySeed, _partnerId: string): MemorySeed {
+export function declineMemorySeed(
+  seed: MemorySeed,
+  _partnerId: string,
+): MemorySeed {
   return {
     ...seed,
     status: 'declined',
   };
 }
 
-export function snoozeRitual(ritual: CoupleRitual, snoozeMinutes = 30): CoupleRitual {
-  const snoozedUntil = new Date(Date.now() + snoozeMinutes * 60 * 1000).toISOString();
+export function snoozeRitual(
+  ritual: CoupleRitual,
+  snoozeMinutes = 30,
+): CoupleRitual {
+  const snoozedUntil = new Date(
+    Date.now() + snoozeMinutes * 60 * 1000,
+  ).toISOString();
   return {
     ...ritual,
     snoozedUntil,
   };
 }
 
-export function rescheduleRitual(ritual: CoupleRitual, newTime: string): CoupleRitual {
+export function rescheduleRitual(
+  ritual: CoupleRitual,
+  newTime: string,
+): CoupleRitual {
   return {
     ...ritual,
     rescheduledTo: newTime,

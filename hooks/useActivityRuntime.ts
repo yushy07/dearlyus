@@ -2,7 +2,11 @@
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import type { ActivityRuntime, ActivityTransport } from '@/lib/runtime';
-import { createActivityRuntime, MockActivityTransport, SupabaseActivityTransport } from '@/lib/runtime';
+import {
+  createActivityRuntime,
+  MockActivityTransport,
+  SupabaseActivityTransport,
+} from '@/lib/runtime';
 import { allActivityAdapters } from '@/lib/activity-adapters';
 import type {
   RealtimeActivityAdapter,
@@ -23,9 +27,9 @@ export interface UseActivityRuntimeOptions<TSnapshot = any> {
   enabled?: boolean;
 }
 
-export function useActivityRuntime<TSnapshot extends Record<string, unknown> = Record<string, unknown>>(
-  options: UseActivityRuntimeOptions<TSnapshot>
-) {
+export function useActivityRuntime<
+  TSnapshot extends Record<string, unknown> = Record<string, unknown>,
+>(options: UseActivityRuntimeOptions<TSnapshot>) {
   const {
     sessionId: rawSessionId,
     activityType,
@@ -53,7 +57,8 @@ export function useActivityRuntime<TSnapshot extends Record<string, unknown> = R
   });
   const userId = rawUserId || localUserId;
 
-  const adapter = (allActivityAdapters[activityType] || allActivityAdapters.quiz) as RealtimeActivityAdapter<TSnapshot>;
+  const adapter = (allActivityAdapters[activityType] ||
+    allActivityAdapters.quiz) as RealtimeActivityAdapter<TSnapshot>;
 
   // Determine transport
   const transport = useMemo<ActivityTransport<TSnapshot>>(() => {
@@ -61,7 +66,10 @@ export function useActivityRuntime<TSnapshot extends Record<string, unknown> = R
 
     const useMock =
       transportMode === 'mock' ||
-      (transportMode === 'auto' && (!isSupabaseConfigured() || sessionId.startsWith('mock-') || sessionId === 'local-session'));
+      (transportMode === 'auto' &&
+        (!isSupabaseConfigured() ||
+          sessionId.startsWith('mock-') ||
+          sessionId === 'local-session'));
 
     if (useMock) {
       return new MockActivityTransport({
@@ -84,12 +92,16 @@ export function useActivityRuntime<TSnapshot extends Record<string, unknown> = R
       roomCode: roomId || 'room',
       userId,
       options: initialOptionsRef.current,
-    })
+    }),
   );
 
-  const [sessionState, setSessionState] = useState<StandardSessionState>('drafting');
-  const [recoveryState, setRecoveryState] = useState<StandardRecoveryState>('idle');
-  const [lastEvent, setLastEvent] = useState<StandardActivityEvent | null>(null);
+  const [sessionState, setSessionState] =
+    useState<StandardSessionState>('drafting');
+  const [recoveryState, setRecoveryState] =
+    useState<StandardRecoveryState>('idle');
+  const [lastEvent, setLastEvent] = useState<StandardActivityEvent | null>(
+    null,
+  );
 
   useEffect(() => {
     if (!enabled) return;
@@ -131,13 +143,10 @@ export function useActivityRuntime<TSnapshot extends Record<string, unknown> = R
     };
   }, [enabled, sessionId, activityType, userId, transport, adapter, roomId]);
 
-  const sendEvent = useCallback(
-    async (type: string, payload: unknown) => {
-      if (!runtimeRef.current) return null;
-      return await runtimeRef.current.sendEvent(type, payload);
-    },
-    []
-  );
+  const sendEvent = useCallback(async (type: string, payload: unknown) => {
+    if (!runtimeRef.current) return null;
+    return await runtimeRef.current.sendEvent(type, payload);
+  }, []);
 
   const sendTransient = useCallback((event: string, payload: unknown) => {
     if (!runtimeRef.current) return;
@@ -149,19 +158,27 @@ export function useActivityRuntime<TSnapshot extends Record<string, unknown> = R
     await runtimeRef.current.requestRecovery(afterSequence);
   }, []);
 
-  const completeActivity = useCallback(async (resultSnapshot?: Record<string, unknown>) => {
-    if (!runtimeRef.current) return null;
-    return await runtimeRef.current.completeActivity(resultSnapshot);
-  }, []);
+  const completeActivity = useCallback(
+    async (resultSnapshot?: Record<string, unknown>) => {
+      if (!runtimeRef.current) return null;
+      return await runtimeRef.current.completeActivity(resultSnapshot);
+    },
+    [],
+  );
 
   const setPaused = useCallback(async (paused: boolean) => {
     if (!runtimeRef.current) return;
     await runtimeRef.current.setPaused(paused);
   }, []);
 
-  const subscribeTransient = useCallback((event: string, handler: (payload: unknown) => void) => {
-    return runtimeRef.current?.subscribeTransient(event, handler) ?? (() => {});
-  }, []);
+  const subscribeTransient = useCallback(
+    (event: string, handler: (payload: unknown) => void) => {
+      return (
+        runtimeRef.current?.subscribeTransient(event, handler) ?? (() => {})
+      );
+    },
+    [],
+  );
 
   return {
     runtime: runtimeRef.current,

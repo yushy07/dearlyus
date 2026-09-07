@@ -26,10 +26,13 @@ import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
 import { sounds } from '@/lib/sound';
 
 export function useCupidotPet() {
-  const { space, partner, milestones, keepsakes, preferences } = useCoupleSpace();
+  const { space, partner, milestones, keepsakes, preferences } =
+    useCoupleSpace();
   const coupleId = space?.id;
 
-  const [homeState, setHomeState] = useState<CupidotHomeState>(() => loadStoredCupidotHome(coupleId));
+  const [homeState, setHomeState] = useState<CupidotHomeState>(() =>
+    loadStoredCupidotHome(coupleId),
+  );
   const seenActionKeysRef = useRef<Set<string>>(new Set());
   const decorUndoStackRef = useRef<string[][]>([]);
 
@@ -51,7 +54,7 @@ export function useCupidotPet() {
   // Unlocked items based on current chapter
   const unlockedRewards = useMemo(() => {
     return HOME_COLLECTION_CATALOG.filter(
-      (item) => item.unlockedAtChapter <= homeState.chapter
+      (item) => item.unlockedAtChapter <= homeState.chapter,
     ).map((item) => ({
       ...item,
       placedInRoom: homeState.placedDecorIds.includes(item.id),
@@ -72,41 +75,48 @@ export function useCupidotPet() {
   }, [partnerSafePresence]);
 
   // Send safe reaction
-  const sendReaction = useCallback((reaction: SafeReaction) => {
-    switch (reaction) {
-      case 'heart':
-      case 'sparkle':
-        sounds.playSparkleReaction('💖');
-        break;
-      case 'cheer':
-      case 'ready_pulse':
-        sounds.playCelebration();
-        break;
-      case 'comfort':
-      case 'wave':
-      default:
-        sounds.playPop();
-        break;
-    }
+  const sendReaction = useCallback(
+    (reaction: SafeReaction) => {
+      switch (reaction) {
+        case 'heart':
+        case 'sparkle':
+          sounds.playSparkleReaction('💖');
+          break;
+        case 'cheer':
+        case 'ready_pulse':
+          sounds.playCelebration();
+          break;
+        case 'comfort':
+        case 'wave':
+        default:
+          sounds.playPop();
+          break;
+      }
 
-    setHomeState((prev) => {
-      const nextMood: CupidotMood =
-        reaction === 'comfort' ? 'cozy' : reaction === 'cheer' ? 'excited' : 'playful';
-      return {
-        ...prev,
-        state: 'celebrating',
-        mood: nextMood,
-      };
-    });
+      setHomeState((prev) => {
+        const nextMood: CupidotMood =
+          reaction === 'comfort'
+            ? 'cozy'
+            : reaction === 'cheer'
+              ? 'excited'
+              : 'playful';
+        return {
+          ...prev,
+          state: 'celebrating',
+          mood: nextMood,
+        };
+      });
 
-    // Reset back to calm after celebration
-    window.setTimeout(() => {
-      setHomeState((prev) => ({
-        ...prev,
-        state: partner ? 'reunion' : 'welcoming',
-      }));
-    }, 2200);
-  }, [partner]);
+      // Reset back to calm after celebration
+      window.setTimeout(() => {
+        setHomeState((prev) => ({
+          ...prev,
+          state: partner ? 'reunion' : 'welcoming',
+        }));
+      }, 2200);
+    },
+    [partner],
+  );
 
   // Goodnight tap
   const goodnightTap = useCallback(() => {
@@ -155,14 +165,14 @@ export function useCupidotPet() {
         | 'milestone_recorded'
         | 'new_category_tried'
         | 'reunion_return',
-      actionKey: string
+      actionKey: string,
     ) => {
       const result = awardGrowthSparks(
         homeState.growthSparks,
         homeState.sparksThisSession,
         actionType,
         seenActionKeysRef.current,
-        actionKey
+        actionKey,
       );
 
       if (!result.awarded) return result;
@@ -187,7 +197,7 @@ export function useCupidotPet() {
 
       return result;
     },
-    [homeState.growthSparks, homeState.sparksThisSession, partner]
+    [homeState.growthSparks, homeState.sparksThisSession, partner],
   );
 
   // Decor placement with undo support
@@ -226,7 +236,9 @@ export function useCupidotPet() {
 
   // Memory Seed & Mutual Keepsake Approval
   const proposeMemorySeed = useCallback(
-    (seedData: Omit<MemorySeed, 'seedId' | 'approvalStatus' | 'occurredAt'>) => {
+    (
+      seedData: Omit<MemorySeed, 'seedId' | 'approvalStatus' | 'occurredAt'>,
+    ) => {
       sounds.playChime();
       const seed: MemorySeed = {
         ...seedData,
@@ -242,7 +254,7 @@ export function useCupidotPet() {
       }));
       return seed;
     },
-    []
+    [],
   );
 
   const approveMemorySeed = useCallback((seedId: string) => {
@@ -263,50 +275,65 @@ export function useCupidotPet() {
     });
   }, []);
 
-  const declineMemorySeed = useCallback((seedId: string) => {
-    sounds.playPop();
-    setHomeState((prev) => {
-      if (prev.activeMemorySeed?.seedId !== seedId) return prev;
-      return {
-        ...prev,
-        activeMemorySeed: null,
-        state: partner ? 'reunion' : 'welcoming',
-      };
-    });
-  }, [partner]);
+  const declineMemorySeed = useCallback(
+    (seedId: string) => {
+      sounds.playPop();
+      setHomeState((prev) => {
+        if (prev.activeMemorySeed?.seedId !== seedId) return prev;
+        return {
+          ...prev,
+          activeMemorySeed: null,
+          state: partner ? 'reunion' : 'welcoming',
+        };
+      });
+    },
+    [partner],
+  );
 
   // Couple Rituals
-  const createOrUpdateRitual = useCallback((ritualData: Omit<CoupleRitual, 'id' | 'createdAt'>) => {
-    sounds.playSparkleReaction('💖');
-    const ritual: CoupleRitual = {
-      ...ritualData,
-      id: `ritual-${Date.now()}`,
-      createdAt: new Date().toISOString(),
-    };
-    setHomeState((prev) => ({
-      ...prev,
-      upcomingRitual: ritual,
-    }));
-    return ritual;
-  }, []);
-
-  const snoozeRitual = useCallback((ritualId: string, durationHours: number) => {
-    sounds.playPop();
-    const snoozedUntil = new Date(Date.now() + durationHours * 3600 * 1000).toISOString();
-    setHomeState((prev) => {
-      if (prev.upcomingRitual?.id !== ritualId) return prev;
-      return {
-        ...prev,
-        upcomingRitual: {
-          ...prev.upcomingRitual,
-          snoozedUntil,
-        },
+  const createOrUpdateRitual = useCallback(
+    (ritualData: Omit<CoupleRitual, 'id' | 'createdAt'>) => {
+      sounds.playSparkleReaction('💖');
+      const ritual: CoupleRitual = {
+        ...ritualData,
+        id: `ritual-${Date.now()}`,
+        createdAt: new Date().toISOString(),
       };
-    });
-  }, []);
+      setHomeState((prev) => ({
+        ...prev,
+        upcomingRitual: ritual,
+      }));
+      return ritual;
+    },
+    [],
+  );
+
+  const snoozeRitual = useCallback(
+    (ritualId: string, durationHours: number) => {
+      sounds.playPop();
+      const snoozedUntil = new Date(
+        Date.now() + durationHours * 3600 * 1000,
+      ).toISOString();
+      setHomeState((prev) => {
+        if (prev.upcomingRitual?.id !== ritualId) return prev;
+        return {
+          ...prev,
+          upcomingRitual: {
+            ...prev.upcomingRitual,
+            snoozedUntil,
+          },
+        };
+      });
+    },
+    [],
+  );
 
   const rescheduleRitual = useCallback(
-    (ritualId: string, newTimeOfDay?: string, newCadence?: CoupleRitual['cadence']) => {
+    (
+      ritualId: string,
+      newTimeOfDay?: string,
+      newCadence?: CoupleRitual['cadence'],
+    ) => {
       sounds.playPop();
       setHomeState((prev) => {
         if (prev.upcomingRitual?.id !== ritualId) return prev;
@@ -321,23 +348,29 @@ export function useCupidotPet() {
         };
       });
     },
-    []
+    [],
   );
 
-  const completeRitual = useCallback((ritualId: string) => {
-    triggerGrowthSpark('ritual_completed', `ritual-complete-${ritualId}-${Date.now()}`);
-    setHomeState((prev) => {
-      if (prev.upcomingRitual?.id !== ritualId) return prev;
-      return {
-        ...prev,
-        upcomingRitual: {
-          ...prev.upcomingRitual,
-          lastCompletedAt: new Date().toISOString(),
-          snoozedUntil: null,
-        },
-      };
-    });
-  }, [triggerGrowthSpark]);
+  const completeRitual = useCallback(
+    (ritualId: string) => {
+      triggerGrowthSpark(
+        'ritual_completed',
+        `ritual-complete-${ritualId}-${Date.now()}`,
+      );
+      setHomeState((prev) => {
+        if (prev.upcomingRitual?.id !== ritualId) return prev;
+        return {
+          ...prev,
+          upcomingRitual: {
+            ...prev.upcomingRitual,
+            lastCompletedAt: new Date().toISOString(),
+            snoozedUntil: null,
+          },
+        };
+      });
+    },
+    [triggerGrowthSpark],
+  );
 
   return {
     homeState,

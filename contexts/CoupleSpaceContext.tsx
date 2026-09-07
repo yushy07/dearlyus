@@ -1,6 +1,13 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+} from 'react';
 import { useSupabaseSession } from './SupabaseSessionContext';
 import type { SpaceMember } from '@/lib/domain';
 import {
@@ -33,26 +40,36 @@ export interface CoupleSpaceContextValue {
   error: string | null;
   partnerConnected: boolean;
   refresh: () => Promise<void>;
-  saveProfile: (input: Pick<AccountProfile, 'displayName' | 'city' | 'timezone'>) => Promise<void>;
+  saveProfile: (
+    input: Pick<AccountProfile, 'displayName' | 'city' | 'timezone'>,
+  ) => Promise<void>;
   createSpace: (name: string) => Promise<CoupleSpace>;
   joinSpace: (code: string) => Promise<CoupleSpace>;
   regenerateInvite: () => Promise<CoupleSpace>;
   revokeInvite: () => Promise<CoupleSpace>;
   rotateRoom: () => Promise<CoupleSpace>;
-  savePreferences: (prefs: Omit<SharedPreferences, 'updatedAt'>) => Promise<SharedPreferences>;
+  savePreferences: (
+    prefs: Omit<SharedPreferences, 'updatedAt'>,
+  ) => Promise<SharedPreferences>;
   removeKeepsake: (id: string) => Promise<void>;
   exportSpaceData: () => Promise<string>;
 }
 
 const CoupleSpaceContext = createContext<CoupleSpaceContextValue | null>(null);
 
-export function CoupleSpaceProvider({ children }: { children: React.ReactNode }) {
+export function CoupleSpaceProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { user, supabase, loading: authLoading } = useSupabaseSession();
   const [profile, setProfile] = useState<AccountProfile | null>(null);
   const [space, setSpace] = useState<CoupleSpace | null>(null);
   const [keepsakes, setKeepsakes] = useState<Keepsake[]>([]);
   const [milestones, setMilestones] = useState<RelationshipMilestone[]>([]);
-  const [preferences, setPreferences] = useState<SharedPreferences | null>(null);
+  const [preferences, setPreferences] = useState<SharedPreferences | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -96,21 +113,66 @@ export function CoupleSpaceProvider({ children }: { children: React.ReactNode })
     const spaceId = space.id;
     const channel = supabase
       .channel(`couple-space:${spaceId}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'couple_members', filter: `couple_id=eq.${spaceId}` }, () => {
-        void refresh();
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'couple_invites', filter: `couple_id=eq.${spaceId}` }, () => {
-        void refresh();
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'keepsakes', filter: `couple_id=eq.${spaceId}` }, () => {
-        void refresh();
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'relationship_milestones', filter: `couple_id=eq.${spaceId}` }, () => {
-        void refresh();
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'shared_preferences', filter: `couple_id=eq.${spaceId}` }, () => {
-        void refresh();
-      })
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'couple_members',
+          filter: `couple_id=eq.${spaceId}`,
+        },
+        () => {
+          void refresh();
+        },
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'couple_invites',
+          filter: `couple_id=eq.${spaceId}`,
+        },
+        () => {
+          void refresh();
+        },
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'keepsakes',
+          filter: `couple_id=eq.${spaceId}`,
+        },
+        () => {
+          void refresh();
+        },
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'relationship_milestones',
+          filter: `couple_id=eq.${spaceId}`,
+        },
+        () => {
+          void refresh();
+        },
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'shared_preferences',
+          filter: `couple_id=eq.${spaceId}`,
+        },
+        () => {
+          void refresh();
+        },
+      )
       .subscribe();
 
     return () => {
@@ -118,7 +180,9 @@ export function CoupleSpaceProvider({ children }: { children: React.ReactNode })
     };
   }, [supabase, space?.id, user, refresh]);
 
-  const saveProfileHandler = async (input: Pick<AccountProfile, 'displayName' | 'city' | 'timezone'>) => {
+  const saveProfileHandler = async (
+    input: Pick<AccountProfile, 'displayName' | 'city' | 'timezone'>,
+  ) => {
     if (!user) throw new Error('You must be signed in.');
     await saveAccountProfile(user, input);
     await refresh();
@@ -154,7 +218,9 @@ export function CoupleSpaceProvider({ children }: { children: React.ReactNode })
     return nextSpace;
   };
 
-  const savePreferencesHandler = async (prefs: Omit<SharedPreferences, 'updatedAt'>) => {
+  const savePreferencesHandler = async (
+    prefs: Omit<SharedPreferences, 'updatedAt'>,
+  ) => {
     const saved = await rpcSaveSharedPreferences(prefs);
     setPreferences(saved);
     return saved;
@@ -231,10 +297,14 @@ export function CoupleSpaceProvider({ children }: { children: React.ReactNode })
       error,
       partnerConnected,
       refresh,
-    ]
+    ],
   );
 
-  return <CoupleSpaceContext.Provider value={value}>{children}</CoupleSpaceContext.Provider>;
+  return (
+    <CoupleSpaceContext.Provider value={value}>
+      {children}
+    </CoupleSpaceContext.Provider>
+  );
 }
 
 export function useCoupleSpace() {

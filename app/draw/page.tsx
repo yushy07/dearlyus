@@ -3,7 +3,12 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useCoupleProfile } from '@/lib/couple';
-import { CoupleNameBar, Ribbon, Navbar, CupidotActivityGuidance } from '@/components/shared';
+import {
+  CoupleNameBar,
+  Ribbon,
+  Navbar,
+  CupidotActivityGuidance,
+} from '@/components/shared';
 import { sounds } from '@/lib/sound';
 import { useActivitySession } from '@/contexts/ActivitySessionContext';
 import { useSupabaseSession } from '@/contexts/SupabaseSessionContext';
@@ -24,8 +29,14 @@ const COLOR_PALETTE = [
 export default function DrawPage() {
   const { partnerA, partnerB, roomCode } = useCoupleProfile();
   const { user } = useSupabaseSession();
-  const { sessionId, sendEvent, sendTransient, registerEventHandler, registerTransientHandler, recover } =
-    useActivitySession();
+  const {
+    sessionId,
+    sendEvent,
+    sendTransient,
+    registerEventHandler,
+    registerTransientHandler,
+    recover,
+  } = useActivitySession();
   const { saveKeepsake, saving: keepsakeSaving } = useKeepsakeWriter();
   const localRuntime = useActivityRuntime({
     sessionId: sessionId || `mock-draw-${roomCode || 'local'}`,
@@ -37,7 +48,9 @@ export default function DrawPage() {
     initialOptions: { prompt: 'Draw: Our Dream Sunset Date 🌅' },
   });
   const activitySendEvent = sessionId ? sendEvent : localRuntime.sendEvent;
-  const activitySendTransient = sessionId ? sendTransient : localRuntime.sendTransient;
+  const activitySendTransient = sessionId
+    ? sendTransient
+    : localRuntime.sendTransient;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -124,26 +137,37 @@ export default function DrawPage() {
       if (batch.userId !== localRuntime.currentUserId) renderStrokeBatch(batch);
     }
     if (event.type === 'draw_clear') initCanvas();
-  }, [sessionId, localRuntime.lastEvent, localRuntime.currentUserId, renderStrokeBatch, initCanvas]);
+  }, [
+    sessionId,
+    localRuntime.lastEvent,
+    localRuntime.currentUserId,
+    renderStrokeBatch,
+    initCanvas,
+  ]);
 
   // Listen to transient cursor broadcasts (strictly ephemeral WebSocket, no DB rows)
   useEffect(() => {
-    const unregister = registerTransientHandler('pointer_move', (payload: any) => {
-      if (payload && payload.userId !== user?.id) {
-        setPartnerCursor({
-          x: payload.x,
-          y: payload.y,
-          userName: payload.userName || partnerB || 'Partner',
-          color: payload.color || '#F59E0B',
-          visible: true,
-        });
+    const unregister = registerTransientHandler(
+      'pointer_move',
+      (payload: any) => {
+        if (payload && payload.userId !== user?.id) {
+          setPartnerCursor({
+            x: payload.x,
+            y: payload.y,
+            userName: payload.userName || partnerB || 'Partner',
+            color: payload.color || '#F59E0B',
+            visible: true,
+          });
 
-        if (cursorTimeoutRef.current) clearTimeout(cursorTimeoutRef.current);
-        cursorTimeoutRef.current = setTimeout(() => {
-          setPartnerCursor((prev) => (prev ? { ...prev, visible: false } : null));
-        }, 3000);
-      }
-    });
+          if (cursorTimeoutRef.current) clearTimeout(cursorTimeoutRef.current);
+          cursorTimeoutRef.current = setTimeout(() => {
+            setPartnerCursor((prev) =>
+              prev ? { ...prev, visible: false } : null,
+            );
+          }, 3000);
+        }
+      },
+    );
 
     return () => {
       unregister();
@@ -154,7 +178,13 @@ export default function DrawPage() {
     if (sessionId) return;
     return localRuntime.subscribeTransient('pointer_move', (payload: any) => {
       if (payload && payload.userId !== localRuntime.currentUserId) {
-        setPartnerCursor({ x: payload.x, y: payload.y, userName: payload.userName || partnerB || 'Partner', color: payload.color || '#F59E0B', visible: true });
+        setPartnerCursor({
+          x: payload.x,
+          y: payload.y,
+          userName: payload.userName || partnerB || 'Partner',
+          color: payload.color || '#F59E0B',
+          visible: true,
+        });
       }
     });
   }, [sessionId, localRuntime, partnerB]);
@@ -232,7 +262,8 @@ export default function DrawPage() {
 
     void activitySendEvent('draw_batch', batch);
     // Keep last point as starting point for smooth continuity
-    const lastPoint = currentPointsRef.current[currentPointsRef.current.length - 1];
+    const lastPoint =
+      currentPointsRef.current[currentPointsRef.current.length - 1];
     currentPointsRef.current = [lastPoint];
   };
 
@@ -248,7 +279,10 @@ export default function DrawPage() {
   const clearCanvas = () => {
     sounds.playPop();
     initCanvas();
-    void activitySendEvent('draw_clear', { clearedAt: new Date().toISOString(), userId: user?.id || localRuntime.currentUserId });
+    void activitySendEvent('draw_clear', {
+      clearedAt: new Date().toISOString(),
+      userId: user?.id || localRuntime.currentUserId,
+    });
   };
 
   const downloadDrawing = () => {
@@ -276,7 +310,9 @@ export default function DrawPage() {
       });
 
       if (blob) {
-        const file = new File([blob], `drawing-${Date.now()}.png`, { type: 'image/png' });
+        const file = new File([blob], `drawing-${Date.now()}.png`, {
+          type: 'image/png',
+        });
         await saveKeepsake({
           kind: 'activity',
           title: `Our Artwork · ${prompt}`,
@@ -299,14 +335,36 @@ export default function DrawPage() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--paper)', display: 'flex', flexDirection: 'column' }}>
+    <div
+      style={{
+        minHeight: '100vh',
+        background: 'var(--paper)',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
       <Ribbon />
       <Navbar />
       <CoupleNameBar />
 
-      <main style={{ flex: 1, maxWidth: '900px', margin: '0 auto', width: '100%', padding: '24px 16px 80px' }}>
+      <main
+        style={{
+          flex: 1,
+          maxWidth: '900px',
+          margin: '0 auto',
+          width: '100%',
+          padding: '24px 16px 80px',
+        }}
+      >
         {/* Navigation Breadcrumb */}
-        <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div
+          style={{
+            marginBottom: '16px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
           <Link
             href="/arcade"
             style={{
@@ -329,26 +387,42 @@ export default function DrawPage() {
               gap: '6px',
               padding: '4px 10px',
               borderRadius: '999px',
-              background: sessionId ? 'rgba(16, 185, 129, 0.12)' : 'rgba(245, 158, 11, 0.12)',
+              background: sessionId
+                ? 'rgba(16, 185, 129, 0.12)'
+                : 'rgba(245, 158, 11, 0.12)',
               border: sessionId ? '1px solid #10B981' : '1px solid #F59E0B',
               fontSize: '11px',
               fontWeight: 700,
               color: sessionId ? '#065F46' : '#92400E',
             }}
           >
-            <span>{sessionId ? '● ROOM LIVE · BATCHED SYNC' : '○ LOCAL CANVAS'}</span>
+            <span>
+              {sessionId ? '● ROOM LIVE · BATCHED SYNC' : '○ LOCAL CANVAS'}
+            </span>
           </div>
         </div>
 
         {/* Prompt Header */}
         <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-          <span className="badge hot" style={{ marginBottom: '8px', display: 'inline-block' }}>
+          <span
+            className="badge hot"
+            style={{ marginBottom: '8px', display: 'inline-block' }}
+          >
             Reference Activity · Draw Together
           </span>
-          <h1 style={{ fontSize: 'clamp(24px, 4vw, 36px)', fontWeight: 800, margin: '0 0 6px', letterSpacing: '-0.02em' }}>
+          <h1
+            style={{
+              fontSize: 'clamp(24px, 4vw, 36px)',
+              fontWeight: 800,
+              margin: '0 0 6px',
+              letterSpacing: '-0.02em',
+            }}
+          >
             {prompt}
           </h1>
-          <p style={{ color: 'var(--ink-soft)', fontSize: '14.5px', margin: 0 }}>
+          <p
+            style={{ color: 'var(--ink-soft)', fontSize: '14.5px', margin: 0 }}
+          >
             Batched strokes, transient live cursors, and checkpoint recovery.
           </p>
         </div>
@@ -357,7 +431,9 @@ export default function DrawPage() {
         <div style={{ maxWidth: '800px', margin: '0 auto 16px' }}>
           <CupidotActivityGuidance
             activityName="Draw Together"
-            phase={keepsakeSaved ? 'completed' : isDrawing ? 'private' : 'ready'}
+            phase={
+              keepsakeSaved ? 'completed' : isDrawing ? 'private' : 'ready'
+            }
             partnerName={partnerB || 'Partner'}
             privacyNote="Canvas strokes are shared live with your partner while drawing. Save to keepsake when you're both ready."
           />
@@ -456,7 +532,15 @@ export default function DrawPage() {
         >
           {/* Color Palette */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--ink-soft)' }}>Color:</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: 700,
+                color: 'var(--ink-soft)',
+              }}
+            >
+              Color:
+            </span>
             {COLOR_PALETTE.map((c) => (
               <button
                 key={c}
@@ -470,8 +554,12 @@ export default function DrawPage() {
                   height: '28px',
                   borderRadius: '50%',
                   background: c,
-                  border: color === c ? '3px solid #1F2937' : '2px solid #FFFFFF',
-                  boxShadow: color === c ? '0 0 0 2px #F43F5E' : '0 2px 6px rgba(0,0,0,0.1)',
+                  border:
+                    color === c ? '3px solid #1F2937' : '2px solid #FFFFFF',
+                  boxShadow:
+                    color === c
+                      ? '0 0 0 2px #F43F5E'
+                      : '0 2px 6px rgba(0,0,0,0.1)',
                   cursor: 'pointer',
                   transform: color === c ? 'scale(1.15)' : 'scale(1)',
                   transition: 'transform 0.15s ease',
@@ -482,7 +570,15 @@ export default function DrawPage() {
 
           {/* Brush Size */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--ink-soft)' }}>Size:</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: 700,
+                color: 'var(--ink-soft)',
+              }}
+            >
+              Size:
+            </span>
             {[2, 4, 8, 14].map((size) => (
               <button
                 key={size}
@@ -494,7 +590,10 @@ export default function DrawPage() {
                 style={{
                   padding: '4px 10px',
                   borderRadius: '8px',
-                  border: brushSize === size ? '2px solid #E11D48' : '1px solid var(--line)',
+                  border:
+                    brushSize === size
+                      ? '2px solid #E11D48'
+                      : '1px solid var(--line)',
                   background: brushSize === size ? '#FFF5F8' : '#FFFFFF',
                   color: brushSize === size ? '#BE123C' : 'var(--ink)',
                   fontSize: '12px',
@@ -513,7 +612,11 @@ export default function DrawPage() {
               type="button"
               onClick={clearCanvas}
               className="btn btn-outline"
-              style={{ padding: '8px 16px', fontSize: '13px', borderRadius: '999px' }}
+              style={{
+                padding: '8px 16px',
+                fontSize: '13px',
+                borderRadius: '999px',
+              }}
             >
               🗑️ Clear
             </button>
@@ -522,7 +625,11 @@ export default function DrawPage() {
               type="button"
               onClick={downloadDrawing}
               className="btn btn-outline"
-              style={{ padding: '8px 16px', fontSize: '13px', borderRadius: '999px' }}
+              style={{
+                padding: '8px 16px',
+                fontSize: '13px',
+                borderRadius: '999px',
+              }}
             >
               {savedFeedback ? 'Saved!' : '📥 PNG'}
             </button>
@@ -539,7 +646,11 @@ export default function DrawPage() {
                 background: 'linear-gradient(135deg, #BE123C, #E11D48)',
               }}
             >
-              {keepsakeSaved ? '✨ Saved to Keepsakes!' : keepsakeSaving ? 'Saving...' : '💾 Save to Keepsakes'}
+              {keepsakeSaved
+                ? '✨ Saved to Keepsakes!'
+                : keepsakeSaving
+                  ? 'Saving...'
+                  : '💾 Save to Keepsakes'}
             </button>
           </div>
         </div>

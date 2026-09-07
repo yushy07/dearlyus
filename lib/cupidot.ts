@@ -1,6 +1,6 @@
 /**
  * Cupidot — Autonomous On-Device Relationship Pattern & Thread Weaving Engine
- * 
+ *
  * Analyzes multi-round conversation history, detects shared couple lore,
  * identifies funny contrasts, and synthesizes dilemmas that
  * weave previous answers directly together for ANY couple worldwide.
@@ -18,15 +18,15 @@ export interface CupidotDilemma {
 
 export const CUPIDOT_THOUGHTS = [
   "Weaving your late-night lore into tonight's moments... 💘",
-  "Connecting threads from your favorite memories together... 🧵",
-  "Noticing the shared inside jokes that make your story yours... ✨",
-  "Holding space for whatever energy you two bring tonight... ☕",
-  "Preparing a cozy little corner in Our Space for you two... 🌸",
-  "Counting down the shared laughs across the miles... ✈️",
-  "Curling up peacefully while you two talk, create, and plan... 🌙",
-  "Matching your spontaneous ideas against your cozy instincts... 🗺️",
-  "Safeguarding your sealed answers and private drafts... 💌",
-  "Celebrating another irreplaceable chapter in your story... 💖",
+  'Connecting threads from your favorite memories together... 🧵',
+  'Noticing the shared inside jokes that make your story yours... ✨',
+  'Holding space for whatever energy you two bring tonight... ☕',
+  'Preparing a cozy little corner in Our Space for you two... 🌸',
+  'Counting down the shared laughs across the miles... ✈️',
+  'Curling up peacefully while you two talk, create, and plan... 🌙',
+  'Matching your spontaneous ideas against your cozy instincts... 🗺️',
+  'Safeguarding your sealed answers and private drafts... 💌',
+  'Celebrating another irreplaceable chapter in your story... 💖',
 ];
 
 export function getRandomCupidotThought(): string {
@@ -54,16 +54,28 @@ function analyzeThemes(req: QuestionRequest): ThemeAnalysis {
   const allText = [
     ...history.map((h) => `${h.question} ${h.answerA} ${h.answerB}`),
     `${currentA} ${currentB}`,
-  ].join(' ').toLowerCase();
+  ]
+    .join(' ')
+    .toLowerCase();
 
   let agreementCount = 0;
   for (const h of history) {
-    if (h.answerA && h.answerB && (h.answerA === h.answerB || h.answerA.includes(h.answerB) || h.answerB.includes(h.answerA))) {
+    if (
+      h.answerA &&
+      h.answerB &&
+      (h.answerA === h.answerB ||
+        h.answerA.includes(h.answerB) ||
+        h.answerB.includes(h.answerA))
+    ) {
       agreementCount++;
     }
   }
 
-  const currentMatch = currentA.length > 0 && (currentA === currentB || currentA.includes(currentB) || currentB.includes(currentA));
+  const currentMatch =
+    currentA.length > 0 &&
+    (currentA === currentB ||
+      currentA.includes(currentB) ||
+      currentB.includes(currentA));
   if (currentMatch) agreementCount++;
 
   const prevRounds = history.map((h) => ({
@@ -73,13 +85,34 @@ function analyzeThemes(req: QuestionRequest): ThemeAnalysis {
   }));
 
   return {
-    hasTravel: /(flight|trip|airport|travel|city|wander|pack|explore|bike|train|hotel)/.test(allText),
-    hasFood: /(food|eat|dinner|coffee|cafe|pancake|snack|cook|bakery|dessert|breakfast|ramen|pizza)/.test(allText),
-    hasSleep: /(sleep|bed|nap|morning|noon|wake|snooze|pajamas|exhausted|jetlag|couch)/.test(allText),
-    hasIntimacy: /(hug|cuddle|kiss|touch|holding|face|bedroom|blush|love|romantic|forehead|hand)/.test(allText),
-    hasArgument: /(argument|fight|disagree|mad|pout|silent|stubborn|yell|apologize|peace|guilty)/.test(allText),
-    hasTradition: /(tradition|habit|routine|anniversary|milestone|photo|memory|inside joke)/.test(allText),
-    hasLateNight: /(late|night|midnight|camera|facetime|video|call|freeze|phone|text)/.test(allText),
+    hasTravel:
+      /(flight|trip|airport|travel|city|wander|pack|explore|bike|train|hotel)/.test(
+        allText,
+      ),
+    hasFood:
+      /(food|eat|dinner|coffee|cafe|pancake|snack|cook|bakery|dessert|breakfast|ramen|pizza)/.test(
+        allText,
+      ),
+    hasSleep:
+      /(sleep|bed|nap|morning|noon|wake|snooze|pajamas|exhausted|jetlag|couch)/.test(
+        allText,
+      ),
+    hasIntimacy:
+      /(hug|cuddle|kiss|touch|holding|face|bedroom|blush|love|romantic|forehead|hand)/.test(
+        allText,
+      ),
+    hasArgument:
+      /(argument|fight|disagree|mad|pout|silent|stubborn|yell|apologize|peace|guilty)/.test(
+        allText,
+      ),
+    hasTradition:
+      /(tradition|habit|routine|anniversary|milestone|photo|memory|inside joke)/.test(
+        allText,
+      ),
+    hasLateNight:
+      /(late|night|midnight|camera|facetime|video|call|freeze|phone|text)/.test(
+        allText,
+      ),
     agreementCount,
     totalRounds: history.length + 1,
     prevRounds,
@@ -90,7 +123,9 @@ function analyzeThemes(req: QuestionRequest): ThemeAnalysis {
  * Procedural Pattern & Thread Weaver
  * Connects previous answers across rounds into new dilemmas for any couple
  */
-export function generateCupidotDilemma(req: QuestionRequest): GeneratedQuestion {
+export function generateCupidotDilemma(
+  req: QuestionRequest,
+): GeneratedQuestion {
   const nameA = req.partnerA?.name?.trim() || 'Partner 1';
   const nameB = req.partnerB?.name?.trim() || 'Partner 2';
   const ansA = req.partnerA?.answer || 'loving our moments';
@@ -102,8 +137,10 @@ export function generateCupidotDilemma(req: QuestionRequest): GeneratedQuestion 
 
   // --- THREAD PATTERN 1: Callback to an earlier round's specific choice ---
   if (prevRound && prevRound.a && prevRound.b) {
-    const prevA = prevRound.a.length > 30 ? prevRound.a.slice(0, 28) + '...' : prevRound.a;
-    const prevB = prevRound.b.length > 30 ? prevRound.b.slice(0, 28) + '...' : prevRound.b;
+    const prevA =
+      prevRound.a.length > 30 ? prevRound.a.slice(0, 28) + '...' : prevRound.a;
+    const prevB =
+      prevRound.b.length > 30 ? prevRound.b.slice(0, 28) + '...' : prevRound.b;
 
     if (analysis.hasFood && analysis.hasSleep) {
       return {
@@ -210,7 +247,10 @@ export function generateCupidotDilemma(req: QuestionRequest): GeneratedQuestion 
 /**
  * Manual poke dilemma generator with cheeky relationship tests
  */
-export function getPokedCupidotDilemma(nameA = 'Partner 1', nameB = 'Partner 2'): CupidotDilemma {
+export function getPokedCupidotDilemma(
+  nameA = 'Partner 1',
+  nameB = 'Partner 2',
+): CupidotDilemma {
   const dilemmas: CupidotDilemma[] = [
     {
       question: `Playful spark! Connecting your relationship habits: what is the one sweet quirk ${nameA} does on camera that secretly makes ${nameB}'s heart skip a beat?`,
@@ -277,7 +317,7 @@ export function judgeCourtCase(
   claimA: string,
   claimB: string,
   nameA = 'Partner 1',
-  nameB = 'Partner 2'
+  nameB = 'Partner 2',
 ): CourtVerdict {
   const combined = `${title} ${claimA} ${claimB}`.toLowerCase();
 
@@ -301,7 +341,8 @@ export function judgeCourtCase(
 
   if (/hoodie|jacket|clothes|shirt|stole|wear/.test(combined)) {
     return {
-      verdictTitle: 'Legitimate Asset Seizure Recognized by International Law 🧥',
+      verdictTitle:
+        'Legitimate Asset Seizure Recognized by International Law 🧥',
       guiltyParty: 'Neither',
       reasoning: `Under the Long-Distance Maritime Convention, once a favorite clothing item enters ${nameA}’s suitcase, legal ownership permanently transfers.`,
       sentence: `${nameB} must accept the loss with stoic grace and spray their cologne or perfume on the next backup hoodie.`,
@@ -366,7 +407,7 @@ export function judgeDebate(
   argA: string,
   argB: string,
   nameA = 'Partner 1',
-  nameB = 'Partner 2'
+  nameB = 'Partner 2',
 ): DebateVerdict {
   const lenA = argA.trim().length;
   const lenB = argB.trim().length;
@@ -376,8 +417,26 @@ export function judgeDebate(
   const uniqueB = new Set(wordsB.map((w) => w.toLowerCase())).size;
 
   // Calculate dynamic rhetorical scores based on argument depth, uniqueness, and emotion
-  let scoreA = Math.min(98, Math.max(72, 75 + Math.min(16, Math.floor(uniqueA * 1.4)) + (argA.includes('?') ? 2 : 0) + (argA.includes('!') ? 2 : 0)));
-  let scoreB = Math.min(98, Math.max(72, 75 + Math.min(16, Math.floor(uniqueB * 1.4)) + (argB.includes('?') ? 2 : 0) + (argB.includes('!') ? 2 : 0)));
+  let scoreA = Math.min(
+    98,
+    Math.max(
+      72,
+      75 +
+        Math.min(16, Math.floor(uniqueA * 1.4)) +
+        (argA.includes('?') ? 2 : 0) +
+        (argA.includes('!') ? 2 : 0),
+    ),
+  );
+  let scoreB = Math.min(
+    98,
+    Math.max(
+      72,
+      75 +
+        Math.min(16, Math.floor(uniqueB * 1.4)) +
+        (argB.includes('?') ? 2 : 0) +
+        (argB.includes('!') ? 2 : 0),
+    ),
+  );
 
   if (lenA > lenB + 30) scoreA = Math.min(99, scoreA + 3);
   if (lenB > lenA + 30) scoreB = Math.min(99, scoreB + 3);
@@ -399,8 +458,8 @@ export function judgeDebate(
     winner === nameA
       ? `${nameA} clinched victory through ruthless emotional conviction and superior rhetorical flair. ${nameB} made a valiant effort, but folded under the weight of ${nameA}'s undeniable couple authority.`
       : winner === nameB
-      ? `${nameB} carried the round with calm, calculated logic and devastating counter-points. ${nameA}'s passionate defense was admirable, but ${nameB}'s argument was bulletproof.`
-      : `A spectacular ideological deadlock! Both ${nameA} and ${nameB} argued with such unhinged chemistry that neither deserved to lose.`;
+        ? `${nameB} carried the round with calm, calculated logic and devastating counter-points. ${nameA}'s passionate defense was admirable, but ${nameB}'s argument was bulletproof.`
+        : `A spectacular ideological deadlock! Both ${nameA} and ${nameB} argued with such unhinged chemistry that neither deserved to lose.`;
 
   return {
     winner,
@@ -422,48 +481,63 @@ export interface GeneratedBucketIdea {
   whyCupidotLovesIt: string;
 }
 
-export function generateBucketDate(existingTitles: string[] = []): GeneratedBucketIdea {
+export function generateBucketDate(
+  existingTitles: string[] = [],
+): GeneratedBucketIdea {
   const pool: GeneratedBucketIdea[] = [
     {
       title: 'Midnight 24-Hour Convenience Store Feast in an Exciting City',
       category: 'Food',
       icon: '🍙',
-      whyCupidotLovesIt: 'Pure romantic chaos: holding hands in fluorescent aisles trying every snack at 2:30 AM.',
+      whyCupidotLovesIt:
+        'Pure romantic chaos: holding hands in fluorescent aisles trying every snack at 2:30 AM.',
     },
     {
       title: 'Synchronized Candlelit FaceTime Dinner Across Timezones',
       category: 'Virtual',
       icon: '🕯️',
-      whyCupidotLovesIt: 'Dressing up in formal attire in your own bedroom just to eat with the person on your screen.',
+      whyCupidotLovesIt:
+        'Dressing up in formal attire in your own bedroom just to eat with the person on your screen.',
     },
     {
       title: 'Sunrise Blanket Hug on a Misty Mountain Overlook',
       category: 'Adventure',
       icon: '🌄',
-      whyCupidotLovesIt: 'Waking up before dawn wrapped in a shared quilt watching the world wake up together.',
+      whyCupidotLovesIt:
+        'Waking up before dawn wrapped in a shared quilt watching the world wake up together.',
     },
     {
       title: 'Secret Code Thrift-Store Outfit Swap Challenge',
       category: 'Reunion',
       icon: '🧥',
-      whyCupidotLovesIt: 'You have 15 minutes and $25 to assemble an outfit for the other person that they MUST wear to dinner.',
+      whyCupidotLovesIt:
+        'You have 15 minutes and $25 to assemble an outfit for the other person that they MUST wear to dinner.',
     },
     {
       title: 'Audio-Only Stargazing Call with Zero Video',
       category: 'Virtual',
       icon: '✨',
-      whyCupidotLovesIt: 'No cameras, no self-consciousness, just staring at the same stars listening to each other breathe.',
+      whyCupidotLovesIt:
+        'No cameras, no self-consciousness, just staring at the same stars listening to each other breathe.',
     },
     {
       title: 'Unannounced Airport Gate Surprise Hug of a Lifetime',
       category: 'Reunion',
       icon: '✈️',
-      whyCupidotLovesIt: 'The ultimate bucket list milestone: that first second where distance is reduced to zero.',
+      whyCupidotLovesIt:
+        'The ultimate bucket list milestone: that first second where distance is reduced to zero.',
     },
   ];
 
-  const filtered = pool.filter((p) => !existingTitles.some((t) => t.toLowerCase().includes(p.title.toLowerCase().slice(0, 15))));
-  return filtered.length > 0 ? filtered[Math.floor(Math.random() * filtered.length)] : pool[0];
+  const filtered = pool.filter(
+    (p) =>
+      !existingTitles.some((t) =>
+        t.toLowerCase().includes(p.title.toLowerCase().slice(0, 15)),
+      ),
+  );
+  return filtered.length > 0
+    ? filtered[Math.floor(Math.random() * filtered.length)]
+    : pool[0];
 }
 
 // ---------------------------------------------------------------------------
@@ -480,31 +554,36 @@ export interface PoseIdea {
 export const PHOTOBOOTH_POSES: PoseIdea[] = [
   {
     title: 'The Steamed Dumpling Cheek Squish',
-    instructions: 'Both press your cheeks together into the camera lens with exaggerated cute pouts!',
+    instructions:
+      'Both press your cheeks together into the camera lens with exaggerated cute pouts!',
     vibe: 'Maximum Cuteness',
     emoji: '🥟',
   },
   {
     title: 'The Finger Gun & Drama Queen Shock',
-    instructions: 'One makes finger guns at the camera, the other acts like they just got shot in the heart!',
+    instructions:
+      'One makes finger guns at the camera, the other acts like they just got shot in the heart!',
     vibe: 'Playful Chaos',
     emoji: '🔫',
   },
   {
     title: 'The Mirrored Cheek Heart',
-    instructions: 'Each person makes half a heart on their cheek pointing toward the other screen.',
+    instructions:
+      'Each person makes half a heart on their cheek pointing toward the other screen.',
     vibe: 'Korean Life4Cuts Classic',
     emoji: '🫶',
   },
   {
     title: 'The Secret Agent Back-to-Back',
-    instructions: 'Turn away from each other, look over your shoulders with serious spy expressions.',
+    instructions:
+      'Turn away from each other, look over your shoulders with serious spy expressions.',
     vibe: '007 Rom-Com',
     emoji: '🕶️',
   },
   {
     title: 'The Forehead Boop & Giggle',
-    instructions: 'Lean in as close to the camera as possible with closed eyes and uncontrollable smiles.',
+    instructions:
+      'Lean in as close to the camera as possible with closed eyes and uncontrollable smiles.',
     vibe: 'Pure Romantic Vulnerability',
     emoji: '💖',
   },
@@ -514,7 +593,10 @@ export function getCupidotPoseIdea(): PoseIdea {
   return PHOTOBOOTH_POSES[Math.floor(Math.random() * PHOTOBOOTH_POSES.length)];
 }
 
-export function generateCupidotCaption(nameA = 'Partner 1', nameB = 'Partner 2'): string {
+export function generateCupidotCaption(
+  nameA = 'Partner 1',
+  nameB = 'Partner 2',
+): string {
   const captions = [
     `${nameA} & ${nameB}: Across every timezone, our chemistry still broke the camera lens ✨`,
     `Proof that distance is just geography, not a match for ${nameA} & ${nameB} 📸💘`,
@@ -547,7 +629,7 @@ export function generateLoveForecast(
   nameA = 'Partner 1',
   nameB = 'Partner 2',
   cityA = 'Here',
-  cityB = 'There'
+  cityB = 'There',
 ): LoveForecast {
   const today = new Date();
   const dateString = today.toLocaleDateString('en-US', {

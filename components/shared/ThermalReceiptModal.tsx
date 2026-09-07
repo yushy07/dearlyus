@@ -10,7 +10,11 @@ interface ThermalReceiptModalProps {
   data: DateReceiptData;
 }
 
-export function ThermalReceiptModal({ isOpen, onClose, data }: ThermalReceiptModalProps) {
+export function ThermalReceiptModal({
+  isOpen,
+  onClose,
+  data,
+}: ThermalReceiptModalProps) {
   const [downloaded, setDownloaded] = useState(false);
 
   useEffect(() => {
@@ -77,7 +81,8 @@ export function ThermalReceiptModal({ isOpen, onClose, data }: ThermalReceiptMod
             background: 'linear-gradient(180deg, #1A1C22 0%, #0D0E12 100%)',
             border: '2px solid #2B2D36',
             borderBottom: 'none',
-            boxShadow: 'inset 0 4px 8px rgba(0,0,0,0.9), 0 -2px 10px rgba(0,0,0,0.4)',
+            boxShadow:
+              'inset 0 4px 8px rgba(0,0,0,0.9), 0 -2px 10px rgba(0,0,0,0.4)',
             position: 'relative',
             zIndex: 10,
             display: 'flex',
@@ -105,7 +110,8 @@ export function ThermalReceiptModal({ isOpen, onClose, data }: ThermalReceiptMod
             color: '#222328',
             fontFamily: 'var(--font-mono), monospace',
             padding: '24px 20px 20px',
-            boxShadow: '0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(255,255,255,0.05)',
+            boxShadow:
+              '0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(255,255,255,0.05)',
             position: 'relative',
             maxHeight: '75vh',
             overflowY: 'auto',
@@ -115,40 +121,92 @@ export function ThermalReceiptModal({ isOpen, onClose, data }: ThermalReceiptMod
           }}
         >
           {/* Receipt Header */}
-          <div style={{ textAlign: 'center', borderBottom: '1px dashed #B8B5AB', paddingBottom: '12px', marginBottom: '14px' }}>
-            <div style={{ fontSize: '10px', letterSpacing: '1px', color: '#6A6C75', textTransform: 'uppercase' }}>
+          <div
+            style={{
+              textAlign: 'center',
+              borderBottom: '1px dashed #B8B5AB',
+              paddingBottom: '12px',
+              marginBottom: '14px',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '10px',
+                letterSpacing: '1px',
+                color: '#6A6C75',
+                textTransform: 'uppercase',
+              }}
+            >
               ✦ OFFICIAL DATE MEMORY ✦
             </div>
-            <h3 style={{ fontSize: '18px', fontWeight: 900, margin: '6px 0 4px', letterSpacing: '0.5px' }}>
+            <h3
+              style={{
+                fontSize: '18px',
+                fontWeight: 900,
+                margin: '6px 0 4px',
+                letterSpacing: '0.5px',
+              }}
+            >
               DEARLY US DATE NIGHT LORE
             </h3>
             <div style={{ fontSize: '11px', color: '#555761' }}>
               ROOM: #{data.roomCode} · {data.date}
             </div>
-            <div style={{ fontSize: '12px', fontWeight: 800, marginTop: '2px' }}>
+            <div
+              style={{ fontSize: '12px', fontWeight: 800, marginTop: '2px' }}
+            >
               {data.partnerA.toUpperCase()} ♡ {data.partnerB.toUpperCase()}
             </div>
           </div>
 
           {/* Itemized Questions & Compatibility */}
           <div style={{ fontSize: '11px', marginBottom: '14px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, borderBottom: '1px dashed #B8B5AB', paddingBottom: '4px', marginBottom: '8px' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                fontWeight: 800,
+                borderBottom: '1px dashed #B8B5AB',
+                paddingBottom: '4px',
+                marginBottom: '8px',
+              }}
+            >
               <span>LORE TOPIC</span>
               <span>SYNC</span>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div
+              style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
+            >
               {data.items.map((item, idx) => (
-                <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div
+                  key={idx}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
+                  }}
+                >
                   <div style={{ maxWidth: '210px' }}>
                     <div style={{ fontWeight: 700, color: '#1B1C22' }}>
                       {item.number}. {item.topic}
                     </div>
-                    <div style={{ fontSize: '9.5px', color: '#6C6E78', marginTop: '1px' }}>
+                    <div
+                      style={{
+                        fontSize: '9.5px',
+                        color: '#6C6E78',
+                        marginTop: '1px',
+                      }}
+                    >
                       {data.partnerA}: &quot;{item.answerA}&quot;
                     </div>
                   </div>
-                  <span style={{ fontWeight: 800, color: item.syncPercent === 100 ? '#059669' : '#D97706' }}>
+                  <span
+                    style={{
+                      fontWeight: 800,
+                      color: item.syncPercent === 100 ? '#059669' : '#D97706',
+                    }}
+                  >
                     {item.syncPercent}%
                   </span>
                 </div>
@@ -157,32 +215,111 @@ export function ThermalReceiptModal({ isOpen, onClose, data }: ThermalReceiptMod
           </div>
 
           {/* Total Compatibility Score & Verdict */}
-          <div style={{ borderTop: '2px dashed #B8B5AB', paddingTop: '12px', marginBottom: '14px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '14px', fontWeight: 900 }}>
+          <div
+            style={{
+              borderTop: '2px dashed #B8B5AB',
+              paddingTop: '12px',
+              marginBottom: '14px',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                fontSize: '14px',
+                fontWeight: 900,
+              }}
+            >
               <span>TOTAL SYNC:</span>
-              <span style={{ fontSize: '20px', color: '#E11D48' }}>{data.overallSync}%</span>
+              <span style={{ fontSize: '20px', color: '#E11D48' }}>
+                {data.overallSync}%
+              </span>
             </div>
-            <div style={{ fontSize: '10.5px', color: '#4B4D56', marginTop: '6px', fontStyle: 'italic', background: 'rgba(0,0,0,0.03)', padding: '6px 8px', borderRadius: '4px' }}>
+            <div
+              style={{
+                fontSize: '10.5px',
+                color: '#4B4D56',
+                marginTop: '6px',
+                fontStyle: 'italic',
+                background: 'rgba(0,0,0,0.03)',
+                padding: '6px 8px',
+                borderRadius: '4px',
+              }}
+            >
               &quot;{data.hostVerdict}&quot;
             </div>
           </div>
 
           {/* Couple Signature Line */}
-          <div style={{ borderTop: '1px dashed #B8B5AB', paddingTop: '10px', marginBottom: '12px', textAlign: 'center' }}>
-            <div style={{ fontSize: '9.5px', color: '#888A94', textTransform: 'uppercase' }}>Validated Lifetime Keepsake</div>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: '15px', fontWeight: 700, color: '#FF4D80', marginTop: '4px' }}>
+          <div
+            style={{
+              borderTop: '1px dashed #B8B5AB',
+              paddingTop: '10px',
+              marginBottom: '12px',
+              textAlign: 'center',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '9.5px',
+                color: '#888A94',
+                textTransform: 'uppercase',
+              }}
+            >
+              Validated Lifetime Keepsake
+            </div>
+            <div
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: '15px',
+                fontWeight: 700,
+                color: '#FF4D80',
+                marginTop: '4px',
+              }}
+            >
               Signed: {data.partnerA} ♡ {data.partnerB}
             </div>
           </div>
 
           {/* Scannable Barcode SVG */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
-            <div style={{ display: 'flex', gap: '2px', alignItems: 'flex-end', height: '32px' }}>
-              {[3, 1, 2, 4, 1, 3, 2, 1, 4, 2, 1, 3, 4, 1, 2, 3, 1, 2, 4, 1, 3, 2, 4, 1, 2, 3].map((w, i) => (
-                <div key={i} style={{ width: `${w}px`, height: '100%', background: '#222328' }} />
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '3px',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                gap: '2px',
+                alignItems: 'flex-end',
+                height: '32px',
+              }}
+            >
+              {[
+                3, 1, 2, 4, 1, 3, 2, 1, 4, 2, 1, 3, 4, 1, 2, 3, 1, 2, 4, 1, 3,
+                2, 4, 1, 2, 3,
+              ].map((w, i) => (
+                <div
+                  key={i}
+                  style={{
+                    width: `${w}px`,
+                    height: '100%',
+                    background: '#222328',
+                  }}
+                />
               ))}
             </div>
-            <div style={{ fontSize: '9px', letterSpacing: '2px', color: '#777A86' }}>
+            <div
+              style={{
+                fontSize: '9px',
+                letterSpacing: '2px',
+                color: '#777A86',
+              }}
+            >
               *DEARLY-US-{data.roomCode}-DATE*
             </div>
           </div>
@@ -195,7 +332,8 @@ export function ThermalReceiptModal({ isOpen, onClose, data }: ThermalReceiptMod
               left: 0,
               right: 0,
               height: '10px',
-              background: 'radial-gradient(circle, transparent 5px, #FAF8F5 5px)',
+              background:
+                'radial-gradient(circle, transparent 5px, #FAF8F5 5px)',
               backgroundSize: '12px 10px',
               backgroundPosition: '0 -5px',
             }}
@@ -203,14 +341,23 @@ export function ThermalReceiptModal({ isOpen, onClose, data }: ThermalReceiptMod
         </div>
 
         {/* Action Controls Below Receipt */}
-        <div style={{ display: 'flex', gap: '8px', marginTop: '18px', width: '320px' }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: '8px',
+            marginTop: '18px',
+            width: '320px',
+          }}
+        >
           <button
             onClick={handleDownload}
             style={{
               flex: 1,
               padding: '11px',
               borderRadius: '12px',
-              background: downloaded ? '#10B981' : 'linear-gradient(135deg, #FF7BA3, #FF9E64)',
+              background: downloaded
+                ? '#10B981'
+                : 'linear-gradient(135deg, #FF7BA3, #FF9E64)',
               color: '#FFFFFF',
               border: 'none',
               fontSize: '13px',

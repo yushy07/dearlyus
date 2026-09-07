@@ -26,7 +26,10 @@ export function RoomInviteModal({
 
   if (!isOpen) return null;
 
-  const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+  const origin =
+    typeof window !== 'undefined'
+      ? window.location.origin
+      : 'http://localhost:3000';
   const joinUrl = `${origin}/${activitySlug}?room=${roomCode}`;
 
   const handleCopyLink = () => {
@@ -80,7 +83,8 @@ export function RoomInviteModal({
           borderRadius: '24px',
           width: '100%',
           maxWidth: '380px',
-          boxShadow: '0 24px 60px rgba(0,0,0,0.35), 0 0 40px rgba(255,123,163,0.15)',
+          boxShadow:
+            '0 24px 60px rgba(0,0,0,0.35), 0 0 40px rgba(255,123,163,0.15)',
           overflow: 'hidden',
           border: '1px solid rgba(0,0,0,0.08)',
           position: 'relative',
@@ -95,10 +99,24 @@ export function RoomInviteModal({
             position: 'relative',
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span style={{ fontSize: '18px' }}>💌</span>
-              <span style={{ fontSize: '12px', fontWeight: 800, letterSpacing: '0.8px', textTransform: 'uppercase', opacity: 0.95 }}>
+              <span
+                style={{
+                  fontSize: '12px',
+                  fontWeight: 800,
+                  letterSpacing: '0.8px',
+                  textTransform: 'uppercase',
+                  opacity: 0.95,
+                }}
+              >
                 Love Airlines Boarding Pass
               </span>
             </div>
@@ -125,7 +143,9 @@ export function RoomInviteModal({
             </button>
           </div>
 
-          <h3 style={{ fontSize: '20px', fontWeight: 800, margin: '8px 0 2px' }}>
+          <h3
+            style={{ fontSize: '20px', fontWeight: 800, margin: '8px 0 2px' }}
+          >
             Invite {partnerAName ? `${partnerAName}'s Partner` : 'Your Partner'}
           </h3>
           <p style={{ fontSize: '12px', opacity: 0.9, margin: 0 }}>
@@ -134,7 +154,15 @@ export function RoomInviteModal({
         </div>
 
         {/* Modal Body */}
-        <div style={{ padding: '24px 20px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '18px' }}>
+        <div
+          style={{
+            padding: '24px 20px 20px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '18px',
+          }}
+        >
           {/* Big Scannable QR Code with Heart Center */}
           <div
             style={{
@@ -146,7 +174,12 @@ export function RoomInviteModal({
               position: 'relative',
             }}
           >
-            <QRCodeSVG text={joinUrl} size={190} fgColor="#17181C" bgColor="#F8F9FC" />
+            <QRCodeSVG
+              text={joinUrl}
+              size={190}
+              fgColor="#17181C"
+              bgColor="#F8F9FC"
+            />
             <div
               style={{
                 position: 'absolute',
@@ -168,7 +201,15 @@ export function RoomInviteModal({
           </div>
 
           <div style={{ textAlign: 'center' }}>
-            <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.6px', color: 'var(--ink-soft)', fontWeight: 700 }}>
+            <span
+              style={{
+                fontSize: '11px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.6px',
+                color: 'var(--ink-soft)',
+                fontWeight: 700,
+              }}
+            >
               Scan with phone camera to join instantly
             </span>
 
@@ -189,11 +230,29 @@ export function RoomInviteModal({
                 transition: 'transform 0.15s ease',
               }}
             >
-              <span style={{ fontSize: '12px', color: 'var(--pink)', fontWeight: 700 }}>ROOM CODE:</span>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '20px', fontWeight: 900, color: 'var(--ink)', letterSpacing: '2px' }}>
+              <span
+                style={{
+                  fontSize: '12px',
+                  color: 'var(--pink)',
+                  fontWeight: 700,
+                }}
+              >
+                ROOM CODE:
+              </span>
+              <span
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '20px',
+                  fontWeight: 900,
+                  color: 'var(--ink)',
+                  letterSpacing: '2px',
+                }}
+              >
                 {roomCode}
               </span>
-              <span style={{ fontSize: '12px' }}>{copiedCode ? '✓' : '📋'}</span>
+              <span style={{ fontSize: '12px' }}>
+                {copiedCode ? '✓' : '📋'}
+              </span>
             </div>
           </div>
 
@@ -223,7 +282,15 @@ export function RoomInviteModal({
           </div>
 
           {/* Action Buttons: WhatsApp & Copy Link */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', width: '100%', marginTop: '4px' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '10px',
+              width: '100%',
+              marginTop: '4px',
+            }}
+          >
             <a
               href={whatsappUrl}
               target="_blank"

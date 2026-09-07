@@ -1,7 +1,12 @@
 'use client';
 
 import React, { useState, useEffect, useId } from 'react';
-import { CupidotState, CupidotMood, SAFE_REACTIONS, SafeReaction } from '@/types/cupidot';
+import {
+  CupidotState,
+  CupidotMood,
+  SAFE_REACTIONS,
+  SafeReaction,
+} from '@/types/cupidot';
 import { CupidotBot } from './CupidotBot';
 import { Cupidot2D } from './Cupidot2D';
 import { sounds } from '@/lib/sound';
@@ -17,7 +22,10 @@ export interface CupidotPetStageProps {
   style?: React.CSSProperties;
 }
 
-const STATE_DESCRIPTIONS: Record<CupidotState, { title: string; hint: string; face2D: string }> = {
+const STATE_DESCRIPTIONS: Record<
+  CupidotState,
+  { title: string; hint: string; face2D: string }
+> = {
   resting: {
     title: 'Resting Calmly',
     hint: 'Curled up and resting peacefully. Zero demands, zero rush.',
@@ -130,7 +138,8 @@ export function CupidotPetStage({
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        background: 'linear-gradient(180deg, rgba(255, 245, 248, 0.9) 0%, rgba(255, 237, 243, 0.6) 100%)',
+        background:
+          'linear-gradient(180deg, rgba(255, 245, 248, 0.9) 0%, rgba(255, 237, 243, 0.6) 100%)',
         border: '1.5px solid rgba(255, 143, 178, 0.28)',
         borderRadius: '28px',
         padding: '24px 20px 20px',
@@ -203,7 +212,11 @@ export function CupidotPetStage({
               color: 'var(--ink)',
               cursor: 'pointer',
             }}
-            title={use3D ? 'Switch to the animated plush character' : 'Preview the legacy 3D character'}
+            title={
+              use3D
+                ? 'Switch to the animated plush character'
+                : 'Preview the legacy 3D character'
+            }
           >
             {use3D ? 'Legacy 3D' : 'Plush 2D'}
           </button>
@@ -241,7 +254,8 @@ export function CupidotPetStage({
               fontSize: '32px',
               pointerEvents: 'none',
               zIndex: 10,
-              animation: 'burst-float 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              animation:
+                'burst-float 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards',
               filter: 'drop-shadow(0 4px 12px rgba(255, 78, 120, 0.4))',
             }}
           >
@@ -262,7 +276,11 @@ export function CupidotPetStage({
           <Cupidot2D
             state={state}
             size="clamp(150px, 48vw, 220px)"
-            roam={!reducedMotion && state !== 'focused' && state !== 'settling_for_night'}
+            roam={
+              !reducedMotion &&
+              state !== 'focused' &&
+              state !== 'settling_for_night'
+            }
             label={`Cupidot is ${info.title}`}
           />
         )}

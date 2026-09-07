@@ -35,8 +35,13 @@ export default function ArcadePage() {
   const [score, setScore] = useState(0);
   const [combo, setCombo] = useState(0);
   const [lives, setLives] = useState(3);
-  const [gameState, setGameState] = useState<'idle' | 'playing' | 'paused' | 'gameover'>('idle');
-  const [highScores, setHighScores] = useState<{ a: number; b: number }>({ a: 340, b: 390 });
+  const [gameState, setGameState] = useState<
+    'idle' | 'playing' | 'paused' | 'gameover'
+  >('idle');
+  const [highScores, setHighScores] = useState<{ a: number; b: number }>({
+    a: 340,
+    b: 390,
+  });
   const [confettiActive, setConfettiActive] = useState(false);
   const [isNewRecord, setIsNewRecord] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -57,11 +62,36 @@ export default function ArcadePage() {
     trail: [] as Array<{ x: number; y: number; alpha: number }>,
   });
 
-  const obstaclesRef = useRef<Array<{ x: number; y: number; width: number; height: number; speed: number; rot: number; type: string }>>([]);
-  const collectiblesRef = useRef<Array<{ x: number; y: number; size: number; speed: number; rot: number; isHazard?: boolean; type: string; points: number }>>([]);
+  const obstaclesRef = useRef<
+    Array<{
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+      speed: number;
+      rot: number;
+      type: string;
+    }>
+  >([]);
+  const collectiblesRef = useRef<
+    Array<{
+      x: number;
+      y: number;
+      size: number;
+      speed: number;
+      rot: number;
+      isHazard?: boolean;
+      type: string;
+      points: number;
+    }>
+  >([]);
   const particlesRef = useRef<Particle[]>([]);
   const floatersRef = useRef<FloatingText[]>([]);
-  const keysRef = useRef<{ left: boolean; right: boolean; jump: boolean }>({ left: false, right: false, jump: false });
+  const keysRef = useRef<{ left: boolean; right: boolean; jump: boolean }>({
+    left: false,
+    right: false,
+    jump: false,
+  });
   const frameCountRef = useRef(0);
   const scoreRef = useRef(0);
   const comboRef = useRef(0);
@@ -96,7 +126,12 @@ export default function ArcadePage() {
     }
   };
 
-  const addFloatingText = (x: number, y: number, text: string, color: string) => {
+  const addFloatingText = (
+    x: number,
+    y: number,
+    text: string,
+    color: string,
+  ) => {
     floatersRef.current.push({
       x,
       y,
@@ -120,7 +155,10 @@ export default function ArcadePage() {
         setTimeout(() => setConfettiActive(false), 3500);
         const updated = { ...prev, [activePlayer]: final };
         try {
-          localStorage.setItem('dearly_arcade_high_scores', JSON.stringify(updated));
+          localStorage.setItem(
+            'dearly_arcade_high_scores',
+            JSON.stringify(updated),
+          );
         } catch {}
         return updated;
       }
@@ -129,7 +167,14 @@ export default function ArcadePage() {
   }, [activePlayer, soundEnabled]);
 
   // Vector Drawing Helpers for rich game visuals
-  const drawHeart = (ctx: CanvasRenderingContext2D, x: number, y: number, size: number, color: string, glow = true) => {
+  const drawHeart = (
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    size: number,
+    color: string,
+    glow = true,
+  ) => {
     ctx.save();
     ctx.translate(x, y);
     if (glow) {
@@ -141,15 +186,38 @@ export default function ArcadePage() {
     const topCurveHeight = size * 0.3;
     ctx.moveTo(0, topCurveHeight);
     // top left curve
-    ctx.bezierCurveTo(-size / 2, -topCurveHeight, -size, topCurveHeight, 0, size);
+    ctx.bezierCurveTo(
+      -size / 2,
+      -topCurveHeight,
+      -size,
+      topCurveHeight,
+      0,
+      size,
+    );
     // top right curve
-    ctx.bezierCurveTo(size, topCurveHeight, size / 2, -topCurveHeight, 0, topCurveHeight);
+    ctx.bezierCurveTo(
+      size,
+      topCurveHeight,
+      size / 2,
+      -topCurveHeight,
+      0,
+      topCurveHeight,
+    );
     ctx.closePath();
     ctx.fill();
     ctx.restore();
   };
 
-  const drawStar = (ctx: CanvasRenderingContext2D, cx: number, cy: number, spikes: number, outerR: number, innerR: number, color: string, rot: number) => {
+  const drawStar = (
+    ctx: CanvasRenderingContext2D,
+    cx: number,
+    cy: number,
+    spikes: number,
+    outerR: number,
+    innerR: number,
+    color: string,
+    rot: number,
+  ) => {
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(rot);
@@ -180,7 +248,12 @@ export default function ArcadePage() {
     ctx.restore();
   };
 
-  const drawSpaceship = (ctx: CanvasRenderingContext2D, x: number, y: number, frame: number) => {
+  const drawSpaceship = (
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    frame: number,
+  ) => {
     ctx.save();
     ctx.translate(x, y);
 
@@ -300,11 +373,16 @@ export default function ArcadePage() {
     // Multi-layer Starfield / Nebula
     for (let i = 0; i < 35; i++) {
       const speedMult = (i % 3) + 1;
-      const sx = (i * 29 + (activeGame === 'jump' ? -frame * (0.5 * speedMult) : 0)) % canvas.width;
+      const sx =
+        (i * 29 + (activeGame === 'jump' ? -frame * (0.5 * speedMult) : 0)) %
+        canvas.width;
       const adjustedX = sx < 0 ? sx + canvas.width : sx;
-      const sy = (i * 37 + (activeGame !== 'jump' ? frame * (0.4 * speedMult) : 0)) % canvas.height;
+      const sy =
+        (i * 37 + (activeGame !== 'jump' ? frame * (0.4 * speedMult) : 0)) %
+        canvas.height;
       const size = i % 4 === 0 ? 2.5 : 1.5;
-      ctx.fillStyle = i % 2 === 0 ? 'rgba(255, 123, 163, 0.4)' : 'rgba(96, 165, 250, 0.45)';
+      ctx.fillStyle =
+        i % 2 === 0 ? 'rgba(255, 123, 163, 0.4)' : 'rgba(96, 165, 250, 0.45)';
       ctx.fillRect(adjustedX, sy, size, size);
     }
 
@@ -423,7 +501,10 @@ export default function ArcadePage() {
         ctx.restore();
 
         // Collision Check
-        const dist = Math.hypot(p.x - (obs.x + obs.width / 2), p.y - (obs.y + obs.height / 2));
+        const dist = Math.hypot(
+          p.x - (obs.x + obs.width / 2),
+          p.y - (obs.y + obs.height / 2),
+        );
         if (dist < 26) {
           obstaclesRef.current.splice(i, 1);
           livesRef.current -= 1;
@@ -456,7 +537,16 @@ export default function ArcadePage() {
         col.x -= col.speed;
         col.rot += 0.05;
 
-        drawStar(ctx, col.x, col.y, 5, col.size, col.size * 0.5, '#FDE047', col.rot);
+        drawStar(
+          ctx,
+          col.x,
+          col.y,
+          5,
+          col.size,
+          col.size * 0.5,
+          '#FDE047',
+          col.rot,
+        );
 
         // Catch Star
         const dist = Math.hypot(p.x - col.x, p.y - col.y);
@@ -470,7 +560,12 @@ export default function ArcadePage() {
           setScore(scoreRef.current);
           if (soundEnabled) sounds.playPop();
           spawnParticles(col.x, col.y, '#FDE047', 14);
-          addFloatingText(col.x, col.y, `+${pts}${mult > 1 ? ' 2X!' : ''}`, '#FDE047');
+          addFloatingText(
+            col.x,
+            col.y,
+            `+${pts}${mult > 1 ? ' 2X!' : ''}`,
+            '#FDE047',
+          );
           continue;
         }
 
@@ -584,7 +679,12 @@ export default function ArcadePage() {
           setScore(scoreRef.current);
           if (soundEnabled) sounds.playPop();
           spawnParticles(col.x, col.y, '#FF7BA3', 12);
-          addFloatingText(col.x, col.y, `+${pts}${mult > 1 ? ' 2X!' : ''}`, '#FF7BA3');
+          addFloatingText(
+            col.x,
+            col.y,
+            `+${pts}${mult > 1 ? ' 2X!' : ''}`,
+            '#FF7BA3',
+          );
           continue;
         }
 
@@ -683,7 +783,12 @@ export default function ArcadePage() {
             setScore(scoreRef.current);
             if (soundEnabled) sounds.playPop();
             spawnParticles(col.x, col.y, '#EC4899', 12);
-            addFloatingText(col.x, col.y, `+${pts}${mult > 1 ? ' 2X!' : ''}`, '#EC4899');
+            addFloatingText(
+              col.x,
+              col.y,
+              `+${pts}${mult > 1 ? ' 2X!' : ''}`,
+              '#EC4899',
+            );
           }
           continue;
         }
@@ -813,7 +918,9 @@ export default function ArcadePage() {
         keysRef.current.right = true;
       }
       if (e.code === 'KeyP' || e.code === 'Escape') {
-        setGameState((st) => (st === 'playing' ? 'paused' : st === 'paused' ? 'playing' : st));
+        setGameState((st) =>
+          st === 'playing' ? 'paused' : st === 'paused' ? 'playing' : st,
+        );
       }
     };
 
@@ -840,24 +947,60 @@ export default function ArcadePage() {
   const currentPlayerName = activePlayer === 'a' ? partnerA : partnerB;
 
   return (
-    <div style={{ background: '#0F1016', minHeight: '100vh', paddingBottom: '80px', color: '#F8FAFC' }}>
+    <div
+      style={{
+        background: '#0F1016',
+        minHeight: '100vh',
+        paddingBottom: '80px',
+        color: '#F8FAFC',
+      }}
+    >
       <Confetti active={confettiActive} />
 
       {/* Top Bar with Neon Glow */}
-      <header className="bar" style={{ background: '#141724', borderBottom: '1px solid #282C3F' }}>
-        <div className="wrap" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <header
+        className="bar"
+        style={{ background: '#141724', borderBottom: '1px solid #282C3F' }}
+      >
+        <div
+          className="wrap"
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <Link className="brand" href="/" onClick={() => sounds.playPop()} aria-label="Dearly Us Home">
+            <Link
+              className="brand"
+              href="/"
+              onClick={() => sounds.playPop()}
+              aria-label="Dearly Us Home"
+            >
               <span className="brand-emblem" aria-hidden="true">
                 <svg width="28" height="28" viewBox="0 0 128 128" fill="none">
                   <rect width="128" height="128" rx="36" fill="#1C1924" />
-                  <path d="M64 77 C51 93 29 86 29 64 C29 45 48 38 64 58" stroke="#FF4E78" strokeWidth="12" strokeLinecap="round" />
-                  <path d="M64 58 C80 38 99 45 99 64 C99 86 77 93 64 77" stroke="#437EEB" strokeWidth="12" strokeLinecap="round" />
+                  <path
+                    d="M64 77 C51 93 29 86 29 64 C29 45 48 38 64 58"
+                    stroke="#FF4E78"
+                    strokeWidth="12"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M64 58 C80 38 99 45 99 64 C99 86 77 93 64 77"
+                    stroke="#437EEB"
+                    strokeWidth="12"
+                    strokeLinecap="round"
+                  />
                   <circle cx="64" cy="67" r="5" fill="#FFFFFF" />
                 </svg>
               </span>
-              <span className="brand-dearly" style={{ color: '#fff' }}>Dearly</span>
-              <span className="brand-us" style={{ color: 'var(--pink)' }}>Arcade</span>
+              <span className="brand-dearly" style={{ color: '#fff' }}>
+                Dearly
+              </span>
+              <span className="brand-us" style={{ color: 'var(--pink)' }}>
+                Arcade
+              </span>
             </Link>
           </div>
 
@@ -876,10 +1019,18 @@ export default function ArcadePage() {
                 gap: '8px',
               }}
             >
-              <span>{partnerA}:</span> <b style={{ color: 'var(--pink)' }}>{highScores.a} PTS</b> · <span>{partnerB}:</span> <b style={{ color: 'var(--blue)' }}>{highScores.b} PTS</b>
+              <span>{partnerA}:</span>{' '}
+              <b style={{ color: 'var(--pink)' }}>{highScores.a} PTS</b> ·{' '}
+              <span>{partnerB}:</span>{' '}
+              <b style={{ color: 'var(--blue)' }}>{highScores.b} PTS</b>
             </span>
 
-            <Link className="btn btn-ghost" href="/activity" onClick={() => sounds.playPop()} style={{ color: '#E2E8F0', borderColor: '#333952' }}>
+            <Link
+              className="btn btn-ghost"
+              href="/activity"
+              onClick={() => sounds.playPop()}
+              style={{ color: '#E2E8F0', borderColor: '#333952' }}
+            >
               Activities ▷
             </Link>
           </div>
@@ -916,16 +1067,41 @@ export default function ArcadePage() {
             </div>
           </div>
 
-          <h1 style={{ fontSize: 'clamp(26px, 3.8vw, 38px)', margin: '4px 0', fontWeight: 900, letterSpacing: '-0.5px' }}>
-            Two Screens, <span style={{ background: 'linear-gradient(135deg, #FF7BA3, #60A5FA)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Retro High Scores</span>.
+          <h1
+            style={{
+              fontSize: 'clamp(26px, 3.8vw, 38px)',
+              margin: '4px 0',
+              fontWeight: 900,
+              letterSpacing: '-0.5px',
+            }}
+          >
+            Two Screens,{' '}
+            <span
+              style={{
+                background: 'linear-gradient(135deg, #FF7BA3, #60A5FA)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              Retro High Scores
+            </span>
+            .
           </h1>
           <p style={{ color: '#94A3B8', fontSize: '14px' }}>
-            Built for {partnerA} &amp; {partnerB}. Smooth 60 FPS physics engine, particle bursts, and combo multipliers.
+            Built for {partnerA} &amp; {partnerB}. Smooth 60 FPS physics engine,
+            particle bursts, and combo multipliers.
           </p>
         </div>
 
         {/* Player Switcher Bar */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '16px' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '12px',
+            marginBottom: '16px',
+          }}
+        >
           <button
             onClick={() => {
               if (gameState === 'playing') return;
@@ -935,13 +1111,20 @@ export default function ArcadePage() {
             style={{
               padding: '8px 22px',
               borderRadius: '24px',
-              border: activePlayer === 'a' ? '2px solid #FF4E78' : '1px solid #2D3349',
-              background: activePlayer === 'a' ? 'rgba(255, 78, 120, 0.25)' : '#191C28',
+              border:
+                activePlayer === 'a'
+                  ? '2px solid #FF4E78'
+                  : '1px solid #2D3349',
+              background:
+                activePlayer === 'a' ? 'rgba(255, 78, 120, 0.25)' : '#191C28',
               color: activePlayer === 'a' ? '#FF7BA3' : '#94A3B8',
               fontWeight: 800,
               fontSize: '13px',
               cursor: 'pointer',
-              boxShadow: activePlayer === 'a' ? '0 0 15px rgba(255, 78, 120, 0.35)' : 'none',
+              boxShadow:
+                activePlayer === 'a'
+                  ? '0 0 15px rgba(255, 78, 120, 0.35)'
+                  : 'none',
               transition: 'all 0.15s ease',
             }}
           >
@@ -956,13 +1139,20 @@ export default function ArcadePage() {
             style={{
               padding: '8px 22px',
               borderRadius: '24px',
-              border: activePlayer === 'b' ? '2px solid #3B82F6' : '1px solid #2D3349',
-              background: activePlayer === 'b' ? 'rgba(59, 130, 246, 0.25)' : '#191C28',
+              border:
+                activePlayer === 'b'
+                  ? '2px solid #3B82F6'
+                  : '1px solid #2D3349',
+              background:
+                activePlayer === 'b' ? 'rgba(59, 130, 246, 0.25)' : '#191C28',
               color: activePlayer === 'b' ? '#60A5FA' : '#94A3B8',
               fontWeight: 800,
               fontSize: '13px',
               cursor: 'pointer',
-              boxShadow: activePlayer === 'b' ? '0 0 15px rgba(59, 130, 246, 0.35)' : 'none',
+              boxShadow:
+                activePlayer === 'b'
+                  ? '0 0 15px rgba(59, 130, 246, 0.35)'
+                  : 'none',
               transition: 'all 0.15s ease',
             }}
           >
@@ -979,12 +1169,22 @@ export default function ArcadePage() {
             border: '3px solid #383E58',
             borderRadius: '28px',
             padding: '24px 20px',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7), inset 0 2px 4px rgba(255, 255, 255, 0.1)',
+            boxShadow:
+              '0 25px 50px -12px rgba(0, 0, 0, 0.7), inset 0 2px 4px rgba(255, 255, 255, 0.1)',
             position: 'relative',
           }}
         >
           {/* Cabinet Top Header & Controls */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '14px',
+              flexWrap: 'wrap',
+              gap: '8px',
+            }}
+          >
             {/* Game Selection Pills */}
             <div style={{ display: 'flex', gap: '8px' }}>
               {[
@@ -1002,8 +1202,14 @@ export default function ArcadePage() {
                   style={{
                     padding: '8px 14px',
                     borderRadius: '10px',
-                    border: activeGame === g.id ? '2px solid #FF4E78' : '1px solid #333952',
-                    background: activeGame === g.id ? 'rgba(255, 78, 120, 0.2)' : '#171A27',
+                    border:
+                      activeGame === g.id
+                        ? '2px solid #FF4E78'
+                        : '1px solid #333952',
+                    background:
+                      activeGame === g.id
+                        ? 'rgba(255, 78, 120, 0.2)'
+                        : '#171A27',
                     color: activeGame === g.id ? '#FF7BA3' : '#94A3B8',
                     fontWeight: 700,
                     fontSize: '12px',
@@ -1065,23 +1271,48 @@ export default function ArcadePage() {
           >
             <div>
               <span style={{ color: '#64748B' }}>PLAYER: </span>
-              <span style={{ color: activePlayer === 'a' ? 'var(--pink)' : 'var(--blue)', fontWeight: 900 }}>
+              <span
+                style={{
+                  color: activePlayer === 'a' ? 'var(--pink)' : 'var(--blue)',
+                  fontWeight: 900,
+                }}
+              >
                 {currentPlayerName.toUpperCase()}
               </span>
             </div>
             <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
               {combo >= 3 && (
-                <span style={{ color: '#F59E0B', fontWeight: 900, animation: 'bounce 0.5s infinite' }}>
+                <span
+                  style={{
+                    color: '#F59E0B',
+                    fontWeight: 900,
+                    animation: 'bounce 0.5s infinite',
+                  }}
+                >
                   🔥 {combo}X COMBO!
                 </span>
               )}
               <div>
                 <span style={{ color: '#64748B' }}>SCORE: </span>
-                <span style={{ color: '#FDE047', fontWeight: 900, fontSize: '15px' }}>{score}</span>
+                <span
+                  style={{
+                    color: '#FDE047',
+                    fontWeight: 900,
+                    fontSize: '15px',
+                  }}
+                >
+                  {score}
+                </span>
               </div>
               <div>
                 <span style={{ color: '#64748B' }}>LIVES: </span>
-                <span style={{ color: '#EF4444', letterSpacing: '2px', fontSize: '15px' }}>
+                <span
+                  style={{
+                    color: '#EF4444',
+                    letterSpacing: '2px',
+                    fontSize: '15px',
+                  }}
+                >
                   {'♥'.repeat(Math.max(0, lives))}
                 </span>
               </div>
@@ -1097,7 +1328,8 @@ export default function ArcadePage() {
               borderRadius: '16px',
               overflow: 'hidden',
               border: '4px solid #11131C',
-              boxShadow: 'inset 0 0 30px rgba(0,0,0,0.9), 0 0 15px rgba(255, 78, 120, 0.2)',
+              boxShadow:
+                'inset 0 0 30px rgba(0,0,0,0.9), 0 0 15px rgba(255, 78, 120, 0.2)',
               background: '#0B0D14',
             }}
           >
@@ -1138,16 +1370,47 @@ export default function ArcadePage() {
                   backdropFilter: 'blur(3px)',
                 }}
               >
-                <div style={{ fontSize: '48px', animation: 'bounce 0.8s infinite' }}>
-                  {activeGame === 'jump' ? '💖' : activeGame === 'dodge' ? '🚀' : '🧺'}
+                <div
+                  style={{
+                    fontSize: '48px',
+                    animation: 'bounce 0.8s infinite',
+                  }}
+                >
+                  {activeGame === 'jump'
+                    ? '💖'
+                    : activeGame === 'dodge'
+                      ? '🚀'
+                      : '🧺'}
                 </div>
-                <h3 style={{ fontSize: '24px', fontWeight: 900, letterSpacing: '-0.3px', margin: 0 }}>
-                  {activeGame === 'jump' ? 'Heart Runner' : activeGame === 'dodge' ? 'Cosmic Dodge' : 'Sweet Berry Catch'}
+                <h3
+                  style={{
+                    fontSize: '24px',
+                    fontWeight: 900,
+                    letterSpacing: '-0.3px',
+                    margin: 0,
+                  }}
+                >
+                  {activeGame === 'jump'
+                    ? 'Heart Runner'
+                    : activeGame === 'dodge'
+                      ? 'Cosmic Dodge'
+                      : 'Sweet Berry Catch'}
                 </h3>
-                <p style={{ color: '#94A3B8', fontSize: '14px', maxWidth: '420px', lineHeight: 1.4, margin: '0 auto 8px' }}>
-                  {activeGame === 'jump' && 'Leap over cyber sparks, grab golden stars, and build your combo streak!'}
-                  {activeGame === 'dodge' && 'Steer your neon starship through raining asteroid fields and collect energy hearts!'}
-                  {activeGame === 'catch' && 'Slide your picnic basket under falling treats, gather combos, and dodge bombs!'}
+                <p
+                  style={{
+                    color: '#94A3B8',
+                    fontSize: '14px',
+                    maxWidth: '420px',
+                    lineHeight: 1.4,
+                    margin: '0 auto 8px',
+                  }}
+                >
+                  {activeGame === 'jump' &&
+                    'Leap over cyber sparks, grab golden stars, and build your combo streak!'}
+                  {activeGame === 'dodge' &&
+                    'Steer your neon starship through raining asteroid fields and collect energy hearts!'}
+                  {activeGame === 'catch' &&
+                    'Slide your picnic basket under falling treats, gather combos, and dodge bombs!'}
                 </p>
                 <button
                   className="btn btn-grad"
@@ -1178,7 +1441,15 @@ export default function ArcadePage() {
                   gap: '14px',
                 }}
               >
-                <h3 style={{ fontSize: '28px', fontWeight: 900, color: '#FDE047' }}>PAUSED</h3>
+                <h3
+                  style={{
+                    fontSize: '28px',
+                    fontWeight: 900,
+                    color: '#FDE047',
+                  }}
+                >
+                  PAUSED
+                </h3>
                 <button
                   className="btn btn-grad"
                   onClick={() => setGameState('playing')}
@@ -1207,19 +1478,44 @@ export default function ArcadePage() {
                 }}
               >
                 <div style={{ fontSize: '42px' }}>💥</div>
-                <h3 style={{ fontSize: '26px', fontWeight: 900, letterSpacing: '1px', margin: 0 }}>
+                <h3
+                  style={{
+                    fontSize: '26px',
+                    fontWeight: 900,
+                    letterSpacing: '1px',
+                    margin: 0,
+                  }}
+                >
                   GAME OVER
                 </h3>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '32px', color: '#FDE047', fontWeight: 900 }}>
+                <div
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '32px',
+                    color: '#FDE047',
+                    fontWeight: 900,
+                  }}
+                >
                   {score} PTS {isNewRecord && '👑 NEW BEST!'}
                 </div>
-                <p style={{ color: '#94A3B8', fontSize: '14px', maxWidth: '380px', margin: '4px 0 10px' }}>
+                <p
+                  style={{
+                    color: '#94A3B8',
+                    fontSize: '14px',
+                    maxWidth: '380px',
+                    margin: '4px 0 10px',
+                  }}
+                >
                   {score > highScores[activePlayer === 'a' ? 'b' : 'a']
                     ? `🔥 ${currentPlayerName} holds the crown over their partner!`
                     : `Partner record: ${highScores[activePlayer === 'a' ? 'b' : 'a']} PTS. Think you can top it?`}
                 </p>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <button className="btn btn-grad" onClick={startGame} style={{ padding: '10px 24px', fontSize: '14px' }}>
+                  <button
+                    className="btn btn-grad"
+                    onClick={startGame}
+                    style={{ padding: '10px 24px', fontSize: '14px' }}
+                  >
                     Play Again ↺
                   </button>
                   <button
@@ -1229,7 +1525,12 @@ export default function ArcadePage() {
                       setActivePlayer((p) => (p === 'a' ? 'b' : 'a'));
                       setGameState('idle');
                     }}
-                    style={{ padding: '10px 20px', fontSize: '14px', background: '#232635', color: '#fff' }}
+                    style={{
+                      padding: '10px 20px',
+                      fontSize: '14px',
+                      background: '#232635',
+                      color: '#fff',
+                    }}
                   >
                     Pass to {activePlayer === 'a' ? partnerB : partnerA} ▷
                   </button>
@@ -1255,8 +1556,15 @@ export default function ArcadePage() {
               gap: '12px',
             }}
           >
-            <div style={{ fontSize: '12px', color: '#64748B', fontFamily: 'var(--font-mono)' }}>
-              KEYBOARD: <b>[SPACE]</b> / <b>[↑]</b> Jump · <b>[←] [→]</b> / <b>[A] [D]</b> Move · <b>[P]</b> Pause
+            <div
+              style={{
+                fontSize: '12px',
+                color: '#64748B',
+                fontFamily: 'var(--font-mono)',
+              }}
+            >
+              KEYBOARD: <b>[SPACE]</b> / <b>[↑]</b> Jump · <b>[←] [→]</b> /{' '}
+              <b>[A] [D]</b> Move · <b>[P]</b> Pause
             </div>
 
             {activeGame === 'jump' ? (
@@ -1276,14 +1584,16 @@ export default function ArcadePage() {
                   keysRef.current.jump = false;
                 }}
                 style={{
-                  background: 'linear-gradient(180deg, #FF6088 0%, #D81B4B 100%)',
+                  background:
+                    'linear-gradient(180deg, #FF6088 0%, #D81B4B 100%)',
                   border: '2px solid #FF95B1',
                   borderRadius: '16px',
                   padding: '14px 44px',
                   color: '#fff',
                   fontSize: '18px',
                   fontWeight: 900,
-                  boxShadow: '0 6px 0 #9E1034, 0 10px 20px rgba(255, 78, 120, 0.4)',
+                  boxShadow:
+                    '0 6px 0 #9E1034, 0 10px 20px rgba(255, 78, 120, 0.4)',
                   cursor: 'pointer',
                   userSelect: 'none',
                   transform: 'translateY(0)',
@@ -1313,14 +1623,16 @@ export default function ArcadePage() {
                     keysRef.current.left = false;
                   }}
                   style={{
-                    background: 'linear-gradient(180deg, #3B82F6 0%, #1D4ED8 100%)',
+                    background:
+                      'linear-gradient(180deg, #3B82F6 0%, #1D4ED8 100%)',
                     border: '2px solid #60A5FA',
                     borderRadius: '14px',
                     padding: '14px 28px',
                     color: '#fff',
                     fontSize: '16px',
                     fontWeight: 900,
-                    boxShadow: '0 5px 0 #1E3A8A, 0 8px 16px rgba(59, 130, 246, 0.3)',
+                    boxShadow:
+                      '0 5px 0 #1E3A8A, 0 8px 16px rgba(59, 130, 246, 0.3)',
                     cursor: 'pointer',
                     userSelect: 'none',
                   }}
@@ -1343,14 +1655,16 @@ export default function ArcadePage() {
                     keysRef.current.right = false;
                   }}
                   style={{
-                    background: 'linear-gradient(180deg, #3B82F6 0%, #1D4ED8 100%)',
+                    background:
+                      'linear-gradient(180deg, #3B82F6 0%, #1D4ED8 100%)',
                     border: '2px solid #60A5FA',
                     borderRadius: '14px',
                     padding: '14px 28px',
                     color: '#fff',
                     fontSize: '16px',
                     fontWeight: 900,
-                    boxShadow: '0 5px 0 #1E3A8A, 0 8px 16px rgba(59, 130, 246, 0.3)',
+                    boxShadow:
+                      '0 5px 0 #1E3A8A, 0 8px 16px rgba(59, 130, 246, 0.3)',
                     cursor: 'pointer',
                     userSelect: 'none',
                   }}

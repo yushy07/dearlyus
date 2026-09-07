@@ -82,7 +82,10 @@ export function encodeQRCode(text: string): boolean[][] {
   }
 
   const { size, dataBytes, ecBytes } = config;
-  const safeBytes = textBytes.length + 3 > dataBytes ? textBytes.slice(0, dataBytes - 3) : textBytes;
+  const safeBytes =
+    textBytes.length + 3 > dataBytes
+      ? textBytes.slice(0, dataBytes - 3)
+      : textBytes;
 
   const bits: number[] = [];
   const pushBits = (val: number, len: number) => {
@@ -128,8 +131,12 @@ export function encodeQRCode(text: string): boolean[][] {
   finalCodewords.set(data, 0);
   finalCodewords.set(ec, dataBytes);
 
-  const matrix: boolean[][] = Array.from({ length: size }, () => Array(size).fill(false));
-  const isFunction: boolean[][] = Array.from({ length: size }, () => Array(size).fill(false));
+  const matrix: boolean[][] = Array.from({ length: size }, () =>
+    Array(size).fill(false),
+  );
+  const isFunction: boolean[][] = Array.from({ length: size }, () =>
+    Array(size).fill(false),
+  );
 
   const setModule = (r: number, c: number, val: boolean) => {
     matrix[r][c] = val;
@@ -143,7 +150,12 @@ export function encodeQRCode(text: string): boolean[][] {
         const tc = col + c;
         if (tr >= 0 && tr < size && tc >= 0 && tc < size) {
           if (r >= 0 && r <= 6 && c >= 0 && c <= 6) {
-            const isBlack = r === 0 || r === 6 || c === 0 || c === 6 || (r >= 2 && r <= 4 && c >= 2 && c <= 4);
+            const isBlack =
+              r === 0 ||
+              r === 6 ||
+              c === 0 ||
+              c === 6 ||
+              (r >= 2 && r <= 4 && c >= 2 && c <= 4);
             setModule(tr, tc, isBlack);
           } else {
             setModule(tr, tc, false);
@@ -161,7 +173,8 @@ export function encodeQRCode(text: string): boolean[][] {
     const alignCenter = size - 7;
     for (let r = -2; r <= 2; r++) {
       for (let c = -2; c <= 2; c++) {
-        const isBlack = Math.abs(r) === 2 || Math.abs(c) === 2 || (r === 0 && c === 0);
+        const isBlack =
+          Math.abs(r) === 2 || Math.abs(c) === 2 || (r === 0 && c === 0);
         setModule(alignCenter + r, alignCenter + c, isBlack);
       }
     }
@@ -264,7 +277,7 @@ export function QRCodeSVG({
       width: viewBoxSize,
       height: viewBoxSize,
       fill: bgColor,
-    })
+    }),
   );
 
   matrix.forEach((row, r) => {
@@ -279,7 +292,7 @@ export function QRCodeSVG({
             height: 1.04,
             rx: 0.2,
             fill: fgColor,
-          })
+          }),
         );
       }
     });
@@ -292,9 +305,14 @@ export function QRCodeSVG({
       width: size,
       height: size,
       className,
-      style: { display: 'block', borderRadius: '12px', background: bgColor, ...style },
+      style: {
+        display: 'block',
+        borderRadius: '12px',
+        background: bgColor,
+        ...style,
+      },
       'aria-label': `QR Code for ${text}`,
     },
-    ...rectElements
+    ...rectElements,
   );
 }

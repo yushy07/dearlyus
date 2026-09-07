@@ -3,7 +3,12 @@
 import { useState, useCallback } from 'react';
 import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
 import { useActivitySession } from '@/contexts/ActivitySessionContext';
-import { uploadKeepsake, deleteKeepsake, saveDateNightCapsule, type Keepsake } from '@/lib/account';
+import {
+  uploadKeepsake,
+  deleteKeepsake,
+  saveDateNightCapsule,
+  type Keepsake,
+} from '@/lib/account';
 
 export interface SaveKeepsakeInput {
   kind: Keepsake['kind'];
@@ -23,7 +28,8 @@ export function useKeepsakeWriter() {
 
   const saveKeepsake = useCallback(
     async (input: SaveKeepsakeInput) => {
-      if (!space?.id) throw new Error('Couple space is required to save a keepsake.');
+      if (!space?.id)
+        throw new Error('Couple space is required to save a keepsake.');
       setSaving(true);
       setError(null);
 
@@ -48,7 +54,7 @@ export function useKeepsakeWriter() {
         setSaving(false);
       }
     },
-    [space?.id, sessionId, refresh]
+    [space?.id, sessionId, refresh],
   );
 
   const removeKeepsake = useCallback(
@@ -67,12 +73,15 @@ export function useKeepsakeWriter() {
         setDeleting(false);
       }
     },
-    [refresh]
+    [refresh],
   );
 
   const saveCapsule = useCallback(
     async (payload: Record<string, unknown>) => {
-      if (!space?.id) throw new Error('Couple space is required to save a date night capsule.');
+      if (!space?.id)
+        throw new Error(
+          'Couple space is required to save a date night capsule.',
+        );
       setSaving(true);
       setError(null);
       try {
@@ -87,7 +96,7 @@ export function useKeepsakeWriter() {
         setSaving(false);
       }
     },
-    [space?.id, refresh]
+    [space?.id, refresh],
   );
 
   return {

@@ -19,7 +19,14 @@ export interface RecoveryBannerProps {
 
 const RECOVERY_CONFIG: Record<
   RecoveryState,
-  { icon: string; title: string; desc: string; tone: string; border: string; bg: string }
+  {
+    icon: string;
+    title: string;
+    desc: string;
+    tone: string;
+    border: string;
+    bg: string;
+  }
 > = {
   partner_disconnected: {
     icon: '🛡️',
@@ -86,10 +93,19 @@ export function RecoveryBanner({
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         <span style={{ fontSize: '24px' }}>{config.icon}</span>
         <div>
-          <strong style={{ fontSize: '14.5px', color: config.tone, display: 'block' }}>
+          <strong
+            style={{ fontSize: '14.5px', color: config.tone, display: 'block' }}
+          >
             {config.title.replace('they', partnerName)}
           </strong>
-          <span style={{ fontSize: '12.5px', color: 'var(--ink-soft)', marginTop: '2px', display: 'block' }}>
+          <span
+            style={{
+              fontSize: '12.5px',
+              color: 'var(--ink-soft)',
+              marginTop: '2px',
+              display: 'block',
+            }}
+          >
             {config.desc}
           </span>
         </div>
@@ -107,7 +123,11 @@ export function RecoveryBanner({
           </button>
         )}
         {state === 'room_expired' && (
-          <Link className="btn btn-primary" href="/our-space" style={{ fontSize: '12px', padding: '6px 14px' }}>
+          <Link
+            className="btn btn-primary"
+            href="/our-space"
+            style={{ fontSize: '12px', padding: '6px 14px' }}
+          >
             Back to Our Space →
           </Link>
         )}

@@ -17,7 +17,8 @@ export function Footer() {
         style={{
           height: '3px',
           width: '100%',
-          background: 'linear-gradient(90deg, var(--pink) 0%, #FFA07A 30%, var(--blue) 70%, #B388FF 100%)',
+          background:
+            'linear-gradient(90deg, var(--pink) 0%, #FFA07A 30%, var(--blue) 70%, #B388FF 100%)',
         }}
       />
 
@@ -45,21 +46,64 @@ export function Footer() {
           }}
         >
           <div style={{ maxWidth: '440px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-              <span className="brand" style={{ fontSize: '26px', fontWeight: 900, letterSpacing: '-0.5px' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                marginBottom: '10px',
+              }}
+            >
+              <span
+                className="brand"
+                style={{
+                  fontSize: '26px',
+                  fontWeight: 900,
+                  letterSpacing: '-0.5px',
+                }}
+              >
                 <span className="brand-emblem" aria-hidden="true">
                   <svg width="32" height="32" viewBox="0 0 128 128" fill="none">
                     <rect width="128" height="128" rx="36" fill="#1C1924" />
-                    <path d="M64 77 C51 93 29 86 29 64 C29 45 48 38 64 58" stroke="#FF4E78" strokeWidth="12" strokeLinecap="round" />
-                    <path d="M64 58 C80 38 99 45 99 64 C99 86 77 93 64 77" stroke="#437EEB" strokeWidth="12" strokeLinecap="round" />
+                    <path
+                      d="M64 77 C51 93 29 86 29 64 C29 45 48 38 64 58"
+                      stroke="#FF4E78"
+                      strokeWidth="12"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M64 58 C80 38 99 45 99 64 C99 86 77 93 64 77"
+                      stroke="#437EEB"
+                      strokeWidth="12"
+                      strokeLinecap="round"
+                    />
                     <circle cx="64" cy="67" r="5" fill="#FFFFFF" />
                   </svg>
                 </span>
                 <span className="brand-dearly">Dearly</span>
                 <span className="brand-us">Us</span>
                 <span className="dots" style={{ marginLeft: '4px' }}>
-                  <i className="p" style={{ display: 'inline-block', width: '7px', height: '7px', borderRadius: '50%', background: 'var(--pink)', marginRight: '3px' }}></i>
-                  <i className="b" style={{ display: 'inline-block', width: '7px', height: '7px', borderRadius: '50%', background: 'var(--blue)' }}></i>
+                  <i
+                    className="p"
+                    style={{
+                      display: 'inline-block',
+                      width: '7px',
+                      height: '7px',
+                      borderRadius: '50%',
+                      background: 'var(--pink)',
+                      marginRight: '3px',
+                    }}
+                  ></i>
+                  <i
+                    className="b"
+                    style={{
+                      display: 'inline-block',
+                      width: '7px',
+                      height: '7px',
+                      borderRadius: '50%',
+                      background: 'var(--blue)',
+                    }}
+                  ></i>
                 </span>
               </span>
               <span
@@ -77,13 +121,30 @@ export function Footer() {
               </span>
             </div>
 
-            <p style={{ fontSize: '14.5px', color: 'var(--ink-soft)', lineHeight: 1.6 }}>
-              <span style={{ color: 'var(--blue)', fontWeight: 700 }}>Made for the moments that belong to you two.</span> Zero lag, shared photobooth strips, interactive duels, and memory keepsakes across any timezone.
+            <p
+              style={{
+                fontSize: '14.5px',
+                color: 'var(--ink-soft)',
+                lineHeight: 1.6,
+              }}
+            >
+              <span style={{ color: 'var(--blue)', fontWeight: 700 }}>
+                Made for the moments that belong to you two.
+              </span>{' '}
+              Zero lag, shared photobooth strips, interactive duels, and memory
+              keepsakes across any timezone.
             </p>
           </div>
 
           {/* System Status & Quick Action */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '12px' }}>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              gap: '12px',
+            }}
+          >
             <div
               style={{
                 display: 'inline-flex',
@@ -171,14 +232,37 @@ export function Footer() {
               <span>📷</span>
               <span>Studios &amp; Dates</span>
             </div>
-            <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13.5px' }}>
-              <Link href="/photobooth" className="foot-link">Online Photobooth (인생네컷)</Link>
-              <Link href="/timezone" className="foot-link">Timezone &amp; Countdown Hub 🌍</Link>
-              <Link href="/bucket" className="foot-link">100 Dates Bucket List 🎯</Link>
-              <Link href="/fashion" className="foot-link">Fashion Show (PvP Runway) 👗</Link>
-              <Link href="/shirts" className="foot-link">Matching Outfits Studio 👕</Link>
-              <Link href="/date" className="foot-link">Date Night Planner &amp; Soundscapes 🍷</Link>
-              <Link href="/activity" className="foot-link" style={{ fontWeight: 700, color: 'var(--pink)' }}>
+            <nav
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+                fontSize: '13.5px',
+              }}
+            >
+              <Link href="/photobooth" className="foot-link">
+                Online Photobooth (인생네컷)
+              </Link>
+              <Link href="/timezone" className="foot-link">
+                Timezone &amp; Countdown Hub 🌍
+              </Link>
+              <Link href="/bucket" className="foot-link">
+                100 Dates Bucket List 🎯
+              </Link>
+              <Link href="/fashion" className="foot-link">
+                Fashion Show (PvP Runway) 👗
+              </Link>
+              <Link href="/shirts" className="foot-link">
+                Matching Outfits Studio 👕
+              </Link>
+              <Link href="/date" className="foot-link">
+                Date Night Planner &amp; Soundscapes 🍷
+              </Link>
+              <Link
+                href="/activity"
+                className="foot-link"
+                style={{ fontWeight: 700, color: 'var(--pink)' }}
+              >
                 View All Activities →
               </Link>
             </nav>
@@ -203,14 +287,35 @@ export function Footer() {
               <span>🎮</span>
               <span>Games &amp; Duels</span>
             </div>
-            <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13.5px' }}>
-              <Link href="/quiz" className="foot-link">Know Me Quiz (17 + Lore)</Link>
-              <Link href="/host" className="foot-link">AI Date Host (Scenarios)</Link>
-              <Link href="/match" className="foot-link">Love Match Compatibility</Link>
-              <Link href="/arcade" className="foot-link">Face Avatar Arcade</Link>
-              <Link href="/iq" className="foot-link">IQ Duel Head-to-Head</Link>
-              <Link href="/riddle" className="foot-link">Riddle Night</Link>
-              <Link href="/draw" className="foot-link">Draw Together Canvas</Link>
+            <nav
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+                fontSize: '13.5px',
+              }}
+            >
+              <Link href="/quiz" className="foot-link">
+                Know Me Quiz (17 + Lore)
+              </Link>
+              <Link href="/host" className="foot-link">
+                AI Date Host (Scenarios)
+              </Link>
+              <Link href="/match" className="foot-link">
+                Love Match Compatibility
+              </Link>
+              <Link href="/arcade" className="foot-link">
+                Face Avatar Arcade
+              </Link>
+              <Link href="/iq" className="foot-link">
+                IQ Duel Head-to-Head
+              </Link>
+              <Link href="/riddle" className="foot-link">
+                Riddle Night
+              </Link>
+              <Link href="/draw" className="foot-link">
+                Draw Together Canvas
+              </Link>
             </nav>
           </div>
 
@@ -233,16 +338,39 @@ export function Footer() {
               <span>💌</span>
               <span>Keepsakes &amp; Vault</span>
             </div>
-            <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13.5px' }}>
-              <Link href="/passport" className="foot-link" style={{ fontWeight: 700, color: '#A855F7' }}>
+            <nav
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+                fontSize: '13.5px',
+              }}
+            >
+              <Link
+                href="/passport"
+                className="foot-link"
+                style={{ fontWeight: 700, color: '#A855F7' }}
+              >
                 Couple Date Passport 💮
               </Link>
-              <Link href="/future" className="foot-link">Our Future Vision Board</Link>
-              <Link href="/letter" className="foot-link">Letters to Future (Time Vault)</Link>
-              <Link href="/scrapbook" className="foot-link">Digital Scrapbook Corkboard</Link>
-              <Link href="/shop" className="foot-link">Keepsakes Studio (4×6 Strips)</Link>
-              <Link href="/birthday" className="foot-link">Birthday Surprise Page</Link>
-              <Link href="/cards" className="foot-link">Honest Cards (Deep Questions)</Link>
+              <Link href="/future" className="foot-link">
+                Our Future Vision Board
+              </Link>
+              <Link href="/letter" className="foot-link">
+                Letters to Future (Time Vault)
+              </Link>
+              <Link href="/scrapbook" className="foot-link">
+                Digital Scrapbook Corkboard
+              </Link>
+              <Link href="/shop" className="foot-link">
+                Keepsakes Studio (4×6 Strips)
+              </Link>
+              <Link href="/birthday" className="foot-link">
+                Birthday Surprise Page
+              </Link>
+              <Link href="/cards" className="foot-link">
+                Honest Cards (Deep Questions)
+              </Link>
             </nav>
           </div>
 
@@ -265,12 +393,31 @@ export function Footer() {
               <span>🌱</span>
               <span>Community &amp; Legal</span>
             </div>
-            <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13.5px' }}>
-              <Link href="/creators" className="foot-link">Creator Partner Community</Link>
-              <Link href="/blog" className="foot-link">Dearly Us Guides &amp; LDR Stories</Link>
-              <Link href="/privacy" className="foot-link">Privacy &amp; Data Security</Link>
-              <Link href="/terms" className="foot-link">Terms &amp; Conditions</Link>
-              <a href="mailto:hello@dearlyus.love" className="foot-link" style={{ color: 'var(--ink)', fontWeight: 600 }}>
+            <nav
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+                fontSize: '13.5px',
+              }}
+            >
+              <Link href="/creators" className="foot-link">
+                Creator Partner Community
+              </Link>
+              <Link href="/blog" className="foot-link">
+                Dearly Us Guides &amp; LDR Stories
+              </Link>
+              <Link href="/privacy" className="foot-link">
+                Privacy &amp; Data Security
+              </Link>
+              <Link href="/terms" className="foot-link">
+                Terms &amp; Conditions
+              </Link>
+              <a
+                href="mailto:hello@dearlyus.love"
+                className="foot-link"
+                style={{ color: 'var(--ink)', fontWeight: 600 }}
+              >
                 hello@dearlyus.love
               </a>
             </nav>
@@ -292,7 +439,11 @@ export function Footer() {
           }}
         >
           <div>
-            © {new Date().getFullYear()} <b className="brand-dearly">Dearly</b> <b className="brand-us">Us</b>. <span style={{ color: 'var(--blue)', fontWeight: 600 }}>Made for the moments that belong to you two.</span>
+            © {new Date().getFullYear()} <b className="brand-dearly">Dearly</b>{' '}
+            <b className="brand-us">Us</b>.{' '}
+            <span style={{ color: 'var(--blue)', fontWeight: 600 }}>
+              Made for the moments that belong to you two.
+            </span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>

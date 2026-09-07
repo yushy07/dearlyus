@@ -11,41 +11,49 @@ export interface MemoryWeatherProps {
   keepsakes?: Keepsake[];
 }
 
-const MOOD_META: Record<string, { label: string; icon: string; bg: string; color: string; forecast: string }> = {
+const MOOD_META: Record<
+  string,
+  { label: string; icon: string; bg: string; color: string; forecast: string }
+> = {
   cozy: {
     label: 'Cozy',
     icon: '☕',
     bg: 'linear-gradient(135deg, #FEF3C7, #FDE68A)',
     color: '#92400E',
-    forecast: 'Warm golden tea & blanket weather. Soft laughter and relaxed quiet moments.',
+    forecast:
+      'Warm golden tea & blanket weather. Soft laughter and relaxed quiet moments.',
   },
   romantic: {
     label: 'Romantic',
     icon: '🌹',
     bg: 'linear-gradient(135deg, #FFE4E6, #FECDD3)',
     color: '#9F1239',
-    forecast: 'Deep crimson sunset. High emotional resonance and tender late-night conversations.',
+    forecast:
+      'Deep crimson sunset. High emotional resonance and tender late-night conversations.',
   },
   playful: {
     label: 'Playful',
     icon: '✨',
     bg: 'linear-gradient(135deg, #FEF9C3, #FDE047)',
     color: '#854D0E',
-    forecast: 'Sunny spontaneous giggles. Cheerful banter and teasing energy across the miles.',
+    forecast:
+      'Sunny spontaneous giggles. Cheerful banter and teasing energy across the miles.',
   },
   deep: {
     label: 'Deep',
     icon: '🌊',
     bg: 'linear-gradient(135deg, #E0F2FE, #BAE6FD)',
     color: '#075985',
-    forecast: 'Midnight ocean calm. Vulnerability, earnest truths, and soul-level understanding.',
+    forecast:
+      'Midnight ocean calm. Vulnerability, earnest truths, and soul-level understanding.',
   },
   spontaneous: {
     label: 'Spontaneous',
     icon: '⚡',
     bg: 'linear-gradient(135deg, #F3E8FF, #E9D5FF)',
     color: '#6B21A8',
-    forecast: 'Electric aurora flashes. Unplanned date nights, surprise calls, and wild inside jokes.',
+    forecast:
+      'Electric aurora flashes. Unplanned date nights, surprise calls, and wild inside jokes.',
   },
 };
 
@@ -57,15 +65,24 @@ export function MemoryWeather({
   keepsakes = [],
 }: MemoryWeatherProps) {
   // Count frequency of explicit moods
-  const counts: Record<string, number> = { cozy: 0, romantic: 0, playful: 0, deep: 0, spontaneous: 0 };
-  
+  const counts: Record<string, number> = {
+    cozy: 0,
+    romantic: 0,
+    playful: 0,
+    deep: 0,
+    spontaneous: 0,
+  };
+
   const explicitFromKeepsakes = keepsakes
-    .map((k) => (k.metadata?.mood as string) || (k.metadata?.capsuleMood as string))
+    .map(
+      (k) =>
+        (k.metadata?.mood as string) || (k.metadata?.capsuleMood as string),
+    )
     .filter(Boolean)
     .map((m) => ({ mood: m.toLowerCase(), date: new Date().toISOString() }));
 
   const allMoodItems = [...explicitFromKeepsakes, ...moodHistory];
-  
+
   if (allMoodItems.length > 0) {
     allMoodItems.forEach((item) => {
       const m = item.mood.toLowerCase();
@@ -100,11 +117,27 @@ export function MemoryWeather({
       }}
     >
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '16px',
+          flexWrap: 'wrap',
+          gap: '8px',
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ fontSize: '24px' }}>🌤️</span>
           <div>
-            <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: '#111827' }}>
+            <h3
+              style={{
+                fontSize: '18px',
+                fontWeight: 800,
+                margin: 0,
+                color: '#111827',
+              }}
+            >
               Memory Weather
             </h3>
             <span style={{ fontSize: '12px', color: '#6B7280' }}>
@@ -131,14 +164,32 @@ export function MemoryWeather({
         </div>
       </div>
 
-      <p style={{ fontSize: '14px', color: '#374151', lineHeight: 1.5, margin: '0 0 16px', fontWeight: 500 }}>
+      <p
+        style={{
+          fontSize: '14px',
+          color: '#374151',
+          lineHeight: 1.5,
+          margin: '0 0 16px',
+          fontWeight: 500,
+        }}
+      >
         {meta.forecast}
       </p>
 
       {/* Mood Distribution Bar */}
       <div style={{ marginBottom: '14px' }}>
-        <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.04em' }}>
-          Chosen Date Mood Distribution ({total} {total === 1 ? 'session' : 'sessions'})
+        <div
+          style={{
+            fontSize: '11.5px',
+            fontWeight: 700,
+            color: '#9CA3AF',
+            textTransform: 'uppercase',
+            marginBottom: '8px',
+            letterSpacing: '0.04em',
+          }}
+        >
+          Chosen Date Mood Distribution ({total}{' '}
+          {total === 1 ? 'session' : 'sessions'})
         </div>
 
         <div
@@ -172,7 +223,14 @@ export function MemoryWeather({
       </div>
 
       {/* Legend Pills */}
-      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '14px' }}>
+      <div
+        style={{
+          display: 'flex',
+          gap: '8px',
+          flexWrap: 'wrap',
+          marginBottom: '14px',
+        }}
+      >
         {Object.entries(counts)
           .filter(([, count]) => count > 0)
           .map(([mood, count]) => {
@@ -191,15 +249,27 @@ export function MemoryWeather({
                 }}
               >
                 <span>{mMeta.icon}</span>
-                <span>{mMeta.label} ({pct}%)</span>
+                <span>
+                  {mMeta.label} ({pct}%)
+                </span>
               </span>
             );
           })}
       </div>
 
       {/* Explicit Disclaimer */}
-      <div style={{ fontSize: '11px', color: '#9CA3AF', lineHeight: 1.4, borderTop: '1px dashed #F3F4F6', paddingTop: '10px' }}>
-        🔒 <strong>Private &amp; Self-Chosen:</strong> Calculated strictly from your explicit mood selections when sealing date nights. Dearly Us never evaluates or judges your relationship health.
+      <div
+        style={{
+          fontSize: '11px',
+          color: '#9CA3AF',
+          lineHeight: 1.4,
+          borderTop: '1px dashed #F3F4F6',
+          paddingTop: '10px',
+        }}
+      >
+        🔒 <strong>Private &amp; Self-Chosen:</strong> Calculated strictly from
+        your explicit mood selections when sealing date nights. Dearly Us never
+        evaluates or judges your relationship health.
       </div>
     </div>
   );

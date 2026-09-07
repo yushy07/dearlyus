@@ -23,7 +23,9 @@ export function ShinyText({
       style={{
         ...style,
         animationDuration: `${speed}s`,
-        ...(disabled ? { background: 'none', WebkitTextFillColor: 'currentColor' } : {}),
+        ...(disabled
+          ? { background: 'none', WebkitTextFillColor: 'currentColor' }
+          : {}),
       }}
     >
       {text}

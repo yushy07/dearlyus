@@ -1,14 +1,32 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useCallback, useMemo, useRef } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+} from 'react';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { useSupabaseSession } from './SupabaseSessionContext';
 import { useActiveRoom } from './ActiveRoomContext';
 import { useCoupleSpace } from './CoupleSpaceContext';
 import type { PresenceState } from '@/lib/domain';
 
-export type RoomConnectionState = 'idle' | 'connecting' | 'synchronized' | 'reconnecting' | 'unavailable';
-export type InteractionType = 'idle' | 'ready' | 'choosing' | 'writing' | 'drawing';
+export type RoomConnectionState =
+  | 'idle'
+  | 'connecting'
+  | 'synchronized'
+  | 'reconnecting'
+  | 'unavailable';
+export type InteractionType =
+  | 'idle'
+  | 'ready'
+  | 'choosing'
+  | 'writing'
+  | 'drawing';
 
 export interface PresenceContextValue {
   connectionState: RoomConnectionState;
@@ -36,10 +54,14 @@ export function PresenceProvider({ children }: { children: React.ReactNode }) {
   const { room } = useActiveRoom();
   const { profile } = useCoupleSpace();
 
-  const [connectionState, setConnectionState] = useState<RoomConnectionState>('idle');
+  const [connectionState, setConnectionState] =
+    useState<RoomConnectionState>('idle');
   const [partnerOnline, setPartnerOnline] = useState(false);
-  const [partnerPresence, setPartnerPresence] = useState<PresenceState | null>(null);
-  const [myInteraction, setMyInteractionState] = useState<InteractionType>('idle');
+  const [partnerPresence, setPartnerPresence] = useState<PresenceState | null>(
+    null,
+  );
+  const [myInteraction, setMyInteractionState] =
+    useState<InteractionType>('idle');
 
   const tabId = useRef(crypto.randomUUID()).current;
   const channelRef = useRef<RealtimeChannel | null>(null);
@@ -61,7 +83,7 @@ export function PresenceProvider({ children }: { children: React.ReactNode }) {
         lastActiveAt: now,
       } satisfies PresenceState);
     },
-    [user, room, profile, tabId]
+    [user, room, profile, tabId],
   );
 
   useEffect(() => {
@@ -83,7 +105,10 @@ export function PresenceProvider({ children }: { children: React.ReactNode }) {
     channel
       .on('presence', { event: 'sync' }, () => {
         if (!active) return;
-        const state = channel.presenceState() as Record<string, PresenceState[]>;
+        const state = channel.presenceState() as Record<
+          string,
+          PresenceState[]
+        >;
         const allPresences = Object.values(state).flat();
         const otherPresences = allPresences.filter((p) => p.userId !== user.id);
 
@@ -141,10 +166,21 @@ export function PresenceProvider({ children }: { children: React.ReactNode }) {
       myInteraction,
       setInteraction,
     }),
-    [connectionState, partnerOnline, partnerPresence, partnerInteraction, myInteraction, setInteraction]
+    [
+      connectionState,
+      partnerOnline,
+      partnerPresence,
+      partnerInteraction,
+      myInteraction,
+      setInteraction,
+    ],
   );
 
-  return <PresenceContext.Provider value={value}>{children}</PresenceContext.Provider>;
+  return (
+    <PresenceContext.Provider value={value}>
+      {children}
+    </PresenceContext.Provider>
+  );
 }
 
 const defaultPresenceValue: PresenceContextValue = {

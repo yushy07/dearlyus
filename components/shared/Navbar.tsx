@@ -14,7 +14,12 @@ interface NavbarProps {
   onLeaveRoom?: () => void;
 }
 
-export function Navbar({ roomCode, activityName, rightAction, onLeaveRoom }: NavbarProps) {
+export function Navbar({
+  roomCode,
+  activityName,
+  rightAction,
+  onLeaveRoom,
+}: NavbarProps) {
   const router = useRouter();
   const { user } = useSupabaseSession();
   const { space, partner, partnerConnected } = useCoupleSpace();
@@ -31,7 +36,14 @@ export function Navbar({ roomCode, activityName, rightAction, onLeaveRoom }: Nav
 
   return (
     <header className="bar">
-      <div className="wrap" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div
+        className="wrap"
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
           <Link className="brand" href="/" aria-label="Dearly Us Home">
             <span className="brand-emblem" aria-hidden="true">
@@ -64,7 +76,13 @@ export function Navbar({ roomCode, activityName, rightAction, onLeaveRoom }: Nav
           {!isInsideRoom && (
             <nav
               className="navbar-quick-links"
-              style={{ display: 'flex', gap: '16px', alignItems: 'center', fontSize: '13.5px', fontWeight: 600 }}
+              style={{
+                display: 'flex',
+                gap: '16px',
+                alignItems: 'center',
+                fontSize: '13.5px',
+                fontWeight: 600,
+              }}
             >
               <Link href="/photobooth" style={{ color: 'var(--ink)' }}>
                 📸 Photobooth
@@ -111,7 +129,13 @@ export function Navbar({ roomCode, activityName, rightAction, onLeaveRoom }: Nav
                 ROOM: <b style={{ color: 'var(--pink)' }}>{roomCode}</b>
               </span>
               {activityName && (
-                <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--ink-soft)' }}>
+                <span
+                  style={{
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    color: 'var(--ink-soft)',
+                  }}
+                >
                   · {activityName}
                 </span>
               )}
@@ -126,13 +150,21 @@ export function Navbar({ roomCode, activityName, rightAction, onLeaveRoom }: Nav
           ) : isInsideRoom ? (
             // 4. Inside Live Room State
             <>
-              <Link className="btn btn-ghost" href={`/room/${roomCode}`} style={{ fontSize: '13px', padding: '6px 12px' }}>
+              <Link
+                className="btn btn-ghost"
+                href={`/room/${roomCode}`}
+                style={{ fontSize: '13px', padding: '6px 12px' }}
+              >
                 Lobby ▷
               </Link>
               <button
                 className="btn btn-ghost"
                 onClick={handleDefaultLeave}
-                style={{ fontSize: '13px', padding: '6px 12px', color: '#a51d3c' }}
+                style={{
+                  fontSize: '13px',
+                  padding: '6px 12px',
+                  color: '#a51d3c',
+                }}
               >
                 Leave room
               </button>
@@ -143,7 +175,11 @@ export function Navbar({ roomCode, activityName, rightAction, onLeaveRoom }: Nav
               <AuthButton />
               <Link
                 className="btn btn-primary"
-                href={space?.activeRoomCode ? `/room/${space.activeRoomCode}` : '/our-space'}
+                href={
+                  space?.activeRoomCode
+                    ? `/room/${space.activeRoomCode}`
+                    : '/our-space'
+                }
                 style={{ fontSize: '13px', padding: '6px 14px' }}
               >
                 Start date night ▷
@@ -153,7 +189,11 @@ export function Navbar({ roomCode, activityName, rightAction, onLeaveRoom }: Nav
             // 1 & 2. Signed Out OR Signed in Unpaired State
             <>
               <AuthButton />
-              <Link className="btn btn-primary" href="/activity" style={{ fontSize: '13px', padding: '6px 14px' }}>
+              <Link
+                className="btn btn-primary"
+                href="/activity"
+                style={{ fontSize: '13px', padding: '6px 14px' }}
+              >
                 All Activities ▷
               </Link>
             </>

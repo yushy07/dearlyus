@@ -26,7 +26,12 @@ export default function ForecastPage() {
   }, []);
 
   useEffect(() => {
-    const f = generateLoveForecast(partnerA, partnerB, cityA || 'Calgary', cityB || 'Jakarta');
+    const f = generateLoveForecast(
+      partnerA,
+      partnerB,
+      cityA || 'Calgary',
+      cityB || 'Jakarta',
+    );
     setForecast(f);
   }, [partnerA, partnerB, cityA, cityB]);
 
@@ -40,7 +45,7 @@ export default function ForecastPage() {
         mood: 'happy',
         onStart: () => setBotState('talking'),
         onEnd: () => setBotState('celebration'),
-      }
+      },
     );
   };
 
@@ -193,7 +198,7 @@ export default function ForecastPage() {
 
     ctx.fillStyle = '#FCD34D';
     ctx.font = 'bold 28px monospace';
-    ctx.fillText('💌 CUPIDOT\'S OFFICIAL PRESCRIPTION', 140, 1435);
+    ctx.fillText("💌 CUPIDOT'S OFFICIAL PRESCRIPTION", 140, 1435);
 
     ctx.fillStyle = '#FFF9EB';
     ctx.font = 'italic 32px serif';
@@ -215,7 +220,14 @@ export default function ForecastPage() {
   };
 
   return (
-    <div style={{ background: 'var(--paper)', minHeight: '100vh', paddingBottom: '90px', color: 'var(--ink)' }}>
+    <div
+      style={{
+        background: 'var(--paper)',
+        minHeight: '100vh',
+        paddingBottom: '90px',
+        color: 'var(--ink)',
+      }}
+    >
       <Confetti active={confettiActive} />
 
       {/* Top Navigation Bar */}
@@ -247,16 +259,25 @@ export default function ForecastPage() {
               fontWeight: 900,
               letterSpacing: '-1px',
               margin: '12px 0 8px',
-              background: 'linear-gradient(135deg, #1A121E 0%, #FF4D80 50%, #E04A18 100%)',
+              background:
+                'linear-gradient(135deg, #1A121E 0%, #FF4D80 50%, #E04A18 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
             }}
           >
             Cupidot&apos;s Daily Love Forecast 🌦️
           </h1>
-          <p style={{ color: 'var(--ink-soft)', fontSize: '16px', maxWidth: '52ch', margin: '0 auto' }}>
-            Autonomous romantic barometric pressure, hoodie-stealing probability, and celestial chemistry radar between{' '}
-            <b>{partnerA}</b> &amp; <b>{partnerB}</b>.
+          <p
+            style={{
+              color: 'var(--ink-soft)',
+              fontSize: '16px',
+              maxWidth: '52ch',
+              margin: '0 auto',
+            }}
+          >
+            Autonomous romantic barometric pressure, hoodie-stealing
+            probability, and celestial chemistry radar between <b>{partnerA}</b>{' '}
+            &amp; <b>{partnerB}</b>.
           </p>
         </div>
 
@@ -273,7 +294,9 @@ export default function ForecastPage() {
             position: 'relative',
           }}
         >
-          <div style={{ width: '150px', height: '150px', margin: '0 auto -12px' }}>
+          <div
+            style={{ width: '150px', height: '150px', margin: '0 auto -12px' }}
+          >
             <Cupidot2D state={botState} size={230} roam />
           </div>
 
@@ -296,11 +319,26 @@ export default function ForecastPage() {
             <span>{forecast?.dateString}</span>
           </div>
 
-          <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#1B1C22', margin: '10px 0 4px' }}>
+          <h3
+            style={{
+              fontSize: '20px',
+              fontWeight: 800,
+              color: '#1B1C22',
+              margin: '10px 0 4px',
+            }}
+          >
             {forecast?.headline}
           </h3>
 
-          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '16px' }}>
+          <div
+            style={{
+              display: 'flex',
+              gap: '10px',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              marginTop: '16px',
+            }}
+          >
             <button
               onClick={handleReadAloud}
               className="btn btn-sm"
@@ -331,14 +369,25 @@ export default function ForecastPage() {
               }}
             >
               <span>📸</span>
-              <span>{isExporting ? 'Generating Keepsake...' : 'Download Instagram Story Keepsake'}</span>
+              <span>
+                {isExporting
+                  ? 'Generating Keepsake...'
+                  : 'Download Instagram Story Keepsake'}
+              </span>
             </button>
           </div>
         </div>
 
         {/* 3 Core Meteorological Barometer Dials */}
         {forecast && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginBottom: '28px' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+              gap: '16px',
+              marginBottom: '28px',
+            }}
+          >
             {/* Dial 1: Sweetness Barometer */}
             <div
               style={{
@@ -351,10 +400,25 @@ export default function ForecastPage() {
               }}
             >
               <div style={{ fontSize: '28px', marginBottom: '6px' }}>🍯</div>
-              <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 800, color: '#FF4D80', textTransform: 'uppercase' }}>
+              <div
+                style={{
+                  fontSize: '11px',
+                  fontFamily: 'var(--font-mono)',
+                  fontWeight: 800,
+                  color: '#FF4D80',
+                  textTransform: 'uppercase',
+                }}
+              >
                 Sweetness Barometer
               </div>
-              <div style={{ fontSize: '38px', fontWeight: 900, color: '#1E1B24', margin: '4px 0' }}>
+              <div
+                style={{
+                  fontSize: '38px',
+                  fontWeight: 900,
+                  color: '#1E1B24',
+                  margin: '4px 0',
+                }}
+              >
                 {forecast.sweetnessPressure}%
               </div>
               <p style={{ fontSize: '12px', color: '#6A6874', margin: 0 }}>
@@ -374,10 +438,25 @@ export default function ForecastPage() {
               }}
             >
               <div style={{ fontSize: '28px', marginBottom: '6px' }}>🧥</div>
-              <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 800, color: '#E04A18', textTransform: 'uppercase' }}>
+              <div
+                style={{
+                  fontSize: '11px',
+                  fontFamily: 'var(--font-mono)',
+                  fontWeight: 800,
+                  color: '#E04A18',
+                  textTransform: 'uppercase',
+                }}
+              >
                 Stolen Hoodie Threat
               </div>
-              <div style={{ fontSize: '38px', fontWeight: 900, color: '#1E1B24', margin: '4px 0' }}>
+              <div
+                style={{
+                  fontSize: '38px',
+                  fontWeight: 900,
+                  color: '#1E1B24',
+                  margin: '4px 0',
+                }}
+              >
                 {forecast.stolenHoodieProbability}%
               </div>
               <p style={{ fontSize: '12px', color: '#6A6874', margin: 0 }}>
@@ -397,10 +476,25 @@ export default function ForecastPage() {
               }}
             >
               <div style={{ fontSize: '28px', marginBottom: '6px' }}>😂</div>
-              <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 800, color: '#2563EB', textTransform: 'uppercase' }}>
+              <div
+                style={{
+                  fontSize: '11px',
+                  fontFamily: 'var(--font-mono)',
+                  fontWeight: 800,
+                  color: '#2563EB',
+                  textTransform: 'uppercase',
+                }}
+              >
                 Laughter Precipitation
               </div>
-              <div style={{ fontSize: '38px', fontWeight: 900, color: '#1E1B24', margin: '4px 0' }}>
+              <div
+                style={{
+                  fontSize: '38px',
+                  fontWeight: 900,
+                  color: '#1E1B24',
+                  margin: '4px 0',
+                }}
+              >
                 {forecast.laughterPrecipitation}%
               </div>
               <p style={{ fontSize: '12px', color: '#6A6874', margin: 0 }}>
@@ -421,16 +515,46 @@ export default function ForecastPage() {
               marginBottom: '28px',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginBottom: '8px',
+              }}
+            >
               <span style={{ fontSize: '20px' }}>⚠️</span>
-              <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', fontWeight: 900, color: '#D93838', textTransform: 'uppercase', letterSpacing: '1px' }}>
+              <span
+                style={{
+                  fontSize: '12px',
+                  fontFamily: 'var(--font-mono)',
+                  fontWeight: 900,
+                  color: '#D93838',
+                  textTransform: 'uppercase',
+                  letterSpacing: '1px',
+                }}
+              >
                 OFFICIAL METEOROLOGICAL ADVISORY
               </span>
             </div>
-            <div style={{ fontSize: '16px', fontWeight: 800, color: '#1B1C22', lineHeight: 1.5 }}>
+            <div
+              style={{
+                fontSize: '16px',
+                fontWeight: 800,
+                color: '#1B1C22',
+                lineHeight: 1.5,
+              }}
+            >
               {forecast.severeWeatherWarning}
             </div>
-            <div style={{ fontSize: '13px', color: '#FF4D80', fontWeight: 700, marginTop: '8px' }}>
+            <div
+              style={{
+                fontSize: '13px',
+                color: '#FF4D80',
+                fontWeight: 700,
+                marginTop: '8px',
+              }}
+            >
               Corridor: {forecast.windDirection}
             </div>
           </div>
@@ -438,21 +562,68 @@ export default function ForecastPage() {
 
         {/* Partner Synced Radar Cards */}
         {forecast && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '32px' }}>
-            <div style={{ background: '#FFF0F5', padding: '18px', borderRadius: '16px', border: '1px solid #FFD6E8' }}>
-              <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--pink)', marginBottom: '6px' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '16px',
+              marginBottom: '32px',
+            }}
+          >
+            <div
+              style={{
+                background: '#FFF0F5',
+                padding: '18px',
+                borderRadius: '16px',
+                border: '1px solid #FFD6E8',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '13px',
+                  fontWeight: 800,
+                  color: 'var(--pink)',
+                  marginBottom: '6px',
+                }}
+              >
                 🌸 {partnerA}&apos;s Telemetry Radar
               </div>
-              <div style={{ fontSize: '13.5px', color: '#4A3E34', lineHeight: 1.5 }}>
+              <div
+                style={{
+                  fontSize: '13.5px',
+                  color: '#4A3E34',
+                  lineHeight: 1.5,
+                }}
+              >
                 {forecast.partnerANote}
               </div>
             </div>
 
-            <div style={{ background: '#F0F7FF', padding: '18px', borderRadius: '16px', border: '1px solid #D6E8FF' }}>
-              <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--blue)', marginBottom: '6px' }}>
+            <div
+              style={{
+                background: '#F0F7FF',
+                padding: '18px',
+                borderRadius: '16px',
+                border: '1px solid #D6E8FF',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '13px',
+                  fontWeight: 800,
+                  color: 'var(--blue)',
+                  marginBottom: '6px',
+                }}
+              >
                 💙 {partnerB}&apos;s Telemetry Radar
               </div>
-              <div style={{ fontSize: '13.5px', color: '#4A3E34', lineHeight: 1.5 }}>
+              <div
+                style={{
+                  fontSize: '13.5px',
+                  color: '#4A3E34',
+                  lineHeight: 1.5,
+                }}
+              >
                 {forecast.partnerBNote}
               </div>
             </div>
@@ -471,11 +642,35 @@ export default function ForecastPage() {
               textAlign: 'center',
             }}
           >
-            <span style={{ fontSize: '32px', display: 'block', marginBottom: '8px' }}>💌</span>
-            <h4 style={{ fontSize: '18px', fontWeight: 800, color: '#1B1C22', margin: '0 0 8px' }}>
+            <span
+              style={{
+                fontSize: '32px',
+                display: 'block',
+                marginBottom: '8px',
+              }}
+            >
+              💌
+            </span>
+            <h4
+              style={{
+                fontSize: '18px',
+                fontWeight: 800,
+                color: '#1B1C22',
+                margin: '0 0 8px',
+              }}
+            >
               Cupidot&apos;s Daily Prescription
             </h4>
-            <p style={{ fontSize: '15px', fontStyle: 'italic', color: '#78350F', maxWidth: '58ch', margin: '0 auto 16px', lineHeight: 1.6 }}>
+            <p
+              style={{
+                fontSize: '15px',
+                fontStyle: 'italic',
+                color: '#78350F',
+                maxWidth: '58ch',
+                margin: '0 auto 16px',
+                lineHeight: 1.6,
+              }}
+            >
               &ldquo;{forecast.cupidotPrescription}&rdquo;
             </p>
             <button

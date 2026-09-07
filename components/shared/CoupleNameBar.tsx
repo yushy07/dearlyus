@@ -5,7 +5,8 @@ import { useCoupleProfile } from '@/lib/couple';
 import { sounds } from '@/lib/sound';
 
 export function CoupleNameBar() {
-  const { partnerA, partnerB, cityA, cityB, updateProfile } = useCoupleProfile();
+  const { partnerA, partnerB, cityA, cityB, updateProfile } =
+    useCoupleProfile();
   const [editing, setEditing] = useState(false);
   const [nameA, setNameA] = useState(partnerA);
 
@@ -23,7 +24,14 @@ export function CoupleNameBar() {
   };
 
   return (
-    <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+    <div
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: '16px',
+      }}
+    >
       <button
         onClick={handleOpen}
         className="btn"
@@ -46,7 +54,9 @@ export function CoupleNameBar() {
         <span style={{ color: 'var(--pink)' }}>🌸 {partnerA}</span>
         <span style={{ color: 'var(--ink-soft)' }}>&amp;</span>
         <span style={{ color: 'var(--blue)' }}>💙 {partnerB}</span>
-        <span style={{ fontSize: '11px', opacity: 0.6, marginLeft: '2px' }}>✏️ Edit</span>
+        <span style={{ fontSize: '11px', opacity: 0.6, marginLeft: '2px' }}>
+          ✏️ Edit
+        </span>
       </button>
 
       {editing && (
@@ -75,23 +85,55 @@ export function CoupleNameBar() {
               animation: 'gl-rise 0.25s ease',
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <div style={{ fontWeight: 800, fontSize: '17px' }}>Customize Couple Names</div>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '16px',
+              }}
+            >
+              <div style={{ fontWeight: 800, fontSize: '17px' }}>
+                Customize Couple Names
+              </div>
               <button
                 onClick={() => setEditing(false)}
-                style={{ border: 'none', background: 'transparent', fontSize: '18px', cursor: 'pointer' }}
+                style={{
+                  border: 'none',
+                  background: 'transparent',
+                  fontSize: '18px',
+                  cursor: 'pointer',
+                }}
               >
                 ✕
               </button>
             </div>
 
-            <p style={{ fontSize: '13px', color: 'var(--ink-soft)', marginBottom: '18px', lineHeight: 1.4 }}>
-              Update your own display name. Your person's name comes from their profile, so neither of you can overwrite the other.
+            <p
+              style={{
+                fontSize: '13px',
+                color: 'var(--ink-soft)',
+                marginBottom: '18px',
+                lineHeight: 1.4,
+              }}
+            >
+              Update your own display name. Your person's name comes from their
+              profile, so neither of you can overwrite the other.
             </p>
 
             <div style={{ display: 'grid', gap: '14px', marginBottom: '20px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 800, color: 'var(--pink)', textTransform: 'uppercase', marginBottom: '4px' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '11px',
+                    fontFamily: 'var(--font-mono)',
+                    fontWeight: 800,
+                    color: 'var(--pink)',
+                    textTransform: 'uppercase',
+                    marginBottom: '4px',
+                  }}
+                >
                   Player 1 Name:
                 </label>
                 <input
@@ -99,17 +141,30 @@ export function CoupleNameBar() {
                   value={nameA}
                   onChange={(e) => setNameA(e.target.value)}
                   placeholder="e.g. Sarah"
-                  style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--line)', fontSize: '14px' }}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--line)',
+                    fontSize: '14px',
+                  }}
                 />
               </div>
-
             </div>
 
             <div style={{ display: 'flex', gap: '8px' }}>
-              <button onClick={handleSave} className="btn btn-grad" style={{ flex: 1, justifyContent: 'center' }}>
+              <button
+                onClick={handleSave}
+                className="btn btn-grad"
+                style={{ flex: 1, justifyContent: 'center' }}
+              >
                 Save Names ✨
               </button>
-              <button onClick={() => setEditing(false)} className="btn btn-ghost" style={{ padding: '0 16px' }}>
+              <button
+                onClick={() => setEditing(false)}
+                className="btn btn-ghost"
+                style={{ padding: '0 16px' }}
+              >
                 Cancel
               </button>
             </div>

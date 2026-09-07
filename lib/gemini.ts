@@ -116,7 +116,9 @@ export function sanitizeCupidotPayload(req: QuestionRequest): QuestionRequest {
  * If consent is disabled, Supabase is unconfigured, or the model fails/times out,
  * it seamlessly returns a rich, curated procedural question from the on-device Cupidot engine.
  */
-export async function generateAdaptiveQuestion(req: QuestionRequest): Promise<GeneratedQuestion> {
+export async function generateAdaptiveQuestion(
+  req: QuestionRequest,
+): Promise<GeneratedQuestion> {
   // 1. Check explicit consent
   if (!req.aiConsent) {
     return generateCupidotDilemma(req);
@@ -142,20 +144,34 @@ export async function generateAdaptiveQuestion(req: QuestionRequest): Promise<Ge
       },
     });
 
-    if (error || !data?.question || !Array.isArray(data.options) || data.options.length < 2) {
+    if (
+      error ||
+      !data?.question ||
+      !Array.isArray(data.options) ||
+      data.options.length < 2
+    ) {
       return generateCupidotDilemma(cleanReq);
     }
 
     // Clean response before returning to view
     const cleanQuestion = String(data.question).trim().slice(0, 240);
     const cleanOptions = data.options
-      .map((opt: unknown) => String(opt || '').trim().slice(0, 90))
+      .map((opt: unknown) =>
+        String(opt || '')
+          .trim()
+          .slice(0, 90),
+      )
       .filter(Boolean)
       .slice(0, 4);
-    const cleanCommentary = data.commentary ? String(data.commentary).trim().slice(0, 200) : undefined;
+    const cleanCommentary = data.commentary
+      ? String(data.commentary).trim().slice(0, 200)
+      : undefined;
 
     // Safety check on returned text: reject prompt injections, leaks, or inappropriate content
-    if (!handleSafetyBoundary(cleanQuestion).isSafe || (cleanCommentary && !handleSafetyBoundary(cleanCommentary).isSafe)) {
+    if (
+      !handleSafetyBoundary(cleanQuestion).isSafe ||
+      (cleanCommentary && !handleSafetyBoundary(cleanCommentary).isSafe)
+    ) {
       return generateCupidotDilemma(cleanReq);
     }
 

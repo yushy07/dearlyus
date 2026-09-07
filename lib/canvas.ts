@@ -110,7 +110,11 @@ export function exportPhotostripPNG({
 
     ctx.font = '13px monospace';
     ctx.fillStyle = '#5B5E68';
-    ctx.fillText(`ROOM: ${roomCode} · ${new Date().toLocaleDateString()}`, 300, 1545);
+    ctx.fillText(
+      `ROOM: ${roomCode} · ${new Date().toLocaleDateString()}`,
+      300,
+      1545,
+    );
 
     const dataUrl = canvas.toDataURL('image/png');
     const a = document.createElement('a');

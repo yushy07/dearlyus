@@ -14,7 +14,7 @@ export interface GifOptions {
  */
 export async function createAnimatedPhotostripVideo(
   frames: string[],
-  options: GifOptions = {}
+  options: GifOptions = {},
 ): Promise<Blob> {
   const fps = options.fps || 2;
   const frameDurationMs = 1000 / fps;
@@ -35,20 +35,22 @@ export async function createAnimatedPhotostripVideo(
           img.onload = () => resolve(img);
           img.onerror = reject;
           img.src = src;
-        })
-    )
+        }),
+    ),
   );
 
   if (typeof window === 'undefined' || typeof MediaRecorder === 'undefined') {
-    throw new Error('Video recording is not supported in this browser environment. Please use Chrome, Edge, or Safari 14.1+.');
+    throw new Error(
+      'Video recording is not supported in this browser environment. Please use Chrome, Edge, or Safari 14.1+.',
+    );
   }
 
   const stream = canvas.captureStream(30);
   const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
     ? 'video/webm;codecs=vp9'
     : MediaRecorder.isTypeSupported('video/webm')
-    ? 'video/webm'
-    : 'video/mp4';
+      ? 'video/webm'
+      : 'video/mp4';
 
   const recorder = new MediaRecorder(stream, { mimeType });
 
@@ -92,10 +94,22 @@ export async function createAnimatedPhotostripVideo(
       ctx.fillStyle = '#FFFFFF';
       ctx.font = 'bold 16px "Space Mono", monospace, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(`DEARLY US 인생네컷 · CUT 0${f + 1}/04`, canvas.width / 2, canvas.height - 55);
+      ctx.fillText(
+        `DEARLY US 인생네컷 · CUT 0${f + 1}/04`,
+        canvas.width / 2,
+        canvas.height - 55,
+      );
       ctx.font = '12px "Space Mono", monospace, sans-serif';
       ctx.fillStyle = 'rgba(255,255,255,0.7)';
-      ctx.fillText(new Date().toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }), canvas.width / 2, canvas.height - 32);
+      ctx.fillText(
+        new Date().toLocaleDateString([], {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        }),
+        canvas.width / 2,
+        canvas.height - 32,
+      );
 
       await new Promise((res) => setTimeout(res, frameDurationMs));
     }
@@ -108,7 +122,11 @@ export async function createAnimatedPhotostripVideo(
 /**
  * Downloads the animated clip to the user's device
  */
-export async function downloadAnimatedStripVideo(frames: string[], filename?: string, options?: GifOptions) {
+export async function downloadAnimatedStripVideo(
+  frames: string[],
+  filename?: string,
+  options?: GifOptions,
+) {
   try {
     const blob = await createAnimatedPhotostripVideo(frames, options);
     const url = URL.createObjectURL(blob);
@@ -119,7 +137,9 @@ export async function downloadAnimatedStripVideo(frames: string[], filename?: st
     setTimeout(() => URL.revokeObjectURL(url), 2000);
   } catch (err: any) {
     if (typeof window !== 'undefined') {
-      alert(err?.message || 'Video export could not be completed on this browser.');
+      alert(
+        err?.message || 'Video export could not be completed on this browser.',
+      );
     }
   }
 }

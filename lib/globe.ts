@@ -10,13 +10,21 @@ export interface GlobeCity {
   color: string;
 }
 
-export function calculateGreatCircleDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+export function calculateGreatCircleDistance(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number,
+): number {
   const R = 6371; // Earth radius in km
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return Math.round(R * c);
 }
@@ -90,7 +98,9 @@ export class InteractiveGlobe {
 
   private initEvents() {
     this.canvas.addEventListener('mousedown', this.onMouseDown);
-    this.canvas.addEventListener('touchstart', this.onTouchStart, { passive: true });
+    this.canvas.addEventListener('touchstart', this.onTouchStart, {
+      passive: true,
+    });
     window.addEventListener('mousemove', this.onMouseMove);
     window.addEventListener('touchmove', this.onTouchMove, { passive: true });
     window.addEventListener('mouseup', this.onMouseUp);
@@ -101,7 +111,10 @@ export class InteractiveGlobe {
     this.pulseProgress = 0.01;
   }
 
-  private project(lat: number, lng: number): { x: number; y: number; visible: boolean } {
+  private project(
+    lat: number,
+    lng: number,
+  ): { x: number; y: number; visible: boolean } {
     const phi = (lat * Math.PI) / 180;
     const theta = (lng * Math.PI) / 180 + this.rotationY;
 
@@ -132,7 +145,14 @@ export class InteractiveGlobe {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // 1. Globe Base Ocean Gradient
-    const oceanGrad = ctx.createRadialGradient(cx - radius * 0.3, cy - radius * 0.3, radius * 0.1, cx, cy, radius);
+    const oceanGrad = ctx.createRadialGradient(
+      cx - radius * 0.3,
+      cy - radius * 0.3,
+      radius * 0.1,
+      cx,
+      cy,
+      radius,
+    );
     oceanGrad.addColorStop(0, '#1E2433');
     oceanGrad.addColorStop(0.7, '#13161F');
     oceanGrad.addColorStop(1, '#0C0E14');
@@ -219,13 +239,21 @@ export class InteractiveGlobe {
 
     // 4. Heartbeat Pulse Wave Traveling along Arc
     if (this.pulseProgress > 0) {
-      const curLat = this.cityA.lat + (this.cityB.lat - this.cityA.lat) * this.pulseProgress;
-      const curLng = this.cityA.lng + (this.cityB.lng - this.cityA.lng) * this.pulseProgress;
+      const curLat =
+        this.cityA.lat + (this.cityB.lat - this.cityA.lat) * this.pulseProgress;
+      const curLng =
+        this.cityA.lng + (this.cityB.lng - this.cityA.lng) * this.pulseProgress;
       const pulsePoint = this.project(curLat, curLng);
 
       if (pulsePoint.visible) {
         ctx.beginPath();
-        ctx.arc(pulsePoint.x, pulsePoint.y, 8 + Math.sin(this.pulseProgress * Math.PI) * 10, 0, Math.PI * 2);
+        ctx.arc(
+          pulsePoint.x,
+          pulsePoint.y,
+          8 + Math.sin(this.pulseProgress * Math.PI) * 10,
+          0,
+          Math.PI * 2,
+        );
         ctx.fillStyle = 'rgba(255, 123, 163, 0.7)';
         ctx.fill();
       }

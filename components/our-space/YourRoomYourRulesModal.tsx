@@ -1,7 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { GuidanceMode, RomanceLevel, ROMANCE_LEVEL_DEFINITIONS } from '@/types/cupidot';
+import {
+  GuidanceMode,
+  RomanceLevel,
+  ROMANCE_LEVEL_DEFINITIONS,
+} from '@/types/cupidot';
 import { AiConsentToggle } from '@/components/shared/AiConsentToggle';
 import { sounds } from '@/lib/sound';
 
@@ -76,7 +80,14 @@ export function YourRoomYourRulesModal({
         }}
       >
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '16px',
+          }}
+        >
           <div>
             <span
               style={{
@@ -90,26 +101,73 @@ export function YourRoomYourRulesModal({
             >
               Consent & Boundaries
             </span>
-            <h2 id="rules-modal-title" style={{ fontFamily: 'var(--font-display)', fontSize: '22px', margin: '2px 0 0', color: 'var(--ink)' }}>
+            <h2
+              id="rules-modal-title"
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: '22px',
+                margin: '2px 0 0',
+                color: 'var(--ink)',
+              }}
+            >
               Your Room, Your Rules
             </h2>
           </div>
-          <button type="button" className="btn btn-ghost" onClick={onClose} style={{ padding: '6px 12px', fontSize: '13px' }}>
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={onClose}
+            style={{ padding: '6px 12px', fontSize: '13px' }}
+          >
             ✕ Close
           </button>
         </div>
 
-        <p style={{ fontSize: '13px', color: 'var(--ink-soft)', margin: '0 0 20px', lineHeight: 1.5 }}>
-          Everything in Dearly Us operates under strict consent. Cupidot never scores your relationship, inspects sealed answers, or shares private telemetry.
+        <p
+          style={{
+            fontSize: '13px',
+            color: 'var(--ink-soft)',
+            margin: '0 0 20px',
+            lineHeight: 1.5,
+          }}
+        >
+          Everything in Dearly Us operates under strict consent. Cupidot never
+          scores your relationship, inspects sealed answers, or shares private
+          telemetry.
         </p>
 
         {/* Section 1: Cupidot Guidance Level */}
-        <div style={{ background: 'var(--paper)', padding: '16px', borderRadius: '18px', border: '1px solid var(--line)', marginBottom: '14px' }}>
-          <strong style={{ fontSize: '14px', display: 'block', marginBottom: '4px' }}>Cupidot Guidance Level</strong>
-          <span style={{ fontSize: '12px', color: 'var(--ink-soft)', display: 'block', marginBottom: '12px' }}>
+        <div
+          style={{
+            background: 'var(--paper)',
+            padding: '16px',
+            borderRadius: '18px',
+            border: '1px solid var(--line)',
+            marginBottom: '14px',
+          }}
+        >
+          <strong
+            style={{ fontSize: '14px', display: 'block', marginBottom: '4px' }}
+          >
+            Cupidot Guidance Level
+          </strong>
+          <span
+            style={{
+              fontSize: '12px',
+              color: 'var(--ink-soft)',
+              display: 'block',
+              marginBottom: '12px',
+            }}
+          >
             Choose how vocal Cupidot is during your date nights and activities.
           </span>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: '8px',
+            }}
+          >
             {(['quiet', 'gentle', 'host'] as GuidanceMode[]).map((mode) => {
               const active = guidanceMode === mode;
               return (
@@ -123,7 +181,9 @@ export function YourRoomYourRulesModal({
                   style={{
                     padding: '8px 10px',
                     borderRadius: '12px',
-                    border: active ? '1.5px solid var(--pink)' : '1px solid var(--line)',
+                    border: active
+                      ? '1.5px solid var(--pink)'
+                      : '1px solid var(--line)',
                     background: active ? 'rgba(255, 78, 120, 0.1)' : '#FFFFFF',
                     color: active ? 'var(--pink)' : 'var(--ink)',
                     fontSize: '12.5px',
@@ -137,16 +197,40 @@ export function YourRoomYourRulesModal({
               );
             })}
           </div>
-          <div style={{ fontSize: '11.5px', color: 'var(--ink-soft)', marginTop: '8px' }}>
-            {guidanceMode === 'quiet' && '• Only essential synchronization, error recovery, and privacy status.'}
-            {guidanceMode === 'gentle' && '• One warm introduction, important milestones, and completion response (Default).'}
-            {guidanceMode === 'host' && '• Full commentary, transitions, instructions, and date suggestions.'}
+          <div
+            style={{
+              fontSize: '11.5px',
+              color: 'var(--ink-soft)',
+              marginTop: '8px',
+            }}
+          >
+            {guidanceMode === 'quiet' &&
+              '• Only essential synchronization, error recovery, and privacy status.'}
+            {guidanceMode === 'gentle' &&
+              '• One warm introduction, important milestones, and completion response (Default).'}
+            {guidanceMode === 'host' &&
+              '• Full commentary, transitions, instructions, and date suggestions.'}
           </div>
         </div>
 
         {/* Section 2: Romance Spectrum */}
-        <div style={{ background: 'var(--paper)', padding: '16px', borderRadius: '18px', border: '1px solid var(--line)', marginBottom: '14px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+        <div
+          style={{
+            background: 'var(--paper)',
+            padding: '16px',
+            borderRadius: '18px',
+            border: '1px solid var(--line)',
+            marginBottom: '14px',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '4px',
+            }}
+          >
             <strong style={{ fontSize: '14px' }}>Romance Spectrum Level</strong>
             <button
               type="button"
@@ -172,8 +256,16 @@ export function YourRoomYourRulesModal({
               🛡️ Soften Intensity
             </button>
           </div>
-          <span style={{ fontSize: '12px', color: 'var(--ink-soft)', display: 'block', marginBottom: '12px' }}>
-            Shared intensity matches the lower chosen level. Either partner can lower it privately at any time.
+          <span
+            style={{
+              fontSize: '12px',
+              color: 'var(--ink-soft)',
+              display: 'block',
+              marginBottom: '12px',
+            }}
+          >
+            Shared intensity matches the lower chosen level. Either partner can
+            lower it privately at any time.
           </span>
 
           {softenNotice && (
@@ -193,8 +285,23 @@ export function YourRoomYourRulesModal({
             </div>
           )}
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-            {(['quiet', 'warm', 'romantic', 'cheeky', 'flirty', 'spicy'] as RomanceLevel[]).map((level) => {
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: '8px',
+            }}
+          >
+            {(
+              [
+                'quiet',
+                'warm',
+                'romantic',
+                'cheeky',
+                'flirty',
+                'spicy',
+              ] as RomanceLevel[]
+            ).map((level) => {
               const active = romanceLevel === level;
               const def = ROMANCE_LEVEL_DEFINITIONS[level];
               return (
@@ -208,7 +315,9 @@ export function YourRoomYourRulesModal({
                   style={{
                     padding: '8px 6px',
                     borderRadius: '12px',
-                    border: active ? '1.5px solid var(--pink)' : '1px solid var(--line)',
+                    border: active
+                      ? '1.5px solid var(--pink)'
+                      : '1px solid var(--line)',
                     background: active ? 'rgba(255, 78, 120, 0.1)' : '#FFFFFF',
                     color: active ? 'var(--pink)' : 'var(--ink)',
                     fontSize: '12px',
@@ -223,7 +332,13 @@ export function YourRoomYourRulesModal({
                 >
                   <span>{def.name}</span>
                   {def.requiresMutualOptIn && (
-                    <span style={{ fontSize: '9.5px', color: 'var(--pink)', fontWeight: 600 }}>
+                    <span
+                      style={{
+                        fontSize: '9.5px',
+                        color: 'var(--pink)',
+                        fontWeight: 600,
+                      }}
+                    >
                       {level === 'spicy' ? '18+ Session' : 'Mutual 18+'}
                     </span>
                   )}
@@ -231,23 +346,60 @@ export function YourRoomYourRulesModal({
               );
             })}
           </div>
-          <div style={{ fontSize: '11.5px', color: 'var(--ink-soft)', marginTop: '8px' }}>
-            {romanceLevel === 'quiet' && '• Level 0: Pure operational clarity, recovery, and zero flirtation.'}
-            {romanceLevel === 'warm' && '• Level 1: Kind, cozy, and gently encouraging without flirtation.'}
-            {romanceLevel === 'romantic' && '• Level 2: Sincere affection, date atmosphere, and soft sparks (Default).'}
-            {romanceLevel === 'cheeky' && '• Level 3: Playful challenges, winks, and bold situational humor.'}
-            {romanceLevel === 'flirty' && '• Level 4: Suggestive tension and double meanings. Requires mutual opt-in.'}
-            {romanceLevel === 'spicy' && '• Level 5: Adult-only, deliberate, and session-scoped. Easy one-tap exit.'}
+          <div
+            style={{
+              fontSize: '11.5px',
+              color: 'var(--ink-soft)',
+              marginTop: '8px',
+            }}
+          >
+            {romanceLevel === 'quiet' &&
+              '• Level 0: Pure operational clarity, recovery, and zero flirtation.'}
+            {romanceLevel === 'warm' &&
+              '• Level 1: Kind, cozy, and gently encouraging without flirtation.'}
+            {romanceLevel === 'romantic' &&
+              '• Level 2: Sincere affection, date atmosphere, and soft sparks (Default).'}
+            {romanceLevel === 'cheeky' &&
+              '• Level 3: Playful challenges, winks, and bold situational humor.'}
+            {romanceLevel === 'flirty' &&
+              '• Level 4: Suggestive tension and double meanings. Requires mutual opt-in.'}
+            {romanceLevel === 'spicy' &&
+              '• Level 5: Adult-only, deliberate, and session-scoped. Easy one-tap exit.'}
           </div>
         </div>
 
         {/* Section 3: AI Assistance */}
-        <div style={{ background: 'var(--paper)', padding: '16px', borderRadius: '18px', border: '1px solid var(--line)', marginBottom: '14px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
+        <div
+          style={{
+            background: 'var(--paper)',
+            padding: '16px',
+            borderRadius: '18px',
+            border: '1px solid var(--line)',
+            marginBottom: '14px',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '16px',
+            }}
+          >
             <div>
-              <strong style={{ fontSize: '14px', display: 'block' }}>AI Personalized Follow-ups</strong>
-              <span style={{ fontSize: '12px', color: 'var(--ink-soft)', display: 'block', marginTop: '3px' }}>
-                Adaptive prompts use only mutually revealed text. Camera feeds and drafts are never sent.
+              <strong style={{ fontSize: '14px', display: 'block' }}>
+                AI Personalized Follow-ups
+              </strong>
+              <span
+                style={{
+                  fontSize: '12px',
+                  color: 'var(--ink-soft)',
+                  display: 'block',
+                  marginTop: '3px',
+                }}
+              >
+                Adaptive prompts use only mutually revealed text. Camera feeds
+                and drafts are never sent.
               </span>
             </div>
             <AiConsentToggle />
@@ -255,10 +407,32 @@ export function YourRoomYourRulesModal({
         </div>
 
         {/* Section 3: Motion & Audio */}
-        <div style={{ background: 'var(--paper)', padding: '16px', borderRadius: '18px', border: '1px solid var(--line)', marginBottom: '14px' }}>
-          <strong style={{ fontSize: '14px', display: 'block', marginBottom: '10px' }}>Sensory & Motion Preferences</strong>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer' }}>
+        <div
+          style={{
+            background: 'var(--paper)',
+            padding: '16px',
+            borderRadius: '18px',
+            border: '1px solid var(--line)',
+            marginBottom: '14px',
+          }}
+        >
+          <strong
+            style={{ fontSize: '14px', display: 'block', marginBottom: '10px' }}
+          >
+            Sensory & Motion Preferences
+          </strong>
+          <div
+            style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
+          >
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '13px',
+                cursor: 'pointer',
+              }}
+            >
               <input
                 type="checkbox"
                 checked={reducedMotion}
@@ -267,9 +441,19 @@ export function YourRoomYourRulesModal({
                   onReducedMotionChange(e.target.checked);
                 }}
               />
-              <span>Reduced motion (removes floating, shaking, and fast transitions)</span>
+              <span>
+                Reduced motion (removes floating, shaking, and fast transitions)
+              </span>
             </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer' }}>
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '13px',
+                cursor: 'pointer',
+              }}
+            >
               <input
                 type="checkbox"
                 checked={ambientAudio}
@@ -284,30 +468,70 @@ export function YourRoomYourRulesModal({
         </div>
 
         {/* Section 4: Keepsake & Notification Policies */}
-        <div style={{ background: 'var(--paper)', padding: '16px', borderRadius: '18px', border: '1px solid var(--line)', marginBottom: '20px' }}>
-          <strong style={{ fontSize: '14px', display: 'block', marginBottom: '10px' }}>Keepsakes & Notifications</strong>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer' }}>
+        <div
+          style={{
+            background: 'var(--paper)',
+            padding: '16px',
+            borderRadius: '18px',
+            border: '1px solid var(--line)',
+            marginBottom: '20px',
+          }}
+        >
+          <strong
+            style={{ fontSize: '14px', display: 'block', marginBottom: '10px' }}
+          >
+            Keepsakes & Notifications
+          </strong>
+          <div
+            style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
+          >
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '13px',
+                cursor: 'pointer',
+              }}
+            >
               <input
                 type="checkbox"
                 checked={askBeforeSave}
                 onChange={(e) => setAskBeforeSave(e.target.checked)}
               />
-              <span>Always ask before saving a keepsake (no silent auto-saving)</span>
+              <span>
+                Always ask before saving a keepsake (no silent auto-saving)
+              </span>
             </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer' }}>
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '13px',
+                cursor: 'pointer',
+              }}
+            >
               <input
                 type="checkbox"
                 checked={quietHoursEnabled}
                 onChange={(e) => setQuietHoursEnabled(e.target.checked)}
               />
-              <span>Respect quiet hours for ritual reminders ({quietStart} to {quietEnd})</span>
+              <span>
+                Respect quiet hours for ritual reminders ({quietStart} to{' '}
+                {quietEnd})
+              </span>
             </label>
           </div>
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <button type="button" className="btn btn-primary" onClick={onClose} style={{ fontSize: '13px' }}>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={onClose}
+            style={{ fontSize: '13px' }}
+          >
             Done ✓
           </button>
         </div>

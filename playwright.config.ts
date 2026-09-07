@@ -11,7 +11,8 @@ export default defineConfig({
     },
   },
   webServer: {
-    command: 'node node_modules/vinext/dist/cli.js dev --host 127.0.0.1 --port 4173',
+    command:
+      'node node_modules/vinext/dist/cli.js dev --host 127.0.0.1 --port 4173',
     url: 'http://localhost:4173',
     reuseExistingServer: true,
     timeout: 30_000,

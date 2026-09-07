@@ -29,26 +29,34 @@ const RITUAL_DEFINITIONS: RitualDefinition[] = [
     title: 'Sunday Check-in',
     icon: '🕯️',
     cadence: 'Weekly quiet moment',
-    description: 'A gentle pause at the edge of the weekend to reflect, listen, and prepare for the days ahead.',
-    prompt: 'What was something peaceful about this past week, or one way you felt cared for by your person?',
-    placeholder: 'Share a gentle thought, something you loved, or how you want to support each other this coming week…',
+    description:
+      'A gentle pause at the edge of the weekend to reflect, listen, and prepare for the days ahead.',
+    prompt:
+      'What was something peaceful about this past week, or one way you felt cared for by your person?',
+    placeholder:
+      'Share a gentle thought, something you loved, or how you want to support each other this coming week…',
   },
   {
     id: 'daily-gratitude',
     title: 'Daily Gratitude',
     icon: '🌸',
     cadence: 'Anytime you feel it',
-    description: 'One small, quiet thing you noticed and appreciated about your person today.',
-    prompt: 'What is one little thing your person did or said today that made you smile or feel held?',
-    placeholder: 'e.g. The morning voice note you sent, or how patient you were when work was overwhelming…',
+    description:
+      'One small, quiet thing you noticed and appreciated about your person today.',
+    prompt:
+      'What is one little thing your person did or said today that made you smile or feel held?',
+    placeholder:
+      'e.g. The morning voice note you sent, or how patient you were when work was overwhelming…',
   },
   {
     id: 'bedtime-question',
     title: 'Bedtime Question',
     icon: '🌙',
     cadence: 'Nightly drift-off',
-    description: 'One tender, low-pressure question before your day comes to a quiet close.',
-    prompt: 'If tonight could freeze for one extra hour, what would you want us to do together right now?',
+    description:
+      'One tender, low-pressure question before your day comes to a quiet close.',
+    prompt:
+      'If tonight could freeze for one extra hour, what would you want us to do together right now?',
     placeholder: 'Whisper your answer here…',
   },
   {
@@ -56,27 +64,36 @@ const RITUAL_DEFINITIONS: RitualDefinition[] = [
     title: 'Monthly Memory Recap',
     icon: '📦',
     cadence: 'Monthly bookmark',
-    description: 'A warm snapshot bookmarking your shared memories, laughs, and adventures over the past month.',
-    prompt: 'Looking back at this past month, what is your favorite unexpected moment or inside joke together?',
-    placeholder: 'Reflect on this month’s milestones, quiet victories, and favorite memories…',
+    description:
+      'A warm snapshot bookmarking your shared memories, laughs, and adventures over the past month.',
+    prompt:
+      'Looking back at this past month, what is your favorite unexpected moment or inside joke together?',
+    placeholder:
+      'Reflect on this month’s milestones, quiet victories, and favorite memories…',
   },
   {
     id: 'long-distance-countdown',
     title: 'Reunion Countdown',
     icon: '✈️',
     cadence: 'Looking forward',
-    description: 'Keep your sights on the next embrace. Whether it’s an airport gate or your next scheduled virtual date night.',
-    prompt: 'When is your next planned meetup, flight, or dedicated big date night?',
-    placeholder: 'e.g. Airport reunion in Chicago or Big Virtual Anniversary Date…',
+    description:
+      'Keep your sights on the next embrace. Whether it’s an airport gate or your next scheduled virtual date night.',
+    prompt:
+      'When is your next planned meetup, flight, or dedicated big date night?',
+    placeholder:
+      'e.g. Airport reunion in Chicago or Big Virtual Anniversary Date…',
   },
   {
     id: 'anniversary-capsule',
     title: 'Anniversary Capsule',
     icon: '🥂',
     cadence: 'Annual milestone',
-    description: 'Seal a time-capsule letter to be read on your next anniversary. Sealed until the clock strikes your special date.',
-    prompt: 'What is your private promise or message to your future selves for your next anniversary?',
-    placeholder: 'Dear Us one year from now, my favorite thing about loving you today is…',
+    description:
+      'Seal a time-capsule letter to be read on your next anniversary. Sealed until the clock strikes your special date.',
+    prompt:
+      'What is your private promise or message to your future selves for your next anniversary?',
+    placeholder:
+      'Dear Us one year from now, my favorite thing about loving you today is…',
   },
 ];
 
@@ -88,10 +105,16 @@ export function SharedRituals() {
   const [countdownLabel, setCountdownLabel] = useState('Next Airport Reunion');
   const [anniversaryDate, setAnniversaryDate] = useState('2026-12-25');
   const [saving, setSaving] = useState(false);
-  const [notice, setNotice] = useState<{ kind: 'success' | 'info'; text: string } | null>(null);
-  const [localEntries, setLocalEntries] = useState<Array<{ id: string; ritual: RitualKey; content: string; date: string }>>([]);
+  const [notice, setNotice] = useState<{
+    kind: 'success' | 'info';
+    text: string;
+  } | null>(null);
+  const [localEntries, setLocalEntries] = useState<
+    Array<{ id: string; ritual: RitualKey; content: string; date: string }>
+  >([]);
 
-  const activeDef = RITUAL_DEFINITIONS.find((r) => r.id === activeTab) || RITUAL_DEFINITIONS[0];
+  const activeDef =
+    RITUAL_DEFINITIONS.find((r) => r.id === activeTab) || RITUAL_DEFINITIONS[0];
   const tabListId = useId();
 
   // Days remaining calculation for countdown
@@ -141,17 +164,24 @@ export function SharedRituals() {
         {
           id: Math.random().toString(36).substring(2, 9),
           ritual: activeTab,
-          content: entryText.trim() || `${countdownLabel} set for ${targetDate}`,
-          date: new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+          content:
+            entryText.trim() || `${countdownLabel} set for ${targetDate}`,
+          date: new Date().toLocaleDateString(undefined, {
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
         },
         ...prev,
       ]);
       setEntryText('');
       setNotice({
         kind: 'success',
-        text: activeTab === 'anniversary-capsule'
-          ? 'Capsule sealed. It will stay preserved in your couple space! ♡'
-          : 'Your quiet ritual entry was saved. No rush, no streaks—just saved for whenever you want to revisit it.',
+        text:
+          activeTab === 'anniversary-capsule'
+            ? 'Capsule sealed. It will stay preserved in your couple space! ♡'
+            : 'Your quiet ritual entry was saved. No rush, no streaks—just saved for whenever you want to revisit it.',
       });
     } catch {
       // Offline / graceful fallback
@@ -160,8 +190,12 @@ export function SharedRituals() {
         {
           id: Math.random().toString(36).substring(2, 9),
           ritual: activeTab,
-          content: entryText.trim() || `${countdownLabel} set for ${targetDate}`,
-          date: new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+          content:
+            entryText.trim() || `${countdownLabel} set for ${targetDate}`,
+          date: new Date().toLocaleDateString(undefined, {
+            month: 'short',
+            day: 'numeric',
+          }),
         },
         ...prev,
       ]);
@@ -188,7 +222,16 @@ export function SharedRituals() {
       }}
     >
       {/* Header with Guilt-Free Disclaimer */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '22px' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+          flexWrap: 'wrap',
+          gap: '16px',
+          marginBottom: '22px',
+        }}
+      >
         <div>
           <div
             style={{
@@ -202,11 +245,29 @@ export function SharedRituals() {
           >
             Rhythm &amp; Rituals · Guilt-Free
           </div>
-          <h2 id={`${tabListId}-heading`} style={{ fontFamily: 'var(--font-serif)', fontSize: '24px', margin: 0, color: 'var(--ink)' }}>
+          <h2
+            id={`${tabListId}-heading`}
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: '24px',
+              margin: 0,
+              color: 'var(--ink)',
+            }}
+          >
             Shared Rituals
           </h2>
-          <p style={{ margin: '6px 0 0', fontSize: '13.5px', color: 'var(--ink-soft)', maxWidth: '640px', lineHeight: 1.5 }}>
-            Pick up whenever you both feel like it. No streak counters, no reminders meant to shame you, and no penalty for busy weeks. Just warm, optional rituals to keep you close.
+          <p
+            style={{
+              margin: '6px 0 0',
+              fontSize: '13.5px',
+              color: 'var(--ink-soft)',
+              maxWidth: '640px',
+              lineHeight: 1.5,
+            }}
+          >
+            Pick up whenever you both feel like it. No streak counters, no
+            reminders meant to shame you, and no penalty for busy weeks. Just
+            warm, optional rituals to keep you close.
           </p>
         </div>
 
@@ -262,7 +323,9 @@ export function SharedRituals() {
                 gap: '8px',
                 padding: '10px 16px',
                 borderRadius: '16px',
-                border: isActive ? '1px solid var(--pink)' : '1px solid var(--line)',
+                border: isActive
+                  ? '1px solid var(--pink)'
+                  : '1px solid var(--line)',
                 background: isActive ? 'var(--pink-tint)' : 'var(--paper)',
                 color: isActive ? 'var(--pink)' : 'var(--ink)',
                 fontWeight: isActive ? 700 : 500,
@@ -291,22 +354,49 @@ export function SharedRituals() {
           border: '1px solid var(--line)',
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '12px',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{ fontSize: '24px' }}>{activeDef.icon}</span>
             <div>
-              <strong style={{ fontSize: '16px', color: 'var(--ink)' }}>{activeDef.title}</strong>
-              <div style={{ fontSize: '11.5px', color: 'var(--ink-soft)' }}>{activeDef.cadence}</div>
+              <strong style={{ fontSize: '16px', color: 'var(--ink)' }}>
+                {activeDef.title}
+              </strong>
+              <div style={{ fontSize: '11.5px', color: 'var(--ink-soft)' }}>
+                {activeDef.cadence}
+              </div>
             </div>
           </div>
           {activeTab === 'monthly-recap' && keepsakes.length > 0 && (
-            <div style={{ fontSize: '12px', color: 'var(--pink)', background: 'var(--pink-tint)', padding: '4px 12px', borderRadius: '999px', fontWeight: 700 }}>
+            <div
+              style={{
+                fontSize: '12px',
+                color: 'var(--pink)',
+                background: 'var(--pink-tint)',
+                padding: '4px 12px',
+                borderRadius: '999px',
+                fontWeight: 700,
+              }}
+            >
               {keepsakes.length} keepsakes saved
             </div>
           )}
         </div>
 
-        <p style={{ fontSize: '13.5px', color: 'var(--ink-soft)', margin: '0 0 16px', lineHeight: 1.5 }}>
+        <p
+          style={{
+            fontSize: '13.5px',
+            color: 'var(--ink-soft)',
+            margin: '0 0 16px',
+            lineHeight: 1.5,
+          }}
+        >
           {activeDef.description}
         </p>
 
@@ -320,19 +410,45 @@ export function SharedRituals() {
             marginBottom: '16px',
           }}
         >
-          <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--pink)', marginBottom: '4px' }}>
+          <div
+            style={{
+              fontSize: '11px',
+              fontWeight: 800,
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              color: 'var(--pink)',
+              marginBottom: '4px',
+            }}
+          >
             Reflection prompt
           </div>
-          <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink)' }}>
+          <div
+            style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink)' }}
+          >
             &ldquo;{activeDef.prompt}&rdquo;
           </div>
         </div>
 
         {/* Long-Distance Countdown Controls */}
         {activeTab === 'long-distance-countdown' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px', marginBottom: '16px' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+              gap: '14px',
+              marginBottom: '16px',
+            }}
+          >
             <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  color: 'var(--ink)',
+                  marginBottom: '6px',
+                }}
+              >
                 Milestone name
               </label>
               <input
@@ -351,7 +467,15 @@ export function SharedRituals() {
               />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  color: 'var(--ink)',
+                  marginBottom: '6px',
+                }}
+              >
                 Target reunion date
               </label>
               <input
@@ -372,21 +496,42 @@ export function SharedRituals() {
               <div
                 style={{
                   gridColumn: '1 / -1',
-                  background: 'linear-gradient(135deg, rgba(255, 78, 120, 0.1), rgba(67, 126, 235, 0.08))',
+                  background:
+                    'linear-gradient(135deg, rgba(255, 78, 120, 0.1), rgba(67, 126, 235, 0.08))',
                   borderRadius: '14px',
                   padding: '16px',
                   textAlign: 'center',
                   border: '1px solid rgba(255, 78, 120, 0.25)',
                 }}
               >
-                <div style={{ fontSize: '12px', color: 'var(--pink)', fontWeight: 700 }}>
+                <div
+                  style={{
+                    fontSize: '12px',
+                    color: 'var(--pink)',
+                    fontWeight: 700,
+                  }}
+                >
                   COUNTDOWN TO {countdownLabel.toUpperCase()}
                 </div>
-                <div style={{ fontSize: '36px', fontWeight: 900, color: 'var(--pink)', margin: '4px 0', fontFamily: 'var(--font-serif)' }}>
-                  {daysToReunion > 0 ? `${daysToReunion} Days` : daysToReunion === 0 ? 'Today is the day! 🎉' : `${Math.abs(daysToReunion)} days since reunion ♡`}
+                <div
+                  style={{
+                    fontSize: '36px',
+                    fontWeight: 900,
+                    color: 'var(--pink)',
+                    margin: '4px 0',
+                    fontFamily: 'var(--font-serif)',
+                  }}
+                >
+                  {daysToReunion > 0
+                    ? `${daysToReunion} Days`
+                    : daysToReunion === 0
+                      ? 'Today is the day! 🎉'
+                      : `${Math.abs(daysToReunion)} days since reunion ♡`}
                 </div>
                 <div style={{ fontSize: '12.5px', color: 'var(--ink-soft)' }}>
-                  {daysToReunion > 0 ? 'Every day brings you both one sunrise closer.' : 'Cherish every second together.'}
+                  {daysToReunion > 0
+                    ? 'Every day brings you both one sunrise closer.'
+                    : 'Cherish every second together.'}
                 </div>
               </div>
             )}
@@ -396,9 +541,25 @@ export function SharedRituals() {
         {/* Anniversary Capsule Controls */}
         {activeTab === 'anniversary-capsule' && (
           <div style={{ marginBottom: '16px' }}>
-            <div style={{ display: 'flex', gap: '14px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '12px' }}>
+            <div
+              style={{
+                display: 'flex',
+                gap: '14px',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                marginBottom: '12px',
+              }}
+            >
               <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--ink)', marginBottom: '4px' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    color: 'var(--ink)',
+                    marginBottom: '4px',
+                  }}
+                >
                   Your anniversary date
                 </label>
                 <input
@@ -415,13 +576,30 @@ export function SharedRituals() {
                 />
               </div>
               {daysToAnniversary !== null && (
-                <div style={{ fontSize: '13px', color: 'var(--ink-soft)', marginTop: '16px' }}>
-                  {daysToAnniversary > 0 ? `🍾 Next anniversary in ${daysToAnniversary} days` : '🥂 Happy Anniversary celebration!'}
+                <div
+                  style={{
+                    fontSize: '13px',
+                    color: 'var(--ink-soft)',
+                    marginTop: '16px',
+                  }}
+                >
+                  {daysToAnniversary > 0
+                    ? `🍾 Next anniversary in ${daysToAnniversary} days`
+                    : '🥂 Happy Anniversary celebration!'}
                 </div>
               )}
             </div>
-            <div style={{ fontSize: '12px', color: 'var(--ink-soft)', background: 'var(--pink-tint)', padding: '8px 12px', borderRadius: '8px' }}>
-              🔒 Messages written into this capsule stay sealed with gentle privacy until you celebrate.
+            <div
+              style={{
+                fontSize: '12px',
+                color: 'var(--ink-soft)',
+                background: 'var(--pink-tint)',
+                padding: '8px 12px',
+                borderRadius: '8px',
+              }}
+            >
+              🔒 Messages written into this capsule stay sealed with gentle
+              privacy until you celebrate.
             </div>
           </div>
         )}
@@ -448,17 +626,32 @@ export function SharedRituals() {
         </div>
 
         {/* Actions & Notice */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '12px',
+          }}
+        >
           <div style={{ fontSize: '12px', color: 'var(--ink-soft)' }}>
             Saved privately to your couple space.
           </div>
           <button
             className="btn btn-primary"
             onClick={handleSaveEntry}
-            disabled={saving || (!entryText.trim() && activeTab !== 'long-distance-countdown')}
+            disabled={
+              saving ||
+              (!entryText.trim() && activeTab !== 'long-distance-countdown')
+            }
             style={{ minWidth: '140px' }}
           >
-            {saving ? 'Saving…' : activeTab === 'anniversary-capsule' ? 'Seal Capsule ✉️' : 'Save Reflection ♡'}
+            {saving
+              ? 'Saving…'
+              : activeTab === 'anniversary-capsule'
+                ? 'Seal Capsule ✉️'
+                : 'Save Reflection ♡'}
           </button>
         </div>
 
@@ -468,7 +661,8 @@ export function SharedRituals() {
               marginTop: '14px',
               padding: '12px 16px',
               borderRadius: '12px',
-              background: notice.kind === 'success' ? 'var(--pink-tint)' : 'var(--paper)',
+              background:
+                notice.kind === 'success' ? 'var(--pink-tint)' : 'var(--paper)',
               color: notice.kind === 'success' ? 'var(--pink)' : 'var(--ink)',
               border: '1px solid var(--line)',
               fontSize: '13px',
@@ -483,11 +677,28 @@ export function SharedRituals() {
 
         {/* Recent Entries */}
         {localEntries.filter((e) => e.ritual === activeTab).length > 0 && (
-          <div style={{ marginTop: '22px', borderTop: '1px solid var(--line)', paddingTop: '16px' }}>
-            <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-soft)', marginBottom: '8px' }}>
+          <div
+            style={{
+              marginTop: '22px',
+              borderTop: '1px solid var(--line)',
+              paddingTop: '16px',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '11px',
+                fontWeight: 800,
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                color: 'var(--ink-soft)',
+                marginBottom: '8px',
+              }}
+            >
               Past Reflections
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div
+              style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
+            >
               {localEntries
                 .filter((e) => e.ritual === activeTab)
                 .slice(0, 3)
@@ -508,7 +719,15 @@ export function SharedRituals() {
                     }}
                   >
                     <span>&ldquo;{entry.content}&rdquo;</span>
-                    <span style={{ fontSize: '11px', color: 'var(--ink-soft)', whiteSpace: 'nowrap' }}>{entry.date}</span>
+                    <span
+                      style={{
+                        fontSize: '11px',
+                        color: 'var(--ink-soft)',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {entry.date}
+                    </span>
                   </div>
                 ))}
             </div>

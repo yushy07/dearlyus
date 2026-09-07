@@ -10,7 +10,15 @@ export function Confetti({ active }: ConfettiProps) {
   const emojis = ['🌸', '💖', '✨', '🎉', '🎊', '🫰', '🌟', '💕'];
 
   return (
-    <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 1000, overflow: 'hidden' }}>
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        pointerEvents: 'none',
+        zIndex: 1000,
+        overflow: 'hidden',
+      }}
+    >
       {Array.from({ length: 36 }).map((_, i) => (
         <span
           key={i}

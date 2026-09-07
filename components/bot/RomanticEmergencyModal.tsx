@@ -31,7 +31,12 @@ const COMPLIMENT_PROMPTS = [
   'must describe their partner using only 3 romantic adjectives and a dramatic opera bow.',
 ];
 
-export function RomanticEmergencyModal({ isOpen, onClose, partnerA, partnerB }: RomanticEmergencyProps) {
+export function RomanticEmergencyModal({
+  isOpen,
+  onClose,
+  partnerA,
+  partnerB,
+}: RomanticEmergencyProps) {
   const [eventType, setEventType] = useState<EmergencyType>('blitz');
   const [timer, setTimer] = useState<number>(30);
   const [isRunning, setIsRunning] = useState<boolean>(false);
@@ -58,7 +63,8 @@ export function RomanticEmergencyModal({ isOpen, onClose, partnerA, partnerB }: 
       sounds.playCelebration();
 
       if (chosen === 'blitz') {
-        const q = BLITZ_QUESTIONS[Math.floor(Math.random() * BLITZ_QUESTIONS.length)];
+        const q =
+          BLITZ_QUESTIONS[Math.floor(Math.random() * BLITZ_QUESTIONS.length)];
         setCurrentBlitz(q);
         setTimer(30);
         setIsRunning(true);
@@ -66,10 +72,14 @@ export function RomanticEmergencyModal({ isOpen, onClose, partnerA, partnerB }: 
       } else if (chosen === 'stare') {
         setTimer(20);
         setIsRunning(true);
-        speakCupidot("Romantic Emergency! Stare into each other's eyes for twenty seconds without smiling!", { mood: 'love' });
+        speakCupidot(
+          "Romantic Emergency! Stare into each other's eyes for twenty seconds without smiling!",
+          { mood: 'love' },
+        );
         // Start webcam for mirror
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-          navigator.mediaDevices.getUserMedia({ video: true })
+          navigator.mediaDevices
+            .getUserMedia({ video: true })
             .then((stream) => {
               if (videoRef.current) {
                 videoRef.current.srcObject = stream;
@@ -81,10 +91,16 @@ export function RomanticEmergencyModal({ isOpen, onClose, partnerA, partnerB }: 
       } else {
         const speaker = Math.random() > 0.5 ? partnerA : partnerB;
         setAssignedSpeaker(speaker);
-        const prompt = COMPLIMENT_PROMPTS[Math.floor(Math.random() * COMPLIMENT_PROMPTS.length)];
+        const prompt =
+          COMPLIMENT_PROMPTS[
+            Math.floor(Math.random() * COMPLIMENT_PROMPTS.length)
+          ];
         setCurrentCompliment(prompt);
         setIsRunning(false);
-        speakCupidot(`${speaker} must look their partner in the eye right now!`, { mood: 'love' });
+        speakCupidot(
+          `${speaker} must look their partner in the eye right now!`,
+          { mood: 'love' },
+        );
       }
     } else {
       setIsRunning(false);
@@ -106,14 +122,17 @@ export function RomanticEmergencyModal({ isOpen, onClose, partnerA, partnerB }: 
             sounds.playCountdownBeep(true);
           }
           if (t === 5) {
-            speakCupidot("Hurry! Fuse is burning down!", { mood: 'shock' });
+            speakCupidot('Hurry! Fuse is burning down!', { mood: 'shock' });
           }
           if (t === 1) {
             setIsRunning(false);
             if (eventType === 'stare') {
               setCompleted(true);
               sounds.playCelebration();
-              speakCupidot("Challenge complete! You survived without cracking!", { mood: 'celebration' });
+              speakCupidot(
+                'Challenge complete! You survived without cracking!',
+                { mood: 'celebration' },
+              );
             }
           }
           return t - 1;
@@ -135,14 +154,18 @@ export function RomanticEmergencyModal({ isOpen, onClose, partnerA, partnerB }: 
       setIsRunning(false);
       setCompleted(true);
       sounds.playCelebration();
-      speakCupidot("Both answered! Emergency contained with maximum romance!", { mood: 'celebration' });
+      speakCupidot('Both answered! Emergency contained with maximum romance!', {
+        mood: 'celebration',
+      });
     }
   };
 
   const handleComplimentSpoken = () => {
     sounds.playCelebration();
     setCompleted(true);
-    speakCupidot("Approved by Cupidot! Ten out of ten romance points.", { mood: 'love' });
+    speakCupidot('Approved by Cupidot! Ten out of ten romance points.', {
+      mood: 'love',
+    });
   };
 
   if (!isOpen) return null;
@@ -172,7 +195,8 @@ export function RomanticEmergencyModal({ isOpen, onClose, partnerA, partnerB }: 
           background: '#FFFFFF',
           borderRadius: '28px',
           border: '2px solid #FF4D80',
-          boxShadow: '0 24px 80px rgba(255, 77, 128, 0.4), 0 0 40px rgba(255, 77, 128, 0.3)',
+          boxShadow:
+            '0 24px 80px rgba(255, 77, 128, 0.4), 0 0 40px rgba(255, 77, 128, 0.3)',
           width: '100%',
           maxWidth: '460px',
           overflow: 'hidden',
@@ -198,31 +222,67 @@ export function RomanticEmergencyModal({ isOpen, onClose, partnerA, partnerB }: 
             textTransform: 'uppercase',
           }}
         >
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+          <span
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+          >
             <span style={{ animation: 'gl-pulse 1s infinite' }}>🚨</span>
             ROMANTIC EMERGENCY
           </span>
-          <span style={{ background: 'rgba(255,255,255,0.25)', padding: '3px 8px', borderRadius: '12px', fontSize: '10px' }}>
+          <span
+            style={{
+              background: 'rgba(255,255,255,0.25)',
+              padding: '3px 8px',
+              borderRadius: '12px',
+              fontSize: '10px',
+            }}
+          >
             CUPIDOT PROTOCOL
           </span>
         </div>
 
         {/* 3D Bot & Emergency Title Stage */}
-        <div style={{ padding: '24px 24px 16px', background: 'linear-gradient(180deg, #FFF0F5 0%, #FFFFFF 100%)' }}>
-          <div style={{ width: '120px', height: '120px', margin: '0 auto -10px' }}>
-            <Cupidot2D state={completed ? 'celebration' : isRunning && timer <= 8 ? 'tweaking' : 'love'} size={190} roam={isRunning} />
+        <div
+          style={{
+            padding: '24px 24px 16px',
+            background: 'linear-gradient(180deg, #FFF0F5 0%, #FFFFFF 100%)',
+          }}
+        >
+          <div
+            style={{ width: '120px', height: '120px', margin: '0 auto -10px' }}
+          >
+            <Cupidot2D
+              state={
+                completed
+                  ? 'celebration'
+                  : isRunning && timer <= 8
+                    ? 'tweaking'
+                    : 'love'
+              }
+              size={190}
+              roam={isRunning}
+            />
           </div>
 
-          <h3 style={{ fontSize: '20px', fontWeight: 900, margin: '8px 0 4px', color: '#1E1B24' }}>
+          <h3
+            style={{
+              fontSize: '20px',
+              fontWeight: 900,
+              margin: '8px 0 4px',
+              color: '#1E1B24',
+            }}
+          >
             {eventType === 'blitz' && '30-Second Rapid-Fire Blitz ⚡'}
             {eventType === 'stare' && 'Camera Staring Contest 👁️'}
             {eventType === 'compliment' && 'Spontaneous Praise Roulette 💖'}
           </h3>
 
           <p style={{ fontSize: '13px', color: '#6A6874', margin: 0 }}>
-            {eventType === 'blitz' && 'Both of you must answer before the fuse runs out!'}
-            {eventType === 'stare' && 'Hold eye contact into the camera. First one to laugh loses!'}
-            {eventType === 'compliment' && 'Cupidot demands one partner deliver high-stakes sincerity.'}
+            {eventType === 'blitz' &&
+              'Both of you must answer before the fuse runs out!'}
+            {eventType === 'stare' &&
+              'Hold eye contact into the camera. First one to laugh loses!'}
+            {eventType === 'compliment' &&
+              'Cupidot demands one partner deliver high-stakes sincerity.'}
           </p>
         </div>
 
@@ -248,16 +308,36 @@ export function RomanticEmergencyModal({ isOpen, onClose, partnerA, partnerB }: 
 
               {/* Timer Bar */}
               <div style={{ marginBottom: '18px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 800, color: timer <= 5 ? '#D93838' : '#FF4D80', marginBottom: '6px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    fontSize: '12px',
+                    fontWeight: 800,
+                    color: timer <= 5 ? '#D93838' : '#FF4D80',
+                    marginBottom: '6px',
+                  }}
+                >
                   <span>⏳ Fuse Ticking</span>
                   <span>{timer}s</span>
                 </div>
-                <div style={{ width: '100%', height: '8px', background: '#F0E5EB', borderRadius: '4px', overflow: 'hidden' }}>
+                <div
+                  style={{
+                    width: '100%',
+                    height: '8px',
+                    background: '#F0E5EB',
+                    borderRadius: '4px',
+                    overflow: 'hidden',
+                  }}
+                >
                   <div
                     style={{
                       height: '100%',
                       width: `${(timer / 30) * 100}%`,
-                      background: timer <= 5 ? '#D93838' : 'linear-gradient(90deg, #FF7BA3, #FF4D80)',
+                      background:
+                        timer <= 5
+                          ? '#D93838'
+                          : 'linear-gradient(90deg, #FF7BA3, #FF4D80)',
                       transition: 'width 1s linear',
                     }}
                   />
@@ -265,22 +345,52 @@ export function RomanticEmergencyModal({ isOpen, onClose, partnerA, partnerB }: 
               </div>
 
               {!completed ? (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '14px',
+                  }}
+                >
                   {/* Partner A Options */}
-                  <div style={{ background: '#FFF0F5', padding: '12px', borderRadius: '12px', border: '1px solid #FFD6E8' }}>
-                    <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--pink)', marginBottom: '8px' }}>🌸 {partnerA}</div>
+                  <div
+                    style={{
+                      background: '#FFF0F5',
+                      padding: '12px',
+                      borderRadius: '12px',
+                      border: '1px solid #FFD6E8',
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: '12px',
+                        fontWeight: 800,
+                        color: 'var(--pink)',
+                        marginBottom: '8px',
+                      }}
+                    >
+                      🌸 {partnerA}
+                    </div>
                     <div style={{ display: 'grid', gap: '6px' }}>
                       <button
                         className="btn btn-sm"
                         onClick={() => handleBlitzPick('A', partnerA)}
-                        style={{ background: pickA === partnerA ? 'var(--pink)' : '#FFF', color: pickA === partnerA ? '#FFF' : '#333' }}
+                        style={{
+                          background:
+                            pickA === partnerA ? 'var(--pink)' : '#FFF',
+                          color: pickA === partnerA ? '#FFF' : '#333',
+                        }}
                       >
                         Me 🙋‍♀️
                       </button>
                       <button
                         className="btn btn-sm"
                         onClick={() => handleBlitzPick('A', partnerB)}
-                        style={{ background: pickA === partnerB ? 'var(--pink)' : '#FFF', color: pickA === partnerB ? '#FFF' : '#333' }}
+                        style={{
+                          background:
+                            pickA === partnerB ? 'var(--pink)' : '#FFF',
+                          color: pickA === partnerB ? '#FFF' : '#333',
+                        }}
                       >
                         {partnerB} 👉
                       </button>
@@ -288,20 +398,44 @@ export function RomanticEmergencyModal({ isOpen, onClose, partnerA, partnerB }: 
                   </div>
 
                   {/* Partner B Options */}
-                  <div style={{ background: '#F0F7FF', padding: '12px', borderRadius: '12px', border: '1px solid #D6E8FF' }}>
-                    <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--blue)', marginBottom: '8px' }}>💙 {partnerB}</div>
+                  <div
+                    style={{
+                      background: '#F0F7FF',
+                      padding: '12px',
+                      borderRadius: '12px',
+                      border: '1px solid #D6E8FF',
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: '12px',
+                        fontWeight: 800,
+                        color: 'var(--blue)',
+                        marginBottom: '8px',
+                      }}
+                    >
+                      💙 {partnerB}
+                    </div>
                     <div style={{ display: 'grid', gap: '6px' }}>
                       <button
                         className="btn btn-sm"
                         onClick={() => handleBlitzPick('B', partnerA)}
-                        style={{ background: pickB === partnerA ? 'var(--blue)' : '#FFF', color: pickB === partnerA ? '#FFF' : '#333' }}
+                        style={{
+                          background:
+                            pickB === partnerA ? 'var(--blue)' : '#FFF',
+                          color: pickB === partnerA ? '#FFF' : '#333',
+                        }}
                       >
                         {partnerA} 👈
                       </button>
                       <button
                         className="btn btn-sm"
                         onClick={() => handleBlitzPick('B', partnerB)}
-                        style={{ background: pickB === partnerB ? 'var(--blue)' : '#FFF', color: pickB === partnerB ? '#FFF' : '#333' }}
+                        style={{
+                          background:
+                            pickB === partnerB ? 'var(--blue)' : '#FFF',
+                          color: pickB === partnerB ? '#FFF' : '#333',
+                        }}
                       >
                         Me 🙋‍♂️
                       </button>
@@ -309,8 +443,20 @@ export function RomanticEmergencyModal({ isOpen, onClose, partnerA, partnerB }: 
                   </div>
                 </div>
               ) : (
-                <div style={{ background: '#E6F9F0', border: '1px solid #10B981', color: '#0A7D4D', padding: '14px', borderRadius: '14px', fontWeight: 800 }}>
-                  🎉 Emergency Cleared! {pickA === pickB ? "You both agreed unanimously!" : `Cheeky clash! ${partnerA} picked ${pickA} while ${partnerB} picked ${pickB}!`}
+                <div
+                  style={{
+                    background: '#E6F9F0',
+                    border: '1px solid #10B981',
+                    color: '#0A7D4D',
+                    padding: '14px',
+                    borderRadius: '14px',
+                    fontWeight: 800,
+                  }}
+                >
+                  🎉 Emergency Cleared!{' '}
+                  {pickA === pickB
+                    ? 'You both agreed unanimously!'
+                    : `Cheeky clash! ${partnerA} picked ${pickA} while ${partnerB} picked ${pickB}!`}
                 </div>
               )}
             </div>
@@ -319,16 +465,41 @@ export function RomanticEmergencyModal({ isOpen, onClose, partnerA, partnerB }: 
           {/* EVENT 2: STARE */}
           {eventType === 'stare' && (
             <div>
-              <div style={{ position: 'relative', width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', background: '#2B231E', marginBottom: '16px' }}>
+              <div
+                style={{
+                  position: 'relative',
+                  width: '100%',
+                  height: '180px',
+                  borderRadius: '16px',
+                  overflow: 'hidden',
+                  background: '#2B231E',
+                  marginBottom: '16px',
+                }}
+              >
                 <video
                   ref={videoRef}
                   autoPlay
                   playsInline
                   muted
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)' }}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    transform: 'scaleX(-1)',
+                  }}
                 />
                 {!webcamActive && (
-                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF', fontSize: '13px' }}>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#FFF',
+                      fontSize: '13px',
+                    }}
+                  >
                     Webcam mirror active · Look into each other&apos;s eyes 👀
                   </div>
                 )}
@@ -354,12 +525,22 @@ export function RomanticEmergencyModal({ isOpen, onClose, partnerA, partnerB }: 
               </div>
 
               {completed ? (
-                <div style={{ background: '#E6F9F0', border: '1px solid #10B981', color: '#0A7D4D', padding: '12px', borderRadius: '12px', fontWeight: 800 }}>
+                <div
+                  style={{
+                    background: '#E6F9F0',
+                    border: '1px solid #10B981',
+                    color: '#0A7D4D',
+                    padding: '12px',
+                    borderRadius: '12px',
+                    fontWeight: 800,
+                  }}
+                >
                   ✨ You held out without laughing! Mutual devotion certified.
                 </div>
               ) : (
                 <p style={{ fontSize: '13px', color: '#555' }}>
-                  Keep a straight face! 20 seconds of intense romantic eye contact across the miles.
+                  Keep a straight face! 20 seconds of intense romantic eye
+                  contact across the miles.
                 </p>
               )}
             </div>
@@ -377,10 +558,25 @@ export function RomanticEmergencyModal({ isOpen, onClose, partnerA, partnerB }: 
                   marginBottom: '18px',
                 }}
               >
-                <div style={{ fontSize: '12px', fontWeight: 800, color: '#D97706', textTransform: 'uppercase', marginBottom: '6px' }}>
+                <div
+                  style={{
+                    fontSize: '12px',
+                    fontWeight: 800,
+                    color: '#D97706',
+                    textTransform: 'uppercase',
+                    marginBottom: '6px',
+                  }}
+                >
                   🎯 The Directive for {assignedSpeaker}
                 </div>
-                <div style={{ fontSize: '15px', fontWeight: 700, color: '#451A03', lineHeight: 1.5 }}>
+                <div
+                  style={{
+                    fontSize: '15px',
+                    fontWeight: 700,
+                    color: '#451A03',
+                    lineHeight: 1.5,
+                  }}
+                >
                   <b>{assignedSpeaker}</b> {currentCompliment}
                 </div>
               </div>
@@ -394,7 +590,16 @@ export function RomanticEmergencyModal({ isOpen, onClose, partnerA, partnerB }: 
                   We Said It Out Loud! 💖
                 </button>
               ) : (
-                <div style={{ background: '#E6F9F0', border: '1px solid #10B981', color: '#0A7D4D', padding: '12px', borderRadius: '12px', fontWeight: 800 }}>
+                <div
+                  style={{
+                    background: '#E6F9F0',
+                    border: '1px solid #10B981',
+                    color: '#0A7D4D',
+                    padding: '12px',
+                    borderRadius: '12px',
+                    fontWeight: 800,
+                  }}
+                >
                   🥰 Romance validated by Cupidot! +100 Couple Aura Points.
                 </div>
               )}
@@ -408,7 +613,9 @@ export function RomanticEmergencyModal({ isOpen, onClose, partnerA, partnerB }: 
               className="btn btn-ghost"
               style={{ fontSize: '13px', color: 'var(--ink-soft)' }}
             >
-              {completed ? 'Dismiss Emergency ✓' : 'Flee Romantic Emergency 🏃💨'}
+              {completed
+                ? 'Dismiss Emergency ✓'
+                : 'Flee Romantic Emergency 🏃💨'}
             </button>
           </div>
         </div>

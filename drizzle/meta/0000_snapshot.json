@@ -60,10 +60,7 @@
       "indexes": {
         "idx_activity_events_session_sequence": {
           "name": "idx_activity_events_session_sequence",
-          "columns": [
-            "session_id",
-            "sequence"
-          ],
+          "columns": ["session_id", "sequence"],
           "isUnique": true
         }
       },
@@ -135,16 +132,12 @@
       "indexes": {
         "idx_activity_room": {
           "name": "idx_activity_room",
-          "columns": [
-            "room_code"
-          ],
+          "columns": ["room_code"],
           "isUnique": true
         },
         "idx_activity_space": {
           "name": "idx_activity_space",
-          "columns": [
-            "space_id"
-          ],
+          "columns": ["space_id"],
           "isUnique": false
         }
       },
@@ -240,10 +233,7 @@
       "indexes": {
         "idx_letters_space_open": {
           "name": "idx_letters_space_open",
-          "columns": [
-            "space_id",
-            "opens_at"
-          ],
+          "columns": ["space_id", "opens_at"],
           "isUnique": false
         }
       },
@@ -315,16 +305,12 @@
       "indexes": {
         "idx_invites_code": {
           "name": "idx_invites_code",
-          "columns": [
-            "code"
-          ],
+          "columns": ["code"],
           "isUnique": true
         },
         "idx_invites_token": {
           "name": "idx_invites_token",
-          "columns": [
-            "token"
-          ],
+          "columns": ["token"],
           "isUnique": true
         }
       },
@@ -389,9 +375,7 @@
       "indexes": {
         "idx_media_space": {
           "name": "idx_media_space",
-          "columns": [
-            "space_id"
-          ],
+          "columns": ["space_id"],
           "isUnique": false
         }
       },
@@ -442,17 +426,12 @@
       "indexes": {
         "idx_memberships_space_user": {
           "name": "idx_memberships_space_user",
-          "columns": [
-            "space_id",
-            "user_id"
-          ],
+          "columns": ["space_id", "user_id"],
           "isUnique": true
         },
         "idx_memberships_user": {
           "name": "idx_memberships_user",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
@@ -524,10 +503,7 @@
       "indexes": {
         "idx_moments_space_date": {
           "name": "idx_moments_space_date",
-          "columns": [
-            "space_id",
-            "happened_at"
-          ],
+          "columns": ["space_id", "happened_at"],
           "isUnique": false
         }
       },
@@ -578,10 +554,7 @@
       "indexes": {
         "idx_reactions_moment_user": {
           "name": "idx_reactions_moment_user",
-          "columns": [
-            "moment_id",
-            "user_id"
-          ],
+          "columns": ["moment_id", "user_id"],
           "isUnique": true
         }
       },
@@ -639,11 +612,7 @@
       "indexes": {
         "idx_ritual_space_key_user": {
           "name": "idx_ritual_space_key_user",
-          "columns": [
-            "space_id",
-            "ritual_key",
-            "user_id"
-          ],
+          "columns": ["space_id", "ritual_key", "user_id"],
           "isUnique": true
         }
       },
@@ -687,9 +656,7 @@
       "indexes": {
         "idx_users_email": {
           "name": "idx_users_email",
-          "columns": [
-            "email"
-          ],
+          "columns": ["email"],
           "isUnique": true
         }
       },

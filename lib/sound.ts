@@ -2,7 +2,9 @@
 
 class SoundManager {
   private ctx: AudioContext | null = null;
-  private ambientNodes: { [key: string]: { source: AudioNode; gain: GainNode } } = {};
+  private ambientNodes: {
+    [key: string]: { source: AudioNode; gain: GainNode };
+  } = {};
   private isLofiPlaying = false;
   private lofiTimer: NodeJS.Timeout | null = null;
   private bgAudio: HTMLAudioElement | null = null;
@@ -66,25 +68,38 @@ class SoundManager {
             // Autoplay restricted by browser - start immediately on first user touch/click/keypress
             const startOnInteraction = () => {
               if (!this.isBgPlaying && !this.isLofiPlaying && this.bgAudio) {
-                this.bgAudio.play().then(() => {
-                  this.isBgPlaying = true;
-                }).catch(() => {});
+                this.bgAudio
+                  .play()
+                  .then(() => {
+                    this.isBgPlaying = true;
+                  })
+                  .catch(() => {});
               }
               document.removeEventListener('pointerdown', startOnInteraction);
               document.removeEventListener('keydown', startOnInteraction);
               document.removeEventListener('touchstart', startOnInteraction);
             };
 
-            document.addEventListener('pointerdown', startOnInteraction, { once: true });
-            document.addEventListener('keydown', startOnInteraction, { once: true });
-            document.addEventListener('touchstart', startOnInteraction, { once: true });
+            document.addEventListener('pointerdown', startOnInteraction, {
+              once: true,
+            });
+            document.addEventListener('keydown', startOnInteraction, {
+              once: true,
+            });
+            document.addEventListener('touchstart', startOnInteraction, {
+              once: true,
+            });
           });
       }
     } catch {}
   }
 
   // Sleep Timer with smooth volume ramp-down in the last 60 seconds
-  public setSleepTimer(minutes: number, onTick?: (secondsLeft: number) => void, onComplete?: () => void) {
+  public setSleepTimer(
+    minutes: number,
+    onTick?: (secondsLeft: number) => void,
+    onComplete?: () => void,
+  ) {
     this.clearSleepTimer();
     if (minutes <= 0) return;
 
@@ -100,8 +115,10 @@ class SoundManager {
       if (remainingSec <= 60 && remainingSec > 0) {
         const factor = Math.max(remainingSec / 60, 0.05);
         if (this.warmAudio) this.warmAudio.volume = Math.min(0.4 * factor, 1);
-        if (this.romanticAudio) this.romanticAudio.volume = Math.min(0.35 * factor, 1);
-        if (this.pianoAudio) this.pianoAudio.volume = Math.min(0.35 * factor, 1);
+        if (this.romanticAudio)
+          this.romanticAudio.volume = Math.min(0.35 * factor, 1);
+        if (this.pianoAudio)
+          this.pianoAudio.volume = Math.min(0.35 * factor, 1);
         if (this.jazzAudio) this.jazzAudio.volume = Math.min(0.3 * factor, 1);
         if (this.bgAudio) this.bgAudio.volume = Math.min(0.3 * factor, 1);
       }
@@ -130,7 +147,10 @@ class SoundManager {
 
   public getSleepTimerRemaining(): number {
     if (!this.sleepTimerEnd) return 0;
-    const diff = Math.max(0, Math.floor((this.sleepTimerEnd - Date.now()) / 1000));
+    const diff = Math.max(
+      0,
+      Math.floor((this.sleepTimerEnd - Date.now()) / 1000),
+    );
     return diff;
   }
 
@@ -173,7 +193,14 @@ class SoundManager {
     const ctx = this.getContext();
     if (!ctx) return;
 
-    const baseFreq = emoji === '💖' ? 523.25 : emoji === '💋' ? 659.25 : emoji === '☕' ? 392.0 : 783.99;
+    const baseFreq =
+      emoji === '💖'
+        ? 523.25
+        : emoji === '💋'
+          ? 659.25
+          : emoji === '☕'
+            ? 392.0
+            : 783.99;
     [0, 4, 7, 12].forEach((interval, idx) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
@@ -183,7 +210,10 @@ class SoundManager {
       osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.035);
 
       gain.gain.setValueAtTime(0.12, ctx.currentTime + idx * 0.035);
-      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + idx * 0.035 + 0.28);
+      gain.gain.exponentialRampToValueAtTime(
+        0.0001,
+        ctx.currentTime + idx * 0.035 + 0.28,
+      );
 
       osc.connect(gain);
       gain.connect(ctx.destination);
@@ -196,7 +226,10 @@ class SoundManager {
   public getContext(): AudioContext | null {
     if (typeof window === 'undefined') return null;
     if (!this.ctx) {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext })
+          .webkitAudioContext;
       if (AudioCtx) {
         this.ctx = new AudioCtx();
       }
@@ -283,7 +316,10 @@ class SoundManager {
       osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.06);
 
       gain.gain.setValueAtTime(0.15, ctx.currentTime + i * 0.06);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.06 + 0.4);
+      gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        ctx.currentTime + i * 0.06 + 0.4,
+      );
 
       osc.connect(gain);
       gain.connect(ctx.destination);
@@ -349,7 +385,10 @@ class SoundManager {
       osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.04);
 
       gain.gain.setValueAtTime(0.18, ctx.currentTime + i * 0.04);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.04 + 0.12);
+      gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        ctx.currentTime + i * 0.04 + 0.12,
+      );
 
       osc.connect(gain);
       gain.connect(ctx.destination);
@@ -375,7 +414,10 @@ class SoundManager {
       osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.05);
 
       gain.gain.setValueAtTime(0.12, ctx.currentTime + i * 0.05);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.05 + 0.35);
+      gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        ctx.currentTime + i * 0.05 + 0.35,
+      );
 
       osc.connect(gain);
       gain.connect(ctx.destination);
@@ -405,8 +447,6 @@ class SoundManager {
     osc.start();
     osc.stop(ctx.currentTime + 0.1);
   }
-
-
 
   // Procedural Noise Buffer Generator
   private createNoiseBuffer(durationSeconds = 3): AudioBuffer | null {
@@ -661,7 +701,10 @@ class SoundManager {
 
       const gain = ctx.createGain();
       gain.gain.setValueAtTime(0.001, ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(Math.min(volume, 0.15), ctx.currentTime + 0.4);
+      gain.gain.linearRampToValueAtTime(
+        Math.min(volume, 0.15),
+        ctx.currentTime + 0.4,
+      );
 
       source.connect(bandpass);
       bandpass.connect(gain);
@@ -679,10 +722,15 @@ class SoundManager {
     this.isVinylCrackleActive = false;
     if (this.vinylCrackleGain && this.ctx) {
       try {
-        this.vinylCrackleGain.gain.linearRampToValueAtTime(0.0001, this.ctx.currentTime + 0.2);
+        this.vinylCrackleGain.gain.linearRampToValueAtTime(
+          0.0001,
+          this.ctx.currentTime + 0.2,
+        );
         setTimeout(() => {
           if (this.vinylCrackleSource) {
-            try { this.vinylCrackleSource.stop(); } catch {}
+            try {
+              this.vinylCrackleSource.stop();
+            } catch {}
             this.vinylCrackleSource.disconnect();
             this.vinylCrackleSource = null;
           }
@@ -778,7 +826,7 @@ class SoundManager {
 
     const chords = [
       [261.63, 329.63, 392.0, 493.88], // Cmaj7
-      [220.0, 261.63, 329.63, 392.0],  // Am7
+      [220.0, 261.63, 329.63, 392.0], // Am7
       [174.61, 220.0, 261.63, 329.63], // Fmaj7
       [196.0, 246.94, 293.66, 349.23], // G7
     ];
@@ -912,7 +960,8 @@ class SoundManager {
       const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
       const data = buffer.getChannelData(0);
       for (let i = 0; i < bufferSize; i++) {
-        data[i] = (Math.random() * 2 - 1) * Math.sin((i / bufferSize) * Math.PI);
+        data[i] =
+          (Math.random() * 2 - 1) * Math.sin((i / bufferSize) * Math.PI);
       }
       const noise = ctx.createBufferSource();
       noise.buffer = buffer;
@@ -973,9 +1022,15 @@ class SoundManager {
         const clickGain = ctx.createGain();
         click.type = 'triangle';
         click.frequency.setValueAtTime(1600 + i * 120, now + i * 0.08);
-        click.frequency.exponentialRampToValueAtTime(300, now + i * 0.08 + 0.02);
+        click.frequency.exponentialRampToValueAtTime(
+          300,
+          now + i * 0.08 + 0.02,
+        );
         clickGain.gain.setValueAtTime(0.08, now + i * 0.08);
-        clickGain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.025);
+        clickGain.gain.exponentialRampToValueAtTime(
+          0.001,
+          now + i * 0.08 + 0.025,
+        );
         click.connect(clickGain);
         clickGain.connect(ctx.destination);
         click.start(now + i * 0.08);
@@ -1035,7 +1090,7 @@ class SoundManager {
       { f: 1046.5, d: 340 }, // C6
       { f: 987.77, d: 280 }, // B5
       { f: 783.99, d: 280 }, // G5
-      { f: 880.00, d: 320 }, // A5
+      { f: 880.0, d: 320 }, // A5
       { f: 698.46, d: 290 }, // F5
       { f: 783.99, d: 340 }, // G5
       { f: 659.25, d: 300 }, // E5

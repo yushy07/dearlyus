@@ -77,7 +77,15 @@ describe('Cupidot 3-Layer Architecture & State Derivation', () => {
     for (const intent of intents) {
       const presentation = behaviorToPresentation(intent);
       expect(presentation).toBeDefined();
-      expect(['idle', 'happy', 'love', 'thinking', 'talking', 'sleeping', 'celebration']).toContain(presentation.botState);
+      expect([
+        'idle',
+        'happy',
+        'love',
+        'thinking',
+        'talking',
+        'sleeping',
+        'celebration',
+      ]).toContain(presentation.botState);
       expect(typeof presentation.animationSpeed).toBe('number');
       expect(presentation.particles).toBeDefined();
       expect(presentation.ariaLiveText.length).toBeGreaterThan(0);
@@ -142,15 +150,25 @@ describe('Healthy Relationship Pet Rules: Zero-Guilt & Inactivity Safety', () =>
 
   it('detects and flags prohibited guilt or penalty phrases accurately', () => {
     expect(containsGuiltPhrasing('Cupidot is lonely without you!')).toBe(true);
-    expect(containsGuiltPhrasing('Your partner is disappointed you missed today')).toBe(true);
+    expect(
+      containsGuiltPhrasing('Your partner is disappointed you missed today'),
+    ).toBe(true);
     expect(containsGuiltPhrasing('You are losing your streak!')).toBe(true);
     expect(containsGuiltPhrasing('Why haven’t you replied?')).toBe(true);
     expect(containsGuiltPhrasing('You neglected your pet')).toBe(true);
     expect(containsGuiltPhrasing('Penalty applied for inactivity')).toBe(true);
 
     // Warm, healthy lines should pass clean
-    expect(containsGuiltPhrasing('Welcome back! Your shared space was kept warm and cozy.')).toBe(false);
-    expect(containsGuiltPhrasing('Take all the time you need, love has no deadlines.')).toBe(false);
+    expect(
+      containsGuiltPhrasing(
+        'Welcome back! Your shared space was kept warm and cozy.',
+      ),
+    ).toBe(false);
+    expect(
+      containsGuiltPhrasing(
+        'Take all the time you need, love has no deadlines.',
+      ),
+    ).toBe(false);
   });
 
   it('preserves progress and chapters without any decay during inactivity', () => {
@@ -178,7 +196,7 @@ describe('Growth Sparks, Anti-Grind Soft Caps & Idempotency', () => {
       initialSessionSparks,
       'activity_complete',
       'quiz-pack-first-time',
-      processedEvents
+      processedEvents,
     );
 
     expect(firstAction.sparksAwarded).toBe(15);
@@ -190,7 +208,7 @@ describe('Growth Sparks, Anti-Grind Soft Caps & Idempotency', () => {
       firstAction.newSessionSparks,
       'activity_complete',
       'quiz-pack-first-time',
-      processedEvents
+      processedEvents,
     );
 
     expect(duplicateAction.sparksAwarded).toBe(0);
@@ -206,7 +224,7 @@ describe('Growth Sparks, Anti-Grind Soft Caps & Idempotency', () => {
       currentSessionSparks,
       'activity_complete',
       'event-near-cap',
-      processedEvents
+      processedEvents,
     );
 
     // Should cap at SESSION_SPARK_SOFT_CAP (45), awarding only the remaining 5
@@ -218,7 +236,7 @@ describe('Growth Sparks, Anti-Grind Soft Caps & Idempotency', () => {
       nearCapAward.newSessionSparks,
       'ritual_complete',
       'event-over-cap',
-      processedEvents
+      processedEvents,
     );
 
     expect(cappedAward.sparksAwarded).toBe(0);
@@ -230,13 +248,19 @@ describe('Growth Sparks, Anti-Grind Soft Caps & Idempotency', () => {
     const now = Date.now();
 
     // First tab celebration
-    expect(shouldSuppressDuplicateCelebration(celebrationKey, 0, now)).toBe(false);
+    expect(shouldSuppressDuplicateCelebration(celebrationKey, 0, now)).toBe(
+      false,
+    );
 
     // Immediate duplicate tab celebration (within 5 seconds)
-    expect(shouldSuppressDuplicateCelebration(celebrationKey, now - 1000, now)).toBe(true);
+    expect(
+      shouldSuppressDuplicateCelebration(celebrationKey, now - 1000, now),
+    ).toBe(true);
 
     // After expiration window (over 10 seconds later)
-    expect(shouldSuppressDuplicateCelebration(celebrationKey, now - 15000, now)).toBe(false);
+    expect(
+      shouldSuppressDuplicateCelebration(celebrationKey, now - 15000, now),
+    ).toBe(false);
   });
 });
 
@@ -286,7 +310,9 @@ describe('Couple Rituals: Snooze, Reschedule & Autonomy', () => {
   it('allows neutral snooze without penalty or failure language', () => {
     const snoozed = snoozeRitual(sampleRitual, 30);
     expect(snoozed.snoozedUntil).toBeDefined();
-    expect(new Date(snoozed.snoozedUntil!).getTime()).toBeGreaterThan(Date.now());
+    expect(new Date(snoozed.snoozedUntil!).getTime()).toBeGreaterThan(
+      Date.now(),
+    );
   });
 
   it('allows neutral reschedule with custom time', () => {
@@ -450,11 +476,15 @@ describe('Offline / Reconnect Calm Recovery', () => {
   it('provides calm reassuring dialogue and recovery presentation when reconnecting', () => {
     const recoveryBehavior = productStateToBehavior('reconnecting');
     expect(recoveryBehavior.intent).toBe('recover_connection');
-    expect(recoveryBehavior.speechCue).toContain('Holding your place while connection restores. Nothing was lost.');
+    expect(recoveryBehavior.speechCue).toContain(
+      'Holding your place while connection restores. Nothing was lost.',
+    );
     expect(containsGuiltPhrasing(recoveryBehavior.speechCue)).toBe(false);
 
     const presentation = behaviorToPresentation('recover_connection');
-    expect(presentation.ariaLiveText).toBe('Cupidot is checking in thoughtfully.');
+    expect(presentation.ariaLiveText).toBe(
+      'Cupidot is checking in thoughtfully.',
+    );
     expect(presentation.botState).toBe('thinking');
   });
 });
@@ -484,4 +514,3 @@ describe('Screen Reader Announcements & Accessibility Verification', () => {
     }
   });
 });
-

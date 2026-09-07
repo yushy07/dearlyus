@@ -10,7 +10,11 @@ export interface KeepsakeApprovalModalProps {
   seed: MemorySeed | null;
   currentUserName?: string;
   partnerName?: string;
-  onApprove: (seedId: string, updatedCaption?: string, updatedMood?: CupidotMood) => Promise<void> | void;
+  onApprove: (
+    seedId: string,
+    updatedCaption?: string,
+    updatedMood?: CupidotMood,
+  ) => Promise<void> | void;
   onDecline: (seedId: string) => Promise<void> | void;
 }
 
@@ -29,7 +33,8 @@ export function KeepsakeApprovalModal({
 
   if (!isOpen || !seed) return null;
 
-  const isProposedByMe = seed.proposedBy === currentUserName || seed.proposedBy === 'You';
+  const isProposedByMe =
+    seed.proposedBy === currentUserName || seed.proposedBy === 'You';
 
   const handleApprove = async () => {
     setBusy(true);
@@ -89,7 +94,14 @@ export function KeepsakeApprovalModal({
         }}
       >
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '16px',
+          }}
+        >
           <div>
             <span
               style={{
@@ -103,7 +115,15 @@ export function KeepsakeApprovalModal({
             >
               Mutual Keepsake Proposal
             </span>
-            <h2 id="keepsake-approval-title" style={{ fontFamily: 'var(--font-display)', fontSize: '22px', margin: '2px 0 0', color: 'var(--ink)' }}>
+            <h2
+              id="keepsake-approval-title"
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: '22px',
+                margin: '2px 0 0',
+                color: 'var(--ink)',
+              }}
+            >
               Seal this memory together?
             </h2>
           </div>
@@ -118,8 +138,16 @@ export function KeepsakeApprovalModal({
           </button>
         </div>
 
-        <p style={{ fontSize: '13px', color: 'var(--ink-soft)', margin: '0 0 16px', lineHeight: 1.5 }}>
-          Keepsakes belong to both of you. They are only saved to your shared shelf when both hearts approve.
+        <p
+          style={{
+            fontSize: '13px',
+            color: 'var(--ink-soft)',
+            margin: '0 0 16px',
+            lineHeight: 1.5,
+          }}
+        >
+          Keepsakes belong to both of you. They are only saved to your shared
+          shelf when both hearts approve.
         </p>
 
         {/* Memory Seed Preview Card */}
@@ -132,8 +160,17 @@ export function KeepsakeApprovalModal({
             marginBottom: '18px',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-            <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--ink)' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '12px',
+            }}
+          >
+            <span
+              style={{ fontSize: '12px', fontWeight: 700, color: 'var(--ink)' }}
+            >
               {seed.activityTitle}
             </span>
             <span style={{ fontSize: '11px', color: 'var(--ink-soft)' }}>
@@ -173,7 +210,14 @@ export function KeepsakeApprovalModal({
 
         {/* Caption & Shared Mood Editor */}
         <div style={{ marginBottom: '18px' }}>
-          <label style={{ fontSize: '12px', fontWeight: 700, display: 'block', marginBottom: '6px' }}>
+          <label
+            style={{
+              fontSize: '12px',
+              fontWeight: 700,
+              display: 'block',
+              marginBottom: '6px',
+            }}
+          >
             Shared Caption
           </label>
           <input
@@ -192,7 +236,14 @@ export function KeepsakeApprovalModal({
             maxLength={120}
           />
 
-          <label style={{ fontSize: '12px', fontWeight: 700, display: 'block', marginBottom: '6px' }}>
+          <label
+            style={{
+              fontSize: '12px',
+              fontWeight: 700,
+              display: 'block',
+              marginBottom: '6px',
+            }}
+          >
             Shared Mood Token
           </label>
           <select
@@ -227,11 +278,20 @@ export function KeepsakeApprovalModal({
             lineHeight: 1.45,
           }}
         >
-          ✦ <strong>Equal Ownership:</strong> Once approved, this keepsake is sealed into your Our Space shelf. Either partner can inspect, download, or remove it without awkwardness.
+          ✦ <strong>Equal Ownership:</strong> Once approved, this keepsake is
+          sealed into your Our Space shelf. Either partner can inspect,
+          download, or remove it without awkwardness.
         </div>
 
         {/* Actions */}
-        <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: '10px',
+            justifyContent: 'flex-end',
+            flexWrap: 'wrap',
+          }}
+        >
           <button
             type="button"
             className="btn btn-ghost"
@@ -248,7 +308,9 @@ export function KeepsakeApprovalModal({
             disabled={busy}
             style={{ fontSize: '12.5px' }}
           >
-            {isProposedByMe ? 'Save to Our Space Shelf ♡' : 'Approve & Seal Keepsake ♡'}
+            {isProposedByMe
+              ? 'Save to Our Space Shelf ♡'
+              : 'Approve & Seal Keepsake ♡'}
           </button>
         </div>
       </div>

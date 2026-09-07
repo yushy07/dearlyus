@@ -15,9 +15,13 @@ export default function AuthCallbackPage() {
       setMessage('Sign-in is not configured yet. Please try again shortly.');
       return;
     }
-    const oauthError = new URLSearchParams(window.location.search).get('error_description');
+    const oauthError = new URLSearchParams(window.location.search).get(
+      'error_description',
+    );
     if (oauthError) {
-      setMessage('Google sign-in was cancelled. You can safely return and try again.');
+      setMessage(
+        'Google sign-in was cancelled. You can safely return and try again.',
+      );
       return;
     }
 
@@ -31,7 +35,10 @@ export default function AuthCallbackPage() {
 
       const requested = sessionStorage.getItem('dearly_auth_return_to');
       sessionStorage.removeItem('dearly_auth_return_to');
-      const nextPath = requested?.startsWith('/') && !requested.startsWith('//') ? requested : '/our-space';
+      const nextPath =
+        requested?.startsWith('/') && !requested.startsWith('//')
+          ? requested
+          : '/our-space';
       router.replace(nextPath);
     });
   }, [router]);
@@ -40,11 +47,18 @@ export default function AuthCallbackPage() {
     <main className={styles.page}>
       <section className={styles.stage}>
         <div className={styles.card}>
-          <div className={styles.connection} aria-hidden="true"><i className={styles.dot} /><i className={styles.dot} /></div>
+          <div className={styles.connection} aria-hidden="true">
+            <i className={styles.dot} />
+            <i className={styles.dot} />
+          </div>
           <div className={styles.eyebrow}>Connecting your account</div>
           <h1 className={styles.title}>Almost there.</h1>
           <p className={styles.copy}>{message}</p>
-          {message.includes('could not') || message.includes('cancelled') ? <a className="btn btn-primary" href="/login">Return to sign in</a> : null}
+          {message.includes('could not') || message.includes('cancelled') ? (
+            <a className="btn btn-primary" href="/login">
+              Return to sign in
+            </a>
+          ) : null}
         </div>
       </section>
     </main>

@@ -16,7 +16,10 @@ export function SpotlightCard({
   ...props
 }: SpotlightCardProps) {
   const divRef = useRef<HTMLDivElement>(null);
-  const [position, setPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [position, setPosition] = useState<{ x: number; y: number }>({
+    x: 0,
+    y: 0,
+  });
   const [opacity, setOpacity] = useState(0);
 
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {

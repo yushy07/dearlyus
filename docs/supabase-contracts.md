@@ -93,16 +93,16 @@ erDiagram
 
 All tables enable RLS (`ALTER TABLE ... ENABLE ROW LEVEL SECURITY;`).
 
-| Table | Policy Name | Command | Target Role | Permitted If |
-| :--- | :--- | :--- | :--- | :--- |
-| `couple_spaces` | `couple_members_read` | SELECT | authenticated | `auth.uid() = partner_a_id OR auth.uid() = partner_b_id` |
-| `date_rooms` | `couple_rooms_all` | ALL | authenticated | Exists in `couple_spaces` where user is Partner A or B |
-| `activity_sessions` | `session_access` | ALL | authenticated | Room belongs to user's active `couple_space` |
-| `room_events` | `events_read` | SELECT | authenticated | Session belongs to user's active `couple_space` |
-| `room_events` | `events_insert_denial` | INSERT | authenticated | **DENIED DIRECTLY** (Must be appended via `append_activity_event` RPC) |
-| `private_answers` | `own_answer_read_only` | SELECT | authenticated | `user_id = auth.uid() OR (revealed_at IS NOT NULL AND session belongs to couple)` |
-| `private_answers` | `vault_insert_denial` | INSERT | authenticated | **DENIED DIRECTLY** (Must be inserted via `lock_private_answer` RPC) |
-| `keepsakes` | `couple_keepsakes` | ALL | authenticated | `couple_id` belongs to user |
+| Table               | Policy Name            | Command | Target Role   | Permitted If                                                                      |
+| :------------------ | :--------------------- | :------ | :------------ | :-------------------------------------------------------------------------------- |
+| `couple_spaces`     | `couple_members_read`  | SELECT  | authenticated | `auth.uid() = partner_a_id OR auth.uid() = partner_b_id`                          |
+| `date_rooms`        | `couple_rooms_all`     | ALL     | authenticated | Exists in `couple_spaces` where user is Partner A or B                            |
+| `activity_sessions` | `session_access`       | ALL     | authenticated | Room belongs to user's active `couple_space`                                      |
+| `room_events`       | `events_read`          | SELECT  | authenticated | Session belongs to user's active `couple_space`                                   |
+| `room_events`       | `events_insert_denial` | INSERT  | authenticated | **DENIED DIRECTLY** (Must be appended via `append_activity_event` RPC)            |
+| `private_answers`   | `own_answer_read_only` | SELECT  | authenticated | `user_id = auth.uid() OR (revealed_at IS NOT NULL AND session belongs to couple)` |
+| `private_answers`   | `vault_insert_denial`  | INSERT  | authenticated | **DENIED DIRECTLY** (Must be inserted via `lock_private_answer` RPC)              |
+| `keepsakes`         | `couple_keepsakes`     | ALL     | authenticated | `couple_id` belongs to user                                                       |
 
 > [!CAUTION]
 > **Private Answer Security Rule:** `private_answers` SELECT policy strictly prohibits selecting a partner's answer row while `revealed_at IS NULL`. Even if a malicious client queries the table directly, PostgreSQL row-level security filters out the row entirely.
@@ -112,6 +112,7 @@ All tables enable RLS (`ALTER TABLE ... ENABLE ROW LEVEL SECURITY;`).
 ## 3. Authoritative RPC Specifications
 
 ### 3.1 `append_activity_event`
+
 - **Purpose:** Atomically appends a sequenced event to `room_events`, checks optimistic concurrency (`expected_revision`), increments `last_sequence`, and advances `revision`.
 - **Signature:**
   ```sql
@@ -139,6 +140,7 @@ All tables enable RLS (`ALTER TABLE ... ENABLE ROW LEVEL SECURITY;`).
   - `SESSION_CLOSED`: If session status is `completed` or `expired`.
 
 ### 3.2 `lock_private_answer`
+
 - **Purpose:** Inserts or updates caller's sealed answer for the given round. Returns locked status without revealing the payload.
 - **Signature:**
   ```sql
@@ -159,6 +161,7 @@ All tables enable RLS (`ALTER TABLE ... ENABLE ROW LEVEL SECURITY;`).
 - **Privacy Assurance:** `answer_payload` is stored in the vault and is NEVER included in the return value or emitted into `room_events`.
 
 ### 3.3 `reveal_private_answers`
+
 - **Purpose:** Validates that both partners have locked answers for the round (or that the round was skipped), sets `revealed_at = now()`, and returns both sealed answers.
 - **Signature:**
   ```sql
@@ -181,6 +184,7 @@ All tables enable RLS (`ALTER TABLE ... ENABLE ROW LEVEL SECURITY;`).
   - `NOT_READY`: If caller attempts to reveal before both partners have locked.
 
 ### 3.4 `get_session_recovery`
+
 - **Purpose:** Fetches current session metadata, authoritative snapshot, and all events with `sequence > after_sequence` for fast reconnect/refresh recovery.
 - **Signature:**
   ```sql

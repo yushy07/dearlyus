@@ -1,6 +1,13 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+} from 'react';
 import { useSupabaseSession } from './SupabaseSessionContext';
 import { useCoupleSpace } from './CoupleSpaceContext';
 import {
@@ -41,7 +48,8 @@ export function ActiveRoomProvider({
   const [loading, setLoading] = useState<boolean>(Boolean(initialRoomCode));
   const [error, setError] = useState<string | null>(null);
 
-  const activeCode = initialRoomCode || room?.code || space?.activeRoomCode || null;
+  const activeCode =
+    initialRoomCode || room?.code || space?.activeRoomCode || null;
 
   const refreshRoom = useCallback(async () => {
     if (!activeCode || !user) {
@@ -78,12 +86,30 @@ export function ActiveRoomProvider({
     const roomId = room.id;
     const channel = supabase
       .channel(`active-room:${roomId}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` }, () => {
-        void refreshRoom();
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'room_members', filter: `room_id=eq.${roomId}` }, () => {
-        void refreshRoom();
-      })
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'rooms',
+          filter: `id=eq.${roomId}`,
+        },
+        () => {
+          void refreshRoom();
+        },
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'room_members',
+          filter: `room_id=eq.${roomId}`,
+        },
+        () => {
+          void refreshRoom();
+        },
+      )
       .subscribe();
 
     return () => {
@@ -166,10 +192,14 @@ export function ActiveRoomProvider({
       setReady: setReadyHandler,
       refreshRoom,
     }),
-    [room, activeCode, isHost, loading, error, refreshRoom]
+    [room, activeCode, isHost, loading, error, refreshRoom],
   );
 
-  return <ActiveRoomContext.Provider value={value}>{children}</ActiveRoomContext.Provider>;
+  return (
+    <ActiveRoomContext.Provider value={value}>
+      {children}
+    </ActiveRoomContext.Provider>
+  );
 }
 
 const defaultActiveRoomValue: ActiveRoomContextValue = {
@@ -178,10 +208,10 @@ const defaultActiveRoomValue: ActiveRoomContextValue = {
   isHost: false,
   loading: false,
   error: null,
-  createRoom: async () => ({} as any),
-  joinRoom: async () => ({} as any),
+  createRoom: async () => ({}) as any,
+  joinRoom: async () => ({}) as any,
   leaveRoom: async () => {},
-  rotateRoomCode: async () => ({} as any),
+  rotateRoomCode: async () => ({}) as any,
   setReady: async () => {},
   refreshRoom: async () => null,
 };

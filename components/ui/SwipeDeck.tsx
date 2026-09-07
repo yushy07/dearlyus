@@ -84,13 +84,16 @@ export function SwipeDeck({
         touchAction: 'none',
         userSelect: 'none',
         cursor: isDragging ? 'grabbing' : 'grab',
-        transform: swiped === 'right'
-          ? 'translateX(450px) rotate(25deg)'
-          : swiped === 'left'
-          ? 'translateX(-450px) rotate(-25deg)'
-          : `translate3d(${offset.x}px, ${offset.y}px, 0) rotate(${rotation}deg)`,
+        transform:
+          swiped === 'right'
+            ? 'translateX(450px) rotate(25deg)'
+            : swiped === 'left'
+              ? 'translateX(-450px) rotate(-25deg)'
+              : `translate3d(${offset.x}px, ${offset.y}px, 0) rotate(${rotation}deg)`,
         opacity: swiped ? 0 : opacity,
-        transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.25s ease',
+        transition: isDragging
+          ? 'none'
+          : 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.25s ease',
         willChange: 'transform, opacity',
         ...style,
       }}
