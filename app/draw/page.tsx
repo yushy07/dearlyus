@@ -3,7 +3,7 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useCoupleProfile } from '@/lib/couple';
-import { CoupleNameBar, Ribbon, Navbar } from '@/components/shared';
+import { CoupleNameBar, Ribbon, Navbar, CupidotActivityGuidance } from '@/components/shared';
 import { sounds } from '@/lib/sound';
 import { useActivitySession } from '@/contexts/ActivitySessionContext';
 import { useSupabaseSession } from '@/contexts/SupabaseSessionContext';
@@ -351,6 +351,16 @@ export default function DrawPage() {
           <p style={{ color: 'var(--ink-soft)', fontSize: '14.5px', margin: 0 }}>
             Batched strokes, transient live cursors, and checkpoint recovery.
           </p>
+        </div>
+
+        {/* Cupidot Standard Activity Lifecycle Guidance */}
+        <div style={{ maxWidth: '800px', margin: '0 auto 16px' }}>
+          <CupidotActivityGuidance
+            activityName="Draw Together"
+            phase={keepsakeSaved ? 'completed' : isDrawing ? 'private' : 'ready'}
+            partnerName={partnerB || 'Partner'}
+            privacyNote="Canvas strokes are shared live with your partner while drawing. Save to keepsake when you're both ready."
+          />
         </div>
 
         {/* Canvas & Floating Transient Partner Pointer */}

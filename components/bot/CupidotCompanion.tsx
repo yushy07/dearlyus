@@ -52,21 +52,21 @@ export function CupidotCompanion() {
     const now = Date.now();
     pokeTimestampsRef.current = [...pokeTimestampsRef.current.filter((t: number) => now - t < 6000), now];
 
-    // Rapid poke tantrum
+    // Rapid poke playful burst
     if (pokeTimestampsRef.current.length >= 3) {
-      setBotState('angry');
+      setBotState('celebration');
       setPokedCount((prev) => prev + 1);
       setIsOpen(true);
-      const angryLines = [
-        `Hey! Stop poking my nose! I am a sophisticated Cupid AI, not a squeaky stress ball! 😤💢`,
-        `Personal space violation! One more poke and I will report you to Judge Cupidot! 🔨😡`,
-        `Ouch! Do that again and I am assigning fifty relationship penalty chores to your record! 😤`,
+      const playfulLines = [
+        `Whoa! That tickles! I'm your shared companion, not a squeaky button! ˶ᵔ ᵕ ᵔ˶ ♡`,
+        `A triple poke? That means someone is ready for a spontaneous shared moment together! ✨`,
+        `Heart flutter detected! Poking Cupidot earns pure love and warm sparks—no chores here! 💖`,
       ];
-      const line = angryLines[Math.floor(Math.random() * angryLines.length)];
+      const line = playfulLines[Math.floor(Math.random() * playfulLines.length)];
       speakCupidot(line, {
-        mood: 'angry',
+        mood: 'happy',
         onEnd: () => {
-          setBotState('pouty');
+          setBotState('love');
           setTimeout(() => setBotState('idle'), 2500);
         },
       });

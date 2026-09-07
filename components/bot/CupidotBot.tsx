@@ -5,17 +5,45 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 
+import type { CupidotState } from '@/types/cupidot';
+
 export type BotState = 'idle' | 'happy' | 'love' | 'thinking' | 'talking' | 'sleeping' | 'celebration' | 'angry' | 'sassy' | 'shock' | 'pouty' | 'tweaking';
 
+export function resolveVisualState(state: BotState | CupidotState = 'idle'): BotState {
+  switch (state) {
+    case 'resting':
+    case 'settling_for_night':
+      return 'sleeping';
+    case 'welcoming':
+      return 'happy';
+    case 'reunion':
+    case 'anticipating_reveal':
+    case 'curating_memory':
+      return 'love';
+    case 'celebrating':
+      return 'celebration';
+    case 'curious':
+    case 'reconnecting':
+      return 'thinking';
+    case 'hosting':
+      return 'talking';
+    case 'focused':
+    case 'waiting':
+      return 'idle';
+    default:
+      return state as BotState;
+  }
+}
+
 export interface CupidotBotProps {
-  state?: BotState;
+  state?: BotState | CupidotState;
   scale?: number;
   position?: [number, number, number];
   interactive?: boolean;
   className?: string;
   style?: React.CSSProperties;
   onClick?: () => void;
-  onStateChange?: (state: BotState) => void;
+  onStateChange?: (state: BotState | CupidotState) => void;
   showGlow?: boolean;
   showParticles?: boolean;
 }
@@ -168,7 +196,7 @@ export function CupidotBot({
         frame = requestAnimationFrame(animate);
         if (!shouldRender()) return;
         const time = clock.getElapsedTime();
-        const mood = stateRef.current;
+        const mood = resolveVisualState(stateRef.current);
         const motion = reducedMotion ? 0 : 1;
         pointer.lerp(targetPointer, 0.065);
         if (modelAnchor) {

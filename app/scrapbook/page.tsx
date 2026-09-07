@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Ribbon, Navbar, CoupleNameBar } from '@/components/shared';
+import { Ribbon, Navbar, CoupleNameBar, CupidotActivityGuidance } from '@/components/shared';
 import { sounds } from '@/lib/sound';
 import { useCoupleProfile } from '@/lib/couple';
 import { useActivityRuntime } from '@/hooks/useActivityRuntime';
@@ -162,6 +162,14 @@ export default function ScrapbookPage() {
             Pin photostrips, boarding passes, and love notes. Drag and rotate items to build your couple album.
           </p>
         </div>
+
+        {/* Cupidot Standard Activity Lifecycle Guidance */}
+        <CupidotActivityGuidance
+          activityName="Digital Scrapbook Wall"
+          phase={exported ? 'completed' : 'ready'}
+          partnerName={partnerB || 'Partner'}
+          privacyNote="Memories and polaroids placed on your shared scrapbook wall are preserved mutually in Our Space."
+        />
 
         {/* Toolbar */}
         <div

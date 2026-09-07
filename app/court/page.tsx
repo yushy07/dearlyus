@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { CupidotBot, BotState } from '@/components/bot/CupidotBot';
 import { judgeCourtCase, CourtVerdict } from '@/lib/cupidot';
 import { sounds } from '@/lib/sound';
-import { CoupleNameBar } from '@/components/shared';
+import { CoupleNameBar, CupidotActivityGuidance } from '@/components/shared';
 import { useCoupleProfile } from '@/lib/couple';
 import { speakCupidot, stopCupidotSpeech } from '@/lib/voice';
 import { useActivityRuntime } from '@/hooks/useActivityRuntime';
@@ -147,6 +147,14 @@ export default function CourtPage() {
             Plead your petty crimes, missed calls, and stolen hoodies. Judge Cupidot delivers witty, legally binding romantic justice!
           </p>
         </div>
+
+        {/* Cupidot Standard Activity Lifecycle Guidance */}
+        <CupidotActivityGuidance
+          activityName="Petty Court Arbitrator"
+          phase={verdict ? 'revealed' : deliberating ? 'locked' : 'ready'}
+          partnerName={partnerB || 'Partner'}
+          privacyNote="A playful, lighthearted trial. All verdicts are delivered with maximum affection and zero relationship penalties!"
+        />
 
         {/* Court Case Card */}
         <div

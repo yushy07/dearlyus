@@ -17,16 +17,16 @@ export interface CupidotDilemma {
 }
 
 export const CUPIDOT_THOUGHTS = [
-  "Connecting threads from your previous answers... 🧵",
-  "Detecting behavioral patterns between you two... 🔍",
-  "Analyzing who secretly holds the relationship power... 👑",
-  "Spotting funny contradictions in your choices... 🧐",
-  "Weaving your late-night lore into the next dilemma... 💘",
-  "Calculating compromise friction across the miles... ⚡",
-  "Matching your love language against your vacation instincts... 🗺️",
-  "Consulting the Cupid archives on couple psychology... 🧠",
-  "Crafting a dilemma neither of you can dodge... 🌶️",
-  "Measuring emotional synchronicity over time... 📈",
+  "Weaving your late-night lore into tonight's moments... 💘",
+  "Connecting threads from your favorite memories together... 🧵",
+  "Noticing the shared inside jokes that make your story yours... ✨",
+  "Holding space for whatever energy you two bring tonight... ☕",
+  "Preparing a cozy little corner in Our Space for you two... 🌸",
+  "Counting down the shared laughs across the miles... ✈️",
+  "Curling up peacefully while you two talk, create, and plan... 🌙",
+  "Matching your spontaneous ideas against your cozy instincts... 🗺️",
+  "Safeguarding your sealed answers and private drafts... 💌",
+  "Celebrating another irreplaceable chapter in your story... 💖",
 ];
 
 export function getRandomCupidotThought(): string {

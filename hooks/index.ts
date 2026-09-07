@@ -9,3 +9,4 @@ export * from './usePrivateAnswers';
 export * from './useSessionRecovery';
 export * from './useKeepsakeWriter';
 export * from './usePassport';
+export * from './useCupidotPet';

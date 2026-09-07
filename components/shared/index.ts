@@ -9,3 +9,6 @@ export * from './AuthButton';
 export * from './TogetherPulse';
 export * from './ConnectionRibbon';
 export * from './SecretAnswerSeal';
+export * from './RecoveryBanner';
+export * from './ReactionBursts';
+export * from './CupidotActivityGuidance';

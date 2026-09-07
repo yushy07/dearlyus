@@ -17,6 +17,7 @@ import { Ribbon } from '@/components/shared/Ribbon';
 import { TiltedCard, ShinyText } from '@/components/ui';
 import { RoomInviteModal } from '@/components/shared/RoomInviteModal';
 import { CoupleNameBar } from '@/components/shared/CoupleNameBar';
+import { CupidotActivityGuidance } from '@/components/shared/CupidotActivityGuidance';
 import { getCupidotPoseIdea, generateCupidotCaption, PoseIdea } from '@/lib/cupidot';
 import { useCoupleProfile } from '@/lib/couple';
 import { useActivityRuntime } from '@/hooks/useActivityRuntime';
@@ -531,6 +532,22 @@ export default function PhotoboothPage() {
       </header>
 
       <main className="wrap" style={{ paddingTop: '32px' }}>
+        {/* Cupidot Standard Activity Lifecycle Guidance */}
+        <CupidotActivityGuidance
+          activityName="Online Photobooth Studio"
+          phase={
+            scene === 'DOWNLOAD'
+              ? 'completed'
+              : scene === 'BOOTH' || scene === 'EDIT'
+              ? 'private'
+              : scene === 'DECORATE' || scene === 'FILTER'
+              ? 'revealed'
+              : 'ready'
+          }
+          partnerName={partnerB || 'Partner'}
+          privacyNote="Webcam feed is strictly client-side and peer-to-peer. No raw video is ever uploaded or stored."
+        />
+
         {/* Studio Scene Stage Selector Bar */}
         <div
           style={{

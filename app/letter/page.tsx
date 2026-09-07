@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Ribbon, Navbar, Confetti, CoupleNameBar } from '@/components/shared';
+import { Ribbon, Navbar, Confetti, CoupleNameBar, CupidotActivityGuidance } from '@/components/shared';
 import { sounds } from '@/lib/sound';
 import { WaxSealEnvelope, ScrollProgress, ScrollReveal, GlowBadge } from '@/components/ui';
 import { useCoupleProfile } from '@/lib/couple';
@@ -191,6 +191,14 @@ export default function LetterPage() {
             A sealed time-capsule letter locked cryptographically until your chosen reunion date or anniversary.
           </p>
         </div>
+
+        {/* Cupidot Standard Activity Lifecycle Guidance */}
+        <CupidotActivityGuidance
+          activityName="Sealed Time Capsule Letter"
+          phase={sealedSuccessfully ? 'locked' : 'private'}
+          partnerName={partnerB || 'Partner'}
+          privacyNote="Draft letters are written privately. Sealed with digital wax and stored in your vault until the unlock date."
+        />
 
         {!sealedSuccessfully ? (
           <form

@@ -2,6 +2,7 @@
 
 export * from './passport';
 export * from './sound';
+export * from './cupidot';
 
 export interface RoomStyle {
   id: string;
@@ -79,4 +80,5 @@ export interface BlogPostData {
 }
 
 export type { CoupleProfile } from '@/lib/couple';
+export type { Keepsake } from '@/lib/domain';
 

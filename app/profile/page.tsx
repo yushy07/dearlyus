@@ -16,6 +16,7 @@ import {
   MemoryWeather,
   TimezoneBridge,
   SharedRituals,
+  CupidotHomeArea,
 } from '@/components/our-space';
 import styles from './profile.module.css';
 
@@ -476,6 +477,20 @@ export default function ProfilePage() {
           <div className={`${styles.notice} ${notice.kind === 'error' ? styles.noticeError : styles.noticeSuccess}`} role="status">
             {notice.text}
           </div>
+        )}
+
+        {/* Cupidot Shared Pet & Living Home Area */}
+        {activeTab === 'all' && (
+          <CupidotHomeArea
+            partnerA={ownMember?.displayName || profile.displayName}
+            partnerB={partner?.displayName || 'Your person'}
+            partnerTime={partnerLocalTime}
+            activeRoomCode={space?.activeRoomCode}
+            keepsakes={keepsakes}
+            onStartRoom={handleStartRoom}
+            onInspectKeepsake={(k) => setSelectedKeepsake(k)}
+            onOpenCapsuleModal={() => setCapsuleModalOpen(true)}
+          />
         )}
 
         {/* Continue Previous Date Night Prompt */}

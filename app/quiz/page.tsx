@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { QUIZ_PACKS } from '@/data';
 import { QuizPack, QuizQuestion } from '@/types';
-import { Ribbon, Navbar, Confetti, CoupleNameBar, AiConsentToggle, SecretAnswerSeal } from '@/components/shared';
+import { Ribbon, Navbar, Confetti, CoupleNameBar, AiConsentToggle, SecretAnswerSeal, CupidotActivityGuidance } from '@/components/shared';
 import { sounds } from '@/lib/sound';
 import { downloadReceiptPNG, DateReceiptData } from '@/lib/receipt-canvas';
 import { ThermalReceiptModal } from '@/components/shared/ThermalReceiptModal';
@@ -368,6 +368,26 @@ export default function QuizPage() {
                 Matches: {matches} 💖
               </span>
             </div>
+
+            {/* Cupidot Standard Activity Lifecycle Guidance */}
+            <CupidotActivityGuidance
+              activityName="Couple Lore Quiz"
+              phase={
+                revealed
+                  ? 'revealed'
+                  : bothLocked
+                  ? 'locked'
+                  : isLocked
+                  ? 'locked'
+                  : 'private'
+              }
+              partnerName={partnerB || 'Partner'}
+              privacyNote={
+                !revealed
+                  ? 'Your draft choice is completely private and hidden until both of you lock in.'
+                  : undefined
+              }
+            />
 
             {/* Question Text */}
             <h2 style={{ fontSize: 'clamp(20px, 3.2vw, 24px)', fontWeight: 800, marginBottom: '24px', textAlign: 'center', color: '#1F2937' }}>

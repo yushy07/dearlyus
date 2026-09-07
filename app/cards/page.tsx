@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Ribbon, Navbar, CoupleNameBar, AiConsentToggle } from '@/components/shared';
+import { Ribbon, Navbar, CoupleNameBar, AiConsentToggle, CupidotActivityGuidance } from '@/components/shared';
 import { sounds } from '@/lib/sound';
 import { SwipeDeck, GlowBadge, ScrollProgress, ScrollReveal } from '@/components/ui';
 import { ScratchOffCard } from '@/components/cards/ScratchOffCard';
@@ -170,6 +170,13 @@ export default function CardsPage() {
               <span>{scratchMode ? '✓ Silver Foil Scratch Mode' : 'Instant Card View'}</span>
             </button>
           </div>
+
+          <CupidotActivityGuidance
+            activityName="Deep Connection Cards"
+            phase={revealed ? 'revealed' : myAnswer ? 'locked' : 'ready'}
+            partnerName={partnerB || 'Partner'}
+            privacyNote="No rush, no score, and no pressure to answer what you're not ready to share."
+          />
 
           <SwipeDeck
             onSwipeRight={handleNext}

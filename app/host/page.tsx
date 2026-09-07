@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Ribbon, Navbar, Confetti, CoupleNameBar, AiConsentToggle } from '@/components/shared';
+import { Ribbon, Navbar, Confetti, CoupleNameBar, AiConsentToggle, CupidotActivityGuidance } from '@/components/shared';
 import { sounds } from '@/lib/sound';
 import { downloadReceiptPNG, DateReceiptData } from '@/lib/receipt-canvas';
 import { ThermalReceiptModal } from '@/components/shared/ThermalReceiptModal';
@@ -177,6 +177,14 @@ export default function DateHostPage() {
             Cupidot observes your real choices, tracks your synergy, and delivers witty commentary while adapting every dilemma.
           </p>
         </div>
+
+        {/* Cupidot Standard Activity Lifecycle Guidance */}
+        <CupidotActivityGuidance
+          activityName="The Third Wheel Host"
+          phase={revealed ? 'revealed' : (partnerAPick !== null || partnerBPick !== null) ? 'locked' : 'ready'}
+          partnerName={partnerB || 'Partner'}
+          privacyNote="Picks are locked in privately until reveal. Cupidot provides host commentary once both choices are unveiled."
+        />
 
         {/* Scenario Card */}
         <div

@@ -12,6 +12,7 @@ import { PassportBookletCover } from './_components/PassportBookletCover';
 import { StampCard } from './_components/StampCard';
 import { TicketEditorModal } from './_components/TicketEditorModal';
 import { RoomInviteModal } from '@/components/shared/RoomInviteModal';
+import { CupidotActivityGuidance } from '@/components/shared/CupidotActivityGuidance';
 import { useCoupleProfile } from '@/lib/couple';
 import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 
@@ -334,6 +335,14 @@ export default function PassportPage() {
               </p>
             </div>
           </ScrollReveal>
+
+          {/* Cupidot Standard Activity Lifecycle Guidance */}
+          <CupidotActivityGuidance
+            activityName="Couple Date Passport"
+            phase="completed"
+            partnerName={profile.partner2 || 'Partner'}
+            privacyNote="Passport stamps and travel tickets are shared keepsakes celebrating every flight, date, and milestone reached together."
+          />
 
           {/* Romantic First Class Boarding Pass Ticket Stub */}
           <ScrollReveal animation="fade-up">
