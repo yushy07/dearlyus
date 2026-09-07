@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { PREMADE_DATE_PLANS } from '@/data';
-import { Ribbon, Navbar } from '@/components/shared';
+import { Ribbon, Navbar, CupidotActivityGuidance } from '@/components/shared';
 import { sounds } from '@/lib/sound';
 import { useCoupleProfile } from '@/lib/couple';
 
@@ -139,6 +139,14 @@ export default function DateNightPlannerPage() {
             Parallel dining &amp; activities for <b>{partnerA} ({cityA})</b> and <b>{partnerB} ({cityB})</b>. Seamless itinerary of synced games, prompts, and photobooth milestones.
           </p>
         </div>
+
+        {/* Cupidot Standard Activity Lifecycle Guidance */}
+        <CupidotActivityGuidance
+          activityName="Date Architect"
+          phase="ready"
+          partnerName={partnerB || 'Partner'}
+          privacyNote="Date plans, mood itineraries, and ambient soundtracks are shared between your spaces in real time."
+        />
 
         {/* Mood & Activity Mode Selector */}
         <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '32px', flexWrap: 'wrap' }}>

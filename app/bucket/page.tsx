@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Ribbon, Navbar, Confetti } from '@/components/shared';
+import { Ribbon, Navbar, Confetti, CupidotActivityGuidance } from '@/components/shared';
 import { sounds } from '@/lib/sound';
 import { ScrollProgress, ScrollReveal } from '@/components/ui';
 import { CupidotBot, BotState } from '@/components/bot/CupidotBot';
@@ -154,6 +154,13 @@ export default function BucketListPage() {
             </button>
           </div>
         </ScrollReveal>
+
+        {/* Cupidot Standard Activity Lifecycle Guidance */}
+        <CupidotActivityGuidance
+          activityName="100 Dates Bucket List"
+          phase={completedCount === dates.length ? 'completed' : 'ready'}
+          privacyNote="Checked milestones are part of your mutual couple bucket list. Tap any item to toggle together."
+        />
 
         {/* Progress Bar Card */}
         <div className="booth-box" style={{ padding: '24px 28px', marginBottom: '28px' }}>

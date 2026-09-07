@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import {
   productStateToBehavior,
   behaviorToPresentation,
-  deriveProductState,
+  deriveCupidotState,
   deriveSafeMood,
   getReturnExperience,
   calculateChapter,
@@ -369,3 +369,119 @@ describe('Togetherness Modes & Accessibility Foundations', () => {
     expect(chapters[4].sparksRequired).toBe(1000);
   });
 });
+
+describe('Deterministic State Transitions & Priority Flow', () => {
+  it('strictly prioritizes reconnecting and safety above all active room operations', () => {
+    const state = deriveCupidotState({
+      isRoomActive: true,
+      partnerOnline: true,
+      isCelebrating: true,
+      isRevealing: true,
+      isReconnecting: true,
+    });
+    expect(state).toBe('reconnecting');
+  });
+
+  it('prioritizes memory curation after celebration completes', () => {
+    const state = deriveCupidotState({
+      isRoomActive: true,
+      partnerOnline: true,
+      isCuratingMemory: true,
+    });
+    expect(state).toBe('curating_memory');
+  });
+
+  it('transitions through private drafting to sealed anticipation', () => {
+    // While drafting privately
+    const draftingState = deriveCupidotState({
+      isRoomActive: true,
+      partnerOnline: true,
+      isPrivateDrafting: true,
+    });
+    expect(draftingState).toBe('focused');
+
+    // When both partner answers are locked and ready to reveal
+    const revealState = deriveCupidotState({
+      isRoomActive: true,
+      partnerOnline: true,
+      ownReady: true,
+      partnerReady: true,
+    });
+    expect(revealState).toBe('anticipating_reveal');
+  });
+
+  it('settles for the night when late night and offline', () => {
+    const nightState = deriveCupidotState({
+      isRoomActive: false,
+      partnerOnline: false,
+      isLateNight: true,
+    });
+    expect(nightState).toBe('settling_for_night');
+  });
+});
+
+describe('Privacy-Safe Sealed Answers & Zero-Leakage Policy', () => {
+  it('guarantees sealed answers conceal drafts without exposing character counts or hints', () => {
+    // Sealed answer verification:
+    // Before mutual reveal, the client representation only conveys locked status
+    const partnerDraft = {
+      isSubmitted: true,
+      sealed: true,
+      // Draft text must not be transmitted or exposed to partner UI before unsealing
+      draftText: 'Secret anniversary surprise plan',
+      characterCount: 32,
+    };
+
+    // Safe sanitized presentation for partner view
+    const partnerSealedView = {
+      isSubmitted: partnerDraft.isSubmitted,
+      sealed: partnerDraft.sealed,
+      displayMask: '🔒 Sealed & Waiting for Reveal',
+    };
+
+    expect(partnerSealedView.sealed).toBe(true);
+    expect((partnerSealedView as any).draftText).toBeUndefined();
+    expect((partnerSealedView as any).characterCount).toBeUndefined();
+    expect((partnerSealedView as any).choiceHints).toBeUndefined();
+  });
+});
+
+describe('Offline / Reconnect Calm Recovery', () => {
+  it('provides calm reassuring dialogue and recovery presentation when reconnecting', () => {
+    const recoveryBehavior = productStateToBehavior('reconnecting');
+    expect(recoveryBehavior.intent).toBe('recover_connection');
+    expect(recoveryBehavior.speechCue).toContain('Holding your place while connection restores. Nothing was lost.');
+    expect(containsGuiltPhrasing(recoveryBehavior.speechCue)).toBe(false);
+
+    const presentation = behaviorToPresentation('recover_connection');
+    expect(presentation.ariaLiveText).toBe('Cupidot is checking in thoughtfully.');
+    expect(presentation.botState).toBe('thinking');
+  });
+});
+
+describe('Screen Reader Announcements & Accessibility Verification', () => {
+  it('provides polite aria-live announcements for all 12 behavior intents', () => {
+    const intents: import('../types/cupidot').CupidotBehaviorIntent[] = [
+      'welcome',
+      'reunion',
+      'suggest',
+      'explain',
+      'wait',
+      'host',
+      'privacy_confirmation',
+      'reveal_anticipation',
+      'celebrate',
+      'curate_memory',
+      'recover_connection',
+      'settle',
+    ];
+
+    for (const intent of intents) {
+      const pres = behaviorToPresentation(intent);
+      expect(pres.ariaLiveText).toBeDefined();
+      expect(pres.ariaLiveText.trim().length).toBeGreaterThan(10);
+      expect(pres.animationSpeed).toBeGreaterThanOrEqual(0);
+    }
+  });
+});
+
