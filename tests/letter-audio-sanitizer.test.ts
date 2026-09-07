@@ -44,7 +44,7 @@ describe('sanitizeSafeAudioUrl security test suite', () => {
     expect(sanitizeSafeAudioUrl('vbscript:msgbox(1)')).toBeUndefined();
   });
 
-  it('rejects html/text data URIs containing payload or scripts', () => {
+  it('rejects html/text/svg data URIs containing payload or scripts (CWE-184 allowlist)', () => {
     expect(
       sanitizeSafeAudioUrl('data:text/html,<script>alert(1)</script>'),
     ).toBeUndefined();
@@ -52,8 +52,20 @@ describe('sanitizeSafeAudioUrl security test suite', () => {
       sanitizeSafeAudioUrl('data:application/javascript,alert(1)'),
     ).toBeUndefined();
     expect(
+      sanitizeSafeAudioUrl('data:image/svg+xml;base64,PHN2Zz48L3N2Zz4='),
+    ).toBeUndefined();
+    expect(
       sanitizeSafeAudioUrl('data:audio/webm;<script>alert(1)</script>'),
     ).toBeUndefined();
+    expect(
+      sanitizeSafeAudioUrl('data:text/plain;base64,SGVsbG8='),
+    ).toBeUndefined();
+  });
+
+  it('rejects non-allowlisted schemes such as file:, about:, and mailto:', () => {
+    expect(sanitizeSafeAudioUrl('file:///etc/passwd')).toBeUndefined();
+    expect(sanitizeSafeAudioUrl('about:blank')).toBeUndefined();
+    expect(sanitizeSafeAudioUrl('mailto:test@example.com')).toBeUndefined();
   });
 
   it('rejects inputs containing HTML meta-characters or injection tags', () => {
