@@ -83,6 +83,13 @@ Long distance dates often default to muted video calls or passive movie streamin
 ### 🎵 4. Multi-Track Ambient Soundscape Synthesizer (`/date`, Global Dock)
 - **5 Procedural Audio Channels**: *Attic Rain*, *Cozy Fireplace*, *Tokyo Midnight Cafe*, *90s Vinyl Needle*, and *Lo-Fi Chords* with real-time Web Audio API synthesis.
 
+### 🕊️ 5. Cupidot: Shared Relationship Companion & Behavioral Brain (`/profile`)
+- **Shared Pet Sanctuary**: A decay-free, zero-guilt relationship pet living in *Our Space* with 5 growth chapters, decay-free growth sparks, and zero streak punishment.
+- **Dual Presentation Engine**: 3D Three.js WebGL companion alongside a lightweight, accessible 2D animated stage with reduced-motion support and screen-reader announcements.
+- **The Romance Spectrum**: 6 intensity tiers (*Quiet*, *Warm*, *Romantic*, *Cheeky*, *Flirty*, *Spicy*) governed by a strict mutual consent ceiling (`min(levelA, levelB)`), session-scoped adult verification for sensitive tiers, and anonymous private intensity downgrades (*"Keeping things lighter."*).
+- **Curated Dialogue & Interruption Budget**: 14 response intents with concise dialogue bounds, prompt-injection defense, and enforced silence during private writing/drawing phases.
+- **Six Togetherness Modes**: *Quick Spark*, *Date Night*, *Quiet Together* (ambient hearth, soft rain, lo-fi), *Deep Connection*, *Make Something*, and *Surprise Us*.
+
 ---
 
 ## 🎮 Application Route Directory
@@ -116,7 +123,8 @@ Long distance dates often default to muted video calls or passive movie streamin
 | **`/future`** | 3-year vision board planner with custom milestones. |
 | **`/riddle`** | Co-op brain teasers and riddle night puzzles. |
 | **`/iq`** | Head-to-head timed logic and spatial pattern duel. |
-| **`/profile`** | Google-backed profile, names, cities, and private room code. |
+| **`/passport`** | Official Love Passport with souvenir stamps and dual-city boarding pass. |
+| **`/profile`** | **Our Space Sanctuary**: Cupidot shared pet stage, decor shelf, growth chapters, romance spectrum controls & private room code. |
 | **`/login`** | Google-only sign-in with safe return-path handling. |
 | **`/auth/callback`** | Supabase OAuth callback and automatic profile bootstrap. |
 | **`/invite/:token`** | Minimal invite preview, confirmation, and protected couple connection. |
@@ -186,9 +194,18 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### Verification & Production Build
-
+### Testing & Verification
+ 
 ```bash
+# Run unit & integration tests (Vitest)
+npm test
+
+# Run browser tests (Playwright)
+npm run test:browser
+
+# Run fast static linter (Oxlint)
+npm run lint
+
 # Type check the codebase
 npx tsc --noEmit
 
