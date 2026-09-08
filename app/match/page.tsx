@@ -396,7 +396,7 @@ export default function MatchPage() {
                         color: 'var(--ink)',
                       }}
                     >
-                      {q.question}
+                      {q.title}
                     </strong>
                     {isMatch ? (
                       <p
@@ -406,7 +406,7 @@ export default function MatchPage() {
                           color: 'var(--ink)',
                         }}
                       >
-                        Both picked: <em>&ldquo;{q.options[pick1]}&rdquo;</em>
+                        Both picked: <em>&ldquo;{q.options[pick1]?.text}&rdquo;</em>
                       </p>
                     ) : (
                       <div
@@ -421,7 +421,7 @@ export default function MatchPage() {
                             {partnerA}:
                           </strong>{' '}
                           <em>
-                            &ldquo;{q.options[pick1] ?? 'Not answered'}&rdquo;
+                            &ldquo;{q.options[pick1]?.text ?? 'Not answered'}&rdquo;
                           </em>
                         </div>
                         <div>
@@ -429,7 +429,7 @@ export default function MatchPage() {
                             {partnerB}:
                           </strong>{' '}
                           <em>
-                            &ldquo;{q.options[pick2] ?? 'Not answered'}&rdquo;
+                            &ldquo;{q.options[pick2]?.text ?? 'Not answered'}&rdquo;
                           </em>
                         </div>
                       </div>
