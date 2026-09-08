@@ -8,6 +8,7 @@ import {
 } from '@/types/cupidot';
 import { AiConsentToggle } from '@/components/shared/AiConsentToggle';
 import { sounds } from '@/lib/sound';
+import { getQuietHoursEnabled, setQuietHoursEnabled } from '@/lib/voice';
 
 export interface YourRoomYourRulesModalProps {
   isOpen: boolean;
@@ -37,8 +38,12 @@ export function YourRoomYourRulesModal({
   onAmbientAudioChange,
 }: YourRoomYourRulesModalProps) {
   const [softenNotice, setSoftenNotice] = useState<string | null>(null);
+  const [pendingOptInLevel, setPendingOptInLevel] =
+    useState<RomanceLevel | null>(null);
   const [askBeforeSave, setAskBeforeSave] = useState(true);
-  const [quietHoursEnabled, setQuietHoursEnabled] = useState(true);
+  const [quietHoursActive, setQuietHoursActive] = useState(() =>
+    getQuietHoursEnabled(),
+  );
   const [quietStart, setQuietStart] = useState('22:00');
   const [quietEnd, setQuietEnd] = useState('08:00');
 
@@ -310,7 +315,12 @@ export function YourRoomYourRulesModal({
                   type="button"
                   onClick={() => {
                     sounds.playPop();
-                    onRomanceLevelChange?.(level);
+                    if (def.requiresMutualOptIn && romanceLevel !== level) {
+                      setPendingOptInLevel(level);
+                    } else {
+                      setPendingOptInLevel(null);
+                      onRomanceLevelChange?.(level);
+                    }
                   }}
                   style={{
                     padding: '8px 6px',
@@ -346,6 +356,59 @@ export function YourRoomYourRulesModal({
               );
             })}
           </div>
+
+          {pendingOptInLevel && (
+            <div
+              role="alert"
+              style={{
+                marginTop: '10px',
+                padding: '12px',
+                borderRadius: '12px',
+                background: '#FFF0F5',
+                border: '1.5px solid var(--pink)',
+                fontSize: '12px',
+                color: 'var(--ink)',
+              }}
+            >
+              <div
+                style={{
+                  fontWeight: 700,
+                  color: 'var(--pink)',
+                  marginBottom: '4px',
+                }}
+              >
+                ⚠️ 18+ Mutual Opt-In Required
+              </div>
+              <div style={{ lineHeight: 1.4 }}>
+                {pendingOptInLevel === 'spicy'
+                  ? 'Spicy mode is adult-only (18+) and active only for this specific date-night session. Either partner can lower or exit at any time with zero awkwardness.'
+                  : 'Flirty mode requires mutual 18+ adult consent from both partners.'}
+              </div>
+              <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  style={{ fontSize: '11px', padding: '4px 10px' }}
+                  onClick={() => {
+                    sounds.playCelebration();
+                    onRomanceLevelChange?.(pendingOptInLevel);
+                    setPendingOptInLevel(null);
+                  }}
+                >
+                  Confirm 18+ Opt-In
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  style={{ fontSize: '11px', padding: '4px 10px' }}
+                  onClick={() => setPendingOptInLevel(null)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
           <div
             style={{
               fontSize: '11.5px',
@@ -514,8 +577,11 @@ export function YourRoomYourRulesModal({
             >
               <input
                 type="checkbox"
-                checked={quietHoursEnabled}
-                onChange={(e) => setQuietHoursEnabled(e.target.checked)}
+                checked={quietHoursActive}
+                onChange={(e) => {
+                  setQuietHoursActive(e.target.checked);
+                  setQuietHoursEnabled(e.target.checked);
+                }}
               />
               <span>
                 Respect quiet hours for ritual reminders ({quietStart} to{' '}

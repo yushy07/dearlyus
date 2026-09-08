@@ -843,18 +843,58 @@ export function deriveCupidotState(params: {
  */
 const STORAGE_KEY = 'dearly_cupidot_home_v1';
 
+function getLocalStorage(): Storage | null {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    return window.localStorage;
+  }
+  if (typeof globalThis !== 'undefined' && (globalThis as any).localStorage) {
+    return (globalThis as any).localStorage;
+  }
+  return null;
+}
+
 export function loadStoredCupidotHome(coupleId?: string): CupidotHomeState {
-  if (typeof window === 'undefined') {
+  const storage = getLocalStorage();
+  if (!storage) {
     return createDefaultHomeState();
   }
 
   try {
-    const raw = localStorage.getItem(`${STORAGE_KEY}_${coupleId || 'local'}`);
+    const raw = storage.getItem(`${STORAGE_KEY}_${coupleId || 'local'}`);
     if (raw) {
       const parsed = JSON.parse(raw);
+
+      // Reset sparksThisSession if last visit was >60 minutes ago
+      const previousReturn = parsed.lastReturnAt
+        ? new Date(parsed.lastReturnAt).getTime()
+        : 0;
+      const isNewSession =
+        !previousReturn ||
+        isNaN(previousReturn) ||
+        Date.now() - previousReturn > 60 * 60 * 1000;
+      const sessionSparks = isNewSession
+        ? 0
+        : Math.min(
+            SESSION_SPARK_SOFT_CAP,
+            Math.max(0, Number(parsed.sparksThisSession || 0)),
+          );
+
+      const growthSparks =
+        typeof parsed.growthSparks === 'number' && parsed.growthSparks >= 0
+          ? parsed.growthSparks
+          : 0;
+      const chapter = Number(calculateChapter(growthSparks)) as CupidotChapter;
+      const placedDecorIds = Array.isArray(parsed.placedDecorIds)
+        ? parsed.placedDecorIds
+        : ['decor_cozy_cushion', 'decor_welcome_plant'];
+
       return {
         ...createDefaultHomeState(),
         ...parsed,
+        chapter,
+        growthSparks,
+        sparksThisSession: sessionSparks,
+        placedDecorIds,
         lastReturnAt: new Date().toISOString(),
       };
     }
@@ -867,9 +907,10 @@ export function saveStoredCupidotHome(
   state: CupidotHomeState,
   coupleId?: string,
 ): void {
-  if (typeof window === 'undefined') return;
+  const storage = getLocalStorage();
+  if (!storage) return;
   try {
-    localStorage.setItem(
+    storage.setItem(
       `${STORAGE_KEY}_${coupleId || 'local'}`,
       JSON.stringify(state),
     );

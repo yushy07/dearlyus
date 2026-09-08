@@ -23,6 +23,7 @@ export interface QuestionRequest {
   history?: Array<{ question: string; answerA: string; answerB: string }>;
   currentTopic?: string;
   aiConsent?: boolean;
+  signal?: AbortSignal;
 }
 
 export interface GeneratedQuestion {
@@ -105,9 +106,11 @@ export function sanitizeCupidotPayload(req: QuestionRequest): QuestionRequest {
     partnerB: sanitizedB,
     mode: req.mode || 'quiz',
     mood: req.mood || 'playful',
+    romanceLevel: req.romanceLevel || 'sweet',
     history: sanitizedHistory,
     currentTopic: sanitizeText(req.currentTopic, 60),
     aiConsent: Boolean(req.aiConsent),
+    signal: req.signal,
   };
 }
 
@@ -134,15 +137,50 @@ export async function generateAdaptiveQuestion(
     return generateCupidotDilemma(cleanReq);
   }
 
+  // Abort controller with 6000ms timeout or caller's cancellation signal
+  const timeoutController = new AbortController();
+  const timeoutId = setTimeout(() => {
+    timeoutController.abort();
+  }, 6000);
+
+  if (cleanReq.signal) {
+    cleanReq.signal.addEventListener('abort', () => timeoutController.abort(), {
+      once: true,
+    });
+  }
+
   try {
-    // Invoke Supabase Edge Function with sanitized context
-    const { data, error } = await supabase.functions.invoke('gemini', {
+    if (timeoutController.signal.aborted) {
+      clearTimeout(timeoutId);
+      return generateCupidotDilemma(cleanReq);
+    }
+
+    // Invoke Supabase Edge Function with sanitized context and romanceLevel ceiling
+    const invokePromise = supabase.functions.invoke('gemini', {
       body: {
         sessionId: cleanReq.sessionId,
         mode: cleanReq.mode,
         mood: cleanReq.mood,
+        romanceLevel: cleanReq.romanceLevel,
       },
     });
+
+    // Race against timeout
+    const abortPromise = new Promise<{ data: null; error: Error }>(
+      (_, reject) => {
+        timeoutController.signal.addEventListener(
+          'abort',
+          () => {
+            reject(new Error('AI request timed out or cancelled'));
+          },
+          { once: true },
+        );
+      },
+    );
+
+    const { data, error } = await Promise.race([invokePromise, abortPromise]);
+
+    clearTimeout(timeoutId);
 
     if (
       error ||
@@ -163,14 +201,21 @@ export async function generateAdaptiveQuestion(
       )
       .filter(Boolean)
       .slice(0, 4);
+
+    // Recheck length >= 2 after filtering out invalid/empty options
+    if (cleanOptions.length < 2) {
+      return generateCupidotDilemma(cleanReq);
+    }
+
     const cleanCommentary = data.commentary
       ? String(data.commentary).trim().slice(0, 200)
       : undefined;
 
-    // Safety check on returned text: reject prompt injections, leaks, or inappropriate content
+    // Safety check on returned text: question, commentary, AND each individual option
     if (
       !handleSafetyBoundary(cleanQuestion).isSafe ||
-      (cleanCommentary && !handleSafetyBoundary(cleanCommentary).isSafe)
+      (cleanCommentary && !handleSafetyBoundary(cleanCommentary).isSafe) ||
+      !cleanOptions.every((opt) => handleSafetyBoundary(opt).isSafe)
     ) {
       return generateCupidotDilemma(cleanReq);
     }
@@ -182,6 +227,7 @@ export async function generateAdaptiveQuestion(
       source: 'gemini',
     };
   } catch {
+    clearTimeout(timeoutId);
     // Guarantees zero blocking: fail gracefully to deterministic on-device engine
     return generateCupidotDilemma(cleanReq);
   }

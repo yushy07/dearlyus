@@ -35,6 +35,7 @@ export function createActivityRuntime<
   let recoveryState: StandardRecoveryState = 'idle';
 
   const seenEventIds = new Set<string>();
+  const eventBuffer = new Map<number, StandardActivityEvent>();
   const listeners = new Set<
     (snapshot: TSnapshot, event?: StandardActivityEvent) => void
   >();
@@ -45,27 +46,27 @@ export function createActivityRuntime<
     recoveryListeners.forEach((l) => l(state));
   };
 
-  const dispatchEvent = (event: StandardActivityEvent) => {
-    // 1. Drop duplicate events
-    if (event.id && seenEventIds.has(event.id)) {
-      return;
+  const applyContiguousEvent = (evt: StandardActivityEvent) => {
+    if (evt.id) {
+      seenEventIds.add(evt.id);
     }
-    if (event.id) {
-      seenEventIds.add(event.id);
-    }
-
-    // 2. Detect sequence gaps and trigger recovery
-    if (event.sequence > lastSequence + 1 && lastSequence > 0) {
-      console.warn(
-        `[ActivityRuntime] Event gap detected: lastSequence=${lastSequence}, incoming=${event.sequence}. Triggering replay recovery.`,
-      );
-      void requestRecovery(lastSequence);
-    }
-
-    lastSequence = Math.max(lastSequence, event.sequence);
+    lastSequence = evt.sequence;
     revision += 1;
 
-    // 3. Validate and reduce into current snapshot
+    currentSnapshot = adapter.reduce(currentSnapshot, evt as any);
+    transport.updateSnapshot?.(currentSnapshot, lastSequence);
+
+    listeners.forEach((listener) => {
+      try {
+        listener(currentSnapshot, evt);
+      } catch (err) {
+        console.error('[ActivityRuntime] Error in subscriber listener:', err);
+      }
+    });
+  };
+
+  const dispatchEvent = (event: StandardActivityEvent) => {
+    // 1. Validate event schema and domain rules FIRST before any mutation
     const validation = adapter.validateEvent(event as any);
     if (!validation.valid) {
       console.warn(
@@ -75,17 +76,37 @@ export function createActivityRuntime<
       return;
     }
 
-    currentSnapshot = adapter.reduce(currentSnapshot, event as any);
-    transport.updateSnapshot?.(currentSnapshot, lastSequence);
+    // 2. Drop duplicate events (by ID or obsolete sequence)
+    if (event.id && seenEventIds.has(event.id)) {
+      return;
+    }
+    if (lastSequence > 0 && event.sequence <= lastSequence) {
+      return;
+    }
 
-    // 4. Notify subscribers
-    listeners.forEach((listener) => {
-      try {
-        listener(currentSnapshot, event);
-      } catch (err) {
-        console.error('[ActivityRuntime] Error in subscriber listener:', err);
+    // 3. Detect sequence gaps: buffer out-of-order events instead of prematurely applying them
+    const expectedSequence = lastSequence + 1;
+    if (event.sequence > expectedSequence) {
+      console.warn(
+        `[ActivityRuntime] Event gap detected: lastSequence=${lastSequence}, expected=${expectedSequence}, incoming=${event.sequence}. Buffering and triggering recovery.`,
+      );
+      eventBuffer.set(event.sequence, event);
+      if (event.id) {
+        seenEventIds.add(event.id);
       }
-    });
+      void requestRecovery(lastSequence);
+      return;
+    }
+
+    // 4. Apply contiguous event and drain buffered events sequentially
+    applyContiguousEvent(event);
+
+    while (eventBuffer.has(lastSequence + 1)) {
+      const nextSeq = lastSequence + 1;
+      const nextEvt = eventBuffer.get(nextSeq)!;
+      eventBuffer.delete(nextSeq);
+      applyContiguousEvent(nextEvt);
+    }
   };
 
   // Wire transport event subscription
@@ -131,7 +152,10 @@ export function createActivityRuntime<
           lastSequence = Math.max(lastSequence, recoveredSequence);
         }
         if (Array.isArray(recovered.events)) {
-          recovered.events.forEach((evt) => dispatchEvent(evt));
+          const sorted = [...recovered.events].sort(
+            (a, b) => a.sequence - b.sequence,
+          );
+          sorted.forEach((evt) => dispatchEvent(evt));
         }
       }
       setRecoveryState('recovered');
@@ -185,6 +209,7 @@ export function createActivityRuntime<
   const destroy = () => {
     unbindEvent();
     unbindRecovery?.();
+    eventBuffer.clear();
     listeners.clear();
     recoveryListeners.clear();
   };

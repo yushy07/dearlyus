@@ -549,9 +549,21 @@ export function canCupidotSpeak(params: {
   budget: InterruptionBudget;
   guidanceMode: GuidanceMode;
   isPrivateDrafting?: boolean;
+  suggestionKey?: string;
 }): boolean {
-  const { productState, intent, budget, guidanceMode, isPrivateDrafting } =
-    params;
+  const {
+    productState,
+    intent,
+    budget,
+    guidanceMode,
+    isPrivateDrafting,
+    suggestionKey,
+  } = params;
+
+  // Rule 0: If suggestionKey was dismissed by user, do not re-suggest it
+  if (suggestionKey && budget.dismissedSuggestionKeys?.includes(suggestionKey)) {
+    return false;
+  }
 
   // Rule 1: STRICT SILENCE during private drafting/choosing/drawing
   if (isPrivateDrafting || productState === 'focused') {
@@ -600,8 +612,22 @@ export function canCupidotSpeak(params: {
     return false;
   }
 
-  // Rule 5: Cooldown of minimum 3 seconds between chatter to avoid rapid spam
+  // Rule 5: Repetition suppression - do not repeat the same intent within 15 seconds (unless safety/recovery)
   const now = Date.now();
+  if (
+    intent !== 'recover_connection' &&
+    intent !== 'soften_intensity' &&
+    intent !== 'refuse_unsafe'
+  ) {
+    const recentDuplicate = budget.recentSpokenIntents?.find(
+      (item) => item.intent === intent && now - item.timestamp < 15000,
+    );
+    if (recentDuplicate) {
+      return false;
+    }
+  }
+
+  // Rule 6: Cooldown of minimum 3 seconds between chatter to avoid rapid spam
   if (
     now - budget.lastSpokenTimestamp < 3000 &&
     intent !== 'recover_connection' &&

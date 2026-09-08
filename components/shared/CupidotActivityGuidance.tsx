@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { GuidanceMode } from '@/types/cupidot';
+import { loadStoredCupidotHome } from '@/lib/cupidot-state';
 
 export type ActivityLifecyclePhase =
   | 'invitation'
@@ -100,7 +101,7 @@ const PHASE_GUIDANCE: Record<
 export function CupidotActivityGuidance({
   activityName,
   phase,
-  guidanceMode = 'gentle',
+  guidanceMode,
   partnerName = 'Your person',
   onNextAction,
   nextActionLabel,
@@ -110,9 +111,19 @@ export function CupidotActivityGuidance({
   className = '',
   style,
 }: CupidotActivityGuidanceProps) {
+  const activeGuidanceMode = React.useMemo(() => {
+    if (guidanceMode) return guidanceMode;
+    try {
+      const stored = loadStoredCupidotHome();
+      return stored.guidanceMode || 'gentle';
+    } catch {
+      return 'gentle';
+    }
+  }, [guidanceMode]);
+
   // If guidance is quiet, only show critical privacy/security, recovery, or expired cues
   if (
-    guidanceMode === 'quiet' &&
+    activeGuidanceMode === 'quiet' &&
     phase !== 'private' &&
     phase !== 'locked' &&
     phase !== 'recovering' &&

@@ -70,8 +70,37 @@ export function CupidotHomeArea({
   const [togethernessModalOpen, setTogethernessModalOpen] = useState(false);
   const [rulesModalOpen, setRulesModalOpen] = useState(false);
   const [ritualModalOpen, setRitualModalOpen] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState(false);
-  const [ambientAudio, setAmbientAudio] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      return localStorage.getItem('dearly_reduced_motion') === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const [ambientAudio, setAmbientAudio] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      return localStorage.getItem('dearly_ambient_audio') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const handleReducedMotionChange = (val: boolean) => {
+    setReducedMotion(val);
+    try {
+      localStorage.setItem('dearly_reduced_motion', val ? 'true' : 'false');
+    } catch {}
+  };
+
+  const handleAmbientAudioChange = (val: boolean) => {
+    setAmbientAudio(val);
+    try {
+      localStorage.setItem('dearly_ambient_audio', val ? 'true' : 'false');
+    } catch {}
+  };
+
   const [dismissedSeedId, setDismissedSeedId] = useState<string | null>(null);
 
   const presenceInfo =
@@ -636,9 +665,9 @@ export function CupidotHomeArea({
         onRomanceLevelChange={setRomanceLevel}
         onSoftenRomance={softenRomanceLevel}
         reducedMotion={reducedMotion}
-        onReducedMotionChange={setReducedMotion}
+        onReducedMotionChange={handleReducedMotionChange}
         ambientAudio={ambientAudio}
-        onAmbientAudioChange={setAmbientAudio}
+        onAmbientAudioChange={handleAmbientAudioChange}
       />
 
       <CustomRitualModal

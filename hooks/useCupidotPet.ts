@@ -23,12 +23,16 @@ import {
   getReturnExperience,
 } from '@/lib/cupidot-state';
 import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
+import { useRoomPresence } from '@/contexts/PresenceContext';
 import { sounds } from '@/lib/sound';
 
 export function useCupidotPet() {
   const { space, partner, milestones, keepsakes, preferences } =
     useCoupleSpace();
   const coupleId = space?.id;
+
+  const { partnerOnline, partnerInteraction, connectionState } =
+    useRoomPresence();
 
   const [homeState, setHomeState] = useState<CupidotHomeState>(() =>
     loadStoredCupidotHome(coupleId),
@@ -53,6 +57,8 @@ export function useCupidotPet() {
 
   // Reload state if couple space changes
   useEffect(() => {
+    seenActionKeysRef.current.clear();
+    decorUndoStackRef.current = [];
     setHomeState(loadStoredCupidotHome(coupleId));
   }, [coupleId]);
 
@@ -76,10 +82,16 @@ export function useCupidotPet() {
     }));
   }, [homeState.chapter, homeState.placedDecorIds]);
 
-  // Safe partner presence
+  // Safe partner presence derived from actual realtime room connection
   const partnerSafePresence = useMemo(() => {
-    return sanitizeSafePresence(Boolean(partner), null, false);
-  }, [partner]);
+    const isOnline = Boolean(partnerOnline);
+    const isReconnecting = connectionState === 'reconnecting';
+    return sanitizeSafePresence(
+      isOnline,
+      partnerInteraction || null,
+      isReconnecting,
+    );
+  }, [partnerOnline, partnerInteraction, connectionState]);
 
   // Sync partner presence into homeState
   useEffect(() => {
@@ -130,13 +142,13 @@ export function useCupidotPet() {
           if (prev.state === 'settling_for_night') return prev;
           return {
             ...prev,
-            state: partner ? 'reunion' : 'welcoming',
+            state: partnerOnline ? 'reunion' : 'welcoming',
           };
         });
         reactionTimerRef.current = null;
       }, 2200);
     },
-    [partner, clearReactionTimer],
+    [partnerOnline, clearReactionTimer],
   );
 
   // Goodnight tap

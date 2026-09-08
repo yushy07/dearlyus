@@ -27,11 +27,97 @@ export type VoiceMood =
   | 'pouty'
   | 'tweaking';
 
+export interface CupidotCaption {
+  text: string;
+  mood: VoiceMood;
+  isSpeaking: boolean;
+  timestamp: number;
+}
+
 const STORAGE_KEY = 'dearly_cupidot_voice_mode';
+const QUIET_HOURS_STORAGE_KEY = 'dearly_cupidot_quiet_hours_enabled';
 
 let audioCtx: AudioContext | null = null;
 let activeChirpTimers: NodeJS.Timeout[] = [];
 let isSpeaking = false;
+let isRecordingAudio = false;
+let currentCaption: CupidotCaption | null = null;
+const captionListeners = new Set<(caption: CupidotCaption) => void>();
+
+let lastSpokenUtterance: {
+  text: string;
+  options?: {
+    mood?: VoiceMood;
+    onStart?: () => void;
+    onEnd?: () => void;
+  };
+} | null = null;
+
+export function isAudioRecordingActive(): boolean {
+  return isRecordingAudio;
+}
+
+export function setAudioRecordingActive(active: boolean): void {
+  isRecordingAudio = Boolean(active);
+  if (isRecordingAudio && isSpeaking) {
+    stopCupidotSpeech();
+  }
+}
+
+export function getQuietHoursEnabled(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    return localStorage.getItem(QUIET_HOURS_STORAGE_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+export function setQuietHoursEnabled(enabled: boolean): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(QUIET_HOURS_STORAGE_KEY, enabled ? 'true' : 'false');
+  } catch {}
+}
+
+export function isQuietHoursActive(): boolean {
+  if (!getQuietHoursEnabled()) return false;
+  const currentHour = new Date().getHours();
+  // Default quiet hours: 23:00 (11 PM) to 07:00 (7 AM)
+  return currentHour >= 23 || currentHour < 7;
+}
+
+export function getCurrentCupidotCaption(): CupidotCaption | null {
+  return currentCaption;
+}
+
+function emitCaption(caption: CupidotCaption): void {
+  currentCaption = caption;
+  captionListeners.forEach((l) => {
+    try {
+      l(caption);
+    } catch (err) {
+      console.error('[CupidotVoice] Caption listener error:', err);
+    }
+  });
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(
+      new CustomEvent('dearly_cupidot_caption', { detail: caption }),
+    );
+  }
+}
+
+export function onCupidotCaption(
+  listener: (caption: CupidotCaption) => void,
+): () => void {
+  captionListeners.add(listener);
+  if (currentCaption) {
+    listener(currentCaption);
+  }
+  return () => {
+    captionListeners.delete(listener);
+  };
+}
 
 function getAudioContext(): AudioContext | null {
   if (typeof window === 'undefined') return null;
@@ -169,6 +255,7 @@ export function playCupidotChirps(
   stopCupidotSpeech();
   const ctx = getAudioContext();
   if (!ctx) {
+    emitCaption({ text, mood, isSpeaking: false, timestamp: Date.now() });
     onComplete?.();
     return;
   }
@@ -246,6 +333,7 @@ export function playCupidotChirps(
 
   const finishTimer = setTimeout(() => {
     isSpeaking = false;
+    emitCaption({ text, mood, isSpeaking: false, timestamp: Date.now() });
     onComplete?.();
   }, delayMs + 70);
 
@@ -253,7 +341,9 @@ export function playCupidotChirps(
 }
 
 /**
- * Main Voice Coordinator: checks mode and speaks with emotional inflection
+ * Main Voice Coordinator: checks mode and speaks with emotional inflection.
+ * Universally dispatches live caption events so text subtitles and bot bubbles
+ * remain in sync even if muted, during quiet hours, or when audio recording is active.
  */
 export function speakCupidot(
   text: string,
@@ -264,13 +354,33 @@ export function speakCupidot(
   },
 ): void {
   const mode = getStoredVoiceMode();
-  if (mode === 'mute') {
-    options?.onEnd?.();
+  const mood = options?.mood || 'talking';
+
+  // Cache last utterance for replay
+  lastSpokenUtterance = { text, options };
+
+  stopCupidotSpeech();
+
+  // Check audio suppression: mute setting, active letter/audio recording, or quiet hours
+  const isSuppressed =
+    mode === 'mute' || isRecordingAudio || isQuietHoursActive();
+
+  if (isSuppressed) {
+    // Universal live caption dispatch: show captions even without audible playback
+    emitCaption({ text, mood, isSpeaking: true, timestamp: Date.now() });
+    options?.onStart?.();
+
+    const readingDuration = Math.min(Math.max(text.length * 45, 1200), 4000);
+    const captionTimer = setTimeout(() => {
+      emitCaption({ text, mood, isSpeaking: false, timestamp: Date.now() });
+      options?.onEnd?.();
+    }, readingDuration);
+
+    activeChirpTimers.push(captionTimer);
     return;
   }
 
-  stopCupidotSpeech();
-  const mood = options?.mood || 'talking';
+  emitCaption({ text, mood, isSpeaking: true, timestamp: Date.now() });
 
   if (mode === 'chirp') {
     options?.onStart?.();
@@ -357,16 +467,19 @@ export function speakCupidot(
 
       utterance.onstart = () => {
         isSpeaking = true;
+        emitCaption({ text, mood, isSpeaking: true, timestamp: Date.now() });
         options?.onStart?.();
       };
 
       utterance.onend = () => {
         isSpeaking = false;
+        emitCaption({ text, mood, isSpeaking: false, timestamp: Date.now() });
         options?.onEnd?.();
       };
 
       utterance.onerror = () => {
         isSpeaking = false;
+        emitCaption({ text, mood, isSpeaking: false, timestamp: Date.now() });
         playCupidotChirps(text, mood, options?.onEnd);
       };
 
@@ -383,9 +496,24 @@ export function speakCupidot(
 }
 
 /**
+ * Replays the last spoken Cupidot utterance
+ */
+export function replayCupidotSpeech(): void {
+  if (!lastSpokenUtterance) return;
+  speakCupidot(lastSpokenUtterance.text, lastSpokenUtterance.options);
+}
+
+/**
  * Cancels active speech or chirp trains
  */
 export function stopCupidotSpeech(): void {
+  if (currentCaption?.isSpeaking) {
+    emitCaption({
+      ...currentCaption,
+      isSpeaking: false,
+      timestamp: Date.now(),
+    });
+  }
   isSpeaking = false;
   activeChirpTimers.forEach((t) => clearTimeout(t));
   activeChirpTimers = [];

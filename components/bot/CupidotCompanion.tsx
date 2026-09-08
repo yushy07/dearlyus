@@ -14,6 +14,7 @@ import {
   stopCupidotSpeech,
   getStoredVoiceMode,
   setStoredVoiceMode,
+  replayCupidotSpeech,
   type VoiceMode,
 } from '@/lib/voice';
 import { useDraggableFixed } from '@/lib/use-draggable-fixed';
@@ -327,6 +328,15 @@ export function CupidotCompanion() {
                       ? '♫ Read aloud'
                       : '♪ Muted'}
                 </button>
+                {voiceMode !== 'mute' && (
+                  <button
+                    onClick={() => replayCupidotSpeech()}
+                    aria-label="Replay last spoken speech or chirp"
+                    title="Replay last voice line"
+                  >
+                    ↻ Replay
+                  </button>
+                )}
                 <button onClick={() => setIsOpen(false)}>
                   That’s enough for now ♡
                 </button>
