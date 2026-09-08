@@ -1,17 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" fill="none">
   <defs>
-    <!-- Left Ribbon Gradient (Rose Coral to Sunset Magenta) -->
+    <!-- Left Ribbon Gradient (Soft Rose) -->
     <linearGradient id="fav-rose" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#FF6584"/>
-      <stop offset="60%" stop-color="#FF4E78"/>
-      <stop offset="100%" stop-color="#D91E52"/>
+      <stop offset="0%" stop-color="#FBCFE8"/>
+      <stop offset="60%" stop-color="#F472B6"/>
+      <stop offset="100%" stop-color="#EC4899"/>
     </linearGradient>
 
-    <!-- Right Ribbon Gradient (Twilight Cerulean to Deep Indigo) -->
+    <!-- Right Ribbon Gradient (Sky Blue) -->
     <linearGradient id="fav-blue" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#60A5FA"/>
-      <stop offset="60%" stop-color="#437EEB"/>
-      <stop offset="100%" stop-color="#2563EB"/>
+      <stop offset="0%" stop-color="#BAE6FD"/>
+      <stop offset="60%" stop-color="#60A5FA"/>
+      <stop offset="100%" stop-color="#3B82F6"/>
     </linearGradient>
 
     <!-- Center Blend Glow -->
@@ -30,8 +30,8 @@
     </filter>
   </defs>
 
-  <!-- Container Badge (Velvet Plum Obsidian Squircle) -->
-  <rect width="128" height="128" rx="36" fill="#1C1924"/>
+  <!-- Container Badge (Slate Obsidian Squircle) -->
+  <rect width="128" height="128" rx="36" fill="#0F172A"/>
   <rect width="126" height="126" x="1" y="1" rx="35" stroke="rgba(255, 255, 255, 0.12)" stroke-width="2"/>
 
   <!-- Ambient Glow -->

@@ -161,14 +161,11 @@ export async function saveAccountProfile(
   const avatarUrl = (user.user_metadata?.avatar_url ||
     user.user_metadata?.picture ||
     null) as string | null;
-  const { error } = await supabase.from('profiles').upsert({
-    id: user.id,
-    display_name: input.displayName.trim(),
-    city: input.city.trim(),
-    timezone: input.timezone,
-    avatar_url: avatarUrl,
-    onboarding_completed: true,
-    updated_at: new Date().toISOString(),
+  const { error } = await supabase.rpc('save_my_profile', {
+    profile_display_name: input.displayName.trim(),
+    profile_city: input.city.trim(),
+    profile_timezone: input.timezone.trim(),
+    profile_avatar_url: avatarUrl,
   });
   if (error) throw error;
 }

@@ -402,8 +402,7 @@ export default function HomePage() {
       {/* Tagline Ribbon */}
       <div className="ribbon">
         <span className="ribbon-in">
-          ♡ Dearly Us · Made for the moments that belong to you two. ·{' '}
-          <b>35 Realtime Activities</b>
+          ♡ Making LDR couples experience dates like other couples
         </span>
       </div>
 
@@ -413,16 +412,16 @@ export default function HomePage() {
           <Link className="brand" href="/" aria-label="Dearly Us Home">
             <span className="brand-emblem" aria-hidden="true">
               <svg width="28" height="28" viewBox="0 0 128 128" fill="none">
-                <rect width="128" height="128" rx="36" fill="#1C1924" />
+                <rect width="128" height="128" rx="36" fill="#0F172A" />
                 <path
                   d="M64 77 C51 93 29 86 29 64 C29 45 48 38 64 58"
-                  stroke="#FF4E78"
+                  stroke="#F472B6"
                   strokeWidth="12"
                   strokeLinecap="round"
                 />
                 <path
                   d="M64 58 C80 38 99 45 99 64 C99 86 77 93 64 77"
-                  stroke="#437EEB"
+                  stroke="#60A5FA"
                   strokeWidth="12"
                   strokeLinecap="round"
                 />
@@ -507,13 +506,13 @@ export default function HomePage() {
               <svg width="30" height="34" viewBox="0 0 30 34">
                 <path
                   d="M3 2 L3 28 L10 21 L15 31 L19 29 L14 19 L24 19 Z"
-                  fill="#5FA0FF"
+                  fill="#60A5FA"
                   stroke="#fff"
                   strokeWidth="2.2"
                   strokeLinejoin="round"
                 />
               </svg>
-              <span className="tag">{partnerName} (Jakarta)</span>
+              <span className="tag">{partnerName || 'Me'}</span>
             </Floating3D>
           </div>
           <div className="cursor pink" ref={pinkCursorRef}>
@@ -521,15 +520,13 @@ export default function HomePage() {
               <svg width="30" height="34" viewBox="0 0 30 34">
                 <path
                   d="M3 2 L3 28 L10 21 L15 31 L19 29 L14 19 L24 19 Z"
-                  fill="#FF7BA3"
+                  fill="#F472B6"
                   stroke="#fff"
                   strokeWidth="2.2"
                   strokeLinejoin="round"
                 />
               </svg>
-              <span className="tag">
-                {nickname} ({cityA || 'Local'})
-              </span>
+              <span className="tag">{nickname || 'You'}</span>
             </Floating3D>
           </div>
         </div>
@@ -538,16 +535,32 @@ export default function HomePage() {
           <div className="hero-copy">
             <div
               style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '10px',
-                marginBottom: '14px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+                alignItems: 'flex-start',
+                marginBottom: '16px',
               }}
             >
-              <GlowBadge text="Fresh Dates Everyday" size="sm" />
               <span className="eyebrow" style={{ margin: 0 }}>
-                made for two · <ShinyText text="17 realtime activities" />
+                MADE FOR TWO · <ShinyText text="17 REALTIME ACTIVITIES" />
               </span>
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  color: 'var(--pink)',
+                  background: 'var(--pink-tint)',
+                  border: '1px solid rgba(244, 114, 182, 0.3)',
+                  padding: '4px 12px',
+                  borderRadius: '9999px',
+                }}
+              >
+                ✈ Countdown till next time we meet +
+              </div>
             </div>
             <h1>
               Moments That
@@ -604,15 +617,6 @@ export default function HomePage() {
               </span>
             </div>
 
-            <p
-              className="platforms"
-              aria-label="Runs smoothly on any browser across Phone, Tablet and Laptop"
-            >
-              <span className="plat-label">works on</span>
-              <span className="plat">🌐 Any Web Browser</span>
-              <span className="plat">📱 iPhone &amp; Android</span>
-              <span className="plat">💻 Mac &amp; Windows</span>
-            </p>
             <p className="assure">
               <span>● {nickname || 'You'}</span> &nbsp;♡&nbsp;{' '}
               <span>● {partnerName || 'Love'}</span>
@@ -643,12 +647,12 @@ export default function HomePage() {
                     <stop offset="100%" stopColor="#1C7A47" />
                   </linearGradient>
                   <linearGradient id="gl-arc-a" x1="1" y1="0" x2="0" y2="0">
-                    <stop offset="0%" stopColor="#FF4E78" stopOpacity=".15" />
-                    <stop offset="100%" stopColor="#FF4E78" stopOpacity=".95" />
+                    <stop offset="0%" stopColor="#F472B6" stopOpacity=".15" />
+                    <stop offset="100%" stopColor="#F472B6" stopOpacity=".95" />
                   </linearGradient>
                   <linearGradient id="gl-arc-b" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#437EEB" stopOpacity=".15" />
-                    <stop offset="100%" stopColor="#437EEB" stopOpacity=".95" />
+                    <stop offset="0%" stopColor="#60A5FA" stopOpacity=".15" />
+                    <stop offset="100%" stopColor="#60A5FA" stopOpacity=".95" />
                   </linearGradient>
                   <clipPath id="gl-clip">
                     <circle cx="300" cy="300" r="252" />

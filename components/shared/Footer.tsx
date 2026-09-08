@@ -64,16 +64,16 @@ export function Footer() {
               >
                 <span className="brand-emblem" aria-hidden="true">
                   <svg width="32" height="32" viewBox="0 0 128 128" fill="none">
-                    <rect width="128" height="128" rx="36" fill="#1C1924" />
+                    <rect width="128" height="128" rx="36" fill="#0F172A" />
                     <path
                       d="M64 77 C51 93 29 86 29 64 C29 45 48 38 64 58"
-                      stroke="#FF4E78"
+                      stroke="#F472B6"
                       strokeWidth="12"
                       strokeLinecap="round"
                     />
                     <path
                       d="M64 58 C80 38 99 45 99 64 C99 86 77 93 64 77"
-                      stroke="#437EEB"
+                      stroke="#60A5FA"
                       strokeWidth="12"
                       strokeLinecap="round"
                     />

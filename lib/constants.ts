@@ -11,7 +11,7 @@ export const ROOM_STYLES: RoomStyle[] = [
     bg: '#FAF8F5',
     color: '#1C1924',
     border: '#E8E2D9',
-    accent: '#FF4E78',
+    accent: '#F472B6',
     foilEffect: 'matte-foil',
   },
   {
@@ -21,7 +21,7 @@ export const ROOM_STYLES: RoomStyle[] = [
     bg: '#FFFFFF',
     color: '#1C1924',
     border: '#E8E2D9',
-    accent: '#FF4E78',
+    accent: '#F472B6',
   },
   {
     id: 'vintage',
@@ -38,8 +38,8 @@ export const ROOM_STYLES: RoomStyle[] = [
     sub: 'Wooden tea pavilion with raindrops',
     bg: '#1C2321',
     color: '#EEF0F2',
-    border: '#4E6151',
-    accent: '#70A9A1',
+    border: '#3F4E4A',
+    accent: '#4ECCA3',
   },
   {
     id: 'vhs',
@@ -66,7 +66,7 @@ export const ROOM_STYLES: RoomStyle[] = [
     bg: 'linear-gradient(180deg, #FFE4D6, #FFD6E8)',
     color: '#23242A',
     border: '#FFB3C7',
-    accent: '#FF4E78',
+    accent: '#F472B6',
   },
   {
     id: 'cyber',
@@ -74,8 +74,8 @@ export const ROOM_STYLES: RoomStyle[] = [
     sub: 'Dusk skyline & neon ambient glow',
     bg: '#101726',
     color: '#EEF4FF',
-    border: '#437EEB',
-    accent: '#437EEB',
+    border: '#60A5FA',
+    accent: '#60A5FA',
   },
   {
     id: 'laundry',
