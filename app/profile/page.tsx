@@ -583,6 +583,8 @@ export default function ProfilePage() {
             partnerA={ownMember?.displayName || profile.displayName}
             partnerB={partner?.displayName || 'Your person'}
             partnerTime={partnerLocalTime}
+            timezoneA={profile?.timezone || timezone || Intl.DateTimeFormat().resolvedOptions().timeZone}
+            timezoneB={partner?.timezone}
             activeRoomCode={space?.activeRoomCode}
             keepsakes={keepsakes}
             onStartRoom={handleStartRoom}

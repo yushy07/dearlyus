@@ -239,6 +239,8 @@ export default function DateHostPage() {
                 : 'ready'
           }
           partnerName={partnerB || 'Partner'}
+          isDemoMode={true}
+          demoNotice="Single-screen preview exploration. In synchronized date nights, each partner votes privately from their own device."
           privacyNote="Picks are locked in privately until reveal. Cupidot provides host commentary once both choices are unveiled."
         />
 

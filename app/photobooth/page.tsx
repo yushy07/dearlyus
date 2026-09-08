@@ -645,6 +645,8 @@ export default function PhotoboothPage() {
                   : 'ready'
           }
           partnerName={partnerB || 'Partner'}
+          isDemoMode={!roomCode}
+          demoNotice="Local preview exploration. When in a live date room, photos are synchronized directly with your person."
           privacyNote="Webcam feed is strictly client-side and peer-to-peer. No raw video is ever uploaded or stored."
         />
 

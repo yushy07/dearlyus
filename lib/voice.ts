@@ -64,27 +64,71 @@ export function setAudioRecordingActive(active: boolean): void {
   }
 }
 
+function getStorage(): Storage | null {
+  if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
+  if (typeof globalThis !== 'undefined' && (globalThis as any).localStorage) return (globalThis as any).localStorage;
+  return null;
+}
+
 export function getQuietHoursEnabled(): boolean {
-  if (typeof window === 'undefined') return false;
+  const storage = getStorage();
+  if (!storage) return false;
   try {
-    return localStorage.getItem(QUIET_HOURS_STORAGE_KEY) === 'true';
+    return storage.getItem(QUIET_HOURS_STORAGE_KEY) === 'true';
   } catch {
     return false;
   }
 }
 
 export function setQuietHoursEnabled(enabled: boolean): void {
-  if (typeof window === 'undefined') return;
+  const storage = getStorage();
+  if (!storage) return;
   try {
-    localStorage.setItem(QUIET_HOURS_STORAGE_KEY, enabled ? 'true' : 'false');
+    storage.setItem(QUIET_HOURS_STORAGE_KEY, enabled ? 'true' : 'false');
+  } catch {}
+}
+
+export const QUIET_HOURS_START_KEY = 'dearly_quiet_hours_start';
+export const QUIET_HOURS_END_KEY = 'dearly_quiet_hours_end';
+
+export function getQuietHoursWindow(): { start: string; end: string } {
+  const storage = getStorage();
+  if (!storage) return { start: '22:00', end: '08:00' };
+  try {
+    return {
+      start: storage.getItem(QUIET_HOURS_START_KEY) || '22:00',
+      end: storage.getItem(QUIET_HOURS_END_KEY) || '08:00',
+    };
+  } catch {
+    return { start: '22:00', end: '08:00' };
+  }
+}
+
+export function setQuietHoursWindow(start: string, end: string): void {
+  const storage = getStorage();
+  if (!storage) return;
+  try {
+    storage.setItem(QUIET_HOURS_START_KEY, start);
+    storage.setItem(QUIET_HOURS_END_KEY, end);
   } catch {}
 }
 
 export function isQuietHoursActive(): boolean {
   if (!getQuietHoursEnabled()) return false;
-  const currentHour = new Date().getHours();
-  // Default quiet hours: 23:00 (11 PM) to 07:00 (7 AM)
-  return currentHour >= 23 || currentHour < 7;
+  const { start, end } = getQuietHoursWindow();
+  const now = new Date();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const [startH, startM] = (start || '22:00').split(':').map(Number);
+  const [endH, endM] = (end || '08:00').split(':').map(Number);
+  const startMinutes = (isNaN(startH) ? 22 : startH) * 60 + (isNaN(startM) ? 0 : startM);
+  const endMinutes = (isNaN(endH) ? 8 : endH) * 60 + (isNaN(endM) ? 0 : endM);
+
+  if (startMinutes <= endMinutes) {
+    return currentMinutes >= startMinutes && currentMinutes < endMinutes;
+  } else {
+    // Overnight window (e.g. 22:00 to 08:00)
+    return currentMinutes >= startMinutes || currentMinutes < endMinutes;
+  }
 }
 
 export function getCurrentCupidotCaption(): CupidotCaption | null {

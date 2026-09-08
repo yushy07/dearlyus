@@ -34,10 +34,22 @@ export function KeepsakeDetailModal({
 }: KeepsakeDetailModalProps) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isArchived, setIsArchived] = useState(false);
+  const [resurfacingEnabled, setResurfacingEnabled] = useState(true);
+  const [aiReuseAllowed, setAiReuseAllowed] = useState(true);
+  const [captionText, setCaptionText] = useState(keepsake?.caption || '');
+  const [isEditingCaption, setIsEditingCaption] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
     setConfirmDelete(false);
     setIsDeleting(false);
+    setIsArchived(false);
+    setResurfacingEnabled(true);
+    setAiReuseAllowed(true);
+    setCaptionText(keepsake?.caption || '');
+    setIsEditingCaption(false);
+    setNotice(null);
   }, [keepsake]);
 
   // Handle Escape key
@@ -293,6 +305,134 @@ export function KeepsakeDetailModal({
           </div>
         )}
 
+        {/* Memory Lifecycle & Privacy Controls (M15) */}
+        <div
+          style={{
+            background: 'var(--paper)',
+            padding: '14px',
+            borderRadius: '16px',
+            border: '1px solid var(--line)',
+            marginBottom: '20px',
+          }}
+        >
+          <div
+            style={{
+              fontSize: '11px',
+              fontFamily: 'var(--font-mono)',
+              fontWeight: 800,
+              color: 'var(--ink-soft)',
+              textTransform: 'uppercase',
+              marginBottom: '10px',
+            }}
+          >
+            Memory Lifecycle &amp; Privacy (M15)
+          </div>
+
+          <div style={{ display: 'grid', gap: '10px' }}>
+            {/* Archive / Hide Toggle */}
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '12.5px',
+                cursor: 'pointer',
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={isArchived}
+                onChange={(e) => {
+                  sounds.playPop();
+                  setIsArchived(e.target.checked);
+                  setNotice(
+                    e.target.checked
+                      ? 'Archived: Hidden from living shelf without permanent deletion.'
+                      : 'Unarchived: Restored to living shelf.',
+                  );
+                }}
+              />
+              <span>
+                <strong>Hide from shared shelf</strong> (Preserve in private
+                vault without room display)
+              </span>
+            </label>
+
+            {/* Resurfacing Toggle */}
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '12.5px',
+                cursor: 'pointer',
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={resurfacingEnabled}
+                onChange={(e) => {
+                  sounds.playPop();
+                  setResurfacingEnabled(e.target.checked);
+                  setNotice(
+                    e.target.checked
+                      ? 'Resurfacing enabled for anniversary and nostalgic moments.'
+                      : 'Resurfacing disabled: Cupidot will not bring this up proactively.',
+                  );
+                }}
+              />
+              <span>
+                <strong>Opt-in Resurfacing:</strong> Allow gentle anniversary
+                and milestone reminders
+              </span>
+            </label>
+
+            {/* AI Theme Reuse Toggle & Revocation */}
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '12.5px',
+                cursor: 'pointer',
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={aiReuseAllowed}
+                onChange={(e) => {
+                  sounds.playPop();
+                  setAiReuseAllowed(e.target.checked);
+                  setNotice(
+                    e.target.checked
+                      ? 'AI theme reuse allowed.'
+                      : 'AI theme reuse revoked: themes from this memory are private only.',
+                  );
+                }}
+              />
+              <span>
+                <strong>AI Date Inspiration:</strong> Allow themes in adaptive
+                suggestions (Tap to revoke anytime)
+              </span>
+            </label>
+          </div>
+
+          {notice && (
+            <div
+              role="status"
+              aria-live="polite"
+              style={{
+                marginTop: '10px',
+                fontSize: '11.5px',
+                color: 'var(--pink)',
+                fontWeight: 600,
+              }}
+            >
+              ✓ {notice}
+            </div>
+          )}
+        </div>
+
         {/* Actions Row */}
         <div
           style={{
@@ -301,9 +441,37 @@ export function KeepsakeDetailModal({
             justifyContent: 'space-between',
             paddingTop: '16px',
             borderTop: '1px solid #F3F4F6',
+            flexWrap: 'wrap',
+            gap: '12px',
           }}
         >
-          <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <button
+              type="button"
+              onClick={() => {
+                sounds.playChime();
+                const data = JSON.stringify(keepsake, null, 2);
+                const blob = new Blob([data], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `keepsake-${keepsake.id}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                setNotice('Keepsake record downloaded as JSON.');
+              }}
+              style={{
+                background: 'transparent',
+                border: '1px solid #E5E7EB',
+                borderRadius: '8px',
+                color: '#4B5563',
+                fontSize: '12px',
+                padding: '5px 10px',
+                cursor: 'pointer',
+              }}
+            >
+              📥 Export JSON
+            </button>
             {!confirmDelete ? (
               <button
                 type="button"

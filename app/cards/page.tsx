@@ -263,6 +263,8 @@ export default function CardsPage() {
             activityName="Deep Connection Cards"
             phase={revealed ? 'revealed' : myAnswer ? 'locked' : 'ready'}
             partnerName={partnerB || 'Partner'}
+            isDemoMode={true}
+            demoNotice="Single-screen preview exploration. In synchronized date nights, each partner responds privately from their own screen."
             privacyNote="No rush, no score, and no pressure to answer what you're not ready to share."
           />
 
@@ -452,13 +454,13 @@ export default function CardsPage() {
                     marginBottom: '6px',
                   }}
                 >
-                  {partnerB}&apos;s Answer (if playing together locally):
+                  {partnerB}&apos;s Answer (Solo Preview Sandbox):
                 </label>
                 <textarea
                   rows={2}
                   value={partnerAnswer}
                   onChange={(e) => setPartnerAnswer(e.target.value)}
-                  placeholder={`Type ${partnerB}'s answer, or leave blank if awaiting remote response...`}
+                  placeholder={`Optional preview: Type ${partnerB}'s answer if testing on one device, or leave blank.`}
                   style={{
                     width: '100%',
                     padding: '12px',

@@ -12,7 +12,7 @@ export interface CustomRitualModalProps {
   timezoneA?: string;
   timezoneB?: string;
   initialRitual?: CoupleRitual | null;
-  onSaveRitual: (ritual: Omit<CoupleRitual, 'id' | 'createdAt'>) => void;
+  onSaveRitual: (ritual: Omit<CoupleRitual, 'createdAt'> & { id?: string }) => void;
 }
 
 export function CustomRitualModal({
@@ -63,21 +63,55 @@ export function CustomRitualModal({
     }
   }, [isOpen, initialRitual]);
 
+  // Keyboard accessibility (M13): Escape key dismiss
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
+
+  // Calculate adjusted time in Partner B's timezone if distinct
+  const partnerBAdjustedTime = (() => {
+    if (!timezoneB || timezoneA === timezoneB) return null;
+    try {
+      const [hours, mins] = timeOfDay.split(':').map(Number);
+      if (isNaN(hours) || isNaN(mins)) return null;
+      // Anchor to today's date in local/A timezone
+      const date = new Date();
+      date.setHours(hours, mins, 0, 0);
+      const formatter = new Intl.DateTimeFormat([], {
+        timeZone: timezoneB,
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      });
+      return formatter.format(date);
+    } catch {
+      return null;
+    }
+  })();
 
   const handleSave = () => {
     sounds.playCelebration();
     onSaveRitual({
+      id: initialRitual?.id,
       title: title.trim() || 'Our Shared Ritual ♡',
       purpose: purpose.trim() || 'A quiet, gentle moment for the two of us.',
       cadence,
       timeOfDay,
-      timezoneA,
+      timezoneA: timezoneA || Intl.DateTimeFormat().resolvedOptions().timeZone,
       timezoneB,
       remindersEnabledA: remindersA,
       remindersEnabledB: remindersB,
       suggestedMode,
-      snoozedUntil: null,
+      snoozedUntil: initialRitual?.snoozedUntil || null,
       lastCompletedAt: initialRitual?.lastCompletedAt || null,
     });
     onClose();
@@ -310,18 +344,19 @@ export function CustomRitualModal({
               color: 'var(--ink-soft)',
             }}
           >
-            <span>
-              Timezone aware: {timeOfDay} for {partnerAName} (
-              {timezoneA || 'Local'})
-            </span>
+            <div style={{ fontWeight: 600, color: 'var(--ink)', marginBottom: '3px' }}>
+              Timezone aware: {timeOfDay} for {partnerAName} ({timezoneA || 'Local'})
+            </div>
             {timezoneB && (
-              <span style={{ display: 'block', marginTop: '3px' }}>
-                Adjusted for {partnerBName} ({timezoneB})
-              </span>
+              <div style={{ fontSize: '11.5px', color: 'var(--ink-soft)' }}>
+                {partnerBAdjustedTime
+                  ? `Adjusted to ~${partnerBAdjustedTime} for ${partnerBName} (${timezoneB})`
+                  : `Partner timezone: ${timezoneB} (${partnerBName})`}
+              </div>
             )}
           </div>
 
-          {/* Independent Reminder Controls */}
+          {/* Independent Reminder Controls (R07, M08) */}
           <div>
             <label
               style={{
@@ -350,24 +385,37 @@ export function CustomRitualModal({
                   checked={remindersA}
                   onChange={(e) => setRemindersA(e.target.checked)}
                 />
-                <span>Send gentle reminder to {partnerAName}</span>
+                <span>Send gentle reminder to {partnerAName} (You)</span>
               </label>
-              <label
+
+              {/* Partner B reminder is autonomous: read-only on Partner A's screen */}
+              <div
                 style={{
                   display: 'flex',
-                  alignItems: 'center',
+                  alignItems: 'flex-start',
                   gap: '8px',
-                  fontSize: '13px',
-                  cursor: 'pointer',
+                  fontSize: '12.5px',
+                  color: 'var(--ink-soft)',
+                  background: 'rgba(0, 0, 0, 0.02)',
+                  padding: '8px 10px',
+                  borderRadius: '8px',
+                  border: '1px dashed var(--line)',
                 }}
               >
                 <input
                   type="checkbox"
                   checked={remindersB}
-                  onChange={(e) => setRemindersB(e.target.checked)}
+                  disabled
+                  readOnly
+                  style={{ marginTop: '2px', cursor: 'not-allowed' }}
                 />
-                <span>Send gentle reminder to {partnerBName}</span>
-              </label>
+                <div>
+                  <span>Gentle reminders for {partnerBName}: <strong>{remindersB ? 'Enabled' : 'Paused'}</strong></span>
+                  <div style={{ fontSize: '11px', color: 'var(--ink-muted)', marginTop: '2px' }}>
+                    {partnerBName} chooses their own reminder preference on their device.
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

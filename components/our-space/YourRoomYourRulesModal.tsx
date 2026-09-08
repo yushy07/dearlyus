@@ -8,7 +8,12 @@ import {
 } from '@/types/cupidot';
 import { AiConsentToggle } from '@/components/shared/AiConsentToggle';
 import { sounds } from '@/lib/sound';
-import { getQuietHoursEnabled, setQuietHoursEnabled } from '@/lib/voice';
+import {
+  getQuietHoursEnabled,
+  setQuietHoursEnabled,
+  getQuietHoursWindow,
+  setQuietHoursWindow,
+} from '@/lib/voice';
 
 export interface YourRoomYourRulesModalProps {
   isOpen: boolean;
@@ -40,12 +45,96 @@ export function YourRoomYourRulesModal({
   const [softenNotice, setSoftenNotice] = useState<string | null>(null);
   const [pendingOptInLevel, setPendingOptInLevel] =
     useState<RomanceLevel | null>(null);
-  const [askBeforeSave, setAskBeforeSave] = useState(true);
+
   const [quietHoursActive, setQuietHoursActive] = useState(() =>
     getQuietHoursEnabled(),
   );
-  const [quietStart, setQuietStart] = useState('22:00');
-  const [quietEnd, setQuietEnd] = useState('08:00');
+  const [quietStart, setQuietStart] = useState(() => getQuietHoursWindow().start);
+  const [quietEnd, setQuietEnd] = useState(() => getQuietHoursWindow().end);
+
+  // Surprise Us Allow-List (M08, R06)
+  const [allowCameraSurprise, setAllowCameraSurprise] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    try {
+      return localStorage.getItem('dearly_allow_camera_surprise') !== 'false';
+    } catch {
+      return true;
+    }
+  });
+  const [allowDeepSurprise, setAllowDeepSurprise] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    try {
+      return localStorage.getItem('dearly_allow_deep_surprise') !== 'false';
+    } catch {
+      return true;
+    }
+  });
+  const [allowGamesSurprise, setAllowGamesSurprise] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    try {
+      return localStorage.getItem('dearly_allow_games_surprise') !== 'false';
+    } catch {
+      return true;
+    }
+  });
+  const [allowCreativeSurprise, setAllowCreativeSurprise] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    try {
+      return localStorage.getItem('dearly_allow_creative_surprise') !== 'false';
+    } catch {
+      return true;
+    }
+  });
+
+  // Keepsake Resurfacing (M08, M15)
+  const [resurfacingEnabled, setResurfacingEnabled] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    try {
+      return localStorage.getItem('dearly_resurfacing_enabled') !== 'false';
+    } catch {
+      return true;
+    }
+  });
+
+  // Keyboard accessibility (M13): Escape key dismiss
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  const handleToggleSurprisePref = (key: string, currentVal: boolean, setter: (v: boolean) => void) => {
+    sounds.playPop();
+    const next = !currentVal;
+    setter(next);
+    try {
+      localStorage.setItem(key, next ? 'true' : 'false');
+    } catch {}
+  };
+
+  const handleToggleResurfacing = () => {
+    sounds.playPop();
+    const next = !resurfacingEnabled;
+    setResurfacingEnabled(next);
+    try {
+      localStorage.setItem('dearly_resurfacing_enabled', next ? 'true' : 'false');
+    } catch {}
+  };
+
+  const handleQuietStartChange = (val: string) => {
+    setQuietStart(val);
+    setQuietHoursWindow(val, quietEnd);
+  };
+
+  const handleQuietEndChange = (val: string) => {
+    setQuietEnd(val);
+    setQuietHoursWindow(quietStart, val);
+  };
 
   if (!isOpen) return null;
 
@@ -530,7 +619,193 @@ export function YourRoomYourRulesModal({
           </div>
         </div>
 
-        {/* Section 4: Keepsake & Notification Policies */}
+        {/* Section 4: Surprise Us Activity Allow-List (M08, R06) */}
+        <div
+          style={{
+            background: 'var(--paper)',
+            padding: '16px',
+            borderRadius: '18px',
+            border: '1px solid var(--line)',
+            marginBottom: '14px',
+          }}
+        >
+          <strong
+            style={{ fontSize: '14px', display: 'block', marginBottom: '4px' }}
+          >
+            &ldquo;Surprise Us&rdquo; Activity Filters
+          </strong>
+          <span
+            style={{
+              fontSize: '12px',
+              color: 'var(--ink-soft)',
+              display: 'block',
+              marginBottom: '10px',
+            }}
+          >
+            Tailor what activities the recommendation engine can suggest. You can filter out camera or deep modes anytime.
+          </span>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: '10px',
+            }}
+          >
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '12.5px',
+                cursor: 'pointer',
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={allowCameraSurprise}
+                onChange={() =>
+                  handleToggleSurprisePref(
+                    'dearly_allow_camera_surprise',
+                    allowCameraSurprise,
+                    setAllowCameraSurprise,
+                  )
+                }
+              />
+              <span>📸 Camera & Photobooth</span>
+            </label>
+
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '12.5px',
+                cursor: 'pointer',
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={allowDeepSurprise}
+                onChange={() =>
+                  handleToggleSurprisePref(
+                    'dearly_allow_deep_surprise',
+                    allowDeepSurprise,
+                    setAllowDeepSurprise,
+                  )
+                }
+              />
+              <span>💬 Deep Connection</span>
+            </label>
+
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '12.5px',
+                cursor: 'pointer',
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={allowGamesSurprise}
+                onChange={() =>
+                  handleToggleSurprisePref(
+                    'dearly_allow_games_surprise',
+                    allowGamesSurprise,
+                    setAllowGamesSurprise,
+                  )
+                }
+              />
+              <span>⚡ Playful & Games</span>
+            </label>
+
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '12.5px',
+                cursor: 'pointer',
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={allowCreativeSurprise}
+                onChange={() =>
+                  handleToggleSurprisePref(
+                    'dearly_allow_creative_surprise',
+                    allowCreativeSurprise,
+                    setAllowCreativeSurprise,
+                  )
+                }
+              />
+              <span>🎨 Scrapbook Wall</span>
+            </label>
+          </div>
+        </div>
+
+        {/* Section 5: Keepsake Consent Guarantee & Resurfacing (M08, M15) */}
+        <div
+          style={{
+            background: 'var(--paper)',
+            padding: '16px',
+            borderRadius: '18px',
+            border: '1px solid var(--line)',
+            marginBottom: '14px',
+          }}
+        >
+          <strong
+            style={{ fontSize: '14px', display: 'block', marginBottom: '10px' }}
+          >
+            Keepsakes & Privacy
+          </strong>
+          
+          {/* Architectural Guarantee Notice */}
+          <div
+            style={{
+              background: 'rgba(255, 78, 120, 0.06)',
+              border: '1px solid rgba(255, 78, 120, 0.25)',
+              borderRadius: '12px',
+              padding: '10px 14px',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '10px',
+              marginBottom: '12px',
+            }}
+          >
+            <span style={{ fontSize: '15px' }}>🔒</span>
+            <div>
+              <div style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--ink)' }}>
+                Mutual Keepsake Consent Guaranteed
+              </div>
+              <div style={{ fontSize: '11.5px', color: 'var(--ink-soft)', marginTop: '2px', lineHeight: 1.4 }}>
+                Keepsakes are never auto-saved without mutual approval from both of you. This is an architectural guarantee built into Dearly Us.
+              </div>
+            </div>
+          </div>
+
+          <label
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '13px',
+              cursor: 'pointer',
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={resurfacingEnabled}
+              onChange={handleToggleResurfacing}
+            />
+            <span>
+              Allow gentle resurfacing of mutually approved keepsakes on our home shelf
+            </span>
+          </label>
+        </div>
+
+        {/* Section 6: Quiet Hours Window */}
         <div
           style={{
             background: 'var(--paper)',
@@ -541,54 +816,70 @@ export function YourRoomYourRulesModal({
           }}
         >
           <strong
-            style={{ fontSize: '14px', display: 'block', marginBottom: '10px' }}
+            style={{ fontSize: '14px', display: 'block', marginBottom: '8px' }}
           >
-            Keepsakes & Notifications
+            Quiet Hours for Ritual Reminders
           </strong>
-          <div
-            style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
+          <label
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '13px',
+              cursor: 'pointer',
+              marginBottom: quietHoursActive ? '10px' : '0',
+            }}
           >
-            <label
+            <input
+              type="checkbox"
+              checked={quietHoursActive}
+              onChange={(e) => {
+                setQuietHoursActive(e.target.checked);
+                setQuietHoursEnabled(e.target.checked);
+              }}
+            />
+            <span>
+              Silence Cupidot chirps and ritual notifications during quiet hours
+            </span>
+          </label>
+
+          {quietHoursActive && (
+            <div
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
-                fontSize: '13px',
-                cursor: 'pointer',
+                gap: '12px',
+                marginTop: '8px',
+                fontSize: '12px',
+                color: 'var(--ink-soft)',
               }}
             >
+              <span>From:</span>
               <input
-                type="checkbox"
-                checked={askBeforeSave}
-                onChange={(e) => setAskBeforeSave(e.target.checked)}
-              />
-              <span>
-                Always ask before saving a keepsake (no silent auto-saving)
-              </span>
-            </label>
-            <label
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                fontSize: '13px',
-                cursor: 'pointer',
-              }}
-            >
-              <input
-                type="checkbox"
-                checked={quietHoursActive}
-                onChange={(e) => {
-                  setQuietHoursActive(e.target.checked);
-                  setQuietHoursEnabled(e.target.checked);
+                type="time"
+                value={quietStart}
+                onChange={(e) => handleQuietStartChange(e.target.value)}
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--line)',
+                  fontSize: '12px',
                 }}
               />
-              <span>
-                Respect quiet hours for ritual reminders ({quietStart} to{' '}
-                {quietEnd})
-              </span>
-            </label>
-          </div>
+              <span>To:</span>
+              <input
+                type="time"
+                value={quietEnd}
+                onChange={(e) => handleQuietEndChange(e.target.value)}
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--line)',
+                  fontSize: '12px',
+                }}
+              />
+            </div>
+          )}
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>

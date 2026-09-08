@@ -15,6 +15,8 @@ export interface CupidotHomeAreaProps {
   partnerA?: string;
   partnerB?: string;
   partnerTime?: string | null;
+  timezoneA?: string;
+  timezoneB?: string;
   activeRoomCode?: string | null;
   keepsakes?: Keepsake[];
   onStartRoom?: () => Promise<void>;
@@ -36,6 +38,8 @@ export function CupidotHomeArea({
   partnerA = 'You',
   partnerB = 'Your person',
   partnerTime,
+  timezoneA,
+  timezoneB,
   activeRoomCode,
   keepsakes = [],
   onStartRoom,
@@ -639,6 +643,142 @@ export function CupidotHomeArea({
             anytime.
           </span>
         </div>
+
+        {/* Resurfaced Keepsakes Shelf (M15, M16) */}
+        {typeof window !== 'undefined' &&
+          localStorage.getItem('dearly_resurfacing_enabled') !== 'false' &&
+          keepsakes.filter((k) => {
+            if (k.status !== 'finalized') return false;
+            try {
+              const archived = JSON.parse(
+                localStorage.getItem('dearly_archived_keepsakes') || '[]',
+              );
+              if (archived.includes(k.id)) return false;
+            } catch {}
+            return (
+              localStorage.getItem(`dearly_keepsake_resurface_${k.id}`) !==
+              'false'
+            );
+          }).length > 0 && (
+            <div
+              style={{
+                background: '#FFFFFF',
+                border: '1px solid var(--line)',
+                borderRadius: '24px',
+                padding: '20px',
+                boxShadow: 'var(--shadow-soft)',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: '12px',
+                }}
+              >
+                <div>
+                  <span
+                    style={{
+                      fontSize: '11px',
+                      fontFamily: 'var(--font-mono)',
+                      fontWeight: 800,
+                      color: 'var(--pink)',
+                    }}
+                  >
+                    MUTUAL MEMORIES
+                  </span>
+                  <h4
+                    style={{
+                      margin: '2px 0 0',
+                      fontSize: '16px',
+                      color: 'var(--ink)',
+                    }}
+                  >
+                    Shared Keepsake Shelf
+                  </h4>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))',
+                  gap: '12px',
+                }}
+              >
+                {keepsakes
+                  .filter((k) => {
+                    if (k.status !== 'finalized') return false;
+                    try {
+                      const archived = JSON.parse(
+                        localStorage.getItem('dearly_archived_keepsakes') || '[]',
+                      );
+                      if (archived.includes(k.id)) return false;
+                    } catch {}
+                    return (
+                      localStorage.getItem(`dearly_keepsake_resurface_${k.id}`) !==
+                      'false'
+                    );
+                  })
+                  .slice(0, 4)
+                  .map((k) => (
+                    <button
+                      key={k.id}
+                      type="button"
+                      onClick={() => onInspectKeepsake?.(k)}
+                      style={{
+                        background: 'var(--paper)',
+                        border: '1px solid var(--line)',
+                        borderRadius: '14px',
+                        padding: '10px',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '6px',
+                      }}
+                    >
+                      <div style={{ fontSize: '18px' }}>
+                        {k.kind === 'photostrip'
+                          ? '📸'
+                          : k.kind === 'letter'
+                          ? '💌'
+                          : k.kind === 'passport'
+                          ? '✈️'
+                          : k.kind === 'scrapbook'
+                          ? '🎨'
+                          : '✨'}
+                      </div>
+                      <strong
+                        style={{
+                          fontSize: '12px',
+                          color: 'var(--ink)',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
+                        {k.title}
+                      </strong>
+                      {k.caption && (
+                        <span
+                          style={{
+                            fontSize: '11px',
+                            color: 'var(--ink-soft)',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}
+                        >
+                          {k.caption}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+              </div>
+            </div>
+          )}
       </div>
 
       {/* Modals */}
@@ -648,6 +788,25 @@ export function CupidotHomeArea({
         activeRoomCode={activeRoomCode}
         onStartRoom={onStartRoom}
         partnerName={partnerB}
+        upcomingRitualTitle={homeState.upcomingRitual?.title}
+        cameraAllowed={
+          typeof window !== 'undefined'
+            ? localStorage.getItem('dearly_allow_camera_surprise') !== 'false'
+            : true
+        }
+        onProposeKeepsake={(activityTitle, prompt, answer) => {
+          proposeMemorySeed({
+            coupleId: 'shared-couple',
+            activityType: 'togetherness',
+            activityTitle,
+            title: `Memory: ${activityTitle}`,
+            captionDraft: `"${prompt}" — ${answer}`,
+            suggestedMood: 'warm',
+            partnerAId: partnerA,
+            partnerBId: partnerB,
+            proposedBy: partnerA,
+          });
+        }}
         onSparkAwarded={() =>
           triggerGrowthSpark(
             'shared_activity_completed',
@@ -675,6 +834,8 @@ export function CupidotHomeArea({
         onClose={() => setRitualModalOpen(false)}
         partnerAName={partnerA}
         partnerBName={partnerB}
+        timezoneA={timezoneA}
+        timezoneB={timezoneB}
         initialRitual={homeState.upcomingRitual}
         onSaveRitual={createOrUpdateRitual}
       />

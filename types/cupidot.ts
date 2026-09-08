@@ -467,6 +467,7 @@ export interface CoupleRitual {
 export interface MemorySeed {
   seedId: string;
   id?: string; // alias for seedId
+  version?: number;
   coupleId?: string;
   title?: string;
   kind?: string;
@@ -485,8 +486,11 @@ export interface MemorySeed {
   partnerAName?: string;
   partnerBId?: string;
   partnerBName?: string;
+  approvedBy?: string[];
   approvedByPartnerA?: boolean;
   approvedByPartnerB?: boolean;
+  aiReuseConsent?: boolean;
+  contentHash?: string;
   approvalStatus:
     | 'proposed'
     | 'approved_by_a'

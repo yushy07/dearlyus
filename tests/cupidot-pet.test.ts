@@ -292,7 +292,7 @@ describe('Mutual Keepsake Approval & Memory Seeds', () => {
     expect(declinedSeed.status).toBe('declined');
   });
 
-  it('pure helper: preserves edited caption and mood on approval', () => {
+  it('pure helper: editing caption increments version and requires partner re-approval (R03)', () => {
     const seed = proposeMemorySeed({
       title: 'Our Tokyo Sunset Sketch',
       kind: 'artwork',
@@ -304,16 +304,27 @@ describe('Mutual Keepsake Approval & Memory Seeds', () => {
       caption: 'Initial draft caption',
     });
 
-    const approvedSeed = approveMemorySeed(
+    // Partner B edits the caption on approval -> invalidates Partner A's prior approval
+    const editedByB = approveMemorySeed(
       seed,
       'user-b',
       'Refined memories under the stars',
       'warm',
     );
-    expect(approvedSeed.caption).toBe('Refined memories under the stars');
-    expect(approvedSeed.draftCaption).toBe('Refined memories under the stars');
-    expect(approvedSeed.chosenMood).toBe('warm');
-    expect(approvedSeed.status).toBe('mutually_approved');
+    expect(editedByB.caption).toBe('Refined memories under the stars');
+    expect(editedByB.draftCaption).toBe('Refined memories under the stars');
+    expect(editedByB.chosenMood).toBe('warm');
+    expect(editedByB.version).toBe(2);
+    expect(editedByB.approvedBy).toContain('user-b');
+    expect(editedByB.approvedBy).not.toContain('user-a');
+    expect(editedByB.approvalStatus).toBe('approved_by_b');
+
+    // Partner A reviews and approves the edited version
+    const mutuallyApproved = approveMemorySeed(editedByB, 'user-a');
+    expect(mutuallyApproved.approvedBy).toContain('user-a');
+    expect(mutuallyApproved.approvedBy).toContain('user-b');
+    expect(mutuallyApproved.status).toBe('mutually_approved');
+    expect(mutuallyApproved.approvalStatus).toBe('both_approved');
   });
 });
 

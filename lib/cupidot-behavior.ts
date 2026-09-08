@@ -836,3 +836,51 @@ export function validateStructuredAiOutput(
     },
   };
 }
+
+/**
+ * Resolves a natural, respectful form of address for the couple (M18).
+ * Avoids robotic or overly formal labels while respecting chosen couple names.
+ */
+export function formatCupidotAddress({
+  partnerA,
+  partnerB,
+  coupleNickname,
+}: {
+  partnerA?: string;
+  partnerB?: string;
+  coupleNickname?: string;
+}): string {
+  if (coupleNickname && coupleNickname.trim().length > 0) {
+    return coupleNickname.trim();
+  }
+  if (partnerA && partnerB) {
+    return `${partnerA} & ${partnerB}`;
+  }
+  return 'you two';
+}
+
+/**
+ * Adjusts a message for guidance mode tone requirements (M18).
+ * - quiet: Minimal, calm, operational phrasing without gratuitous exclamation or cheerleading.
+ * - gentle: Warm, cozy, supportive without overwhelming.
+ * - host: Full expressive enthusiasm.
+ */
+export function getGuidanceToneAdjustedMessage(
+  message: string,
+  mode: GuidanceMode = 'gentle',
+): string {
+  if (mode === 'quiet') {
+    // Soften loud cheerleading or excessive enthusiasm
+    return message
+      .replace(/!{2,}/g, '.')
+      .replace(/!/g, '.')
+      .replace(/Yay|Woohoo|Amazing job|Let's go/gi, 'Good')
+      .trim();
+  }
+  if (mode === 'gentle') {
+    // Single calm punctuation
+    return message.replace(/!{2,}/g, '!').trim();
+  }
+  return message;
+}
+

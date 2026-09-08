@@ -14,6 +14,7 @@ export interface KeepsakeApprovalModalProps {
     seedId: string,
     updatedCaption?: string,
     updatedMood?: CupidotMood,
+    aiReuseConsent?: boolean,
   ) => Promise<void> | void;
   onDecline: (seedId: string) => Promise<void> | void;
 }
@@ -29,25 +30,45 @@ export function KeepsakeApprovalModal({
 }: KeepsakeApprovalModalProps) {
   const [caption, setCaption] = useState(seed?.draftCaption || '');
   const [mood, setMood] = useState<CupidotMood>(seed?.chosenMood || 'cozy');
+  const [aiReuseConsent, setAiReuseConsent] = useState(
+    Boolean(seed?.aiReuseConsent),
+  );
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     if (isOpen && seed) {
       setCaption(seed.draftCaption || '');
       setMood(seed.chosenMood || 'cozy');
+      setAiReuseConsent(Boolean(seed.aiReuseConsent));
     }
   }, [isOpen, seed]);
+
+  // Keyboard Escape support (M13)
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !busy) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, busy, onClose]);
 
   if (!isOpen || !seed) return null;
 
   const isProposedByMe =
     seed.proposedBy === currentUserName || seed.proposedBy === 'You';
 
+  const isEdited =
+    caption.trim() !== (seed.draftCaption || '').trim() ||
+    mood !== (seed.chosenMood || 'cozy');
+
   const handleApprove = async () => {
     setBusy(true);
     sounds.playCelebration();
     try {
-      await onApprove(seed.seedId, caption, mood);
+      await onApprove(seed.seedId, caption, mood, aiReuseConsent);
       onClose();
     } finally {
       setBusy(false);
@@ -271,6 +292,54 @@ export function KeepsakeApprovalModal({
             <option value="proud">Proud 🌸</option>
           </select>
         </div>
+
+        {/* Revision Invalidation Warning */}
+        {isEdited && (
+          <div
+            role="alert"
+            style={{
+              background: '#FFFBEB',
+              border: '1px solid #FCD34D',
+              borderRadius: '12px',
+              padding: '10px 14px',
+              fontSize: '12px',
+              color: '#92400E',
+              marginBottom: '14px',
+              lineHeight: 1.4,
+            }}
+          >
+            ⚠️ <strong>Revision Notice (v{(seed.version || 1) + 1}):</strong>{' '}
+            Modifying the caption or mood updates the proposal. Prior approvals
+            will be invalidated, requiring mutual re-approval of this exact
+            version.
+          </div>
+        )}
+
+        {/* AI Theme Reuse Consent Toggle (R03 separate consent) */}
+        <label
+          style={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '8px',
+            fontSize: '12px',
+            color: 'var(--ink)',
+            marginBottom: '16px',
+            cursor: 'pointer',
+            lineHeight: 1.4,
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={aiReuseConsent}
+            onChange={(e) => setAiReuseConsent(e.target.checked)}
+            style={{ marginTop: '2px' }}
+          />
+          <span>
+            ✦ <strong>AI Theme Inspiration:</strong> Allow Cupidot to draw
+            gentle themes from this keepsake for date ideas (separate from
+            private shelf storage; revocable anytime).
+          </span>
+        </label>
 
         {/* Ownership transparency notice */}
         <div

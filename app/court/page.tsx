@@ -203,6 +203,8 @@ export default function CourtPage() {
           activityName="Theatrical Couples Court"
           phase={verdict ? 'revealed' : deliberating ? 'locked' : 'ready'}
           partnerName={partnerB || 'Partner'}
+          isDemoMode={true}
+          demoNotice="Single-screen preview exploration. In synchronized date nights, each partner roleplays privately on their own screen."
           privacyNote="Purely fictional roleplay. Zero real-world fault, blame, or relationship penalties."
         />
 

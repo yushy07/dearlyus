@@ -25,6 +25,8 @@ export interface CupidotActivityGuidanceProps {
   onSkip?: () => void;
   skipLabel?: string;
   privacyNote?: string;
+  isDemoMode?: boolean;
+  demoNotice?: string;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -108,6 +110,8 @@ export function CupidotActivityGuidance({
   onSkip,
   skipLabel = 'Skip',
   privacyNote,
+  isDemoMode,
+  demoNotice,
   className = '',
   style,
 }: CupidotActivityGuidanceProps) {
@@ -127,7 +131,8 @@ export function CupidotActivityGuidance({
     phase !== 'private' &&
     phase !== 'locked' &&
     phase !== 'recovering' &&
-    phase !== 'expired'
+    phase !== 'expired' &&
+    !isDemoMode
   ) {
     return null;
   }
@@ -146,8 +151,10 @@ export function CupidotActivityGuidance({
         gap: '12px',
         padding: '10px 16px',
         borderRadius: '16px',
-        border: '1px solid rgba(255, 143, 178, 0.25)',
-        background: info.bg,
+        border: isDemoMode
+          ? '1.5px solid #F59E0B'
+          : '1px solid rgba(255, 143, 178, 0.25)',
+        background: isDemoMode ? 'rgba(254, 243, 199, 0.95)' : info.bg,
         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.03)',
         marginBottom: '16px',
         flexWrap: 'wrap',
@@ -155,10 +162,22 @@ export function CupidotActivityGuidance({
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <span style={{ fontSize: '20px' }}>{info.icon}</span>
+        <span style={{ fontSize: '20px' }}>{isDemoMode ? '🧪' : info.icon}</span>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <strong style={{ fontSize: '13px', color: info.tone }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              flexWrap: 'wrap',
+            }}
+          >
+            <strong
+              style={{
+                fontSize: '13px',
+                color: isDemoMode ? '#B45309' : info.tone,
+              }}
+            >
               Cupidot · {activityName}
             </strong>
             <span
@@ -170,11 +189,11 @@ export function CupidotActivityGuidance({
                 padding: '1px 6px',
                 borderRadius: '8px',
                 background: '#FFFFFF',
-                color: info.tone,
+                color: isDemoMode ? '#B45309' : info.tone,
                 border: '1px solid rgba(0,0,0,0.08)',
               }}
             >
-              {info.title}
+              {isDemoMode ? 'Local Solo Demo' : info.title}
             </span>
           </div>
           <p
@@ -185,7 +204,10 @@ export function CupidotActivityGuidance({
               lineHeight: 1.35,
             }}
           >
-            {privacyNote || info.hint.replace('your person', partnerName)}
+            {isDemoMode
+              ? demoNotice ||
+                'Single-screen exploration preview. In live date nights, each partner responds privately on their own screen.'
+              : privacyNote || info.hint.replace('your person', partnerName)}
           </p>
         </div>
       </div>

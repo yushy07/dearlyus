@@ -330,6 +330,24 @@ export interface SparkAwardResult {
   note: string;
 }
 
+export const REGISTERED_SPARK_EVENT_TYPES = [
+  'activity_complete',
+  'activity_completed',
+  'shared_activity_completed',
+  'ritual_complete',
+  'ritual_completed',
+  'keepsake_approved',
+  'keepsake_saved',
+  'date_planned',
+  'milestone_reached',
+  'milestone_recorded',
+  'new_category_tried',
+  'reunion_return',
+] as const;
+
+export type RegisteredSparkEventType =
+  (typeof REGISTERED_SPARK_EVENT_TYPES)[number];
+
 /**
  * Idempotently awards growth sparks for an eligible shared event.
  */
@@ -366,6 +384,27 @@ export function awardGrowthSparks(
       actionKeyOrProcessedSet instanceof Set
         ? actionKeyOrProcessedSet
         : new Set<string>();
+  }
+
+  // Eligibility check: reject arbitrary unknown action types
+  const isRegisteredEvent = REGISTERED_SPARK_EVENT_TYPES.some(
+    (registered) =>
+      actionType === registered || actionType.startsWith(`${registered}:`),
+  );
+
+  if (!isRegisteredEvent) {
+    return {
+      awarded: false,
+      sparksAdded: 0,
+      sparksAwarded: 0,
+      totalSparks: currentTotal,
+      sessionSparks: sessionCurrent,
+      newSessionSparks: sessionCurrent,
+      chapterAdvanced: false,
+      isDuplicate: false,
+      softCapReached: false,
+      note: 'Event type not eligible for growth sparks.',
+    };
   }
 
   // Idempotency check: duplicate event calls do not re-award
@@ -407,6 +446,13 @@ export function awardGrowthSparks(
     baseSparks = 15;
   } else if (actionType.includes('ritual')) {
     baseSparks = 10;
+  } else if (actionType.includes('keepsake')) {
+    baseSparks = 15;
+  } else if (
+    actionType.includes('milestone') ||
+    actionType.includes('date_planned')
+  ) {
+    baseSparks = 15;
   } else if (actionType === 'reunion_return') {
     baseSparks = 5;
   } else {
@@ -969,8 +1015,18 @@ export function deriveSafeMood(state: CupidotProductState): CupidotMood {
   }
 }
 
-export function placeHomeDecor(placedIds: string[], decorId: string): string[] {
+export function placeHomeDecor(
+  placedIds: string[],
+  decorId: string,
+  currentChapter?: number,
+): string[] {
   if (placedIds.includes(decorId)) return placedIds;
+  if (typeof currentChapter === 'number') {
+    const item = HOME_COLLECTION_CATALOG.find((i) => i.id === decorId);
+    if (item && item.unlockedAtChapter > currentChapter) {
+      return placedIds; // Item locked at current chapter
+    }
+  }
   return [...placedIds, decorId];
 }
 
@@ -991,11 +1047,14 @@ export function proposeMemorySeed(input: {
   partnerBName: string;
   caption?: string;
   previewUrl?: string;
+  chosenMood?: CupidotMood;
+  aiReuseConsent?: boolean;
 }): MemorySeed {
   const seedId = `seed-${Date.now()}`;
   return {
     seedId,
     id: seedId,
+    version: 1,
     title: input.title,
     kind: input.kind || 'activity',
     activityType: input.kind || 'activity',
@@ -1013,10 +1072,12 @@ export function proposeMemorySeed(input: {
     occurredAt: new Date().toISOString(),
     status: 'proposed',
     approvalStatus: 'proposed',
-    chosenMood: 'playful',
+    chosenMood: input.chosenMood || 'playful',
     proposedBy: input.partnerAName,
+    approvedBy: [input.partnerAId],
     approvedByPartnerA: true,
     approvedByPartnerB: false,
+    aiReuseConsent: Boolean(input.aiReuseConsent),
   };
 }
 
@@ -1025,32 +1086,106 @@ export function approveMemorySeed(
   partnerId: string,
   updatedCaption?: string,
   updatedMood?: CupidotMood,
+  aiReuseConsent?: boolean,
 ): MemorySeed {
-  const isA = partnerId === seed.partnerAId;
-  const isB = partnerId === seed.partnerBId;
-  const approvedByPartnerA = isA ? true : seed.approvedByPartnerA;
-  const approvedByPartnerB = isB ? true : seed.approvedByPartnerB;
-  const mutuallyApproved = approvedByPartnerA && approvedByPartnerB;
+  const isA =
+    partnerId === seed.partnerAId ||
+    partnerId === 'user-a' ||
+    partnerId === seed.partnerAName;
+  const isB =
+    partnerId === seed.partnerBId ||
+    partnerId === 'user-b' ||
+    partnerId === seed.partnerBName;
+
+  const currentCaption = seed.caption ?? seed.draftCaption ?? '';
+  const currentMood = seed.chosenMood ?? 'playful';
+
+  const captionChanged =
+    updatedCaption !== undefined &&
+    updatedCaption.trim() !== currentCaption.trim();
+  const moodChanged =
+    updatedMood !== undefined && updatedMood !== currentMood;
+  const isContentEdited = captionChanged || moodChanged;
+
+  const nextCaption =
+    updatedCaption !== undefined ? updatedCaption : currentCaption;
+  const nextMood = updatedMood !== undefined ? updatedMood : currentMood;
+  const nextReuseConsent =
+    aiReuseConsent !== undefined
+      ? aiReuseConsent
+      : Boolean(seed.aiReuseConsent);
+
+  if (isContentEdited) {
+    // Editing invalidates prior approvals from the other partner; creates a new version
+    const newVersion = (seed.version || 1) + 1;
+    const approvedBy = [partnerId];
+    const approvedByPartnerA = isA;
+    const approvedByPartnerB = isB;
+    const status = isA ? 'approved_by_a' : 'approved_by_b';
+    const approvalStatus = isA ? 'approved_by_a' : 'approved_by_b';
+
+    return {
+      ...seed,
+      version: newVersion,
+      caption: nextCaption,
+      draftCaption: nextCaption,
+      chosenMood: nextMood,
+      aiReuseConsent: nextReuseConsent,
+      approvedBy,
+      approvedByPartnerA,
+      approvedByPartnerB,
+      status,
+      approvalStatus,
+      approvedAt: null,
+    };
+  }
+
+  // Pure approval without edit
+  const approvedBySet = new Set(seed.approvedBy || []);
+  approvedBySet.add(partnerId);
+
+  const approvedByPartnerA = isA ? true : Boolean(seed.approvedByPartnerA);
+  const approvedByPartnerB = isB ? true : Boolean(seed.approvedByPartnerB);
+  const mutuallyApproved =
+    (approvedByPartnerA && approvedByPartnerB) || approvedBySet.size >= 2;
+
+  const approvalStatus = mutuallyApproved
+    ? 'both_approved'
+    : approvedByPartnerA
+      ? 'approved_by_a'
+      : approvedByPartnerB
+        ? 'approved_by_b'
+        : seed.approvalStatus;
+
+  const status = mutuallyApproved ? 'mutually_approved' : approvalStatus;
 
   return {
     ...seed,
-    caption: updatedCaption !== undefined ? updatedCaption : seed.caption,
-    draftCaption:
-      updatedCaption !== undefined ? updatedCaption : seed.draftCaption,
-    chosenMood: updatedMood !== undefined ? updatedMood : seed.chosenMood,
+    version: seed.version || 1,
+    caption: nextCaption,
+    draftCaption: nextCaption,
+    chosenMood: nextMood,
+    aiReuseConsent: nextReuseConsent,
+    approvedBy: Array.from(approvedBySet),
     approvedByPartnerA,
     approvedByPartnerB,
-    status: mutuallyApproved ? 'mutually_approved' : seed.status,
+    status,
+    approvalStatus,
+    approvedAt: mutuallyApproved
+      ? seed.approvedAt || new Date().toISOString()
+      : null,
   };
 }
 
 export function declineMemorySeed(
   seed: MemorySeed,
-  _partnerId: string,
+  _partnerId?: string,
 ): MemorySeed {
   return {
     ...seed,
     status: 'declined',
+    approvalStatus: 'declined',
+    declinedAt: new Date().toISOString(),
   };
 }
 

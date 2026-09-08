@@ -248,6 +248,8 @@ export default function ScrapbookPage() {
           phase={exported ? 'completed' : 'ready'}
           partnerName={partnerB || 'Partner'}
           privacyNote="Memories and polaroids placed on your shared scrapbook wall are preserved mutually in Our Space."
+          isDemoMode={true}
+          demoNotice="Scrapbook collage is in local client sandbox mode. Changes saved stay on this device until synchronized."
         />
 
         {/* Toolbar */}

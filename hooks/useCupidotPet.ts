@@ -21,6 +21,9 @@ import {
   sanitizeSafePresence,
   HOME_COLLECTION_CATALOG,
   getReturnExperience,
+  placeHomeDecor,
+  approveMemorySeed as stateApproveMemorySeed,
+  declineMemorySeed as stateDeclineMemorySeed,
 } from '@/lib/cupidot-state';
 import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
 import { useRoomPresence } from '@/contexts/PresenceContext';
@@ -243,11 +246,16 @@ export function useCupidotPet() {
   const placeDecor = useCallback((decorId: string) => {
     sounds.playPop();
     setHomeState((prev) => {
-      if (prev.placedDecorIds.includes(decorId)) return prev;
+      const nextPlaced = placeHomeDecor(
+        prev.placedDecorIds,
+        decorId,
+        prev.chapter,
+      );
+      if (nextPlaced.length === prev.placedDecorIds.length) return prev;
       decorUndoStackRef.current.push([...prev.placedDecorIds]);
       return {
         ...prev,
-        placedDecorIds: [...prev.placedDecorIds, decorId],
+        placedDecorIds: nextPlaced,
       };
     });
   }, []);
@@ -282,7 +290,12 @@ export function useCupidotPet() {
       const seed: MemorySeed = {
         ...seedData,
         seedId: `seed-${Date.now()}`,
+        version: 1,
+        approvedBy: [seedData.partnerAId || seedData.proposedBy || 'You'],
+        approvedByPartnerA: true,
+        approvedByPartnerB: false,
         approvalStatus: 'proposed',
+        status: 'proposed',
         occurredAt: new Date().toISOString(),
       };
       setHomeState((prev) => ({
@@ -297,28 +310,38 @@ export function useCupidotPet() {
   );
 
   const approveMemorySeed = useCallback(
-    (seedId: string, updatedCaption?: string, updatedMood?: CupidotMood) => {
-      sounds.playCelebration();
+    (
+      seedId: string,
+      partnerId: string = 'partner',
+      updatedCaption?: string,
+      updatedMood?: CupidotMood,
+      aiReuseConsent?: boolean,
+    ) => {
       setHomeState((prev) => {
         if (prev.activeMemorySeed?.seedId !== seedId) return prev;
-        const approved: MemorySeed = {
-          ...prev.activeMemorySeed,
-          draftCaption:
-            updatedCaption !== undefined
-              ? updatedCaption
-              : prev.activeMemorySeed.draftCaption,
-          chosenMood:
-            updatedMood !== undefined
-              ? updatedMood
-              : prev.activeMemorySeed.chosenMood,
-          approvalStatus: 'both_approved',
-          approvedAt: new Date().toISOString(),
-        };
+        const approved = stateApproveMemorySeed(
+          prev.activeMemorySeed,
+          partnerId,
+          updatedCaption,
+          updatedMood,
+          aiReuseConsent,
+        );
+
+        if (approved.approvalStatus === 'both_approved') {
+          sounds.playCelebration();
+        } else {
+          sounds.playChime();
+        }
+
         return {
           ...prev,
           activeMemorySeed: approved,
-          state: 'celebrating',
-          mood: 'proud',
+          state:
+            approved.approvalStatus === 'both_approved'
+              ? 'celebrating'
+              : 'curating_memory',
+          mood:
+            approved.approvalStatus === 'both_approved' ? 'proud' : 'dreamy',
         };
       });
     },
@@ -326,7 +349,7 @@ export function useCupidotPet() {
   );
 
   const declineMemorySeed = useCallback(
-    (seedId: string) => {
+    (seedId: string, partnerId?: string) => {
       sounds.playPop();
       setHomeState((prev) => {
         if (prev.activeMemorySeed?.seedId !== seedId) return prev;
@@ -342,18 +365,31 @@ export function useCupidotPet() {
 
   // Couple Rituals
   const createOrUpdateRitual = useCallback(
-    (ritualData: Omit<CoupleRitual, 'id' | 'createdAt'>) => {
+    (
+      ritualData: Partial<CoupleRitual> &
+        Omit<CoupleRitual, 'id' | 'createdAt'>,
+    ) => {
       sounds.playSparkleReaction('💖');
-      const ritual: CoupleRitual = {
-        ...ritualData,
-        id: `ritual-${Date.now()}`,
-        createdAt: new Date().toISOString(),
-      };
-      setHomeState((prev) => ({
-        ...prev,
-        upcomingRitual: ritual,
-      }));
-      return ritual;
+      setHomeState((prev) => {
+        const existing = prev.upcomingRitual;
+        const targetId =
+          (ritualData as any).id ||
+          (existing ? existing.id : `ritual-${Date.now()}`);
+        const createdAt =
+          (ritualData as any).createdAt ||
+          (existing?.id === targetId
+            ? existing.createdAt
+            : new Date().toISOString());
+        const ritual: CoupleRitual = {
+          ...ritualData,
+          id: targetId,
+          createdAt,
+        };
+        return {
+          ...prev,
+          upcomingRitual: ritual,
+        };
+      });
     },
     [],
   );

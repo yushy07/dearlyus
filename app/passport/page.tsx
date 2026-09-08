@@ -428,6 +428,8 @@ export default function PassportPage() {
             activityName="Couple Date Passport"
             phase="completed"
             partnerName={profile.partner2 || 'Partner'}
+            isDemoMode={true}
+            demoNotice="Keepsake creator preview. Finalized visa stamps can be proposed to your shared Our Space shelf."
             privacyNote="Passport stamps and travel tickets are shared keepsakes celebrating every flight, date, and milestone reached together."
           />
 
