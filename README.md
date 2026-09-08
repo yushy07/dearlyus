@@ -6,7 +6,7 @@
 
   <p>
     An intimate realtime date night sanctuary for couples separated by distance or sharing screens together.<br/>
-    Synchronized Korean Life4Cuts photobooths, 3D interactive memory keepsakes, dual-blind quizzes, daily love forecast, and live date games.
+    Synchronized Korean Life4Cuts photobooths, 3D interactive distance globe, dual-blind quizzes, daily love forecast, and live date games.
   </p>
 
   <p>
@@ -22,7 +22,9 @@
 
   <br/>
 
-  <img src="public/og.png" alt="Dearly Us Couple Date Night Preview" width="100%" style="border-radius: 16px; box-shadow: 0 12px 36px rgba(0,0,0,0.15);" />
+  <a href="https://github.com/yushy07/dearlyus">
+    <img src="docs/screenshots/01-hero-cinematic.png" alt="Dearly Us Live Cinematic Experience" width="100%" style="border-radius: 16px; box-shadow: 0 16px 48px rgba(0,0,0,0.25);" />
+  </a>
 
 </div>
 
@@ -32,35 +34,52 @@
 
 Long distance dates often default to muted video calls or passive movie streaming. **Dearly Us** transforms screen-time into genuine connection:
 
-- **Shared Rooms with Google Sign-In**: Create a profile, connect exactly one partner, and meet in a couple-authorized date-night lobby from any supported device.
+- **100% Free & Open Sanctuary**: No subscription fees, paywalls, or premium tiers. Every activity, photostrip, keepsake, and feature is completely free for all couples.
+- **Shared Rooms & Instant PINs**: Enter an instant 5-letter room code or connect via Google Sign-In to meet in an intimate, couple-authorized date-night sanctuary from any device.
 - **Privacy by Design**: Camera feeds stay on the device. Shared activity events and deliberately saved keepsakes are protected by Supabase row-level security and private Storage policies.
 - **Physical & Digital Keepsakes**: Export high-resolution 300 DPI _인생네컷_ photostrips, printable thermal receipts of your quiz lore, 9:16 vertical Instagram Story cards, phone wallpapers, and digital time capsule envelopes.
 - **Zero-Guilt Architecture**: No punishment streaks, no decay counters, and decay-free relationship milestones designed to bring comfort, not stress.
 
 ---
 
-## 📸 Experience & Visual Gallery
+## 📸 Real Experience Gallery (Captured Directly From Live App)
 
 <div align="center">
   <table>
     <tr>
       <td width="50%" align="center">
-        <img src="public/photos/dearly-strip.jpg" alt="Physical Life4Cuts Photostrip" width="100%" style="border-radius: 12px;" />
-        <br/><b>Korean Life4Cuts Physical Keepsakes</b>
+        <img src="docs/screenshots/04-photobooth-studio.png" alt="Korean Life4Cuts Photobooth Studio" width="100%" style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);" />
+        <br/><b>Korean Life4Cuts (인생네컷) Studio</b>
+        <br/><sub>Synchronized countdown, webcam feeds, AR FX, pose coach &amp; live printable strips</sub>
       </td>
       <td width="50%" align="center">
-        <img src="public/photos/quiz-duo.webp" alt="Know Me Couple Quiz Dual Screen" width="100%" style="border-radius: 12px;" />
-        <br/><b>Know Me Double-Blind Couple Quiz</b>
+        <img src="docs/screenshots/02-interactive-playground.png" alt="Interactive 3D Distance Globe" width="100%" style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);" />
+        <br/><b>Interactive 3D Distance Globe &amp; Flight Arcs</b>
+        <br/><sub>Orthographic Three.js globe, geodesic flight path between cities, and photostrip printer</sub>
       </td>
     </tr>
     <tr>
       <td width="50%" align="center">
-        <img src="public/august/gate.webp" alt="Sanctuary Garden Gate" width="100%" style="border-radius: 12px;" />
-        <br/><b>Curated Couple Night Sanctuary Journey</b>
+        <img src="docs/screenshots/08-copresence-bridge.png" alt="Realtime Co-Presence Bridge" width="100%" style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);" />
+        <br/><b>Realtime Co-Presence Bridge</b>
+        <br/><sub>Synchronized presence stage linking partner locations (Calgary ↔ Jakarta) in realtime</sub>
       </td>
       <td width="50%" align="center">
-        <img src="public/photos/magnet-fridge.webp" alt="Fridge Magnet Keepsakes" width="100%" style="border-radius: 12px;" />
-        <br/><b>DIY Fridge Magnet &amp; Printables Studio</b>
+        <img src="docs/screenshots/03-activities-catalog.png" alt="Date Night Activities Catalog" width="100%" style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);" />
+        <br/><b>Multiplayer Date Night Catalog</b>
+        <br/><sub>22+ interactive couple games, duels, quizzes, souvenir passports &amp; sketchpads</sub>
+      </td>
+    </tr>
+    <tr>
+      <td width="50%" align="center">
+        <img src="docs/screenshots/06-daily-love-forecast.png" alt="Cupidot's Daily Love Forecast" width="100%" style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);" />
+        <br/><b>Cupidot's Daily Love Forecast</b>
+        <br/><sub>Cross-city romantic barometric pressure, sweetness radar &amp; Instagram Story export</sub>
+      </td>
+      <td width="50%" align="center">
+        <img src="docs/screenshots/07-couple-quiz-receipt.png" alt="Couple Quiz Double-Blind Lock-in" width="100%" style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);" />
+        <br/><b>Double-Blind Couple Quiz</b>
+        <br/><sub>Secret answer lock-in with match scoring &amp; downloadable vintage thermal receipts</sub>
       </td>
     </tr>
   </table>
@@ -75,6 +94,7 @@ Long distance dates often default to muted video calls or passive movie streamin
 - **Realtime Flash & Countdown**: Synchronized 3..2..1 photo countdown across both screens with camera flash simulation.
 - **Bespoke Frames**: Choose from _Dearly Us Rose & Alabaster_, _Retro Vintage Vinyl_, _Tokyo Midnight Cafe_, _Pastel Sakura_, and _Korean Minimalist_.
 - **Animated Video Strips**: Exports looping animated `.webm` live strips directly from client canvas capture.
+- **Pose Coach & AR FX**: Integrated companion pose suggestions and real-time canvas filters (Soft, Natural, Floating Hearts, Retro Grain).
 
 ### 🧠 2. Adaptive Couple Quiz Engine (`/quiz`)
 
@@ -98,7 +118,6 @@ Long distance dates often default to muted video calls or passive movie streamin
 - **Shared Pet Sanctuary in Our Space (`/our-space`)**: A decay-free relationship pet with 5 growth chapters, zero-punishment growth sparks, cozy decor items, custom rituals, relationship constellation, and memory weather.
 - **Dual Presentation Engine**: 3D Three.js WebGL companion model with soft lighting alongside a lightweight, accessible 2D animated stage with walk cycles, reduced-motion support, and screen-reader announcements.
 - **The Romance Spectrum & Safety Blueprint (`lib/cupidot-behavior.ts`)**: 6 intensity tiers (_Quiet_, _Warm_, _Romantic_, _Cheeky_, _Flirty_, _Spicy_) governed by a mutual consent ceiling (`min(levelA, levelB)`), session-scoped adult verification for sensitive tiers, and anonymous private intensity downgrades (_"Keeping things lighter."_).
-- **Romantic Emergency Modal**: Immediate de-escalation tools, timeout breathers, and structured repair prompts.
 
 ### ⛅ 6. Daily Love Forecast & Story Keepsakes (`/forecast`)
 
@@ -130,10 +149,9 @@ Long distance dates often default to muted video calls or passive movie streamin
 
 | Route                | Feature & Activity                                                                                                                         |
 | :------------------- | :----------------------------------------------------------------------------------------------------------------------------------------- |
-| **`/`**              | Homepage with 3D flight globe, live partner cursors, instant room generator, and photostrip showcase.                                      |
-| **`/activity`**      | Complete 17+ multiplayer date night activity catalog.                                                                                      |
+| **`/`**              | Modular homepage with cinematic video reveal, interactive 3D flight globe, live partner cursors, instant room PIN joiner, and photostrip showcase. |
+| **`/activity`**      | Complete 22+ multiplayer date night activity catalog.                                                                                      |
 | **`/arcade`**        | Face-avatar retro mini-games (_Heart Jump_, _Asteroid Dodge_, _Berry Catch_).                                                              |
-| **`/august`**        | Curated 7-step couple date night journey itinerary.                                                                                        |
 | **`/birthday`**      | Custom Birthday Gift Page generator with heart QR code.                                                                                    |
 | **`/blog`**          | Editorial blog with LDR date guides, ideas, and relationship advice.                                                                       |
 | **`/blog/:slug`**    | Dynamic editorial article reader with scroll progress.                                                                                     |
@@ -186,10 +204,19 @@ dearlyus/
 │   ├── profile/                  # Account settings, romance spectrum & room code
 │   └── api/                      # Backend endpoints for stats, room configuration & callbacks
 ├── components/
-│   ├── bot/                      # Cupidot companion, 2D/3D stages, moments dialog & emergency modal
+│   ├── home/                     # Modular homepage components:
+│   │   ├── DearlyCinematicHero   # Hero section with cinematic video reveal & floating widgets
+│   │   ├── CoPresenceBridge      # Real-time partner presence & live distance cards
+│   │   ├── InteractivePlayground # 3D Earth globe & photostrip machine simulator
+│   │   ├── CuratedJourneyBand    # Sanctuary date-night agenda showcase
+│   │   ├── RoomCodeJoiner        # 5-letter PIN room inputs & live counter badges
+│   │   ├── HomeActivitiesGrid    # Flagship date night activities gallery
+│   │   ├── PhotoboothDemoStudio  # Real-time interactive photobooth demo with AR filters
+│   │   └── HomeFaq               # Interactive accordion & couple support card
+│   ├── bot/                      # Cupidot companion, 2D/3D stages & moments dialog
 │   ├── our-space/                # Sanctuary widgets: rituals, constellation, capsules, weather
-│   ├── shared/                   # Reusable bars, ambient audio player, reaction bursts & confetti
-│   └── ui/                       # Accessible UI components (buttons, badges, dialogs, tabs)
+│   ├── shared/                   # Reusable glassmorphic bars, ambient audio player, reaction bursts
+│   └── ui/                       # Accessible UI primitives (buttons, badges, dialogs, tabs)
 ├── lib/
 │   ├── activity-adapters/        # Standardized multiplayer activity adapters (quiz, draw, catalog)
 │   ├── runtime/                  # Transport abstraction layer (Supabase vs Mock)
@@ -202,7 +229,8 @@ dearlyus/
 │   ├── couple.ts                 # Local & cloud couple state management
 │   └── supabase.ts               # Supabase client & real-time connection helpers
 ├── data/                         # Curated local prompts, questions, and content packs
-├── db/                           # Drizzle ORM schemas and database definitions
+├── docs/                         # Architecture guides, roadmaps, and high-resolution screenshots
+│   └── screenshots/              # Authentic live screenshots of website features
 ├── supabase/                     # Supabase migrations, storage policies & edge functions
 ├── tests/
 │   ├── browser/                  # Playwright browser end-to-end specifications
@@ -211,8 +239,8 @@ dearlyus/
 │   ├── cupidot-pet.test.ts       # Growth chapter & spark progression tests
 │   ├── letter-audio-sanitizer.test.ts # Audio URL sanitization & injection regression tests
 │   └── activity-adapters.test.ts # Multiplayer activity adapter contract tests
-├── public/                       # 3D models, SVG assets, sound files, photo samples & fonts
-└── docs/                         # Architecture guides, roadmaps, and feature specifications
+├── public/                       # 3D models, SVG assets, audio files, photo samples & fonts
+└── scripts/                      # Utility scripts (e.g. screenshot capture automation)
 ```
 
 ---
