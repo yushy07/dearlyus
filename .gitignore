@@ -126,3 +126,12 @@ scratch/
 *.db-journal
 *.sqlite-journal
 
+# Internal Development Notes, Audits & Roadmaps
+/docs/*.md
+/docs/cupidot-workflow/
+!/docs/screenshots/
+Cupidot_Features_and_Functionality.md
+Cupidot_Intelligence_and_Behavior.md
+Dearly_Us_Roadmap_Local_and_Supabase.md
+
+
