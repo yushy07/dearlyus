@@ -35,171 +35,193 @@ export function Navbar({
   const isInsideRoom = Boolean(roomCode);
 
   return (
-    <header className="bar">
-      <div
-        className="wrap"
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-          <Link className="brand" href="/" aria-label="Dearly Us Home">
-            <span className="brand-emblem" aria-hidden="true">
-              <svg width="28" height="28" viewBox="0 0 128 128" fill="none">
-                <rect width="128" height="128" rx="36" fill="#0F172A" />
-                <path
-                  d="M64 77 C51 93 29 86 29 64 C29 45 48 38 64 58"
-                  stroke="#F472B6"
-                  strokeWidth="12"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M64 58 C80 38 99 45 99 64 C99 86 77 93 64 77"
-                  stroke="#60A5FA"
-                  strokeWidth="12"
-                  strokeLinecap="round"
-                />
-                <circle cx="64" cy="67" r="5" fill="#FFFFFF" />
-              </svg>
-            </span>
-            <span className="brand-dearly">Dearly</span>
-            <span className="brand-us">Us</span>
-            <span className="dots">
-              <i className="p"></i>
-              <i className="b"></i>
-            </span>
-          </Link>
-
-          {/* Quick Nav for desktop (shown when not in room) */}
-          {!isInsideRoom && (
-            <nav
-              className="navbar-quick-links"
-              style={{
-                display: 'flex',
-                gap: '16px',
-                alignItems: 'center',
-                fontSize: '13.5px',
-                fontWeight: 600,
-              }}
-            >
-              <Link href="/photobooth" style={{ color: 'var(--ink)' }}>
-                📸 Photobooth
-              </Link>
-              <Link href="/timezone" style={{ color: 'var(--ink-soft)' }}>
-                🌍 Timezone
-              </Link>
-              <Link href="/quiz" style={{ color: 'var(--ink-soft)' }}>
-                ❓ Quizzes
-              </Link>
-              <Link href="/activity" style={{ color: 'var(--ink-soft)' }}>
-                ✨ All Dates
-              </Link>
-            </nav>
-          )}
-
-          {/* In-room context display */}
-          {isInsideRoom && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '12px',
-                  background: 'var(--paper-raised)',
-                  padding: '5px 12px',
-                  borderRadius: '20px',
-                  border: '1px solid var(--line)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  boxShadow: 'var(--shadow-soft)',
-                }}
-              >
-                <span
-                  style={{
-                    width: '7px',
-                    height: '7px',
-                    borderRadius: '50%',
-                    background: '#10B981',
-                    boxShadow: '0 0 6px #10B981',
-                    display: 'inline-block',
-                  }}
-                />
-                ROOM: <b style={{ color: 'var(--pink)' }}>{roomCode}</b>
+    <>
+      <header className="bar" role="banner">
+        <div className="wrap">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            {/* Brand Emblem & Logo */}
+            <Link className="brand" href="/" aria-label="Dearly Us Home">
+              <span className="brand-emblem" aria-hidden="true">
+                <svg width="28" height="28" viewBox="0 0 128 128" fill="none">
+                  <rect width="128" height="128" rx="36" fill="#0F172A" />
+                  <path
+                    d="M64 77 C51 93 29 86 29 64 C29 45 48 38 64 58"
+                    stroke="#F472B6"
+                    strokeWidth="12"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M64 58 C80 38 99 45 99 64 C99 86 77 93 64 77"
+                    stroke="#60A5FA"
+                    strokeWidth="12"
+                    strokeLinecap="round"
+                  />
+                  <circle cx="64" cy="67" r="5" fill="#FFFFFF" />
+                </svg>
               </span>
-              {activityName && (
+              <span className="brand-dearly">Dearly</span>
+              <span className="brand-us">Us</span>
+              <span className="dots" aria-hidden="true">
+                <i className="p"></i>
+                <i className="b"></i>
+              </span>
+            </Link>
+
+            {/* Desktop Navigation Links */}
+            {!isInsideRoom && (
+              <nav
+                className="navbar-unified-links"
+                aria-label="Main Navigation"
+              >
+                <Link href="/activity">Activities</Link>
+                <Link href="/photobooth">Photobooth</Link>
+                <Link href="/passport" className="nav-passport-pill">
+                  <span>💮</span>
+                  <span>Passport</span>
+                </Link>
+                <Link href="/our-space">Our Space</Link>
+                <Link href="/blog">Blog</Link>
+                <Link href="/#faq">FAQ</Link>
+                <Link
+                  href="/shop"
+                  className="nav-shop-icon"
+                  aria-label="Print shop"
+                  title="Print shop"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path
+                      d="M5 8h14l-1.2 12.1a1.5 1.5 0 0 1-1.5 1.4H7.7a1.5 1.5 0 0 1-1.5-1.4L5 8Z"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M8.5 10V6.5a3.5 3.5 0 0 1 7 0V10"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </Link>
+              </nav>
+            )}
+
+            {/* In-room context display */}
+            {isInsideRoom && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span
                   style={{
+                    fontFamily: 'var(--font-mono)',
                     fontSize: '12px',
-                    fontWeight: 700,
-                    color: 'var(--ink-soft)',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    padding: '5px 12px',
+                    borderRadius: '20px',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    color: '#ffffff',
                   }}
                 >
-                  · {activityName}
+                  <span
+                    style={{
+                      width: '7px',
+                      height: '7px',
+                      borderRadius: '50%',
+                      background: '#10B981',
+                      boxShadow: '0 0 6px #10B981',
+                      display: 'inline-block',
+                    }}
+                  />
+                  ROOM: <b style={{ color: '#F472B6' }}>{roomCode}</b>
                 </span>
-              )}
-            </div>
-          )}
-        </div>
+                {activityName && (
+                  <span
+                    style={{
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      color: 'rgba(255, 255, 255, 0.8)',
+                    }}
+                  >
+                    · {activityName}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
 
-        {/* Right Nav Action */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          {rightAction ? (
-            rightAction
-          ) : isInsideRoom ? (
-            // 4. Inside Live Room State
-            <>
-              <Link
-                className="btn btn-ghost"
-                href={`/room/${roomCode}`}
-                style={{ fontSize: '13px', padding: '6px 12px' }}
-              >
-                Lobby ▷
-              </Link>
-              <button
-                className="btn btn-ghost"
-                onClick={handleDefaultLeave}
-                style={{
-                  fontSize: '13px',
-                  padding: '6px 12px',
-                  color: '#a51d3c',
-                }}
-              >
-                Leave room
-              </button>
-            </>
-          ) : user && partnerConnected ? (
-            // 3. Paired but Outside Room State
-            <>
-              <AuthButton />
-              <Link
-                className="btn btn-primary"
-                href={
-                  space?.activeRoomCode
-                    ? `/room/${space.activeRoomCode}`
-                    : '/our-space'
-                }
-                style={{ fontSize: '13px', padding: '6px 14px' }}
-              >
-                Start date night ▷
-              </Link>
-            </>
-          ) : (
-            // 1 & 2. Signed Out OR Signed in Unpaired State
-            <>
-              <AuthButton />
-              <Link
-                className="btn btn-grad"
-                href="/activity"
-                style={{ fontSize: '13px', padding: '6px 16px' }}
-              >
-                Browse activities ▷
-              </Link>
-            </>
-          )}
+          {/* Right Nav Action */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+            {rightAction ? (
+              rightAction
+            ) : isInsideRoom ? (
+              // Inside Live Room State
+              <>
+                <Link
+                  className="btn btn-ghost"
+                  href={`/room/${roomCode}`}
+                  style={{
+                    fontSize: '12px',
+                    padding: '6px 12px',
+                    color: '#ffffff',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '9999px',
+                  }}
+                >
+                  Lobby ▷
+                </Link>
+                <button
+                  className="btn btn-ghost"
+                  onClick={handleDefaultLeave}
+                  style={{
+                    fontSize: '12px',
+                    padding: '6px 12px',
+                    color: '#fca5a5',
+                    background: 'rgba(239, 68, 68, 0.15)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    borderRadius: '9999px',
+                  }}
+                >
+                  Leave room
+                </button>
+              </>
+            ) : user && partnerConnected ? (
+              // Paired Outside Room State
+              <>
+                <AuthButton />
+                <Link
+                  className="btn btn-primary"
+                  href={
+                    space?.activeRoomCode
+                      ? `/room/${space.activeRoomCode}`
+                      : '/our-space'
+                  }
+                  style={{ fontSize: '12.5px', padding: '7px 16px', borderRadius: '9999px' }}
+                >
+                  Start date night ▷
+                </Link>
+              </>
+            ) : (
+              // Default Signed Out / Unpaired State
+              <>
+                <AuthButton />
+                <Link
+                  className="btn btn-grad"
+                  href="/activity"
+                  style={{
+                    fontSize: '12px',
+                    padding: '7px 16px',
+                    borderRadius: '9999px',
+                    fontWeight: 700,
+                  }}
+                >
+                  Browse activities ▷
+                </Link>
+              </>
+            )}
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+    </>
   );
 }

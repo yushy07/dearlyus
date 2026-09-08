@@ -53,9 +53,19 @@
 .heroInner {
   max-width: 960px;
   margin: 0 auto;
-  padding: 0 28px;
+  padding: 12px 28px;
   position: relative;
   z-index: 1;
+  border-left: 1px solid rgba(225, 91, 124, 0.2);
+  border-right: 1px solid rgba(67, 126, 235, 0.2);
+}
+
+.actionControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 24px;
 }
 
 .eyebrow {

@@ -34,6 +34,18 @@
   --shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
   --shadow-lg: 0 16px 44px rgba(15, 23, 42, 0.08);
   --shadow-soft: 0 2px 10px rgba(15, 23, 42, 0.03);
+
+  --frame-inset: 16px;
+}
+
+@media (min-width: 640px) {
+  :root { --frame-inset: 24px; }
+}
+@media (min-width: 1024px) {
+  :root { --frame-inset: 40px; }
+}
+@media (min-width: 1536px) {
+  :root { --frame-inset: 56px; }
 }
 
 * {
@@ -126,57 +138,128 @@ button {
   box-shadow: 0 2px 10px rgba(96, 165, 250, 0.25);
 }
 
-/* ============ tagline ribbon ============ */
+/* ============ tagline ribbon (hidden for clean floating glass navbar) ============ */
 .ribbon {
-  display: block;
-  text-align: center;
-  background: linear-gradient(90deg, #f472b6 0%, #60a5fa 100%);
-  color: #fff;
-  font-family: var(--font-body);
-  font-weight: 600;
-  font-size: 13.5px;
-  letter-spacing: 0.01em;
-  padding: 9px 16px;
-  position: relative;
-  z-index: 25;
-  box-shadow: 0 2px 12px rgba(244, 114, 182, 0.2);
+  display: none !important;
 }
 
-.ribbon-in {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.ribbon b {
-  font-weight: 800;
-}
-
-@media (max-width: 560px) {
-  .ribbon {
-    font-size: 12px;
-    padding: 8px 12px;
-  }
-}
-
-/* ============ top bar ============ */
+/* ============ GLOBAL FLOATING GLASSMORPHIC NAVBAR ============ */
 .bar {
   position: sticky;
-  top: 0;
-  z-index: 20;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: saturate(140%) blur(12px);
-  -webkit-backdrop-filter: saturate(140%) blur(12px);
-  border-bottom: 1px solid var(--line);
+  top: 14px;
+  z-index: 1000;
+  margin: 14px auto 20px auto;
+  max-width: min(1280px, calc(100% - clamp(20px, 4vw, 48px)));
+  width: calc(100% - clamp(20px, 4vw, 48px));
+  border-radius: 9999px;
+
+  /* Deep Midnight Obsidian Glass Island (100% High Contrast Everywhere) */
+  background: rgba(11, 15, 25, 0.88);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 16px 40px -10px rgba(0, 0, 0, 0.45),
+    0 4px 14px rgba(0, 0, 0, 0.2),
+    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.35);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bar:hover {
+  background: rgba(11, 15, 25, 0.94);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 20px 48px -8px rgba(0, 0, 0, 0.55),
+    0 6px 18px rgba(0, 0, 0, 0.25),
+    inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.45);
 }
 
 .bar .wrap {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 66px;
+  height: 54px;
+  padding: 0 16px 0 18px;
+  max-width: 100%;
+}
+
+.bar .brand {
+  color: #ffffff;
+}
+
+.bar .brand-dearly {
+  color: #ffffff;
+}
+
+.bar .brand-us {
+  color: #f472b6;
+}
+
+.navbar-unified-links {
+  display: none;
+  align-items: center;
+  gap: 4px;
+}
+
+@media (min-width: 860px) {
+  .navbar-unified-links {
+    display: flex;
+  }
+}
+
+.navbar-unified-links a,
+.bar nav a {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  text-decoration: none;
+  padding: 6px 12px !important;
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.navbar-unified-links a:hover,
+.bar nav a:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+
+.nav-passport-pill {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px !important;
+  border-radius: 9999px;
+  background: rgba(168, 85, 247, 0.22) !important;
+  border: 1px solid rgba(168, 85, 247, 0.45) !important;
+  color: #f3e8ff !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 8px rgba(168, 85, 247, 0.25);
+  transition: all 0.2s ease;
+}
+
+.nav-passport-pill:hover {
+  background: rgba(168, 85, 247, 0.35) !important;
+  border-color: rgba(168, 85, 247, 0.65) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+}
+
+.nav-shop-icon {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px !important;
+  border-radius: 9999px;
+  color: rgba(255, 255, 255, 0.82) !important;
+  transition: all 0.2s ease;
+}
+
+.nav-shop-icon:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.15) !important;
 }
 
 .brand {
@@ -249,18 +332,7 @@ button {
 .bar nav {
   display: flex;
   align-items: center;
-  gap: 26px;
-}
-
-.bar nav a {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--ink-soft);
-  transition: color 0.12s ease;
-}
-
-.bar nav a:hover {
-  color: var(--ink);
+  gap: 4px;
 }
 
 .bar nav a.nav-profile {
@@ -277,6 +349,7 @@ button {
   display: inline-flex;
   align-items: center;
   padding: 6px;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .bar nav a.nav-shop svg {
@@ -284,7 +357,7 @@ button {
 }
 
 .bar nav a.nav-shop:hover {
-  color: var(--ink);
+  color: #ffffff;
 }
 
 .bar nav a.btn-grad,
@@ -358,6 +431,48 @@ button {
   border-radius: 9999px;
 }
 
+/* Laoro glassmorphic button (Exact Awesmos specification) */
+.glass-btn {
+  display: inline-flex;
+  padding: 16px 24px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  border-radius: 60px;
+  background: rgba(255, 255, 255, 0.13);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  box-shadow: 0 4px 14px 0 rgba(255, 255, 255, 0.25) inset;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 300ms ease-in-out, color 300ms ease-in-out, box-shadow 300ms ease-in-out, transform 200ms ease;
+}
+
+.glass-btn:hover {
+  background: #ffffff;
+  color: #000000;
+  box-shadow: 0 4px 14px 0 rgba(255, 255, 255, 0.4) inset;
+  transform: translateY(-1px);
+}
+
+.glass-btn-light {
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  box-shadow: 0 4px 14px 0 rgba(255, 255, 255, 0.5) inset, 0 4px 18px rgba(15, 23, 42, 0.05);
+}
+
+.glass-btn-light:hover {
+  background: #ffffff;
+  color: var(--ink);
+  box-shadow: 0 4px 16px 0 rgba(255, 255, 255, 0.8) inset, 0 8px 24px rgba(244, 114, 182, 0.2);
+}
+
 /* reusable gradient text */
 .grad {
   background: linear-gradient(90deg, var(--pink) 0%, var(--blue) 100%);
@@ -376,7 +491,7 @@ button {
   grid-template-columns: 1.05fr 0.95fr;
   gap: 56px;
   align-items: center;
-  padding-top: 84px;
+  padding-top: 14px;
   padding-bottom: 96px;
 }
 
@@ -1325,47 +1440,68 @@ a.act:hover .badge {
 
 .august-card {
   display: grid;
-  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
-  background: #fffbf6;
-  border: 1px solid #e7e1d8;
-  border-radius: 6px;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 24px;
   overflow: hidden;
   box-shadow: var(--shadow-lg);
   text-decoration: none;
   color: inherit;
+  position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.august-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 50px rgba(15, 23, 42, 0.12);
 }
 
 .august-art {
   position: relative;
-  min-height: 290px;
-  background: #f6f1ea;
+  min-height: 320px;
+  background: #000000;
+  overflow: hidden;
 }
 
+.august-art video,
 .august-art img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.august-card:hover .august-art video,
+.august-card:hover .august-art img {
+  transform: scale(1.03);
 }
 
 .august-stamp {
   position: absolute;
   top: 14px;
   left: 14px;
-  padding: 6px 11px;
+  padding: 6px 12px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.93);
-  color: #7a3552;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  color: var(--pink);
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   box-shadow: var(--shadow);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  z-index: 2;
 }
 
 .august-body {
-  padding: 32px 34px 30px;
+  padding: 36px 38px 34px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .august-eyebrow {
@@ -1374,7 +1510,7 @@ a.act:hover .badge {
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #c9829c;
+  color: var(--ink-soft);
 }
 
 .august-body h2 {
@@ -1384,12 +1520,12 @@ a.act:hover .badge {
   line-height: 1.06;
   letter-spacing: -0.02em;
   margin: 11px 0 0;
-  color: #23242a;
+  color: var(--ink);
 }
 
 .august-body h2 em {
   font-style: italic;
-  color: #7a3552;
+  color: var(--pink);
 }
 .august-body p {
   margin: 13px 0 0;

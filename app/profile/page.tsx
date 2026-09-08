@@ -532,6 +532,62 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
+
+          {/* Glassmorphic Sanctuary Action Controls */}
+          <div className={styles.actionControls}>
+            <Link
+              href="/photobooth"
+              className="glass-btn glass-btn-light"
+              style={{
+                background: 'rgba(255, 255, 255, 0.9)',
+                color: 'var(--ink)',
+                border: '1px solid rgba(244, 114, 182, 0.35)',
+                boxShadow: '0 4px 14px rgba(244, 114, 182, 0.12)',
+              }}
+            >
+              <span>📸</span> Open Photobooth
+            </Link>
+            <button
+              type="button"
+              onClick={handleStartRoom}
+              className="glass-btn glass-btn-light"
+              style={{
+                background:
+                  'linear-gradient(135deg, rgba(244, 114, 182, 0.15), rgba(96, 165, 250, 0.15))',
+                color: 'var(--ink)',
+                border: '1px solid rgba(96, 165, 250, 0.35)',
+                boxShadow: '0 4px 14px rgba(96, 165, 250, 0.12)',
+              }}
+            >
+              <span>▷</span>{' '}
+              {space?.activeRoomCode
+                ? `Enter Room (${space.activeRoomCode})`
+                : 'Enter Date Room'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('rituals')}
+              className="glass-btn glass-btn-light"
+              style={{
+                background: 'rgba(255, 255, 255, 0.9)',
+                color: 'var(--ink)',
+                border: '1px solid var(--line)',
+              }}
+            >
+              <span>✨</span> Daily Ritual
+            </button>
+            <Link
+              href="/activity"
+              className="glass-btn glass-btn-light"
+              style={{
+                background: 'rgba(255, 255, 255, 0.9)',
+                color: 'var(--ink)',
+                border: '1px solid var(--line)',
+              }}
+            >
+              <span>🎲</span> Explore Activities
+            </Link>
+          </div>
         </div>
       </header>
 

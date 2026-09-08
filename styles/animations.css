@@ -205,3 +205,60 @@
     transform: rotate(0deg) scale(1);
   }
 }
+
+/* Laoro Cinematic Reveal Masks & Framing Lines */
+.reveal-mask {
+  display: block;
+  overflow: hidden;
+}
+
+.reveal-inner {
+  display: block;
+  transform: translateY(110%);
+  transition: transform 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-inner.opacity-reveal {
+  opacity: 0;
+  transition:
+    transform 1.1s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-inner.revealed {
+  transform: translateY(0);
+}
+
+.reveal-inner.opacity-reveal.revealed {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-inner {
+    transform: none !important;
+    opacity: 1 !important;
+    transition: opacity 300ms ease !important;
+  }
+}
+
+/* Slideshow Scroll Transition Framework */
+.slideshow-scroll-root {
+  scroll-behavior: smooth;
+}
+
+@media (min-width: 1024px) {
+  .slideshow-scroll-root {
+    scroll-snap-type: y proximity;
+  }
+}
+
+.playground-slideshow-frame {
+  scroll-snap-align: start;
+  position: relative;
+  background: var(--paper);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 -24px 48px -8px rgba(0, 0, 0, 0.18);
+  z-index: 10;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+

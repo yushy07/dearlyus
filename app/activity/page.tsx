@@ -4,13 +4,13 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import {
   ShinyText,
-  SpotlightCard,
   GlowBadge,
   ScrollProgress,
   ScrollReveal,
 } from '@/components/ui';
 import { useCoupleProfile } from '@/lib/couple';
 import { sounds } from '@/lib/sound';
+import { Navbar } from '@/components/shared';
 
 const CATEGORIES = [
   { id: 'all', label: '✨ All Dates', count: '22' },
@@ -42,104 +42,18 @@ export default function ActivityPage() {
       }}
     >
       <ScrollProgress />
+      <Navbar />
       <main
         style={{
           display: 'flex',
           flexDirection: 'column',
           gap: '24px',
-          padding: '0 16px 40px',
-          maxWidth: '560px',
+          padding: '16px 16px 40px',
+          maxWidth: '680px',
           width: '100%',
           margin: '0 auto',
         }}
       >
-        {/* Sticky Mobile Header */}
-        <header
-          style={{
-            position: 'sticky',
-            top: 0,
-            zIndex: 10,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '16px 4px 12px',
-            background: 'var(--paper)',
-          }}
-        >
-          <Link
-            href="/"
-            onClick={() => sounds.playPop()}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              fontFamily: 'var(--font-display)',
-              fontWeight: 800,
-              fontSize: '24px',
-              letterSpacing: '-.03em',
-            }}
-          >
-            dearly us
-            <span style={{ display: 'inline-flex', gap: '4px' }}>
-              <i
-                style={{
-                  width: '9px',
-                  height: '9px',
-                  borderRadius: '50%',
-                  background: 'var(--pink)',
-                  display: 'block',
-                }}
-              ></i>
-              <i
-                style={{
-                  width: '9px',
-                  height: '9px',
-                  borderRadius: '50%',
-                  background: 'var(--blue)',
-                  display: 'block',
-                }}
-              ></i>
-            </span>
-          </Link>
-          <Link
-            href="/our-space"
-            onClick={() => sounds.playPop()}
-            style={{
-              width: '38px',
-              height: '38px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: '50%',
-              border: '2px solid var(--line)',
-              background: 'var(--paper-raised)',
-              color: 'var(--ink-soft)',
-            }}
-            aria-label="Your profile"
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              aria-hidden="true"
-            >
-              <circle
-                cx="12"
-                cy="8"
-                r="4"
-                stroke="currentColor"
-                strokeWidth="2"
-              />
-              <path
-                d="M4 21c0-4 3.6-6.5 8-6.5S20 17 20 21"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
-          </Link>
-        </header>
 
         {/* Heading */}
         <ScrollReveal animation="fade-up">

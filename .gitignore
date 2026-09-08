@@ -110,3 +110,19 @@ scratch/
 /*.m4a
 /*.aac
 !/public/audio/
+
+# Archives & Compressed Files
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+
+# Local Database Files
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.sqlite-journal
+
