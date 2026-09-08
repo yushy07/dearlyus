@@ -2461,7 +2461,7 @@ a.act:hover .badge {
    PHOTOBOOTH SECTION & STUDIO DESIGN (Dearly Us 인생네컷)
    ===================================================================== */
 #photobooth-demo {
-  background: var(--paper);
+  background: transparent;
   position: relative;
   overflow: hidden;
 }

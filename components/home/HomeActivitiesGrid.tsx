@@ -6,7 +6,15 @@ import { ScrollReveal } from '@/components/ui';
 
 export function HomeActivitiesGrid() {
   return (
-    <section className="section" id="activities">
+    <section
+      className="section"
+      id="activities"
+      style={{
+        background: '#DABBE0',
+        padding: '72px 0 84px',
+        margin: 0,
+      }}
+    >
       <div className="wrap">
         <ScrollReveal animation="fade-up">
           <div className="section-head">

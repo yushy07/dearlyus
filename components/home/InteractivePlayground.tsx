@@ -67,7 +67,17 @@ export function InteractivePlayground({
   }, []);
 
   return (
-    <section className="hero" id="top" style={{ position: 'relative', overflow: 'hidden' }}>
+    <section
+      className="hero"
+      id="top"
+      style={{
+        position: 'relative',
+        overflow: 'hidden',
+        background: '#BED1E3',
+        paddingTop: '32px',
+        paddingBottom: '64px',
+      }}
+    >
       <AuroraBackground />
 
       <div className="wrap" style={{ position: 'relative', zIndex: 2 }}>

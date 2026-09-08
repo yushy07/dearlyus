@@ -5,7 +5,15 @@ import Link from 'next/link';
 
 export function CuratedJourneyBand() {
   return (
-    <section className="section august-band" id="curated-journey">
+    <section
+      className="section august-band"
+      id="curated-journey"
+      style={{
+        background: '#EEBFD1',
+        padding: '64px 0',
+        margin: 0,
+      }}
+    >
       <div className="wrap">
         <Link className="august-card" href="/date">
           <span className="august-art">

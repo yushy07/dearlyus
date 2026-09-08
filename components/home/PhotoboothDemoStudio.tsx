@@ -216,9 +216,9 @@ export function PhotoboothDemoStudio({
   };
 
   return (
-    <>
+    <div style={{ background: '#ECAAC2', padding: '72px 0 84px' }}>
       {/* Photobooth Live Interactive Showcase (Dearly Us 인생네컷) */}
-      <section className="section" id="photobooth-demo">
+      <section className="section" id="photobooth-demo" style={{ padding: 0, margin: 0, background: 'transparent', borderTop: 'none' }}>
         <canvas ref={demoCanvasRef} style={{ display: 'none' }} />
         <div className="wrap">
           <ScrollReveal animation="fade-up">
@@ -673,7 +673,7 @@ export function PhotoboothDemoStudio({
       </section>
 
       {/* Quiz Live Demo Showcase */}
-      <section className="section" id="quiz-demo">
+      <section className="section" id="quiz-demo" style={{ background: 'transparent', borderTop: 'none', padding: '64px 0 0' }}>
         <div className="wrap">
           <ScrollReveal animation="fade-up">
             <div className="qd-grid">
@@ -752,7 +752,7 @@ export function PhotoboothDemoStudio({
       </section>
 
       {/* Keepsake Print Band */}
-      <section className="section print-band" id="print">
+      <section className="section print-band" id="print" style={{ padding: '64px 0 0', margin: 0, background: 'transparent', borderTop: 'none' }}>
         <div className="wrap">
           <ScrollReveal animation="fade-up">
             <div className="pb-grid">
@@ -830,6 +830,6 @@ export function PhotoboothDemoStudio({
           </ScrollReveal>
         </div>
       </section>
-    </>
+    </div>
   );
 }

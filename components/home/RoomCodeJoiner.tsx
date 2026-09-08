@@ -65,9 +65,9 @@ export function RoomCodeJoiner({ roomCode, setRoomCode }: RoomCodeJoinerProps) {
   };
 
   return (
-    <>
+    <div style={{ background: '#FAF0D4', padding: '64px 0 54px' }}>
       {/* Closer Headline & Interactive Code Joiner */}
-      <section className="section closer">
+      <section className="section closer" style={{ padding: 0, margin: 0 }}>
         <div className="wrap">
           <div className="closer-grid">
             <div>
@@ -119,14 +119,13 @@ export function RoomCodeJoiner({ roomCode, setRoomCode }: RoomCodeJoinerProps) {
                 <button
                   onClick={copyCode}
                   style={{
-                    border: 'none',
-                    background: 'var(--pink-tint)',
+                    border: '1px solid var(--line)',
+                    background: 'var(--paper-raised)',
                     padding: '6px 12px',
                     borderRadius: '20px',
                     fontSize: '12px',
                     fontFamily: 'var(--font-mono)',
-                    color: 'var(--pink)',
-                    fontWeight: 700,
+                    color: 'var(--ink)',
                     cursor: 'pointer',
                     marginLeft: '8px',
                   }}
@@ -157,7 +156,7 @@ export function RoomCodeJoiner({ roomCode, setRoomCode }: RoomCodeJoinerProps) {
       </section>
 
       {/* Stats Band (Social Proof) */}
-      <section className="section stats" id="stats">
+      <section className="section stats" id="stats" style={{ padding: '48px 0 0', margin: 0 }}>
         <div className="wrap">
           <div className="statgrid">
             <div className="stat">
@@ -175,6 +174,6 @@ export function RoomCodeJoiner({ roomCode, setRoomCode }: RoomCodeJoinerProps) {
           </div>
         </div>
       </section>
-    </>
+    </div>
   );
 }

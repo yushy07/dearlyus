@@ -5,8 +5,8 @@ export function Footer() {
   return (
     <footer
       style={{
-        background: '#FFFFFF',
-        borderTop: '1px solid var(--line)',
+        background: '#BED1E3',
+        borderTop: '1px solid rgba(0, 0, 0, 0.08)',
         position: 'relative',
         overflow: 'hidden',
         width: '100%',

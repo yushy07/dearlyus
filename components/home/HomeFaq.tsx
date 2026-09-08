@@ -32,7 +32,15 @@ export function HomeFaq() {
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
 
   return (
-    <section className="section" id="faq" style={{ padding: '80px 0 100px' }}>
+    <section
+      className="section"
+      id="faq"
+      style={{
+        background: '#C8DCBA',
+        padding: '80px 0 100px',
+        margin: 0,
+      }}
+    >
       <div className="wrap">
         <ScrollReveal animation="fade-up">
           <div className="faq-layout">
