@@ -794,14 +794,15 @@ export function CupidotHomeArea({
             ? localStorage.getItem('dearly_allow_camera_surprise') !== 'false'
             : true
         }
-        onProposeKeepsake={(activityTitle, prompt, answer) => {
+        onProposeKeepsake={(title: string, caption: string) => {
           proposeMemorySeed({
             coupleId: 'shared-couple',
             activityType: 'togetherness',
-            activityTitle,
-            title: `Memory: ${activityTitle}`,
-            captionDraft: `"${prompt}" — ${answer}`,
-            suggestedMood: 'warm',
+            activityTitle: title,
+            title,
+            caption,
+            draftCaption: caption,
+            chosenMood: 'cozy',
             partnerAId: partnerA,
             partnerBId: partnerB,
             proposedBy: partnerA,

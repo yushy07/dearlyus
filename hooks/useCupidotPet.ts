@@ -377,7 +377,7 @@ export function useCupidotPet() {
           (existing ? existing.id : `ritual-${Date.now()}`);
         const createdAt =
           (ritualData as any).createdAt ||
-          (existing?.id === targetId
+          (existing?.id === targetId && existing?.createdAt
             ? existing.createdAt
             : new Date().toISOString());
         const ritual: CoupleRitual = {

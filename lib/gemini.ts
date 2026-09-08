@@ -106,7 +106,7 @@ export function sanitizeCupidotPayload(req: QuestionRequest): QuestionRequest {
     partnerB: sanitizedB,
     mode: req.mode || 'quiz',
     mood: req.mood || 'playful',
-    romanceLevel: req.romanceLevel || 'sweet',
+    romanceLevel: req.romanceLevel || 'romantic',
     history: sanitizedHistory,
     currentTopic: sanitizeText(req.currentTopic, 60),
     aiConsent: Boolean(req.aiConsent),
@@ -215,7 +215,7 @@ export async function generateAdaptiveQuestion(
     if (
       !handleSafetyBoundary(cleanQuestion).isSafe ||
       (cleanCommentary && !handleSafetyBoundary(cleanCommentary).isSafe) ||
-      !cleanOptions.every((opt) => handleSafetyBoundary(opt).isSafe)
+      !cleanOptions.every((opt: string) => handleSafetyBoundary(opt).isSafe)
     ) {
       return generateCupidotDilemma(cleanReq);
     }

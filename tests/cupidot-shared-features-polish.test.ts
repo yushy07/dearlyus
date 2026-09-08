@@ -58,9 +58,11 @@ describe('Workflow 3: Shared Features & Product Polish', () => {
     it('creates version 1 proposal with proposing partner approved', () => {
       const seed = proposeMemorySeed({
         title: 'Midnight Ramen Run',
-        activityType: 'date_night',
+        kind: 'date_night',
         partnerAId: 'partner-ayush',
+        partnerAName: 'Ayush',
         partnerBId: 'partner-maya',
+        partnerBName: 'Maya',
         caption: 'Best shoyu broth after stargazing',
       });
 
@@ -74,9 +76,11 @@ describe('Workflow 3: Shared Features & Product Polish', () => {
     it('reaches mutually_approved only when both partners approve identical version', () => {
       const seed = proposeMemorySeed({
         title: 'Midnight Ramen Run',
-        activityType: 'date_night',
+        kind: 'date_night',
         partnerAId: 'partner-ayush',
+        partnerAName: 'Ayush',
         partnerBId: 'partner-maya',
+        partnerBName: 'Maya',
         caption: 'Best shoyu broth',
       });
 
@@ -91,9 +95,11 @@ describe('Workflow 3: Shared Features & Product Polish', () => {
     it('editing caption or mood increments version and invalidates prior approvals (R03)', () => {
       const seed = proposeMemorySeed({
         title: 'Midnight Ramen Run',
-        activityType: 'date_night',
+        kind: 'date_night',
         partnerAId: 'partner-ayush',
+        partnerAName: 'Ayush',
         partnerBId: 'partner-maya',
+        partnerBName: 'Maya',
         caption: 'Draft caption',
       });
 
@@ -102,13 +108,13 @@ describe('Workflow 3: Shared Features & Product Polish', () => {
         seed,
         'partner-maya',
         'Refined caption: delicious ramen together',
-        'warm',
+        'dreamy',
         true,
       );
 
       expect(edited.version).toBe(2);
       expect(edited.caption).toBe('Refined caption: delicious ramen together');
-      expect(edited.chosenMood).toBe('warm');
+      expect(edited.chosenMood).toBe('dreamy');
       expect(edited.aiReuseConsent).toBe(true);
       expect(edited.approvedBy).toEqual(['partner-maya']);
       expect(edited.approvalStatus).toBe('approved_by_b');
@@ -126,9 +132,11 @@ describe('Workflow 3: Shared Features & Product Polish', () => {
     it('decline marks seed as declined and preserves nothing (R03, M15)', () => {
       const seed = proposeMemorySeed({
         title: 'Secret Walk',
-        activityType: 'walk',
+        kind: 'walk',
         partnerAId: 'partner-ayush',
+        partnerAName: 'Ayush',
         partnerBId: 'partner-maya',
+        partnerBName: 'Maya',
       });
 
       const declined = declineMemorySeed(seed);

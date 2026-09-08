@@ -309,11 +309,11 @@ describe('Mutual Keepsake Approval & Memory Seeds', () => {
       seed,
       'user-b',
       'Refined memories under the stars',
-      'warm',
+      'dreamy',
     );
     expect(editedByB.caption).toBe('Refined memories under the stars');
     expect(editedByB.draftCaption).toBe('Refined memories under the stars');
-    expect(editedByB.chosenMood).toBe('warm');
+    expect(editedByB.chosenMood).toBe('dreamy');
     expect(editedByB.version).toBe(2);
     expect(editedByB.approvedBy).toContain('user-b');
     expect(editedByB.approvedBy).not.toContain('user-a');

@@ -12,7 +12,7 @@ export interface CustomRitualModalProps {
   timezoneA?: string;
   timezoneB?: string;
   initialRitual?: CoupleRitual | null;
-  onSaveRitual: (ritual: Omit<CoupleRitual, 'createdAt'> & { id?: string }) => void;
+  onSaveRitual: (ritual: Omit<CoupleRitual, 'id' | 'createdAt'> & { id?: string }) => void;
 }
 
 export function CustomRitualModal({

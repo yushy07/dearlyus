@@ -49,6 +49,7 @@ describe('Workflow 2: Core Behavior, Consent & Event Ordering', () => {
     function createMockAdapter(): RealtimeActivityAdapter<any> {
       return {
         activityType: 'test_quiz',
+        schemaVersion: 1,
         createInitialSnapshot: () => ({
           status: 'active',
           appliedEvents: [] as string[],
@@ -65,10 +66,9 @@ describe('Workflow 2: Core Behavior, Consent & Event Ordering', () => {
         }),
         canTransition: () => true,
         summarize: (s) => ({
+          completed: true,
+          summary: { title: 'Test Quiz' },
           activityType: 'test_quiz',
-          summaryTitle: 'Test Quiz',
-          highlights: [],
-          memoryCandidates: [],
         }),
       };
     }
@@ -79,6 +79,9 @@ describe('Workflow 2: Core Behavior, Consent & Event Ordering', () => {
       const recoveryCalls: number[] = [];
 
       const mockTransport: ActivityTransport<any> = {
+        name: 'mock',
+        connect: vi.fn(),
+        disconnect: vi.fn(),
         sendEvent: vi.fn(),
         sendTransient: vi.fn(),
         onEvent: (cb) => {
@@ -87,11 +90,18 @@ describe('Workflow 2: Core Behavior, Consent & Event Ordering', () => {
         },
         onTransient: () => () => {},
         requestRecovery: vi.fn(async (afterSeq) => {
-          recoveryCalls.push(afterSeq);
+          if (afterSeq !== undefined) recoveryCalls.push(afterSeq);
           return null;
         }),
         completeSession: vi.fn(),
         setPaused: vi.fn(),
+        privateVault: {
+          lockAnswer: vi.fn(),
+          revealAnswers: vi.fn(),
+          isLocked: vi.fn(() => false),
+          areBothLocked: vi.fn(() => false),
+          resetRound: vi.fn(),
+        },
       };
 
       const runtime = createActivityRuntime({
@@ -108,9 +118,10 @@ describe('Workflow 2: Core Behavior, Consent & Event Ordering', () => {
         activityType: 'test_quiz',
         type: 'step',
         sequence: 1,
+        schemaVersion: 1,
         senderId: 'user-a',
         payload: { text: 'one' },
-        createdAt: 1000,
+        createdAt: '2026-09-08T10:00:01.000Z',
       });
 
       expect(runtime.getLastSequence()).toBe(1);
@@ -122,9 +133,10 @@ describe('Workflow 2: Core Behavior, Consent & Event Ordering', () => {
         activityType: 'test_quiz',
         type: 'step',
         sequence: 3,
+        schemaVersion: 1,
         senderId: 'user-b',
         payload: { text: 'three' },
-        createdAt: 3000,
+        createdAt: '2026-09-08T10:00:03.000Z',
       });
 
       // Sequence must NOT advance to 3 yet, and snapshot must NOT contain evt-3 prematurely
@@ -138,9 +150,10 @@ describe('Workflow 2: Core Behavior, Consent & Event Ordering', () => {
         activityType: 'test_quiz',
         type: 'step',
         sequence: 2,
+        schemaVersion: 1,
         senderId: 'user-a',
         payload: { text: 'two' },
-        createdAt: 2000,
+        createdAt: '2026-09-08T10:00:02.000Z',
       });
 
       // Now both event 2 AND buffered event 3 should be applied in strict order!
@@ -153,6 +166,9 @@ describe('Workflow 2: Core Behavior, Consent & Event Ordering', () => {
       let eventListener: ((event: StandardActivityEvent) => void) | null = null;
 
       const mockTransport: ActivityTransport<any> = {
+        name: 'mock',
+        connect: vi.fn(),
+        disconnect: vi.fn(),
         sendEvent: vi.fn(),
         sendTransient: vi.fn(),
         onEvent: (cb) => {
@@ -163,6 +179,13 @@ describe('Workflow 2: Core Behavior, Consent & Event Ordering', () => {
         requestRecovery: vi.fn(),
         completeSession: vi.fn(),
         setPaused: vi.fn(),
+        privateVault: {
+          lockAnswer: vi.fn(),
+          revealAnswers: vi.fn(),
+          isLocked: vi.fn(() => false),
+          areBothLocked: vi.fn(() => false),
+          resetRound: vi.fn(),
+        },
       };
 
       const runtime = createActivityRuntime({
@@ -179,9 +202,10 @@ describe('Workflow 2: Core Behavior, Consent & Event Ordering', () => {
         activityType: 'test_quiz',
         type: 'step',
         sequence: 1,
+        schemaVersion: 1,
         senderId: 'user-a',
         payload: { invalid: true },
-        createdAt: 1000,
+        createdAt: '2026-09-08T10:00:01.000Z',
       });
 
       expect(runtime.getLastSequence()).toBe(0);
