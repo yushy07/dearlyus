@@ -2551,8 +2551,8 @@ export default function HomePage() {
                     We answer every single couple. Have an activity request or
                     timezone question? Reach out anytime!
                   </p>
-                  <a
-                    href="mailto:hello@dearlyus.love"
+                  <Link
+                    href="/privacy"
                     style={{
                       display: 'inline-flex',
                       alignItems: 'center',
@@ -2563,9 +2563,9 @@ export default function HomePage() {
                       textDecoration: 'none',
                     }}
                   >
-                    <span>Email us at hello@dearlyus.love</span>
+                    <span>Read our privacy policy</span>
                     <span>→</span>
-                  </a>
+                  </Link>
                 </div>
               </div>
 

@@ -281,13 +281,10 @@ export default function TermsPage() {
               your acceptance of any revisions.
             </p>
             <p style={{ margin: 0 }}>
-              For inquiries regarding these Terms, contact our legal team at{' '}
-              <a
-                href="mailto:terms@dearlyus.love"
-                style={{ color: 'var(--pink)', fontWeight: 700 }}
-              >
-                terms@dearlyus.love
-              </a>
+              For questions about these Terms, please review our{' '}
+              <Link href="/privacy" style={{ color: 'var(--pink)', fontWeight: 700 }}>
+                privacy policy
+              </Link>
               .
             </p>
           </section>

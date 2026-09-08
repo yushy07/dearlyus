@@ -413,13 +413,6 @@ export function Footer() {
               <Link href="/terms" className="foot-link">
                 Terms &amp; Conditions
               </Link>
-              <a
-                href="mailto:hello@dearlyus.love"
-                className="foot-link"
-                style={{ color: 'var(--ink)', fontWeight: 600 }}
-              >
-                hello@dearlyus.love
-              </a>
             </nav>
           </div>
         </div>

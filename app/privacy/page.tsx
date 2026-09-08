@@ -385,15 +385,8 @@ export default function PrivacyPage() {
               <span>6.</span> Contact &amp; Questions
             </h2>
             <p style={{ margin: 0 }}>
-              If you have any questions or feedback regarding your privacy on
-              Dearly Us, our team is always here for you at{' '}
-              <a
-                href="mailto:hello@dearlyus.love"
-                style={{ color: 'var(--pink)', fontWeight: 700 }}
-              >
-                hello@dearlyus.love
-              </a>
-              .
+              Privacy controls and account lifecycle information are available
+              from your profile after sign-in.
             </p>
           </section>
         </div>

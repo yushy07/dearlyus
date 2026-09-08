@@ -1295,12 +1295,9 @@ export default function ProfilePage() {
                 <Link className="btn btn-ghost" href="/privacy">
                   Privacy policy
                 </Link>
-                <a
-                  className="btn btn-ghost"
-                  href="mailto:hello@dearlyus.love?subject=Delete%20my%20Dearly%20Us%20account"
-                >
-                  Request deletion
-                </a>
+                <Link className="btn btn-ghost" href="/privacy">
+                  Account lifecycle
+                </Link>
                 <button className="btn btn-ghost" onClick={handleSignOut}>
                   Sign out
                 </button>
@@ -1355,9 +1352,8 @@ export default function ProfilePage() {
               }}
             >
               Separation from <strong>{space?.name}</strong> is not performed in
-              the browser. Send a request first; the final protected process
-              will explain what happens to shared history before it changes
-              anything.
+              the browser. This request flow will be available once the final
+              protected process and shared-history decisions are in place.
             </p>
             <div
               style={{
@@ -1373,13 +1369,13 @@ export default function ProfilePage() {
               >
                 Cancel
               </button>
-              <a
+              <button
                 className="btn btn-primary"
-                href="mailto:hello@dearlyus.love?subject=Dearly%20Us%20couple%20space%20separation%20request"
+                onClick={() => setDisconnectModalOpen(false)}
                 style={{ background: '#9d1738', borderColor: '#9d1738' }}
               >
-                Request separation
-              </a>
+                I understand
+              </button>
             </div>
           </div>
         </div>
