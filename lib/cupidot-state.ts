@@ -56,10 +56,10 @@ export function containsGuiltPhrasing(text: string): boolean {
 
 /** Sanitize safe presence (guarantees no device, IP, location, or tab telemetry is exposed). */
 export function sanitizeSafePresence(
-  onlineOrPayload?: boolean | Record<string, unknown>,
+  onlineOrPayload?: boolean | Record<string, unknown> | null,
   interaction?: string | null,
   isReconnecting = false,
-): SafePresenceState & { state: SafePresenceState } {
+): SafePresenceState {
   const safeStates: SafePresenceState[] = [
     'here',
     'ready',
@@ -106,9 +106,7 @@ export function sanitizeSafePresence(
     }
   }
 
-  const strObj = new String(resolved);
-  (strObj as any).state = resolved;
-  return strObj as any;
+  return resolved;
 }
 
 /** Built-in Home Collectibles & Souvenirs across Chapters 1 to 5. */
@@ -984,6 +982,8 @@ export function proposeMemorySeed(input: {
 export function approveMemorySeed(
   seed: MemorySeed,
   partnerId: string,
+  updatedCaption?: string,
+  updatedMood?: CupidotMood,
 ): MemorySeed {
   const isA = partnerId === seed.partnerAId;
   const isB = partnerId === seed.partnerBId;
@@ -993,6 +993,10 @@ export function approveMemorySeed(
 
   return {
     ...seed,
+    caption: updatedCaption !== undefined ? updatedCaption : seed.caption,
+    draftCaption:
+      updatedCaption !== undefined ? updatedCaption : seed.draftCaption,
+    chosenMood: updatedMood !== undefined ? updatedMood : seed.chosenMood,
     approvedByPartnerA,
     approvedByPartnerB,
     status: mutuallyApproved ? 'mutually_approved' : seed.status,

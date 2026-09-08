@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CoupleRitual, TogethernessMode } from '@/types/cupidot';
 import { sounds } from '@/lib/sound';
 
@@ -47,6 +47,21 @@ export function CustomRitualModal({
   const [suggestedMode, setSuggestedMode] = useState<TogethernessMode>(
     initialRitual?.suggestedMode || 'quick_spark',
   );
+
+  useEffect(() => {
+    if (isOpen) {
+      setTitle(initialRitual?.title || 'Sunday Morning Coffee Check-in ☕');
+      setPurpose(
+        initialRitual?.purpose ||
+          'A gentle recurring pause to listen, share, and support each other.',
+      );
+      setCadence(initialRitual?.cadence || 'weekly');
+      setTimeOfDay(initialRitual?.timeOfDay || '10:00');
+      setRemindersA(initialRitual?.remindersEnabledA ?? true);
+      setRemindersB(initialRitual?.remindersEnabledB ?? true);
+      setSuggestedMode(initialRitual?.suggestedMode || 'quick_spark');
+    }
+  }, [isOpen, initialRitual]);
 
   if (!isOpen) return null;
 

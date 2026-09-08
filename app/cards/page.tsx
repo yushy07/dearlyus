@@ -113,31 +113,26 @@ export default function CardsPage() {
     if (revealed) return;
     setRevealed(true);
     sounds.playCelebration();
-    setPartnerAnswer(
-      myAnswer
-        ? 'I feel the exact same way. That one evening on call changed everything for me too.'
-        : 'You bring so much light into my days.',
-    );
 
     const currentRoundData = {
       question: card.prompt,
-      answerA: myAnswer || 'Loving our late night talks',
-      answerB: 'Feeling closest when we plan our future',
+      answerA: myAnswer.trim(),
+      answerB: partnerAnswer.trim(),
     };
     const updatedHistory = [...sessionHistory, currentRoundData];
     setSessionHistory(updatedHistory);
 
-    // Fetch dynamic adaptive follow-up card connecting multi-round threads
-    if (!hasAiConsent) return;
+    // Fetch dynamic adaptive follow-up card only if both real answers are present and AI consent is granted
+    if (!hasAiConsent || !myAnswer.trim() || !partnerAnswer.trim()) return;
 
     void generateAdaptiveQuestion({
       partnerA: {
         name: partnerA,
-        answer: myAnswer || 'Loving our late night talks',
+        answer: myAnswer.trim(),
       },
       partnerB: {
         name: partnerB,
-        answer: 'Feeling closest when we plan our future',
+        answer: partnerAnswer.trim(),
       },
       mode: 'cards',
       mood: 'deep',
@@ -420,7 +415,7 @@ export default function CardsPage() {
           }}
         >
           {!revealed ? (
-            <div style={{ display: 'grid', gap: '16px' }}>
+            <div style={{ display: 'grid', gap: '14px' }}>
               <div>
                 <label
                   style={{
@@ -434,10 +429,36 @@ export default function CardsPage() {
                   Your Private Answer ({partnerA}):
                 </label>
                 <textarea
-                  rows={3}
+                  rows={2}
                   value={myAnswer}
                   onChange={(e) => setMyAnswer(e.target.value)}
-                  placeholder={`Type your honest thoughts... ${partnerB} cannot see until both lock in.`}
+                  placeholder={`Type your honest thoughts...`}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--line)',
+                    fontSize: '14.5px',
+                  }}
+                />
+              </div>
+              <div>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    marginBottom: '6px',
+                  }}
+                >
+                  {partnerB}&apos;s Answer (if playing together locally):
+                </label>
+                <textarea
+                  rows={2}
+                  value={partnerAnswer}
+                  onChange={(e) => setPartnerAnswer(e.target.value)}
+                  placeholder={`Type ${partnerB}'s answer, or leave blank if awaiting remote response...`}
                   style={{
                     width: '100%',
                     padding: '12px',
@@ -449,7 +470,7 @@ export default function CardsPage() {
               </div>
               <button
                 onClick={handleReveal}
-                disabled={!myAnswer.trim()}
+                disabled={!myAnswer.trim() && !partnerAnswer.trim()}
                 className="btn btn-primary"
                 style={{
                   padding: '12px',
@@ -457,7 +478,7 @@ export default function CardsPage() {
                   justifyContent: 'center',
                 }}
               >
-                Lock In &amp; Reveal Answers 🔍
+                Reveal Shared Answers 🔍
               </button>
             </div>
           ) : (
@@ -484,9 +505,11 @@ export default function CardsPage() {
                     margin: '6px 0 0',
                     fontSize: '15px',
                     lineHeight: 1.5,
+                    color: myAnswer ? 'inherit' : 'var(--ink-soft)',
+                    fontStyle: myAnswer ? 'normal' : 'italic',
                   }}
                 >
-                  {myAnswer}
+                  {myAnswer || `(No answer entered for ${partnerA})`}
                 </p>
               </div>
               <div
@@ -511,9 +534,11 @@ export default function CardsPage() {
                     margin: '6px 0 0',
                     fontSize: '15px',
                     lineHeight: 1.5,
+                    color: partnerAnswer ? 'inherit' : 'var(--ink-soft)',
+                    fontStyle: partnerAnswer ? 'normal' : 'italic',
                   }}
                 >
-                  {partnerAnswer}
+                  {partnerAnswer || `Awaiting ${partnerB} to share their response.`}
                 </p>
               </div>
 

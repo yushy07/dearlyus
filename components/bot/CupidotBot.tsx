@@ -58,6 +58,7 @@ export interface CupidotBotProps {
   style?: React.CSSProperties;
   onClick?: () => void;
   onStateChange?: (state: BotState | CupidotState) => void;
+  onError?: () => void;
   showGlow?: boolean;
   showParticles?: boolean;
 }
@@ -92,6 +93,7 @@ export function CupidotBot({
   style,
   onClick,
   onStateChange,
+  onError,
   showGlow = true,
   showParticles = true,
 }: CupidotBotProps) {
@@ -99,6 +101,7 @@ export function CupidotBot({
   const stateRef = useRef(state);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   stateRef.current = state;
 
   useEffect(() => onStateChange?.(state), [onStateChange, state]);
@@ -263,6 +266,7 @@ export function CupidotBot({
           if (!disposed) {
             setLoadError(true);
             setLoading(false);
+            onError?.();
           }
         },
       );
@@ -283,49 +287,63 @@ export function CupidotBot({
           ),
         );
       };
-      const onPointerLeave = () => targetPointer.set(0, 0);
+
+      const onPointerLeave = () => {
+        targetPointer.set(0, 0);
+      };
+
       const onVisibilityChange = () => {
         isDocumentVisible = !document.hidden;
       };
-      container.addEventListener('pointermove', onPointerMove);
-      container.addEventListener('pointerleave', onPointerLeave);
+
+      container.addEventListener('pointermove', onPointerMove, {
+        passive: true,
+      });
+      container.addEventListener('pointerleave', onPointerLeave, {
+        passive: true,
+      });
       document.addEventListener('visibilitychange', onVisibilityChange);
-      resizeObserver = new ResizeObserver(fitCamera);
-      resizeObserver.observe(container);
-      intersectionObserver = new IntersectionObserver(
-        ([entry]) => {
-          isVisible = entry?.isIntersecting ?? false;
-        },
-        { threshold: 0.01 },
-      );
-      intersectionObserver.observe(container);
+
+      const resizeObserver =
+        typeof ResizeObserver !== 'undefined'
+          ? new ResizeObserver(() => fitCamera())
+          : null;
+      resizeObserver?.observe(container);
+
+      const intersectionObserver =
+        typeof IntersectionObserver !== 'undefined'
+          ? new IntersectionObserver(([entry]) => {
+              isVisible = entry.isIntersecting;
+            })
+          : null;
+      intersectionObserver?.observe(container);
 
       const animate = () => {
         frame = requestAnimationFrame(animate);
-        if (!shouldRender()) return;
-        const time = clock.getElapsedTime();
+        if (!isVisible || !isDocumentVisible) return;
+        pointer.lerp(targetPointer, 0.08);
+        const time = performance.now() * 0.001;
         const mood = resolveVisualState(stateRef.current);
-        const motion = reducedMotion ? 0 : 1;
-        pointer.lerp(targetPointer, 0.065);
+        const motion = reducedMotion ? 0.35 : 1;
+
         if (modelAnchor) {
-          modelAnchor.position
-            .copy(basePosition)
-            .add(new THREE.Vector3(0, Math.sin(time * 2) * 0.026 * motion, 0));
-          modelAnchor.rotation.set(
-            pointer.y * -0.11 * motion,
-            pointer.x * 0.28 * motion,
-            0,
-          );
-          modelAnchor.scale.setScalar(1);
-          if (mood === 'happy' || mood === 'celebration') {
+          modelAnchor.position.set(0, 0, 0);
+          modelAnchor.rotation.set(0, 0, 0);
+
+          if (interactive && !reducedMotion) {
+            modelAnchor.rotation.y = pointer.x * 0.28;
+            modelAnchor.rotation.x = -pointer.y * 0.18;
+          }
+
+          if (mood === 'idle') {
+            modelAnchor.position.y += Math.sin(time * 2.2) * 0.015 * motion;
+          } else if (mood === 'happy' || mood === 'celebration') {
             modelAnchor.position.y +=
-              Math.abs(Math.sin(time * 5.7)) * 0.09 * motion;
-            modelAnchor.rotation.z = Math.sin(time * 4.2) * 0.08 * motion;
+              Math.abs(Math.sin(time * 4.6)) * 0.038 * motion;
+            modelAnchor.rotation.z += Math.sin(time * 3.4) * 0.035 * motion;
           } else if (mood === 'love') {
-            modelAnchor.position.z += 0.08;
-            modelAnchor.scale.setScalar(
-              1 + Math.sin(time * 3.4) * 0.035 * motion,
-            );
+            modelAnchor.position.y += Math.sin(time * 2.6) * 0.02 * motion;
+            modelAnchor.rotation.z = Math.sin(time * 2.1) * 0.045 * motion;
           } else if (mood === 'thinking') {
             modelAnchor.rotation.z = 0.15;
             modelAnchor.rotation.y = -0.18;
@@ -385,8 +403,9 @@ export function CupidotBot({
     } catch {
       setLoadError(true);
       setLoading(false);
+      onError?.();
     }
-  }, [interactive, position, scale, showParticles]);
+  }, [interactive, position, scale, showParticles, retryCount, onError]);
 
   return (
     <div
@@ -424,8 +443,58 @@ export function CupidotBot({
         <div className="cupidot-stage-status">Waking up Cupidot…</div>
       )}
       {loadError && (
-        <div className="cupidot-stage-status" role="status">
-          Cupidot needs a moment — try again soon.
+        <div
+          className="cupidot-stage-status"
+          role="status"
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '12px',
+          }}
+        >
+          <span>Cupidot needs a moment — try again soon.</span>
+          <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setLoadError(false);
+                setLoading(true);
+                setRetryCount((prev) => prev + 1);
+              }}
+              style={{
+                fontSize: '11px',
+                padding: '4px 10px',
+                borderRadius: '8px',
+                border: '1px solid rgba(255, 143, 178, 0.4)',
+                background: '#FFFFFF',
+                cursor: 'pointer',
+              }}
+            >
+              🔄 Retry 3D
+            </button>
+            {onError && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onError();
+                }}
+                style={{
+                  fontSize: '11px',
+                  padding: '4px 10px',
+                  borderRadius: '8px',
+                  border: '1px solid rgba(255, 143, 178, 0.4)',
+                  background: '#FFFFFF',
+                  cursor: 'pointer',
+                }}
+              >
+                Switch to Plush 2D
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>

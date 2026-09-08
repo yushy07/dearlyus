@@ -109,12 +109,7 @@ export default function MatchPage() {
   const [partner2Picks, setPartner2Picks] = useState<number[]>([]);
   const [activePartner, setActivePartner] = useState<1 | 2>(1);
   const [calculated, setCalculated] = useState(false);
-  const [matchScore, setMatchScore] = useState(94);
-  const [subScores, setSubScores] = useState({
-    intimacy: 96,
-    banter: 94,
-    future: 95,
-  });
+  const [matchCount, setMatchCount] = useState(0);
   const runtime = useActivityRuntime({
     sessionId: `mock-match-${roomCode || 'local'}`,
     activityType: 'match',
@@ -132,7 +127,7 @@ export default function MatchPage() {
     if (typeof snapshot.pairIndex === 'number')
       setQIndex(Math.min(snapshot.pairIndex, QUESTIONS.length - 1));
     if (typeof snapshot.score === 'number')
-      setMatchScore(Math.min(100, 88 + snapshot.score * 3));
+      setMatchCount(snapshot.score);
     if (snapshot.completed) setCalculated(true);
   }, [runtime.snapshot]);
 
@@ -160,25 +155,9 @@ export default function MatchPage() {
         for (let i = 0; i < QUESTIONS.length; i++) {
           if (partner1Picks[i] === nextPicks[i]) matches += 1;
         }
-        const finalScore = Math.min(100, 88 + matches * 3);
+        setMatchCount(matches);
         void runtime.sendEvent('match_reveal', { isMatch: matches > 0 });
         void runtime.sendEvent('match_next', {});
-        const intimacy = Math.min(
-          100,
-          90 +
-            (partner1Picks[0] === nextPicks[0] ? 8 : 2) +
-            (partner1Picks[2] === nextPicks[2] ? 2 : 0),
-        );
-        const banter = Math.min(
-          100,
-          89 + (partner1Picks[1] === nextPicks[1] ? 8 : 3),
-        );
-        const future = Math.min(
-          100,
-          91 + (partner1Picks[3] === nextPicks[3] ? 8 : 2),
-        );
-        setMatchScore(finalScore);
-        setSubScores({ intimacy, banter, future });
         setCalculated(true);
       }
     }
@@ -319,125 +298,154 @@ export default function MatchPage() {
             <span style={{ fontSize: '52px' }}>✨</span>
             <h2
               style={{
-                fontSize: '32px',
+                fontSize: '28px',
                 fontWeight: 800,
                 margin: '14px 0 6px',
               }}
             >
-              Electric Soul Connection
+              Round Summary
             </h2>
             <div
               style={{
                 fontFamily: 'var(--font-display)',
-                fontSize: '64px',
+                fontSize: '44px',
                 fontWeight: 900,
                 background: 'linear-gradient(100deg, var(--pink), var(--blue))',
                 WebkitBackgroundClip: 'text',
                 color: 'transparent',
+                marginBottom: '8px',
               }}
             >
-              {matchScore}% Match
+              {matchCount} of {QUESTIONS.length} Picks Aligned
             </div>
-
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(3, 1fr)',
-                gap: '12px',
-                margin: '28px 0',
-                textAlign: 'left',
-              }}
-            >
-              <div
-                style={{
-                  background: 'var(--paper)',
-                  padding: '14px',
-                  borderRadius: '10px',
-                  border: '1px solid var(--line)',
-                }}
-              >
-                <strong
-                  style={{
-                    display: 'block',
-                    fontSize: '13px',
-                    color: 'var(--pink)',
-                  }}
-                >
-                  Intimacy &amp; Care
-                </strong>
-                <div style={{ fontSize: '20px', fontWeight: 800 }}>
-                  {subScores.intimacy}%
-                </div>
-                <small style={{ color: 'var(--ink-soft)' }}>
-                  Exceptional warmth
-                </small>
-              </div>
-              <div
-                style={{
-                  background: 'var(--paper)',
-                  padding: '14px',
-                  borderRadius: '10px',
-                  border: '1px solid var(--line)',
-                }}
-              >
-                <strong
-                  style={{
-                    display: 'block',
-                    fontSize: '13px',
-                    color: 'var(--blue)',
-                  }}
-                >
-                  Banter &amp; Play
-                </strong>
-                <div style={{ fontSize: '20px', fontWeight: 800 }}>
-                  {subScores.banter}%
-                </div>
-                <small style={{ color: 'var(--ink-soft)' }}>
-                  Endless laughter
-                </small>
-              </div>
-              <div
-                style={{
-                  background: 'var(--paper)',
-                  padding: '14px',
-                  borderRadius: '10px',
-                  border: '1px solid var(--line)',
-                }}
-              >
-                <strong
-                  style={{
-                    display: 'block',
-                    fontSize: '13px',
-                    color: '#7a4dd6',
-                  }}
-                >
-                  Future Alignment
-                </strong>
-                <div style={{ fontSize: '20px', fontWeight: 800 }}>
-                  {subScores.future}%
-                </div>
-                <small style={{ color: 'var(--ink-soft)' }}>
-                  Shared life goals
-                </small>
-              </div>
-            </div>
-
             <p
               style={{
                 color: 'var(--ink-soft)',
-                fontSize: '15px',
-                lineHeight: 1.6,
-                maxWidth: '50ch',
-                margin: '0 auto 28px',
+                fontSize: '14px',
+                margin: '0 auto 24px',
+                maxWidth: '52ch',
+                lineHeight: 1.5,
               }}
             >
-              Your communication style handles distance gracefully. You both
-              prioritize quality presence and reassurance, making the separation
-              feel small compared to your bond.
+              Matching choices are fun to discover, and different answers make for the best conversations. No grades, no relationship evaluation.
             </p>
 
+            {/* Breakdown of each question */}
             <div
-              style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+                margin: '0 0 28px',
+                textAlign: 'left',
+              }}
+            >
+              {QUESTIONS.map((q, idx) => {
+                const pick1 = partner1Picks[idx];
+                const pick2 = partner2Picks[idx];
+                const isMatch =
+                  pick1 !== undefined && pick2 !== undefined && pick1 === pick2;
+                return (
+                  <div
+                    key={idx}
+                    style={{
+                      background: 'var(--paper)',
+                      border: '1px solid var(--line)',
+                      borderRadius: '12px',
+                      padding: '16px',
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '8px',
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          color: 'var(--ink-soft)',
+                        }}
+                      >
+                        {q.category} · Question {idx + 1}
+                      </span>
+                      <span
+                        style={{
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          padding: '2px 8px',
+                          borderRadius: '10px',
+                          background: isMatch
+                            ? 'rgba(5, 150, 105, 0.1)'
+                            : 'rgba(107, 114, 128, 0.1)',
+                          color: isMatch ? '#059669' : 'var(--ink-soft)',
+                        }}
+                      >
+                        {isMatch ? '✨ Both Matched' : '💬 Different Takes'}
+                      </span>
+                    </div>
+                    <strong
+                      style={{
+                        display: 'block',
+                        fontSize: '14px',
+                        marginBottom: '8px',
+                        color: 'var(--ink)',
+                      }}
+                    >
+                      {q.question}
+                    </strong>
+                    {isMatch ? (
+                      <p
+                        style={{
+                          margin: 0,
+                          fontSize: '13px',
+                          color: 'var(--ink)',
+                        }}
+                      >
+                        Both picked: <em>&ldquo;{q.options[pick1]}&rdquo;</em>
+                      </p>
+                    ) : (
+                      <div
+                        style={{
+                          display: 'grid',
+                          gap: '4px',
+                          fontSize: '13px',
+                        }}
+                      >
+                        <div>
+                          <strong style={{ color: 'var(--pink)' }}>
+                            {partnerA}:
+                          </strong>{' '}
+                          <em>
+                            &ldquo;{q.options[pick1] ?? 'Not answered'}&rdquo;
+                          </em>
+                        </div>
+                        <div>
+                          <strong style={{ color: 'var(--blue)' }}>
+                            {partnerB}:
+                          </strong>{' '}
+                          <em>
+                            &ldquo;{q.options[pick2] ?? 'Not answered'}&rdquo;
+                          </em>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div
+              style={{
+                display: 'flex',
+                gap: '12px',
+                justifyContent: 'center',
+                flexWrap: 'wrap',
+              }}
             >
               <button
                 className="btn btn-grad"
@@ -449,10 +457,13 @@ export default function MatchPage() {
                   setCalculated(false);
                 }}
               >
-                Retake Quiz ↺
+                Play Again ↺
               </button>
-              <Link className="btn btn-ghost" href="/photobooth">
-                Celebrate in Photobooth 📸
+              <Link className="btn btn-ghost" href="/our-space">
+                Return to Our Space 🏡
+              </Link>
+              <Link className="btn btn-ghost" href="/activity">
+                Explore More Activities ▷
               </Link>
             </div>
           </div>

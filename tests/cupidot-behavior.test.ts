@@ -251,6 +251,29 @@ describe('Interruption Budget & Cooldown Rules', () => {
     });
     expect(canRecoverInQuiet).toBe(true);
   });
+
+  it('strictly restricts dialogue fallback to at or below the requested romance rank (never escalating upward)', () => {
+    const line = getCuratedDialogue('welcome', 'quiet');
+    expect(CURATED_DIALOGUE_LIBRARY.welcome.romantic).not.toContain(line);
+    expect(CURATED_DIALOGUE_LIBRARY.welcome.cheeky).not.toContain(line);
+    expect(CURATED_DIALOGUE_LIBRARY.welcome.flirty).not.toContain(line);
+    expect(CURATED_DIALOGUE_LIBRARY.welcome.spicy).not.toContain(line);
+  });
+
+  it('always allows refuse_unsafe boundary enforcement regardless of drafting state, quiet mode, or cooldown', () => {
+    const budget = createDefaultInterruptionBudget();
+    budget.quietSessionActive = true;
+    budget.lastSpokenTimestamp = Date.now(); // Within 3s cooldown
+
+    const canRefuseWhileDrafting = canCupidotSpeak({
+      productState: 'focused',
+      intent: 'refuse_unsafe',
+      budget,
+      guidanceMode: 'quiet',
+      isPrivateDrafting: true,
+    });
+    expect(canRefuseWhileDrafting).toBe(true);
+  });
 });
 
 describe('Prompt Injection & Safety Boundary Handling', () => {

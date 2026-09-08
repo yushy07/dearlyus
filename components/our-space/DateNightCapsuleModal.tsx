@@ -31,7 +31,7 @@ export function DateNightCapsuleModal({
   defaultMood = 'romantic',
   onSaved,
 }: DateNightCapsuleModalProps) {
-  const { saveCapsule, saving } = useKeepsakeWriter();
+  const { saveCapsule, saving, error: hookError } = useKeepsakeWriter();
 
   const [title, setTitle] = useState(
     `Date Night · ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
@@ -42,16 +42,27 @@ export function DateNightCapsuleModal({
   const [favoriteMoment, setFavoriteMoment] = useState('');
   const [privateNote, setPrivateNote] = useState('');
   const [cupidotSummary, setCupidotSummary] = useState('');
-  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
+    setTitle(
+      `Date Night · ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
+    );
+    setSelectedMood(defaultMood);
+    setActivities(defaultActivities);
+    setNewActivityInput('');
+    setFavoriteMoment('');
+    setPrivateNote('');
+    setCupidotSummary('');
+    setSaveError(null);
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, defaultMood, defaultActivities]);
 
   if (!isOpen) return null;
 
@@ -65,19 +76,20 @@ export function DateNightCapsuleModal({
     setActivities((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  const handleGenerateCupidotReflection = () => {
-    setIsGeneratingAi(true);
+  const handleInsertTemplateReflection = () => {
     sounds.playChime();
-    setTimeout(() => {
-      setCupidotSummary(
-        `Cupidot observes: An evening painted in ${selectedMood} hues between ${partnerA} and ${partnerB}. Whether exchanging telepathic quiz glances or sharing quiet laughter, this capsule seals another irreplaceable milestone in your ongoing story.`,
-      );
-      setIsGeneratingAi(false);
-    }, 450);
+    const activityText =
+      activities.length > 0
+        ? `spending time with ${activities.join(', ')}`
+        : 'sharing a quiet evening together';
+    setCupidotSummary(
+      `Starter reflection template: An evening painted in ${selectedMood} warmth between ${partnerA} and ${partnerB}, ${activityText}. A peaceful milestone preserved for your cedar shelf.`,
+    );
   };
 
   const handleSave = async () => {
     sounds.playCelebration();
+    setSaveError(null);
     try {
       await saveCapsule({
         title,
@@ -93,8 +105,9 @@ export function DateNightCapsuleModal({
       });
       onSaved?.();
       onClose();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to seal date night capsule:', err);
+      setSaveError(err?.message || 'Failed to seal capsule to shelf. Please try again.');
     }
   };
 
@@ -410,24 +423,23 @@ export function DateNightCapsuleModal({
             <span
               style={{ fontSize: '12.5px', fontWeight: 700, color: '#854D0E' }}
             >
-              ✨ Optional Cupidot Reflection
+              📝 Optional Starter Reflection
             </span>
             <button
               type="button"
-              onClick={handleGenerateCupidotReflection}
-              disabled={isGeneratingAi}
+              onClick={handleInsertTemplateReflection}
               style={{
                 background: 'transparent',
                 border: '1px dashed #D97706',
                 color: '#B45309',
-                padding: '3px 10px',
+                padding: '4px 12px',
                 borderRadius: '999px',
                 fontSize: '11px',
                 fontWeight: 700,
                 cursor: 'pointer',
               }}
             >
-              {isGeneratingAi ? 'Weaving...' : 'Generate Reflection'}
+              Insert Starter Template
             </button>
           </div>
           {cupidotSummary ? (
@@ -444,11 +456,47 @@ export function DateNightCapsuleModal({
             </p>
           ) : (
             <p style={{ fontSize: '12px', color: '#A16207', margin: 0 }}>
-              Generates a gentle couple reflection without sending any
-              passwords, tokens, or private answers.
+              Insert a gentle starter template for your keepsake reflection without sending any personal data.
             </p>
           )}
         </div>
+
+        {/* Error Banner with Retry */}
+        {(saveError || hookError) && (
+          <div
+            style={{
+              padding: '10px 14px',
+              background: '#FEE2E2',
+              border: '1px solid #F87171',
+              borderRadius: '12px',
+              color: '#B91C1C',
+              fontSize: '12.5px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '16px',
+            }}
+          >
+            <span>⚠️ {saveError || hookError}</span>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving}
+              style={{
+                background: '#B91C1C',
+                color: '#FFF',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '4px 10px',
+                fontSize: '11px',
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              Retry
+            </button>
+          </div>
+        )}
 
         {/* Actions */}
         <div

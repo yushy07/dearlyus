@@ -243,7 +243,7 @@ describe('Growth Sparks, Anti-Grind Soft Caps & Idempotency', () => {
     expect(cappedAward.softCapReached).toBe(true);
   });
 
-  it('deduplicates celebrations across multiple tabs within window', () => {
+  it('pure helper: deduplicates celebration events within cooldown window', () => {
     const celebrationKey = 'quiz-milestone-round-5';
     const now = Date.now();
 
@@ -265,7 +265,7 @@ describe('Growth Sparks, Anti-Grind Soft Caps & Idempotency', () => {
 });
 
 describe('Mutual Keepsake Approval & Memory Seeds', () => {
-  it('manages complete 2-partner mutual approval flow without premature persistence', () => {
+  it('pure helper: transitions 2-partner mutual approval state without premature persistence', () => {
     // 1. Propose memory seed
     const seed = proposeMemorySeed({
       title: 'Our Tokyo Sunset Sketch',
@@ -290,6 +290,30 @@ describe('Mutual Keepsake Approval & Memory Seeds', () => {
     // 3. Can also decline neutrally without penalty
     const declinedSeed = declineMemorySeed(seed, 'user-b');
     expect(declinedSeed.status).toBe('declined');
+  });
+
+  it('pure helper: preserves edited caption and mood on approval', () => {
+    const seed = proposeMemorySeed({
+      title: 'Our Tokyo Sunset Sketch',
+      kind: 'artwork',
+      activityPath: '/draw',
+      partnerAId: 'user-a',
+      partnerAName: 'Ayush',
+      partnerBId: 'user-b',
+      partnerBName: 'Maya',
+      caption: 'Initial draft caption',
+    });
+
+    const approvedSeed = approveMemorySeed(
+      seed,
+      'user-b',
+      'Refined memories under the stars',
+      'warm',
+    );
+    expect(approvedSeed.caption).toBe('Refined memories under the stars');
+    expect(approvedSeed.draftCaption).toBe('Refined memories under the stars');
+    expect(approvedSeed.chosenMood).toBe('warm');
+    expect(approvedSeed.status).toBe('mutually_approved');
   });
 });
 
@@ -335,7 +359,9 @@ describe('Safe Presence Sanitizer & Privacy Boundaries', () => {
 
     const sanitized = sanitizeSafePresence(rawTelemetryPayload);
 
-    expect(sanitized.state).toBe('writing');
+    expect(sanitized).toBe('writing');
+    expect(typeof sanitized).toBe('string');
+    expect(sanitized === 'writing').toBe(true);
     expect((sanitized as any).deviceName).toBeUndefined();
     expect((sanitized as any).browser).toBeUndefined();
     expect((sanitized as any).ip).toBeUndefined();
@@ -345,7 +371,9 @@ describe('Safe Presence Sanitizer & Privacy Boundaries', () => {
 
   it('defaults to safe "here" when unknown or missing state is passed', () => {
     const sanitized = sanitizeSafePresence({});
-    expect(sanitized.state).toBe('here');
+    expect(sanitized).toBe('here');
+    expect(sanitized === 'here').toBe(true);
+    expect(sanitizeSafePresence(true) === 'here').toBe(true);
   });
 });
 

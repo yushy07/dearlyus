@@ -61,8 +61,8 @@ function analyzeThemes(req: QuestionRequest): ThemeAnalysis {
   let agreementCount = 0;
   for (const h of history) {
     if (
-      h.answerA &&
-      h.answerB &&
+      h.answerA?.trim() &&
+      h.answerB?.trim() &&
       (h.answerA === h.answerB ||
         h.answerA.includes(h.answerB) ||
         h.answerB.includes(h.answerA))
@@ -72,7 +72,8 @@ function analyzeThemes(req: QuestionRequest): ThemeAnalysis {
   }
 
   const currentMatch =
-    currentA.length > 0 &&
+    currentA.trim().length > 0 &&
+    currentB.trim().length > 0 &&
     (currentA === currentB ||
       currentA.includes(currentB) ||
       currentB.includes(currentA));
@@ -179,7 +180,7 @@ export function generateCupidotDilemma(
           `Send a burst of laughing emojis and hang up to restart`,
           `Make an even uglier frozen face in solidarity`,
         ],
-        commentary: `Cupidot [Inside Lore]: "I've spotted your communication archetype: 50% tender vulnerability, 50% chaotic comedy gremlin! 🤭"`,
+        commentary: `Cupidot [Inside Lore]: "Loving these playful late-night video call memories! 🤭"`,
         source: 'fallback',
       };
     }
@@ -188,14 +189,14 @@ export function generateCupidotDilemma(
   // --- THREAD PATTERN 2: High Agreement Multi-Round Synergy ---
   if (analysis.agreementCount >= 2 && totalRounds >= 2) {
     return {
-      question: `Pattern Detected: You two have agreed on almost every single round! Since you're clearly telepathic, who is the real mastermind pulling the strings in this relationship?`,
+      question: `Shared Rhythm: You two have chosen matching options across multiple rounds! For our next question: who is more likely to propose a spontaneous midnight road trip or city walk?`,
       options: [
-        `${nameA} is the CEO, ${nameB} is the cheerful executive assistant`,
-        `${nameB} lets ${nameA} think they're in charge, but secretly runs everything`,
-        `Strict democratic anarchy where every decision takes 45 minutes`,
-        `Neither—our shared one braincell rotates on odd and even days`,
+        `${nameA} packs a bag in 5 minutes flat`,
+        `${nameB} researches snacks and navigation first`,
+        `Both jump in the car with zero destination in mind`,
+        `We spend an hour talking about it and stay cozy at home instead`,
       ],
-      commentary: `Cupidot [Pattern Detected]: "Unusually high synchronicity score! Are you two genuinely soulmates or just flirting in front of the AI? 😏"`,
+      commentary: `Cupidot [Shared Rhythm]: "Matching choices on multiple rounds so far! ✨"`,
       source: 'fallback',
     };
   }
@@ -203,14 +204,14 @@ export function generateCupidotDilemma(
   // --- THREAD PATTERN 3: High Clash Multi-Round Dynamic ---
   if (analysis.agreementCount === 0 && totalRounds >= 2) {
     return {
-      question: `Pattern Detected: Consecutive clashes! ${nameA} and ${nameB} have chosen opposite instincts across multiple rounds. When you finally move in together, who surrenders closet space first?`,
+      question: `Fun Contrast: Different instincts make for the best stories! When you finally unpack in your shared home, who claims closet space first?`,
       options: [
-        `${nameA} annexes 80% of the hangers within the first 48 hours`,
-        `${nameB} fights for a strict 50/50 treaty with tape on the floor`,
-        `Whoever has fewer clothes loses and keeps their jackets in a suitcase`,
-        `We compromise by buying another wardrobe so nobody has to compromise`,
+        `${nameA} annexes the main rack within the first 48 hours`,
+        `${nameB} negotiates a neat 50/50 balance`,
+        `Whoever has fewer clothes keeps their extra jackets stored`,
+        `We compromise by adding another rack so nobody compromises`,
       ],
-      commentary: `Cupidot [Tension Analysis]: "Notice how your opposites-attract dynamic creates maximum comedic friction? Keep that energy! ⚡"`,
+      commentary: `Cupidot [Playful Contrast]: "Different perspectives make conversations lively! ⚡"`,
       source: 'fallback',
     };
   }
@@ -323,70 +324,54 @@ export function judgeCourtCase(
 
   if (/sleep|couch|nap|tired|bed|snooze|alarm/.test(combined)) {
     return {
-      verdictTitle: 'Guilty of Unlawful Couch-Coma & Notification Neglect ⚖️',
-      guiltyParty: nameB,
-      reasoning: `The court finds Defendant ${nameB} guilty under Statute 14: falling asleep without properly clocking out on call constitutes gross negligence of couple snuggling protocols.`,
-      sentence: `${nameB} must send 3 sleepy morning voice notes tomorrow and order ${nameA} their favorite drink or dessert.`,
+      verdictTitle: 'Whimsical Ruling: The Great Couch-Nap Treaty 📜',
+      guiltyParty: 'Neither — Mutual Play',
+      reasoning: `Judge Cupidot rules this an honorable state of exhaustion. Rest is universally recognized, while sleepy evening check-ins remain cherished.`,
+      sentence: `Both partners are awarded an extra cozy check-in tomorrow, plus their choice of tea or dessert.`,
     };
   }
 
   if (/playlist|music|song|skip|aux|sound|artist/.test(combined)) {
     return {
-      verdictTitle: 'Guilty of Egregious Bluetooth Monopoly 📻',
-      guiltyParty: nameA,
-      reasoning: `Plaintiff ${nameA} demonstrated blatant disregard for constitutional AUX rights by skipping tracks 18 seconds in before the beat even dropped.`,
-      sentence: `${nameB} is granted unilateral control of the playlist/speaker for 45 uninterrupted minutes without eye-rolling.`,
+      verdictTitle: 'The Shared Soundstage Compromise 📻',
+      guiltyParty: 'Neither — Mutual Play',
+      reasoning: `Both musical curators have valid acoustic claims. Music thrives on variety and spontaneous dance parties.`,
+      sentence: `Both partners take alternating turns choosing the next three songs with zero skips allowed.`,
     };
   }
 
   if (/hoodie|jacket|clothes|shirt|stole|wear/.test(combined)) {
     return {
-      verdictTitle:
-        'Legitimate Asset Seizure Recognized by International Law 🧥',
-      guiltyParty: 'Neither',
-      reasoning: `Under the Long-Distance Maritime Convention, once a favorite clothing item enters ${nameA}’s suitcase, legal ownership permanently transfers.`,
-      sentence: `${nameB} must accept the loss with stoic grace and spray their cologne or perfume on the next backup hoodie.`,
+      verdictTitle: 'The Cozy Wardrobe Treaty 🧥',
+      guiltyParty: 'Neither — Mutual Play',
+      reasoning: `Under distance relationship traditions, oversized clothing carries comfort and scent across the miles.`,
+      sentence: `Shared custody approved! The borrower keeps it cozy; the lender receives an extra loving reunion hug.`,
     };
   }
 
   if (/read|reply|text|ignore|seen|hours|ghost/.test(combined)) {
     return {
-      verdictTitle: 'Criminal Neglect of the Notification Tray 📱',
-      guiltyParty: nameB,
-      reasoning: `Leaving someone on "Seen" for over 42 minutes while active elsewhere is a Class 1 romantic misdemeanor.`,
-      sentence: `${nameB} must record a 60-second acoustic love ballad or provide 15 consecutive compliments to ${nameA}.`,
+      verdictTitle: 'The Gentle Notification Grace Period 📱',
+      guiltyParty: 'Neither — Mutual Play',
+      reasoning: `Busy schedules happen across time zones. Gentle check-ins without pressure keep connection restful.`,
+      sentence: `Both exchange one sweet, zero-pressure audio note whenever their evening settles.`,
     };
   }
 
   if (/food|fries|bite|eat|dinner|hungry|share/.test(combined)) {
     return {
-      verdictTitle: 'The "I\'m Not Hungry" Food Theft Felony 🍟',
-      guiltyParty: nameA,
-      reasoning: `Saying "I just want one bite" and subsequently consuming 40% of ${nameB}'s food constitutes romantic grand larceny.`,
-      sentence: `${nameA} must treat ${nameB} to midnight food or hand-feed them the first 3 bites of dessert on date night.`,
-    };
-  }
-
-  // Dynamic Heuristic for Custom Cases
-  const lengthA = claimA.length;
-  const lengthB = claimB.length;
-  const exclamationsA = (claimA.match(/!/g) || []).length;
-  const exclamationsB = (claimB.match(/!/g) || []).length;
-
-  if (exclamationsA > exclamationsB + 1) {
-    return {
-      verdictTitle: `Passionate Drama Verdict on "${title.slice(0, 32)}" ⚖️`,
-      guiltyParty: 'Both',
-      reasoning: `Judge Cupidot notes ${nameA} argued with intense theatrical passion (${exclamationsA} exclamation marks!), while ${nameB} attempted stoic avoidance. Both parties are hopelessly obsessed with each other.`,
-      sentence: `Both parties are sentenced to a mandatory 20-minute silent forehead-touch cuddle upon your next airport reunion.`,
+      verdictTitle: 'The Communal French Fry Agreement 🍟',
+      guiltyParty: 'Neither — Mutual Play',
+      reasoning: `A stolen French fry is the ultimate declaration of affection. Next time, order the extra-large basket!`,
+      sentence: `Next date night, both agree to share dessert or order double fries right from the start.`,
     };
   }
 
   return {
-    verdictTitle: `Compromise Decreed on "${title.slice(0, 32)}" 🏛️`,
-    guiltyParty: 'Mutual Chaos',
-    reasoning: `After forensic evaluation of the relationship evidence, Judge Cupidot rules that petty arguments between ${nameA} and ${nameB} are simply poorly disguised requests for extra attention.`,
-    sentence: `The accused must immediately send a silly face selfie, and the accuser must reply with an audio recording saying "I still adore you."`,
+    verdictTitle: `Whimsical Compromise on "${title.slice(0, 32)}" 🏛️`,
+    guiltyParty: 'Neither — Mutual Play',
+    reasoning: `After playful review of both perspectives, Judge Cupidot rules this a harmless, charming debate between ${nameA} and ${nameB}.`,
+    sentence: `Both partners take a deep breath, send a silly face selfie, and share what they appreciate most about each other.`,
   };
 }
 

@@ -175,27 +175,35 @@ export default function CourtPage() {
               margin: '8px 0 10px',
             }}
           >
-            Romantic <span className="grad">Couples Court</span>
+            Theatrical <span className="grad">Couples Court</span>
           </h1>
           <p
             style={{
               color: 'var(--ink-soft)',
-              fontSize: '16px',
-              maxWidth: '52ch',
-              margin: '0 auto',
+              fontSize: '15px',
+              maxWidth: '54ch',
+              margin: '0 auto 12px',
+              lineHeight: 1.5,
             }}
           >
-            Plead your petty crimes, missed calls, and stolen hoodies. Judge
-            Cupidot delivers witty, legally binding romantic justice!
+            A 100% fictional, lighthearted courtroom game for silly pretend debates (stolen hoodies, playlist monopolies, and extra fries). Pure play, zero real blame.
           </p>
+          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', margin: '12px 0 16px' }}>
+            <Link className="btn btn-ghost" href="/our-space" style={{ fontSize: '12.5px', padding: '4px 12px' }}>
+              ← Return to Our Space
+            </Link>
+            <Link className="btn btn-ghost" href="/activity" style={{ fontSize: '12.5px', padding: '4px 12px' }}>
+              Choose Another Activity
+            </Link>
+          </div>
         </div>
 
         {/* Cupidot Standard Activity Lifecycle Guidance */}
         <CupidotActivityGuidance
-          activityName="Petty Court Arbitrator"
+          activityName="Theatrical Couples Court"
           phase={verdict ? 'revealed' : deliberating ? 'locked' : 'ready'}
           partnerName={partnerB || 'Partner'}
-          privacyNote="A playful, lighthearted trial. All verdicts are delivered with maximum affection and zero relationship penalties!"
+          privacyNote="Purely fictional roleplay. Zero real-world fault, blame, or relationship penalties."
         />
 
         {/* Court Case Card */}
@@ -234,7 +242,7 @@ export default function CourtPage() {
                 cursor: 'pointer',
               }}
             >
-              Preset Docket Cases 📜
+              Preset Playful Cases 📜
             </button>
             <button
               onClick={() => {
@@ -252,7 +260,7 @@ export default function CourtPage() {
                 cursor: 'pointer',
               }}
             >
-              Filing Custom Grievance ✍️
+              Custom Whimsical Scenario ✍️
             </button>
           </div>
 
@@ -531,7 +539,7 @@ export default function CourtPage() {
                     fontSize: '11px',
                   }}
                 >
-                  OFFICIAL RULING
+                  PLAYFUL RULING
                 </span>
                 <span
                   style={{
@@ -540,21 +548,11 @@ export default function CourtPage() {
                     fontWeight: 800,
                     padding: '4px 10px',
                     borderRadius: '999px',
-                    background:
-                      verdict.guiltyParty === partnerA
-                        ? '#FFF0F5'
-                        : verdict.guiltyParty === partnerB
-                          ? '#F0F6FF'
-                          : '#F3E8FF',
-                    color:
-                      verdict.guiltyParty === partnerA
-                        ? '#E11D48'
-                        : verdict.guiltyParty === partnerB
-                          ? '#2563EB'
-                          : '#7C3AED',
+                    background: '#F0FDF4',
+                    color: '#16A34A',
                   }}
                 >
-                  Guilty Party: {verdict.guiltyParty}
+                  Zero Fault · Mutual Play
                 </span>
               </div>
 
@@ -598,7 +596,7 @@ export default function CourtPage() {
                     marginBottom: '4px',
                   }}
                 >
-                  📜 MANDATORY ROMANTIC SENTENCE:
+                  ✨ PLAYFUL JOINT SUGGESTION:
                 </div>
                 <div
                   style={{
@@ -614,26 +612,48 @@ export default function CourtPage() {
 
               <div
                 style={{
-                  marginTop: '14px',
+                  marginTop: '18px',
                   display: 'flex',
-                  justifyContent: 'flex-end',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
                   gap: '8px',
                 }}
               >
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <Link
+                    href="/our-space"
+                    className="btn btn-ghost"
+                    style={{ fontSize: '12px', padding: '6px 12px' }}
+                  >
+                    Return to Our Space 🏡
+                  </Link>
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={() => {
+                      setVerdict(null);
+                      sounds.playPop();
+                    }}
+                    style={{ fontSize: '12px', padding: '6px 12px' }}
+                  >
+                    Keep It Lighter 🕊️
+                  </button>
+                </div>
+
                 <button
                   className="btn btn-sm"
                   onClick={() => {
                     sounds.playPop();
-                    const courtMood =
-                      verdict.guiltyParty === 'Both' ? 'sassy' : 'angry';
+                    const courtMood = 'happy';
                     setBotState(courtMood);
                     speakCupidot(
-                      `Order in the court! ${verdict.verdictTitle}. The court finds: ${verdict.guiltyParty} guilty! ${verdict.reasoning} Mandatory sentence: ${verdict.sentence}`,
+                      `Court is adjourned! ${verdict.verdictTitle}. ${verdict.reasoning} Joint suggestion: ${verdict.sentence}`,
                       {
                         mood: courtMood,
                         onStart: () => setBotState(courtMood),
                         onEnd: () =>
-                          setTimeout(() => setBotState('sassy'), 2000),
+                          setTimeout(() => setBotState('idle'), 2000),
                       },
                     );
                   }}

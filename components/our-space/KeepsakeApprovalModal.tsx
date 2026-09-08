@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MemorySeed, CupidotMood } from '@/types/cupidot';
 import { sounds } from '@/lib/sound';
 
@@ -30,6 +30,13 @@ export function KeepsakeApprovalModal({
   const [caption, setCaption] = useState(seed?.draftCaption || '');
   const [mood, setMood] = useState<CupidotMood>(seed?.chosenMood || 'cozy');
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && seed) {
+      setCaption(seed.draftCaption || '');
+      setMood(seed.chosenMood || 'cozy');
+    }
+  }, [isOpen, seed]);
 
   if (!isOpen || !seed) return null;
 

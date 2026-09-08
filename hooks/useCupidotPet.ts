@@ -35,6 +35,21 @@ export function useCupidotPet() {
   );
   const seenActionKeysRef = useRef<Set<string>>(new Set());
   const decorUndoStackRef = useRef<string[][]>([]);
+  const reactionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearReactionTimer = useCallback(() => {
+    if (reactionTimerRef.current !== null) {
+      clearTimeout(reactionTimerRef.current);
+      reactionTimerRef.current = null;
+    }
+  }, []);
+
+  // Clean up timers on unmount
+  useEffect(() => {
+    return () => {
+      clearReactionTimer();
+    };
+  }, [clearReactionTimer]);
 
   // Reload state if couple space changes
   useEffect(() => {
@@ -77,6 +92,8 @@ export function useCupidotPet() {
   // Send safe reaction
   const sendReaction = useCallback(
     (reaction: SafeReaction) => {
+      clearReactionTimer();
+
       switch (reaction) {
         case 'heart':
         case 'sparkle':
@@ -107,19 +124,24 @@ export function useCupidotPet() {
         };
       });
 
-      // Reset back to calm after celebration
-      window.setTimeout(() => {
-        setHomeState((prev) => ({
-          ...prev,
-          state: partner ? 'reunion' : 'welcoming',
-        }));
+      // Reset back to calm after celebration without overriding goodnight
+      reactionTimerRef.current = setTimeout(() => {
+        setHomeState((prev) => {
+          if (prev.state === 'settling_for_night') return prev;
+          return {
+            ...prev,
+            state: partner ? 'reunion' : 'welcoming',
+          };
+        });
+        reactionTimerRef.current = null;
       }, 2200);
     },
-    [partner],
+    [partner, clearReactionTimer],
   );
 
   // Goodnight tap
   const goodnightTap = useCallback(() => {
+    clearReactionTimer();
     sounds.playChime();
     setHomeState((prev) => ({
       ...prev,
@@ -127,7 +149,7 @@ export function useCupidotPet() {
       mood: 'cozy',
       lastGoodnightTapAt: new Date().toISOString(),
     }));
-  }, []);
+  }, [clearReactionTimer]);
 
   // Update mood safely
   const changeMood = useCallback((mood: CupidotMood) => {
@@ -188,16 +210,21 @@ export function useCupidotPet() {
         mood: 'proud',
       }));
 
-      window.setTimeout(() => {
-        setHomeState((prev) => ({
-          ...prev,
-          state: partner ? 'reunion' : 'welcoming',
-        }));
+      clearReactionTimer();
+      reactionTimerRef.current = setTimeout(() => {
+        setHomeState((prev) => {
+          if (prev.state === 'settling_for_night') return prev;
+          return {
+            ...prev,
+            state: partner ? 'reunion' : 'welcoming',
+          };
+        });
+        reactionTimerRef.current = null;
       }, 2500);
 
       return result;
     },
-    [homeState.growthSparks, homeState.sparksThisSession, partner],
+    [homeState.growthSparks, homeState.sparksThisSession, partner, clearReactionTimer],
   );
 
   // Decor placement with undo support
@@ -257,23 +284,34 @@ export function useCupidotPet() {
     [],
   );
 
-  const approveMemorySeed = useCallback((seedId: string) => {
-    sounds.playCelebration();
-    setHomeState((prev) => {
-      if (prev.activeMemorySeed?.seedId !== seedId) return prev;
-      const approved: MemorySeed = {
-        ...prev.activeMemorySeed,
-        approvalStatus: 'both_approved',
-        approvedAt: new Date().toISOString(),
-      };
-      return {
-        ...prev,
-        activeMemorySeed: approved,
-        state: 'celebrating',
-        mood: 'proud',
-      };
-    });
-  }, []);
+  const approveMemorySeed = useCallback(
+    (seedId: string, updatedCaption?: string, updatedMood?: CupidotMood) => {
+      sounds.playCelebration();
+      setHomeState((prev) => {
+        if (prev.activeMemorySeed?.seedId !== seedId) return prev;
+        const approved: MemorySeed = {
+          ...prev.activeMemorySeed,
+          draftCaption:
+            updatedCaption !== undefined
+              ? updatedCaption
+              : prev.activeMemorySeed.draftCaption,
+          chosenMood:
+            updatedMood !== undefined
+              ? updatedMood
+              : prev.activeMemorySeed.chosenMood,
+          approvalStatus: 'both_approved',
+          approvedAt: new Date().toISOString(),
+        };
+        return {
+          ...prev,
+          activeMemorySeed: approved,
+          state: 'celebrating',
+          mood: 'proud',
+        };
+      });
+    },
+    [],
+  );
 
   const declineMemorySeed = useCallback(
     (seedId: string) => {

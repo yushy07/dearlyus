@@ -8,6 +8,7 @@ const AI_CONSENT_KEY = 'dearly_ai_followups_consent';
 export function useAiConsent() {
   const [hasAiConsent, setHasAiConsent] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { preferences, space, savePreferences } = useCoupleSpace();
 
   useEffect(() => {
@@ -27,6 +28,8 @@ export function useAiConsent() {
   }, [preferences?.aiConsent]);
 
   const setAiConsent = async (enabled: boolean) => {
+    const previous = hasAiConsent;
+    setError(null);
     setHasAiConsent(enabled);
     localStorage.setItem(AI_CONSENT_KEY, String(enabled));
     window.dispatchEvent(new Event('dearly_ai_consent_changed'));
@@ -34,10 +37,21 @@ export function useAiConsent() {
     // A local preference can drive offline fallbacks, but live AI permission is
     // couple-owned and must be persisted before the Edge Function may use it.
     if (space && preferences) {
-      const { updatedAt: _updatedAt, ...current } = preferences;
-      await savePreferences({ ...current, aiConsent: enabled });
+      try {
+        const { updatedAt: _updatedAt, ...current } = preferences;
+        await savePreferences({ ...current, aiConsent: enabled });
+      } catch (err: any) {
+        setHasAiConsent(previous);
+        localStorage.setItem(AI_CONSENT_KEY, String(previous));
+        window.dispatchEvent(new Event('dearly_ai_consent_changed'));
+        setError(
+          err?.message ||
+            'Could not update AI consent on server. Setting restored.',
+        );
+        throw err;
+      }
     }
   };
 
-  return { hasAiConsent, setAiConsent, isLoaded };
+  return { hasAiConsent, setAiConsent, isLoaded, error, clearError: () => setError(null) };
 }

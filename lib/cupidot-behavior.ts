@@ -139,7 +139,7 @@ export const CURATED_DIALOGUE_LIBRARY: Record<
     ],
     cheeky: [
       "You're here. Excellent—my tiny plan is working.",
-      'Look who decided to grace sanctuary with their presence.',
+      "Look who's back in sanctuary. Ready whenever you are.",
       'Welcome back! Mischief awaits on your mark.',
     ],
     flirty: [
@@ -515,9 +515,21 @@ export function getCuratedDialogue(
   const intentDict =
     CURATED_DIALOGUE_LIBRARY[intent] || CURATED_DIALOGUE_LIBRARY.welcome;
 
-  // Fallback chain: level -> romantic -> warm -> quiet
-  const levelOrder: RomanceLevel[] = [level, 'romantic', 'warm', 'quiet'];
-  for (const l of levelOrder) {
+  // Strictly downward fallback: only search levels at or below the requested level rank
+  const requestedRank = ROMANCE_LEVEL_RANK[level] ?? 2;
+  const rankOrder: RomanceLevel[] = [
+    'spicy',
+    'flirty',
+    'cheeky',
+    'romantic',
+    'warm',
+    'quiet',
+  ];
+  const eligibleLevels = rankOrder.filter(
+    (l) => ROMANCE_LEVEL_RANK[l] <= requestedRank,
+  );
+
+  for (const l of eligibleLevels) {
     const lines = intentDict[l];
     if (lines && lines.length > 0) {
       return lines[Math.abs(seed) % lines.length];
@@ -547,7 +559,8 @@ export function canCupidotSpeak(params: {
     if (
       intent !== 'confirm_privacy' &&
       intent !== 'privacy_confirmation' &&
-      intent !== 'recover_connection'
+      intent !== 'recover_connection' &&
+      intent !== 'refuse_unsafe'
     ) {
       return false;
     }
@@ -558,7 +571,8 @@ export function canCupidotSpeak(params: {
     if (
       intent !== 'recover_connection' &&
       intent !== 'confirm_privacy' &&
-      intent !== 'soften_intensity'
+      intent !== 'soften_intensity' &&
+      intent !== 'refuse_unsafe'
     ) {
       return false;
     }
@@ -591,7 +605,8 @@ export function canCupidotSpeak(params: {
   if (
     now - budget.lastSpokenTimestamp < 3000 &&
     intent !== 'recover_connection' &&
-    intent !== 'soften_intensity'
+    intent !== 'soften_intensity' &&
+    intent !== 'refuse_unsafe'
   ) {
     return false;
   }

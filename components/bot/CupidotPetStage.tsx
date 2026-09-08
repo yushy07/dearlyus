@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useId } from 'react';
+import React, { useState, useEffect, useId, useRef } from 'react';
 import {
   CupidotState,
   CupidotMood,
@@ -102,6 +102,15 @@ export function CupidotPetStage({
   const [reducedMotion, setReducedMotion] = useState(false);
   const [reactionBurst, setReactionBurst] = useState<string | null>(null);
   const stageId = useId();
+  const burstTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (burstTimerRef.current !== null) {
+        window.clearTimeout(burstTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const query = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -121,13 +130,25 @@ export function CupidotPetStage({
   const handleStageClick = () => {
     sounds.playPop();
     setReactionBurst('💖');
-    window.setTimeout(() => setReactionBurst(null), 1200);
+    if (burstTimerRef.current !== null) {
+      window.clearTimeout(burstTimerRef.current);
+    }
+    burstTimerRef.current = window.setTimeout(() => {
+      setReactionBurst(null);
+      burstTimerRef.current = null;
+    }, 1200);
     onTap?.();
   };
 
   const handleQuickReaction = (reaction: SafeReaction, emoji: string) => {
     setReactionBurst(emoji);
-    window.setTimeout(() => setReactionBurst(null), 1200);
+    if (burstTimerRef.current !== null) {
+      window.clearTimeout(burstTimerRef.current);
+    }
+    burstTimerRef.current = window.setTimeout(() => {
+      setReactionBurst(null);
+      burstTimerRef.current = null;
+    }, 1200);
     onSendReaction?.(reaction);
   };
 
@@ -271,6 +292,7 @@ export function CupidotPetStage({
             interactive={true}
             showGlow={true}
             showParticles={state === 'celebrating' || state === 'reunion'}
+            onError={() => setUse3D(false)}
           />
         ) : (
           <Cupidot2D

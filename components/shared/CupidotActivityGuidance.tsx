@@ -63,7 +63,7 @@ const PHASE_GUIDANCE: Record<
   revealed: {
     icon: '🎉',
     title: 'Revealed Together',
-    hint: 'Unsealed in tandem at the exact same second. Enjoy this shared reaction!',
+    hint: 'Unsealed together once both answers are ready. Enjoy this shared reaction!',
     tone: '#059669',
     bg: 'rgba(236, 253, 245, 0.95)',
   },
@@ -84,14 +84,14 @@ const PHASE_GUIDANCE: Record<
   recovering: {
     icon: '🛡️',
     title: 'Preserving Your Place',
-    hint: 'Catching up with the room. Nothing was lost or reset.',
+    hint: 'Syncing with the room session. Restoring confirmed state.',
     tone: '#4F46E5',
     bg: 'rgba(238, 242, 255, 0.95)',
   },
   expired: {
     icon: '🚪',
     title: 'Room Session Closed',
-    hint: 'Your progress is saved to Our Space. Ready for a fresh room whenever date night calls.',
+    hint: 'This room session has ended. Completed keepsakes remain in Our Space.',
     tone: '#4B5563',
     bg: 'rgba(249, 250, 251, 0.95)',
   },

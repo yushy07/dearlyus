@@ -60,8 +60,8 @@ This document outlines the systematic verification matrix for the **Dearly Us** 
 | :--------- | :----------------------------- | :----------------------------------------------- | :------------------------------------------------------------------------------------------- | :-------- |
 | **CAT-01** | **Cards** (`/cards`)           | `cards_flip` -> `cards_next`                     | Card flips on both screens; advancing advances both clients; completion sets keepsake draft. | [ ]       |
 | **CAT-02** | **Host Mode** (`/host`)        | `host_speaker_switch` -> `host_prompt_change`    | Active speaker badge alternates; prompts advance synchronously.                              | [ ]       |
-| **CAT-03** | **Match** (`/match`)           | `match_reveal` -> `match_next`                   | Telepathy score increments when matched; round index increments.                             | [ ]       |
-| **CAT-04** | **Court / Debate** (`/court`)  | `court_plea` -> `court_verdict` -> `court_close` | Advances from filing to arguments to verdict; penalty displays on both screens.              | [ ]       |
+| **CAT-03** | **Match** (`/match`)           | `match_reveal` -> `match_next`                   | Choice alignment reveals side-by-side; honest summary increments; neutral exit available.    | [ ]       |
+| **CAT-04** | **Court / Debate** (`/court`)  | `court_plea` -> `court_verdict` -> `court_close` | Theatrical playful mock scenario advances to mutual, zero-fault verdict with joint prompt.   | [ ]       |
 | **CAT-05** | **Dare** (`/dare`)             | `dare_accept` -> `dare_complete`                 | Dares count increments; reroll updates dare text on both screens.                            | [ ]       |
 | **CAT-06** | **Photobooth** (`/photobooth`) | `photo_start_countdown` -> `photo_shutter`       | 3s countdown ticks synchronously; shutter flashes simultaneously.                            | [ ]       |
 | **CAT-07** | **Passport** (`/passport`)     | `passport_stamp_add` -> `page_turn`              | Stamp count updates across devices; page turns synchronously.                                | [ ]       |
@@ -91,7 +91,7 @@ This document outlines the systematic verification matrix for the **Dearly Us** 
 
 ## 5. Recorded Local Evidence
 
-- [x] Adapter, behavioral, and security unit coverage: `npm test` runs 76 deterministic tests across 6 suites.
+- [x] Adapter, behavioral, and security unit coverage: `npm test` runs 80 deterministic tests across 6 suites (verifies pure reducers, state sanitization, downwards romance ceilings, and state transitions; does not claim live cross-client concurrency).
 - [x] Browser smoke coverage: `npm run test:browser` opens Quiz in two tabs, verifies the Draw canvas, and renders every catalog activity route without a backend.
 - [ ] The interactive two-tab matrix above. Each row requires a dated manual result before it may be marked passed.
 - [ ] Accessibility audit with keyboard-only and screen-reader evidence.

@@ -72,6 +72,7 @@ export function CupidotHomeArea({
   const [ritualModalOpen, setRitualModalOpen] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [ambientAudio, setAmbientAudio] = useState(false);
+  const [dismissedSeedId, setDismissedSeedId] = useState<string | null>(null);
 
   const presenceInfo =
     PRESENCE_LABELS[partnerSafePresence] || PRESENCE_LABELS.away;
@@ -413,7 +414,7 @@ export function CupidotHomeArea({
                 }}
               >
                 {homeState.upcomingRitual?.title ||
-                  'Sunday Morning Check-in ☕'}
+                  'No Scheduled Ritual Yet'}
               </h4>
             </div>
             <button
@@ -422,7 +423,7 @@ export function CupidotHomeArea({
               onClick={() => setRitualModalOpen(true)}
               style={{ fontSize: '11px', padding: '4px 10px' }}
             >
-              + Custom
+              {homeState.upcomingRitual ? 'Edit / Reschedule' : '+ Schedule'}
             </button>
           </div>
 
@@ -435,40 +436,51 @@ export function CupidotHomeArea({
             }}
           >
             {homeState.upcomingRitual?.purpose ||
-              'A gentle recurring pause to listen and support each other. Zero streaks, no pressure if missed.'}
+              'Set a gentle recurring pause—like Sunday reviews or quiet morning coffee—to stay connected across the distance. Zero streaks, no pressure if missed.'}
           </p>
 
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {homeState.upcomingRitual ? (
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => {
+                  sounds.playCelebration();
+                  completeRitual(homeState.upcomingRitual!.id);
+                }}
+                style={{ fontSize: '12px', padding: '6px 12px' }}
+              >
+                Mark Completed (+10 sparks) ✓
+              </button>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() =>
+                  snoozeRitual(homeState.upcomingRitual!.id, 24)
+                }
+                style={{ fontSize: '12px', padding: '6px 12px' }}
+              >
+                Snooze (+1 day) 💤
+              </button>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => setRitualModalOpen(true)}
+                style={{ fontSize: '12px', padding: '6px 12px' }}
+              >
+                Reschedule
+              </button>
+            </div>
+          ) : (
             <button
               type="button"
               className="btn btn-primary"
-              onClick={() => {
-                sounds.playCelebration();
-                completeRitual(homeState.upcomingRitual?.id || 'default');
-              }}
-              style={{ fontSize: '12px', padding: '6px 12px' }}
-            >
-              Mark Completed (+3 sparks) ✓
-            </button>
-            <button
-              type="button"
-              className="btn btn-ghost"
-              onClick={() =>
-                snoozeRitual(homeState.upcomingRitual?.id || 'default', 24)
-              }
-              style={{ fontSize: '12px', padding: '6px 12px' }}
-            >
-              Snooze (+1 day) 💤
-            </button>
-            <button
-              type="button"
-              className="btn btn-ghost"
               onClick={() => setRitualModalOpen(true)}
-              style={{ fontSize: '12px', padding: '6px 12px' }}
+              style={{ fontSize: '12px', padding: '6px 14px' }}
             >
-              Reschedule
+              Create a Shared Ritual ✨
             </button>
-          </div>
+          )}
         </div>
 
         {/* Home Decor & Souvenirs Collection Shelf */}
@@ -640,16 +652,24 @@ export function CupidotHomeArea({
 
       {homeState.activeMemorySeed && (
         <KeepsakeApprovalModal
-          isOpen={Boolean(homeState.activeMemorySeed)}
-          onClose={() => declineMemorySeed(homeState.activeMemorySeed!.seedId)}
+          isOpen={
+            Boolean(homeState.activeMemorySeed) &&
+            dismissedSeedId !== homeState.activeMemorySeed.seedId
+          }
+          onClose={() =>
+            setDismissedSeedId(homeState.activeMemorySeed?.seedId || null)
+          }
           seed={homeState.activeMemorySeed}
           currentUserName={partnerA}
           partnerName={partnerB}
-          onApprove={(seedId) => {
-            approveMemorySeed(seedId);
+          onApprove={(seedId, updatedCaption, updatedMood) => {
+            approveMemorySeed(seedId, updatedCaption, updatedMood);
             triggerGrowthSpark('keepsake_saved', `keepsake-seed-${seedId}`);
           }}
-          onDecline={declineMemorySeed}
+          onDecline={(seedId) => {
+            declineMemorySeed(seedId);
+            setDismissedSeedId(null);
+          }}
         />
       )}
     </section>
