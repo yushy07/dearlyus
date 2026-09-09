@@ -10,6 +10,9 @@ export function GlobalExperience() {
   const pathname = usePathname();
   const isAuthScreen = pathname === '/login' || pathname.startsWith('/auth/');
 
+  // The booth owns its camera, audio and pose controls; keep faces unobstructed.
+  if (pathname === '/photobooth') return null;
+
   if (isAuthScreen) return <ClickSpark />;
 
   return (
