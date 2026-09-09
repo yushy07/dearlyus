@@ -35,7 +35,12 @@ export interface PlacedSticker {
   rotation: number; // degrees (-30 to +30)
   scale: number; // 0.8 - 1.5
   isHangul?: boolean;
+  flipX?: boolean;
 }
+
+import { pointsToBezierPath } from '@/lib/photobooth-bezier';
+export { pointsToBezierPath };
+
 
 const STICKER_CATEGORIES = [
   {
@@ -133,7 +138,7 @@ export default function PhotoboothPage() {
   }, [savedRoomCode]);
 
   // Booth camera & feed state
-  const [feedMode, setFeedMode] = useState<'simulated' | 'webcam'>('simulated');
+  const [feedMode, setFeedMode] = useState<'webcam' | 'upload'>('webcam');
   const [currentShotIdx, setCurrentShotIdx] = useState(0);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [flashing, setFlashing] = useState(false);
@@ -171,13 +176,41 @@ export default function PhotoboothPage() {
   const [copied, setCopied] = useState(false);
   const [confettiActive, setConfettiActive] = useState(false);
 
-  // Next-Gen Feature Upgrades: Motion Strips & Live Neon Doodling
+  // Next-Gen Polish: Bezier Doodling, Twin Strip, Drag-Drop & Shutter Freeze
   const [isMotionMode, setIsMotionMode] = useState(false);
   const [motionFrameIdx, setMotionFrameIdx] = useState(0);
   const [isDrawingMode, setIsDrawingMode] = useState(false);
   const [neonPenColor, setNeonPenColor] = useState('#FF7BA3');
+  const [doodleBrushWidth, setDoodleBrushWidth] = useState<number>(5); // 2: Fine | 5: Marker | 9: Bold Glow
+  const [doodlePaths, setDoodlePaths] = useState<
+    { color: string; width: number; points: { x: number; y: number }[] }[]
+  >([]);
+  const [doodleRedoStack, setDoodleRedoStack] = useState<
+    { color: string; width: number; points: { x: number; y: number }[] }[]
+  >([]);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
   const [isVintageCamMode, setIsVintageCamMode] = useState(false);
   const [cupidotPose, setCupidotPose] = useState<PoseIdea | null>(null);
+  const [singleRetakeCutIdx, setSingleRetakeCutIdx] = useState<number | null>(null);
+  const [freezeFrame, setFreezeFrame] = useState<string | null>(null);
+  const [dragOverCutIdx, setDragOverCutIdx] = useState<number | null>(null);
+  const [isTwinStrip, setIsTwinStrip] = useState(false);
+  const [clipboardCopied, setClipboardCopied] = useState(false);
+  const [isDraggingSticker, setIsDraggingSticker] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const targetUploadCutRef = useRef<number | null>(null);
+  const captureTimeoutsRef = useRef<NodeJS.Timeout[]>([]);
+
+  const clearCaptureTimeouts = () => {
+    captureTimeoutsRef.current.forEach(clearTimeout);
+    captureTimeoutsRef.current = [];
+  };
+
+  useEffect(() => {
+    return () => clearCaptureTimeouts();
+  }, []);
 
   // Motion strip looping interval
   useEffect(() => {
@@ -191,38 +224,70 @@ export default function PhotoboothPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Live Webcam hook
+  // Live Webcam hook (Strictly video only, ideal 1080p high definition)
   useEffect(() => {
     let stream: MediaStream | null = null;
+    setCameraError(null);
+
     if (feedMode === 'webcam') {
       navigator.mediaDevices
-        ?.getUserMedia({ video: { width: 1280, height: 720 }, audio: true })
+        ?.getUserMedia({
+          video: {
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+            facingMode: 'user',
+          },
+        })
         .then((s) => {
           stream = s;
           if (videoRef.current) {
             videoRef.current.srcObject = s;
-            videoRef.current.play();
+            videoRef.current.play().catch(() => {});
           }
         })
-        .catch(() => setFeedMode('simulated'));
+        .catch((err) => {
+          console.warn('Webcam permission or device error:', err);
+          setCameraError(
+            'Camera access was blocked or unavailable. Check browser permissions or upload your photos.',
+          );
+          setFeedMode('upload');
+        });
     }
     return () => {
       if (stream) stream.getTracks().forEach((t) => t.stop());
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
     };
   }, [feedMode]);
 
-  // Capture sequence
+  // Cancel any active shooting sequence
+  const cancelCaptureSequence = () => {
+    clearCaptureTimeouts();
+    setIsShooting(false);
+    setCountdown(null);
+    setFlashing(false);
+    setFreezeFrame(null);
+    setSingleRetakeCutIdx(null);
+    sounds.playTick();
+  };
+
+  // Full 4-cut capture sequence with shutter freeze-flash
   const startCaptureSequence = () => {
     if (isShooting) return;
+    clearCaptureTimeouts();
     void activityRuntime.sendEvent('photo_start_countdown', {});
     setIsShooting(true);
     setCurrentShotIdx(0);
-    const newShots: string[] = [];
+    setSingleRetakeCutIdx(null);
+    const newShots: string[] = [...capturedShots];
 
     const shootStep = (idx: number) => {
       if (idx >= selectedLayout.cuts) {
         setIsShooting(false);
+        setFreezeFrame(null);
         setScene('EDIT');
+        sounds.playCelebration();
         void activityRuntime.sendEvent('photo_finish', {});
         return;
       }
@@ -231,45 +296,183 @@ export default function PhotoboothPage() {
       setCountdown(3);
       sounds.playCountdownBeep(false);
 
-      setTimeout(() => {
+      const t1 = setTimeout(() => {
         setCountdown(2);
         sounds.playCountdownBeep(false);
         void activityRuntime.sendEvent('photo_tick', { seconds: 2 });
-      }, 900);
+      }, 850);
 
-      setTimeout(() => {
+      const t2 = setTimeout(() => {
         setCountdown(1);
         sounds.playCountdownBeep(false);
         void activityRuntime.sendEvent('photo_tick', { seconds: 1 });
-      }, 1800);
+      }, 1700);
 
-      setTimeout(() => {
+      const t3 = setTimeout(() => {
         setCountdown(null);
         setFlashing(true);
+        sounds.playCountdownBeep(true);
         sounds.playShutter();
         void activityRuntime.sendEvent('photo_shutter', { shot: idx + 1 });
-        setTimeout(() => setFlashing(false), 320);
 
+        const tFlash = setTimeout(() => setFlashing(false), 250);
+        captureTimeoutsRef.current.push(tFlash);
+
+        let shotUrl = `/photos/frame${idx + 1}.webp`;
         if (feedMode === 'webcam' && videoRef.current && canvasRef.current) {
           const c = canvasRef.current;
           const ctx = c.getContext('2d');
-          if (ctx) {
-            c.width = videoRef.current.videoWidth || 640;
-            c.height = videoRef.current.videoHeight || 480;
+          if (ctx && videoRef.current.videoWidth > 0) {
+            c.width = videoRef.current.videoWidth;
+            c.height = videoRef.current.videoHeight;
+            // Mirror horizontally so it matches preview
+            ctx.save();
+            ctx.translate(c.width, 0);
+            ctx.scale(-1, 1);
             ctx.drawImage(videoRef.current, 0, 0, c.width, c.height);
-            newShots.push(c.toDataURL('image/webp'));
-            setCapturedShots([...newShots]);
+            ctx.restore();
+            shotUrl = c.toDataURL('image/webp');
           }
-        } else {
-          newShots.push(`/photos/frame${idx + 1}.webp`);
-          setCapturedShots([...newShots]);
         }
+        newShots[idx] = shotUrl;
+        setCapturedShots([...newShots]);
 
-        setTimeout(() => shootStep(idx + 1), 1000);
-      }, 2700);
+        // Polaroid freeze-flash frame feedback
+        setFreezeFrame(shotUrl);
+        const tFreeze = setTimeout(() => setFreezeFrame(null), 380);
+        captureTimeoutsRef.current.push(tFreeze);
+
+        const tNext = setTimeout(() => shootStep(idx + 1), 900);
+        captureTimeoutsRef.current.push(tNext);
+      }, 2550);
+
+      captureTimeoutsRef.current.push(t1, t2, t3);
     };
 
     shootStep(0);
+  };
+
+  // Single-cut targeted retake with visual state
+  const triggerSingleCutRetake = (targetIdx: number) => {
+    if (isShooting) return;
+    clearCaptureTimeouts();
+    setIsShooting(true);
+    setSingleRetakeCutIdx(targetIdx);
+    setCurrentShotIdx(targetIdx);
+    setCountdown(3);
+    sounds.playCountdownBeep(false);
+
+    const t1 = setTimeout(() => {
+      setCountdown(2);
+      sounds.playCountdownBeep(false);
+    }, 850);
+
+    const t2 = setTimeout(() => {
+      setCountdown(1);
+      sounds.playCountdownBeep(false);
+    }, 1700);
+
+    const t3 = setTimeout(() => {
+      setCountdown(null);
+      setFlashing(true);
+      sounds.playCountdownBeep(true);
+      sounds.playShutter();
+
+      const tFlash = setTimeout(() => setFlashing(false), 250);
+      captureTimeoutsRef.current.push(tFlash);
+
+      const nextShots = [...capturedShots];
+      let shotUrl = `/photos/frame${(targetIdx % 4) + 1}.webp`;
+      if (feedMode === 'webcam' && videoRef.current && canvasRef.current) {
+        const c = canvasRef.current;
+        const ctx = c.getContext('2d');
+        if (ctx && videoRef.current.videoWidth > 0) {
+          c.width = videoRef.current.videoWidth;
+          c.height = videoRef.current.videoHeight;
+          ctx.save();
+          ctx.translate(c.width, 0);
+          ctx.scale(-1, 1);
+          ctx.drawImage(videoRef.current, 0, 0, c.width, c.height);
+          ctx.restore();
+          shotUrl = c.toDataURL('image/webp');
+        }
+      }
+      nextShots[targetIdx] = shotUrl;
+      setCapturedShots(nextShots);
+
+      setFreezeFrame(shotUrl);
+      const tFreeze = setTimeout(() => setFreezeFrame(null), 380);
+      captureTimeoutsRef.current.push(tFreeze);
+
+      const tFinish = setTimeout(() => {
+        setIsShooting(false);
+        setSingleRetakeCutIdx(null);
+        sounds.playCelebration();
+      }, 700);
+      captureTimeoutsRef.current.push(tFinish);
+    }, 2550);
+
+    captureTimeoutsRef.current.push(t1, t2, t3);
+  };
+
+  // Custom device photo upload
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    sounds.playPop();
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const url = event.target?.result as string;
+      if (!url) return;
+      if (typeof targetUploadCutRef.current === 'number') {
+        const next = [...capturedShots];
+        next[targetUploadCutRef.current] = url;
+        setCapturedShots(next);
+        targetUploadCutRef.current = null;
+      } else {
+        setCapturedShots((prev) => [
+          url,
+          prev[1] || url,
+          prev[2] || url,
+          prev[3] || url,
+        ]);
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  // Direct Drag & Drop image file onto any cut frame
+  const handleDragOverCut = (cutIdx: number, e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (dragOverCutIdx !== cutIdx) setDragOverCutIdx(cutIdx);
+  };
+
+  const handleDragLeaveCut = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOverCutIdx(null);
+  };
+
+  const handleDropOnCut = (cutIdx: number, e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOverCutIdx(null);
+    const file = e.dataTransfer.files?.[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    sounds.playPop();
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const url = event.target?.result as string;
+      if (!url) return;
+      setCapturedShots((prev) => {
+        const next = [...prev];
+        next[cutIdx] = url;
+        return next;
+      });
+    };
+    reader.readAsDataURL(file);
   };
 
   const addSticker = (content: string, isHangul = false) => {
@@ -282,6 +485,7 @@ export default function PhotoboothPage() {
       rotation: Math.round((Math.random() - 0.5) * 24),
       scale: 1,
       isHangul,
+      flipX: false,
     };
     setPlacedStickers((prev) => [...prev.slice(-14), newStk]);
     setSelectedStickerId(newStk.id);
@@ -290,6 +494,27 @@ export default function PhotoboothPage() {
   const updateSticker = (id: string, updates: Partial<PlacedSticker>) => {
     setPlacedStickers((prev) =>
       prev.map((s) => (s.id === id ? { ...s, ...updates } : s)),
+    );
+  };
+
+  const duplicateSticker = (id: string) => {
+    const orig = placedStickers.find((s) => s.id === id);
+    if (!orig) return;
+    sounds.playPop();
+    const cloned: PlacedSticker = {
+      ...orig,
+      id: `${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      x: Math.min(90, orig.x + 6),
+      y: Math.min(92, orig.y + 4),
+    };
+    setPlacedStickers((prev) => [...prev, cloned]);
+    setSelectedStickerId(cloned.id);
+  };
+
+  const flipStickerHorizontal = (id: string) => {
+    sounds.playTick();
+    setPlacedStickers((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, flipX: !s.flipX } : s)),
     );
   };
 
@@ -307,59 +532,14 @@ export default function PhotoboothPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // High-Resolution 600x1600 Canvas Strip Exporter with Baked Photos & Stickers
-  const downloadHighResStrip = async () => {
-    sounds.playTick();
+  // Asynchronous High-Resolution 600x1600 (or 1200x1600 Twin Strip) Canvas Engine
+  const generateStripCanvas = async (isTwin = false): Promise<HTMLCanvasElement | null> => {
     const canvas = document.createElement('canvas');
-    canvas.width = 600;
+    canvas.width = isTwin ? 1200 : 600;
     canvas.height = 1600;
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) return null;
 
-    // Background
-    if (selectedStyle.foilEffect === 'holographic') {
-      const grad = ctx.createLinearGradient(0, 0, 600, 1600);
-      grad.addColorStop(0, '#FFD1DC');
-      grad.addColorStop(0.25, '#FFE4B5');
-      grad.addColorStop(0.5, '#D4F0FF');
-      grad.addColorStop(0.75, '#E8D7FF');
-      grad.addColorStop(1, '#FFD1DC');
-      ctx.fillStyle = grad;
-    } else if (selectedStyle.foilEffect === 'chrome') {
-      const grad = ctx.createLinearGradient(0, 0, 600, 1600);
-      grad.addColorStop(0, '#CBD5E1');
-      grad.addColorStop(0.3, '#FFFFFF');
-      grad.addColorStop(0.5, '#94A3B8');
-      grad.addColorStop(0.7, '#FFFFFF');
-      grad.addColorStop(1, '#CBD5E1');
-      ctx.fillStyle = grad;
-    } else if (selectedStyle.foilEffect === 'matte-foil') {
-      ctx.fillStyle = '#101216';
-    } else if (selectedStyle.bg.startsWith('linear')) {
-      const grad = ctx.createLinearGradient(0, 0, 0, 1600);
-      grad.addColorStop(0, '#FFE4D6');
-      grad.addColorStop(1, '#FFD6E8');
-      ctx.fillStyle = grad;
-    } else {
-      ctx.fillStyle = selectedStyle.bg;
-    }
-    ctx.fillRect(0, 0, 600, 1600);
-
-    // Border
-    ctx.strokeStyle =
-      selectedStyle.foilEffect === 'matte-foil'
-        ? '#E2E8F0'
-        : selectedStyle.border;
-    ctx.lineWidth = 2.5;
-    ctx.strokeRect(16, 16, 568, 1568);
-
-    // Title
-    ctx.fillStyle = selectedStyle.color;
-    ctx.font = 'bold 24px Pretendard, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('DEARLY US · 인생네컷', 300, 62);
-
-    // Helper to load photos
     const loadImage = (src: string): Promise<HTMLImageElement> => {
       return new Promise((resolve) => {
         const img = new Image();
@@ -374,153 +554,296 @@ export default function PhotoboothPage() {
       capturedShots.map((s) => loadImage(s)),
     );
 
-    // 4 Photo Frames
-    for (let i = 0; i < 4; i++) {
-      const y = 85 + i * 348;
-      ctx.fillStyle = '#F8F9FB';
-      ctx.fillRect(42, y, 516, 320);
+    const renderStripAt = (offsetX: number) => {
+      ctx.save();
+      ctx.translate(offsetX, 0);
 
-      const img = loadedImages[i];
-      if (img && img.width > 0) {
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(42, y, 516, 320);
-        ctx.clip();
-        const imgRatio = img.width / img.height;
-        const frameRatio = 516 / 320;
-        let dw = 516;
-        let dh = 320;
-        let dx = 42;
-        let dy = y;
-        if (imgRatio > frameRatio) {
-          dw = 320 * imgRatio;
-          dx = 42 - (dw - 516) / 2;
-        } else {
-          dh = 516 / imgRatio;
-          dy = y - (dh - 320) / 2;
-        }
-        ctx.drawImage(img, dx, dy, dw, dh);
-
-        // Optional 90s Film Cam light leak & LED date stamp
-        if (isVintageCamMode) {
-          const leakGrad = ctx.createRadialGradient(
-            42 + 516 * 0.85,
-            y + 40,
-            10,
-            42 + 516 * 0.85,
-            y + 40,
-            240,
-          );
-          leakGrad.addColorStop(0, 'rgba(255, 120, 50, 0.45)');
-          leakGrad.addColorStop(0.4, 'rgba(255, 40, 100, 0.22)');
-          leakGrad.addColorStop(1, 'rgba(255, 40, 100, 0)');
-          ctx.fillStyle = leakGrad;
-          ctx.fillRect(42, y, 516, 320);
-
-          ctx.save();
-          ctx.font = 'bold 20px monospace';
-          ctx.fillStyle = '#FF6A00';
-          ctx.shadowColor = '#FF4500';
-          ctx.shadowBlur = 6;
-          ctx.textAlign = 'right';
-          const now = new Date();
-          const yy = now.getFullYear().toString().slice(-2);
-          const mm = now.getMonth() + 1;
-          const dd = now.getDate();
-          ctx.fillText(`'${yy}  ${mm}  ${dd}`, 42 + 516 - 16, y + 320 - 16);
-          ctx.restore();
-        }
-
-        ctx.restore();
+      // Background
+      if (selectedStyle.foilEffect === 'holographic') {
+        const grad = ctx.createLinearGradient(0, 0, 600, 1600);
+        grad.addColorStop(0, '#FFD1DC');
+        grad.addColorStop(0.25, '#FFE4B5');
+        grad.addColorStop(0.5, '#D4F0FF');
+        grad.addColorStop(0.75, '#E8D7FF');
+        grad.addColorStop(1, '#FFD1DC');
+        ctx.fillStyle = grad;
+      } else if (selectedStyle.foilEffect === 'chrome') {
+        const grad = ctx.createLinearGradient(0, 0, 600, 1600);
+        grad.addColorStop(0, '#CBD5E1');
+        grad.addColorStop(0.3, '#FFFFFF');
+        grad.addColorStop(0.5, '#94A3B8');
+        grad.addColorStop(0.7, '#FFFFFF');
+        grad.addColorStop(1, '#CBD5E1');
+        ctx.fillStyle = grad;
+      } else if (selectedStyle.foilEffect === 'matte-foil') {
+        ctx.fillStyle = '#101216';
+      } else if (selectedStyle.bg.startsWith('linear')) {
+        const grad = ctx.createLinearGradient(0, 0, 0, 1600);
+        grad.addColorStop(0, '#FFE4D6');
+        grad.addColorStop(1, '#FFD6E8');
+        ctx.fillStyle = grad;
       } else {
-        // Frame placeholder when no image is present
-        ctx.fillStyle = '#8B8E98';
-        ctx.font = 'bold 13px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText(
-          `0${i + 1} · ${nickname.toUpperCase()} ♡ ${partnerName.toUpperCase()}`,
-          300,
-          y + 165,
-        );
+        ctx.fillStyle = selectedStyle.bg;
+      }
+      ctx.fillRect(0, 0, 600, 1600);
+
+      // Border
+      ctx.strokeStyle =
+        selectedStyle.foilEffect === 'matte-foil'
+          ? '#E2E8F0'
+          : selectedStyle.border;
+      ctx.lineWidth = 2.5;
+      ctx.strokeRect(16, 16, 568, 1568);
+
+      // Title
+      ctx.fillStyle = selectedStyle.color;
+      ctx.font = 'bold 24px Pretendard, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('DEARLY US · 인생네컷', 300, 62);
+
+      // 4 Photo Frames
+      for (let i = 0; i < 4; i++) {
+        const y = 85 + i * 348;
+        ctx.fillStyle = '#F8F9FB';
+        ctx.fillRect(42, y, 516, 320);
+
+        const img = loadedImages[i];
+        if (img && img.width > 0) {
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(42, y, 516, 320);
+          ctx.clip();
+
+          // Apply selected color grading filter to photo
+          if (
+            selectedColorFilter &&
+            selectedColorFilter.filter &&
+            selectedColorFilter.filter !== 'none'
+          ) {
+            ctx.filter = selectedColorFilter.filter;
+          } else {
+            ctx.filter = 'none';
+          }
+
+          const imgRatio = img.width / img.height;
+          const frameRatio = 516 / 320;
+          let dw = 516;
+          let dh = 320;
+          let dx = 42;
+          let dy = y;
+          if (imgRatio > frameRatio) {
+            dw = 320 * imgRatio;
+            dx = 42 - (dw - 516) / 2;
+          } else {
+            dh = 516 / imgRatio;
+            dy = y - (dh - 320) / 2;
+          }
+          ctx.drawImage(img, dx, dy, dw, dh);
+          ctx.filter = 'none';
+
+          // Optional 90s Film Cam light leak & LED date stamp
+          if (isVintageCamMode) {
+            const leakGrad = ctx.createRadialGradient(
+              42 + 516 * 0.85,
+              y + 40,
+              10,
+              42 + 516 * 0.85,
+              y + 40,
+              240,
+            );
+            leakGrad.addColorStop(0, 'rgba(255, 120, 50, 0.45)');
+            leakGrad.addColorStop(0.4, 'rgba(255, 40, 100, 0.22)');
+            leakGrad.addColorStop(1, 'rgba(255, 40, 100, 0)');
+            ctx.fillStyle = leakGrad;
+            ctx.fillRect(42, y, 516, 320);
+
+            ctx.save();
+            ctx.font = 'bold 20px monospace';
+            ctx.fillStyle = '#FF6A00';
+            ctx.shadowColor = '#FF4500';
+            ctx.shadowBlur = 6;
+            ctx.textAlign = 'right';
+            const now = new Date();
+            const yy = now.getFullYear().toString().slice(-2);
+            const mm = now.getMonth() + 1;
+            const dd = now.getDate();
+            ctx.fillText(`'${yy}  ${mm}  ${dd}`, 42 + 516 - 16, y + 320 - 16);
+            ctx.restore();
+          }
+
+          ctx.restore();
+        } else {
+          ctx.fillStyle = '#8B8E98';
+          ctx.font = 'bold 13px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(
+            `0${i + 1} · ${nickname.toUpperCase()} ♡ ${partnerName.toUpperCase()}`,
+            300,
+            y + 165,
+          );
+        }
+
+        ctx.strokeStyle = selectedStyle.border;
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(42, y, 516, 320);
       }
 
-      ctx.strokeStyle = selectedStyle.border;
-      ctx.lineWidth = 1.5;
-      ctx.strokeRect(42, y, 516, 320);
+      // Bake Placed Stickers onto Canvas
+      placedStickers.forEach((stk) => {
+        ctx.save();
+        const px = (stk.x / 100) * 600;
+        const py = (stk.y / 100) * 1600;
+        ctx.translate(px, py);
+        ctx.rotate((stk.rotation * Math.PI) / 180);
+        ctx.scale(stk.flipX ? -stk.scale : stk.scale, stk.scale);
+
+        if (stk.isHangul) {
+          ctx.font = 'bold 24px Pretendard, sans-serif';
+          const txtW = ctx.measureText(stk.content).width;
+          const bW = txtW + 28;
+          const bH = 38;
+
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.18)';
+          ctx.shadowBlur = 10;
+          ctx.shadowOffsetY = 4;
+
+          ctx.fillStyle = '#FFFFFF';
+          ctx.beginPath();
+          ctx.roundRect(-bW / 2, -bH / 2, bW, bH, 19);
+          ctx.fill();
+
+          ctx.shadowColor = 'transparent';
+          ctx.strokeStyle = '#FF7BA3';
+          ctx.lineWidth = 2.5;
+          ctx.stroke();
+
+          ctx.fillStyle = '#FF4D80';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(stk.content, 0, 1);
+        } else {
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.25)';
+          ctx.shadowBlur = 8;
+          ctx.shadowOffsetY = 4;
+          ctx.font = '40px "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(stk.content, 0, 0);
+        }
+        ctx.restore();
+      });
+
+      // Bake Neon Doodles with Smooth Quadratic Bezier Curves
+      if (doodlePaths.length > 0) {
+        doodlePaths.forEach((path) => {
+          if (path.points.length < 2) return;
+          ctx.save();
+          ctx.strokeStyle = path.color;
+          ctx.lineWidth = (path.width || 5) * 2.2;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.shadowColor = path.color;
+          ctx.shadowBlur = 14;
+          ctx.beginPath();
+
+          if (path.points.length === 2) {
+            ctx.moveTo((path.points[0].x / 100) * 600, (path.points[0].y / 100) * 1600);
+            ctx.lineTo((path.points[1].x / 100) * 600, (path.points[1].y / 100) * 1600);
+          } else {
+            ctx.moveTo((path.points[0].x / 100) * 600, (path.points[0].y / 100) * 1600);
+            for (let j = 1; j < path.points.length - 1; j++) {
+              const curr = path.points[j];
+              const next = path.points[j + 1];
+              const midX = ((curr.x + next.x) / 2 / 100) * 600;
+              const midY = ((curr.y + next.y) / 2 / 100) * 1600;
+              ctx.quadraticCurveTo((curr.x / 100) * 600, (curr.y / 100) * 1600, midX, midY);
+            }
+            const last = path.points[path.points.length - 1];
+            ctx.lineTo((last.x / 100) * 600, (last.y / 100) * 1600);
+          }
+
+          ctx.stroke();
+          ctx.restore();
+        });
+      }
+
+      // Couple Name & Footer
+      ctx.fillStyle = selectedStyle.color;
+      ctx.font = 'bold 22px Pretendard, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(coupleName, 300, 1515);
+
+      ctx.font = '13px monospace';
+      ctx.fillStyle = '#5B5E68';
+      ctx.fillText(
+        `ROOM: ${roomCode} · ${new Date().toLocaleDateString()}`,
+        300,
+        1545,
+      );
+
+      ctx.restore();
+    };
+
+    renderStripAt(0);
+
+    if (isTwin) {
+      renderStripAt(600);
+
+      // Draw dotted cutting line down the center
+      ctx.save();
+      ctx.setLineDash([12, 10]);
+      ctx.strokeStyle = 'rgba(100, 116, 139, 0.45)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(600, 0);
+      ctx.lineTo(600, 1600);
+      ctx.stroke();
+
+      // Scissor indicator at top
+      ctx.font = 'bold 16px monospace';
+      ctx.fillStyle = '#64748B';
+      ctx.textAlign = 'center';
+      ctx.fillText('✂ cut here ✂', 600, 36);
+      ctx.restore();
     }
 
-    // Bake Placed Stickers onto Canvas
-    placedStickers.forEach((stk) => {
-      ctx.save();
-      const px = (stk.x / 100) * 600;
-      const py = (stk.y / 100) * 1600;
-      ctx.translate(px, py);
-      ctx.rotate((stk.rotation * Math.PI) / 180);
-      ctx.scale(stk.scale, stk.scale);
+    return canvas;
+  };
 
-      if (stk.isHangul) {
-        ctx.font = 'bold 24px Pretendard, sans-serif';
-        const txtW = ctx.measureText(stk.content).width;
-        const bW = txtW + 28;
-        const bH = 38;
-
-        // Shadow
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.18)';
-        ctx.shadowBlur = 10;
-        ctx.shadowOffsetY = 4;
-
-        // Pill background
-        ctx.fillStyle = '#FFFFFF';
-        ctx.beginPath();
-        ctx.roundRect(-bW / 2, -bH / 2, bW, bH, 19);
-        ctx.fill();
-
-        // Pill border
-        ctx.shadowColor = 'transparent';
-        ctx.strokeStyle = '#FF7BA3';
-        ctx.lineWidth = 2.5;
-        ctx.stroke();
-
-        // Text
-        ctx.fillStyle = '#FF4D80';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(stk.content, 0, 1);
-      } else {
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.25)';
-        ctx.shadowBlur = 8;
-        ctx.shadowOffsetY = 4;
-        ctx.font = '40px "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(stk.content, 0, 0);
-      }
-      ctx.restore();
-    });
-
-    // Couple Name & Footer
-    ctx.fillStyle = selectedStyle.color;
-    ctx.font = 'bold 22px Pretendard, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(coupleName, 300, 1515);
-
-    ctx.font = '13px monospace';
-    ctx.fillStyle = '#5B5E68';
-    ctx.fillText(
-      `ROOM: ${roomCode} · ${new Date().toLocaleDateString()}`,
-      300,
-      1545,
-    );
+  const downloadHighResStrip = async () => {
+    sounds.playTick();
+    const canvas = await generateStripCanvas(isTwinStrip);
+    if (!canvas) return;
 
     const a = document.createElement('a');
-    a.download = `dearly-us-photostrip-${roomCode}.png`;
+    a.download = `dearly-us-${isTwinStrip ? 'twin-strip' : 'photostrip'}-${roomCode}.png`;
     a.href = canvas.toDataURL('image/png');
     a.click();
 
-    // Trigger celebration sound and particles
     sounds.playCelebration();
     setConfettiActive(true);
     setTimeout(() => setConfettiActive(false), 4000);
+  };
+
+  const copyStripToClipboard = async () => {
+    sounds.playTick();
+    const canvas = await generateStripCanvas(isTwinStrip);
+    if (!canvas) return;
+
+    try {
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+        await navigator.clipboard.write([
+          new ClipboardItem({ 'image/png': blob }),
+        ]);
+        setClipboardCopied(true);
+        sounds.playCelebration();
+        setTimeout(() => setClipboardCopied(false), 3000);
+      }, 'image/png');
+    } catch (err) {
+      console.warn('Clipboard write failed, falling back to download:', err);
+      downloadHighResStrip();
+    }
   };
 
   return (
@@ -623,8 +946,6 @@ export default function PhotoboothPage() {
                   : 'ready'
           }
           partnerName={partnerB || 'Partner'}
-          isDemoMode={!roomCode}
-          demoNotice="Local preview exploration. When in a live date room, photos are synchronized directly with your person."
           privacyNote="Webcam feed is strictly client-side and peer-to-peer. No raw video is ever uploaded or stored."
         />
 
@@ -974,19 +1295,33 @@ export default function PhotoboothPage() {
               >
                 <div style={{ display: 'flex', gap: '6px' }}>
                   <button
-                    className={`btn ${feedMode === 'simulated' ? 'btn-primary' : 'btn-ghost'}`}
-                    style={{ padding: '5px 12px', fontSize: '12px' }}
-                    onClick={() => setFeedMode('simulated')}
+                    className={`btn ${feedMode === 'webcam' ? 'btn-primary' : 'btn-ghost'}`}
+                    style={{ padding: '5px 14px', fontSize: '12px' }}
+                    onClick={() => {
+                      setFeedMode('webcam');
+                      setCameraError(null);
+                    }}
                   >
-                    👫 Demo Duo Feed
+                    📷 Live Camera
                   </button>
                   <button
-                    className={`btn ${feedMode === 'webcam' ? 'btn-primary' : 'btn-ghost'}`}
-                    style={{ padding: '5px 12px', fontSize: '12px' }}
-                    onClick={() => setFeedMode('webcam')}
+                    className={`btn ${feedMode === 'upload' ? 'btn-primary' : 'btn-ghost'}`}
+                    style={{ padding: '5px 14px', fontSize: '12px' }}
+                    onClick={() => {
+                      setFeedMode('upload');
+                      targetUploadCutRef.current = null;
+                      fileInputRef.current?.click();
+                    }}
                   >
-                    📷 Live Webcam
+                    📁 Upload Photos
                   </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    onChange={handleFileUpload}
+                  />
                 </div>
 
                 <div
@@ -1001,6 +1336,36 @@ export default function PhotoboothPage() {
                   </button>
                 </div>
               </div>
+
+              {/* Camera Error Banner */}
+              {cameraError && (
+                <div
+                  style={{
+                    background: 'rgba(255, 77, 106, 0.12)',
+                    border: '1px solid rgba(255, 77, 106, 0.4)',
+                    borderRadius: '8px',
+                    padding: '8px 12px',
+                    marginBottom: '12px',
+                    fontSize: '12px',
+                    color: '#FF4D6A',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <span>⚠️ {cameraError}</span>
+                  <button
+                    className="btn btn-ghost"
+                    style={{ padding: '2px 8px', fontSize: '11px', color: '#FF4D6A' }}
+                    onClick={() => {
+                      setCameraError(null);
+                      setFeedMode('webcam');
+                    }}
+                  >
+                    Retry
+                  </button>
+                </div>
+              )}
 
               {/* Camera Screen Stage */}
               <div className="booth-cam-stage">
@@ -1112,6 +1477,44 @@ export default function PhotoboothPage() {
                   </div>
                 )}
 
+                {/* Live Color Grade Badge */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '12px',
+                    left: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    background: 'rgba(14, 16, 22, 0.78)',
+                    backdropFilter: 'blur(8px)',
+                    border: '1px solid rgba(255, 255, 255, 0.16)',
+                    padding: '4px 10px',
+                    borderRadius: '20px',
+                    zIndex: 10,
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: '10.5px',
+                      color: 'rgba(255,255,255,0.7)',
+                      fontFamily: 'var(--font-mono)',
+                      fontWeight: 600,
+                    }}
+                  >
+                    LIVE GRADE:
+                  </span>
+                  <span
+                    style={{
+                      fontSize: '11px',
+                      fontWeight: 800,
+                      color: '#FF7BA3',
+                    }}
+                  >
+                    {selectedColorFilter.name}
+                  </span>
+                </div>
+
                 {feedMode === 'webcam' ? (
                   <div className="booth-duo-view solo">
                     <div className="booth-feed-panel">
@@ -1124,6 +1527,9 @@ export default function PhotoboothPage() {
                           width: '100%',
                           height: '100%',
                           objectFit: 'cover',
+                          transform: 'scaleX(-1)',
+                          filter: selectedColorFilter.filter,
+                          transition: 'filter 0.3s ease',
                         }}
                       />
                       <div className="feed-city-badge pink">
@@ -1132,33 +1538,171 @@ export default function PhotoboothPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="booth-duo-view">
-                    <div className="booth-feed-panel">
-                      <img
-                        src="/photos/face-calgary.webp"
-                        alt="Partner 1 feed"
-                      />
-                      <div className="feed-city-badge pink">
-                        <span className="dot"></span> {nickname} (
-                        {cityA || 'Local'})
-                      </div>
+                  <div
+                    onClick={() => {
+                      targetUploadCutRef.current = null;
+                      fileInputRef.current?.click();
+                    }}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: '#131418',
+                      cursor: 'pointer',
+                      padding: '24px',
+                      textAlign: 'center',
+                      border: '2px dashed rgba(255, 123, 163, 0.4)',
+                      borderRadius: '10px',
+                    }}
+                  >
+                    <span style={{ fontSize: '44px', marginBottom: '12px' }}>📁</span>
+                    <span
+                      style={{
+                        fontSize: '16px',
+                        fontWeight: 800,
+                        color: '#FFFFFF',
+                        marginBottom: '6px',
+                      }}
+                    >
+                      Photo Upload Mode
+                    </span>
+                    <span
+                      style={{
+                        fontSize: '12.5px',
+                        color: 'rgba(255, 255, 255, 0.65)',
+                        maxWidth: '320px',
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      Click here to upload photos from your device, or drag and drop any picture directly onto the cut frames below.
+                    </span>
+                    <button
+                      className="btn btn-primary"
+                      style={{
+                        marginTop: '16px',
+                        padding: '6px 16px',
+                        fontSize: '12px',
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setFeedMode('webcam');
+                        setCameraError(null);
+                      }}
+                    >
+                      📷 Switch to Live Camera
+                    </button>
+                  </div>
+                )}
+
+                {/* 3..2..1 High-Impact Radial Countdown HUD */}
+                {countdown !== null && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: 'rgba(0, 0, 0, 0.42)',
+                      backdropFilter: 'blur(3px)',
+                      zIndex: 20,
+                      pointerEvents: 'none',
+                      animation: 'gl-rise 0.2s ease',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '130px',
+                        height: '130px',
+                        borderRadius: '50%',
+                        border: '4px solid rgba(255, 77, 128, 0.4)',
+                        borderTopColor: '#FF4D80',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow:
+                          '0 0 35px rgba(255, 77, 128, 0.65), inset 0 0 20px rgba(255, 77, 128, 0.35)',
+                        animation: 'spin 1.2s linear infinite',
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: '68px',
+                          fontWeight: 900,
+                          fontFamily: 'var(--font-display)',
+                          color: '#FFFFFF',
+                          textShadow:
+                            '0 0 24px rgba(255, 77, 128, 0.95), 0 4px 12px rgba(0,0,0,0.6)',
+                        }}
+                      >
+                        {countdown}
+                      </span>
                     </div>
-                    <div className="booth-feed-panel">
-                      <img
-                        src="/photos/face-jakarta.webp"
-                        alt="Partner 2 feed"
-                      />
-                      <div className="feed-city-badge blue">
-                        <span className="dot"></span> {partnerName} (
-                        {cityB || 'Remote'})
-                      </div>
+                    <div
+                      style={{
+                        marginTop: '16px',
+                        padding: '6px 18px',
+                        borderRadius: '999px',
+                        background: 'rgba(14, 16, 22, 0.88)',
+                        border: '1.5px solid rgba(255, 77, 128, 0.5)',
+                        color: '#FFFFFF',
+                        fontSize: '13px',
+                        fontWeight: 800,
+                        letterSpacing: '0.6px',
+                        boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
+                      }}
+                    >
+                      {singleRetakeCutIdx !== null
+                        ? `RETAKING CUT 0${singleRetakeCutIdx + 1} OF 04 📸`
+                        : `CUT 0${currentShotIdx + 1} OF 04 · POSE READY! ✨`}
                     </div>
                   </div>
                 )}
 
-                {/* 3..2..1 Countdown Flash */}
-                {countdown !== null && (
-                  <div className="booth-flash-num">{countdown}</div>
+                {/* Shutter Freeze-Snap Polaroid Feedback */}
+                {freezeFrame && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      zIndex: 22,
+                      pointerEvents: 'none',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <img
+                      src={freezeFrame}
+                      alt="Freeze Frame"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        filter: `${selectedColorFilter.filter} brightness(1.12) contrast(1.06)`,
+                        animation: 'flash-snap 0.38s ease-out forwards',
+                      }}
+                    />
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '14px',
+                        right: '14px',
+                        background: '#FF4D80',
+                        color: '#FFFFFF',
+                        padding: '5px 12px',
+                        borderRadius: '8px',
+                        fontSize: '11.5px',
+                        fontWeight: 900,
+                        boxShadow: '0 4px 12px rgba(255, 77, 128, 0.5)',
+                        letterSpacing: '0.8px',
+                      }}
+                    >
+                      SNAP! 📸
+                    </div>
+                  </div>
                 )}
 
                 {/* Studio Camera Flashbulb Effect */}
@@ -1303,16 +1847,27 @@ export default function PhotoboothPage() {
                   ))}
                 </div>
 
-                <button
-                  className="btn btn-grad"
-                  onClick={startCaptureSequence}
-                  disabled={isShooting}
-                  style={{ padding: '12px 28px', fontSize: '16px' }}
-                >
-                  {isShooting
-                    ? 'Taking 4-Cut Photos 📸...'
-                    : 'Take 4-Cut Photos 📸'}
-                </button>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {isShooting && (
+                    <button
+                      className="btn btn-ghost"
+                      onClick={cancelCaptureSequence}
+                      style={{ padding: '12px 18px', fontSize: '14px', color: '#FF4D6A' }}
+                    >
+                      Cancel ⏹️
+                    </button>
+                  )}
+                  <button
+                    className="btn btn-grad"
+                    onClick={startCaptureSequence}
+                    disabled={isShooting}
+                    style={{ padding: '12px 28px', fontSize: '16px' }}
+                  >
+                    {isShooting
+                      ? `Taking Cut 0${currentShotIdx + 1}/04 📸...`
+                      : 'Take 4-Cut Photos 📸'}
+                  </button>
+                </div>
               </div>
 
               {/* Live Thumbnail Strip Progress */}
@@ -1344,6 +1899,9 @@ export default function PhotoboothPage() {
                   {capturedShots.map((shot, i) => (
                     <div
                       key={i}
+                      onDragOver={(e) => handleDragOverCut(i, e)}
+                      onDragLeave={handleDragLeaveCut}
+                      onDrop={(e) => handleDropOnCut(i, e)}
                       style={{
                         aspectRatio: '4/3',
                         background: '#17181C',
@@ -1351,9 +1909,16 @@ export default function PhotoboothPage() {
                         overflow: 'hidden',
                         position: 'relative',
                         border:
-                          currentShotIdx === i && isShooting
-                            ? '2px solid var(--pink)'
-                            : '1px solid var(--line)',
+                          dragOverCutIdx === i
+                            ? '2px dashed var(--pink)'
+                            : currentShotIdx === i && isShooting
+                              ? '2px solid var(--pink)'
+                              : '1px solid var(--line)',
+                        boxShadow:
+                          dragOverCutIdx === i
+                            ? '0 0 14px rgba(255, 123, 163, 0.5)'
+                            : 'none',
+                        transition: 'border 0.15s ease, box-shadow 0.15s ease',
                       }}
                     >
                       <img
@@ -1363,8 +1928,28 @@ export default function PhotoboothPage() {
                           width: '100%',
                           height: '100%',
                           objectFit: 'cover',
+                          opacity: dragOverCutIdx === i ? 0.4 : 1,
                         }}
                       />
+                      {dragOverCutIdx === i && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: 'rgba(255, 123, 163, 0.25)',
+                            color: '#FFFFFF',
+                            fontSize: '10px',
+                            fontWeight: 800,
+                            pointerEvents: 'none',
+                            textShadow: '0 1px 4px rgba(0,0,0,0.8)',
+                          }}
+                        >
+                          Drop Image 📥
+                        </div>
+                      )}
                       <span
                         style={{
                           position: 'absolute',
@@ -1379,6 +1964,51 @@ export default function PhotoboothPage() {
                       >
                         0{i + 1}
                       </span>
+                      <div
+                        style={{
+                          position: 'absolute',
+                          bottom: '3px',
+                          right: '3px',
+                          display: 'flex',
+                          gap: '2px',
+                        }}
+                      >
+                        <button
+                          onClick={() => triggerSingleCutRetake(i)}
+                          disabled={isShooting}
+                          title={`Retake cut 0${i + 1}`}
+                          style={{
+                            background: 'rgba(0, 0, 0, 0.72)',
+                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            color: '#fff',
+                            fontSize: '9px',
+                            padding: '2px 4px',
+                            borderRadius: '3px',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          🔄
+                        </button>
+                        <button
+                          onClick={() => {
+                            targetUploadCutRef.current = i;
+                            fileInputRef.current?.click();
+                          }}
+                          disabled={isShooting}
+                          title={`Upload image for cut 0${i + 1} (or drag & drop)`}
+                          style={{
+                            background: 'rgba(0, 0, 0, 0.72)',
+                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            color: '#fff',
+                            fontSize: '9px',
+                            padding: '2px 4px',
+                            borderRadius: '3px',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          📁
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1399,42 +2029,133 @@ export default function PhotoboothPage() {
 
                 <div className="real-strip-frames">
                   {capturedShots.map((shot, idx) => (
-                    <div key={idx} className="real-strip-cell">
+                    <div
+                      key={idx}
+                      className="real-strip-cell"
+                      onDragOver={(e) => handleDragOverCut(idx, e)}
+                      onDragLeave={handleDragLeaveCut}
+                      onDrop={(e) => handleDropOnCut(idx, e)}
+                      style={{
+                        position: 'relative',
+                        outline:
+                          dragOverCutIdx === idx
+                            ? '2px dashed var(--pink)'
+                            : 'none',
+                        outlineOffset: '-2px',
+                      }}
+                    >
                       <img
                         src={shot}
                         alt={`Cut ${idx + 1}`}
-                        style={{ filter: selectedColorFilter.filter }}
+                        style={{
+                          filter: selectedColorFilter.filter,
+                          opacity: dragOverCutIdx === idx ? 0.5 : 1,
+                        }}
                       />
+                      {dragOverCutIdx === idx && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: 'rgba(255, 123, 163, 0.3)',
+                            color: '#FFFFFF',
+                            fontSize: '11px',
+                            fontWeight: 800,
+                            pointerEvents: 'none',
+                            textShadow: '0 1px 4px rgba(0,0,0,0.8)',
+                          }}
+                        >
+                          Drop on Cut 0{idx + 1} 📥
+                        </div>
+                      )}
                       <span className="frame-tag">0{idx + 1}</span>
                     </div>
                   ))}
                 </div>
 
-                {/* Stickers */}
-                {placedStickers.length > 0 && (
+                {/* Placed Stickers on Strip */}
+                {placedStickers.map((stk) => (
                   <div
+                    key={stk.id}
                     style={{
                       position: 'absolute',
-                      top: '36px',
-                      right: '-10px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '4px',
+                      left: `${stk.x}%`,
+                      top: `${stk.y}%`,
+                      transform: `translate(-50%, -50%) rotate(${stk.rotation}deg) scale(${stk.scale}) ${stk.flipX ? 'scaleX(-1)' : ''}`,
                       pointerEvents: 'none',
+                      zIndex: 25,
+                      userSelect: 'none',
                     }}
                   >
-                    {placedStickers.map((stk) => (
+                    {stk.isHangul ? (
                       <span
-                        key={stk.id}
                         style={{
-                          fontSize: '18px',
-                          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
+                          background: '#FFFFFF',
+                          border: '1.5px solid var(--pink)',
+                          color: '#FF4D80',
+                          padding: '3px 8px',
+                          borderRadius: '16px',
+                          fontSize: '11px',
+                          fontWeight: 900,
+                          fontFamily: 'var(--font-display)',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+                          whiteSpace: 'nowrap',
+                          display: 'inline-block',
                         }}
                       >
                         {stk.content}
                       </span>
-                    ))}
+                    ) : (
+                      <span
+                        style={{
+                          fontSize: '20px',
+                          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.25))',
+                          display: 'inline-block',
+                        }}
+                      >
+                        {stk.content}
+                      </span>
+                    )}
                   </div>
+                ))}
+
+                {/* Doodle paths preview with smooth bezier curves */}
+                {doodlePaths.length > 0 && (
+                  <svg
+                    viewBox="0 0 100 100"
+                    preserveAspectRatio="none"
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      width: '100%',
+                      height: '100%',
+                      pointerEvents: 'none',
+                      zIndex: 28,
+                    }}
+                  >
+                    {doodlePaths.map((path, pIdx) => {
+                      if (path.points.length < 2) return null;
+                      const d = pointsToBezierPath(path.points);
+                      return (
+                        <path
+                          key={pIdx}
+                          d={d}
+                          fill="none"
+                          stroke={path.color}
+                          strokeWidth="0.8"
+                          vectorEffect="non-scaling-stroke"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          style={{
+                            filter: `drop-shadow(0 0 3px ${path.color}) drop-shadow(0 0 6px ${path.color})`,
+                          }}
+                        />
+                      );
+                    })}
+                  </svg>
                 )}
 
                 <div className="real-strip-footer">
@@ -1660,6 +2381,92 @@ export default function PhotoboothPage() {
                     </div>
                   ))}
                 </div>
+
+                {/* Placed Stickers Preview */}
+                {placedStickers.map((stk) => (
+                  <div
+                    key={stk.id}
+                    style={{
+                      position: 'absolute',
+                      left: `${stk.x}%`,
+                      top: `${stk.y}%`,
+                      transform: `translate(-50%, -50%) rotate(${stk.rotation}deg) scale(${stk.scale})`,
+                      pointerEvents: 'none',
+                      zIndex: 25,
+                      userSelect: 'none',
+                    }}
+                  >
+                    {stk.isHangul ? (
+                      <span
+                        style={{
+                          background: '#FFFFFF',
+                          border: '1.5px solid var(--pink)',
+                          color: '#FF4D80',
+                          padding: '3px 8px',
+                          borderRadius: '16px',
+                          fontSize: '11px',
+                          fontWeight: 900,
+                          fontFamily: 'var(--font-display)',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+                          whiteSpace: 'nowrap',
+                          display: 'inline-block',
+                        }}
+                      >
+                        {stk.content}
+                      </span>
+                    ) : (
+                      <span
+                        style={{
+                          fontSize: '20px',
+                          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.25))',
+                          display: 'inline-block',
+                        }}
+                      >
+                        {stk.content}
+                      </span>
+                    )}
+                  </div>
+                ))}
+
+                {/* Doodle paths preview */}
+                {doodlePaths.length > 0 && (
+                  <svg
+                    viewBox="0 0 100 100"
+                    preserveAspectRatio="none"
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      width: '100%',
+                      height: '100%',
+                      pointerEvents: 'none',
+                      zIndex: 28,
+                    }}
+                  >
+                    {doodlePaths.map((path, pIdx) => {
+                      if (path.points.length < 2) return null;
+                      const d = path.points.reduce(
+                        (acc, pt, i) => `${acc} ${i === 0 ? 'M' : 'L'} ${pt.x} ${pt.y}`,
+                        '',
+                      );
+                      return (
+                        <path
+                          key={pIdx}
+                          d={d}
+                          fill="none"
+                          stroke={path.color}
+                          strokeWidth="0.8"
+                          vectorEffect="non-scaling-stroke"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          style={{
+                            filter: `drop-shadow(0 0 3px ${path.color}) drop-shadow(0 0 6px ${path.color})`,
+                          }}
+                        />
+                      );
+                    })}
+                  </svg>
+                )}
+
                 <div className="real-strip-footer">
                   <div className="real-strip-name">{coupleName}</div>
                   <div className="real-strip-serial">
@@ -1896,48 +2703,176 @@ export default function PhotoboothPage() {
                   Korean live photostrips.
                 </p>
 
-                {/* Neon Pen Selector */}
+                {/* Neon Pen Selector & Drawing Controls */}
                 <div
                   style={{
                     marginTop: '14px',
                     paddingTop: '12px',
                     borderTop: '1px solid var(--line)',
                     display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
+                    flexDirection: 'column',
+                    gap: '10px',
                   }}
                 >
-                  <span style={{ fontSize: '13px', fontWeight: 700 }}>
-                    🎨 Neon Glow Pen:
-                  </span>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    {[
-                      '#FF7BA3',
-                      '#5FA0FF',
-                      '#FFD68A',
-                      '#4ECCA3',
-                      '#FFFFFF',
-                    ].map((col) => (
-                      <button
-                        key={col}
-                        onClick={() => {
-                          setNeonPenColor(col);
-                          setIsDrawingMode(true);
-                        }}
-                        style={{
-                          width: '24px',
-                          height: '24px',
-                          borderRadius: '50%',
-                          background: col,
-                          border:
-                            neonPenColor === col
-                              ? '2px solid #17181C'
-                              : '1px solid rgba(0,0,0,0.2)',
-                          cursor: 'pointer',
-                        }}
-                      />
-                    ))}
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                    }}
+                  >
+                    <span style={{ fontSize: '13px', fontWeight: 700 }}>
+                      🎨 Neon Glow Pen:
+                    </span>
+                    <button
+                      onClick={() => setIsDrawingMode(!isDrawingMode)}
+                      className={`btn ${isDrawingMode ? 'btn-primary' : 'btn-ghost'}`}
+                      style={{ padding: '3px 10px', fontSize: '11px' }}
+                    >
+                      {isDrawingMode ? '✏️ Drawing Active' : '✏️ Draw on Strip'}
+                    </button>
                   </div>
+
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      flexWrap: 'wrap',
+                      gap: '8px',
+                    }}
+                  >
+                    {/* Neon Color Palette */}
+                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                      {[
+                        '#FF7BA3',
+                        '#5FA0FF',
+                        '#FFD68A',
+                        '#4ECCA3',
+                        '#FFFFFF',
+                      ].map((col) => (
+                        <button
+                          key={col}
+                          onClick={() => {
+                            setNeonPenColor(col);
+                            setIsDrawingMode(true);
+                          }}
+                          style={{
+                            width: '24px',
+                            height: '24px',
+                            borderRadius: '50%',
+                            background: col,
+                            border:
+                              neonPenColor === col
+                                ? '2px solid #17181C'
+                                : '1px solid rgba(0,0,0,0.2)',
+                            cursor: 'pointer',
+                            boxShadow:
+                              neonPenColor === col ? `0 0 8px ${col}` : 'none',
+                          }}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Brush Size Selector */}
+                    <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                      <span style={{ fontSize: '11px', color: 'var(--ink-soft)', fontWeight: 600 }}>
+                        Size:
+                      </span>
+                      {[
+                        { label: 'Fine', w: 2 },
+                        { label: 'Marker', w: 5 },
+                        { label: 'Bold', w: 9 },
+                      ].map((b) => (
+                        <button
+                          key={b.w}
+                          onClick={() => {
+                            setDoodleBrushWidth(b.w);
+                            setIsDrawingMode(true);
+                          }}
+                          className={`btn ${doodleBrushWidth === b.w ? 'btn-primary' : 'btn-ghost'}`}
+                          style={{
+                            padding: '2px 7px',
+                            fontSize: '11px',
+                            height: '24px',
+                            lineHeight: '1',
+                          }}
+                        >
+                          {b.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Undo / Redo / Clear */}
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      <button
+                        onClick={() => {
+                          if (doodlePaths.length === 0) return;
+                          sounds.playTick();
+                          const last = doodlePaths[doodlePaths.length - 1];
+                          setDoodleRedoStack((prev) => [...prev, last]);
+                          setDoodlePaths((prev) => prev.slice(0, -1));
+                        }}
+                        disabled={doodlePaths.length === 0}
+                        style={{
+                          background: 'none',
+                          border: '1px solid var(--line)',
+                          borderRadius: '6px',
+                          padding: '2px 8px',
+                          fontSize: '11px',
+                          cursor: doodlePaths.length > 0 ? 'pointer' : 'default',
+                          opacity: doodlePaths.length > 0 ? 1 : 0.5,
+                        }}
+                      >
+                        ↩ Undo
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (doodleRedoStack.length === 0) return;
+                          sounds.playTick();
+                          const next = doodleRedoStack[doodleRedoStack.length - 1];
+                          setDoodleRedoStack((prev) => prev.slice(0, -1));
+                          setDoodlePaths((prev) => [...prev, next]);
+                        }}
+                        disabled={doodleRedoStack.length === 0}
+                        style={{
+                          background: 'none',
+                          border: '1px solid var(--line)',
+                          borderRadius: '6px',
+                          padding: '2px 8px',
+                          fontSize: '11px',
+                          cursor: doodleRedoStack.length > 0 ? 'pointer' : 'default',
+                          opacity: doodleRedoStack.length > 0 ? 1 : 0.5,
+                        }}
+                      >
+                        Redo ↪
+                      </button>
+                      <button
+                        onClick={() => {
+                          sounds.playTick();
+                          setDoodlePaths([]);
+                          setDoodleRedoStack([]);
+                        }}
+                        disabled={doodlePaths.length === 0}
+                        style={{
+                          background: 'none',
+                          border: '1px solid var(--line)',
+                          borderRadius: '6px',
+                          padding: '2px 8px',
+                          fontSize: '11px',
+                          cursor: doodlePaths.length > 0 ? 'pointer' : 'default',
+                          opacity: doodlePaths.length > 0 ? 1 : 0.5,
+                        }}
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  </div>
+                  {isDrawingMode && (
+                    <p style={{ fontSize: '11px', color: 'var(--pink)', margin: 0 }}>
+                      ✏️ Click &amp; drag directly on the photostrip preview to doodle with glowing neon ink!
+                    </p>
+                  )}
                 </div>
 
                 {/* 90s Vintage Cam Date Stamp & Light Leak Toggle */}
@@ -1983,6 +2918,49 @@ export default function PhotoboothPage() {
                 </div>
               </div>
 
+              {/* Classic Korean Twin-Strip Duo Toggle */}
+              <div
+                style={{
+                  background: 'var(--paper)',
+                  padding: '14px 18px',
+                  borderRadius: '12px',
+                  border: '1px solid var(--line)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '16px',
+                }}
+              >
+                <div>
+                  <span style={{ fontWeight: 800, fontSize: '13px' }}>
+                    ✂️ Classic Korean Twin-Strip (2-in-1 Duo)
+                  </span>
+                  <p
+                    style={{
+                      fontSize: '11.5px',
+                      color: 'var(--ink-soft)',
+                      margin: '2px 0 0',
+                    }}
+                  >
+                    Side-by-side duo print with center scissor cut-line for both of you.
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    sounds.playPop();
+                    setIsTwinStrip(!isTwinStrip);
+                  }}
+                  className={`btn ${isTwinStrip ? 'btn-primary' : 'btn-ghost'}`}
+                  style={{
+                    padding: '4px 12px',
+                    fontSize: '12px',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {isTwinStrip ? '✓ Twin Strip (1200w)' : 'Single Strip (600w)'}
+                </button>
+              </div>
+
               <div style={{ display: 'grid', gap: '10px' }}>
                 <button
                   className="btn btn-primary"
@@ -1991,11 +2969,24 @@ export default function PhotoboothPage() {
                     width: '100%',
                     justifyContent: 'center',
                     padding: '12px',
+                    fontSize: '15px',
                   }}
                 >
-                  Download High-Res 600×1600 Strip PNG 💾
+                  Download High-Res {isTwinStrip ? 'Twin-Strip (1200×1600)' : 'Strip (600×1600)'} PNG 💾
                 </button>
                 <div style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    className="btn btn-ghost"
+                    onClick={copyStripToClipboard}
+                    style={{
+                      flex: 1,
+                      padding: '10px',
+                      fontSize: '13px',
+                      color: clipboardCopied ? 'var(--pink)' : undefined,
+                    }}
+                  >
+                    {clipboardCopied ? '✓ Copied to Clipboard!' : 'Copy to Clipboard 📋'}
+                  </button>
                   <button
                     className="btn btn-grad"
                     onClick={async () => {
@@ -2016,14 +3007,14 @@ export default function PhotoboothPage() {
                     }}
                     style={{ flex: 1, padding: '10px', fontSize: '13px' }}
                   >
-                    Export Animated Live Strip 🎞️
+                    Export Video 🎞️
                   </button>
                   <button
                     className="btn btn-ghost"
                     onClick={copyRoomLink}
-                    style={{ padding: '10px 16px', fontSize: '13px' }}
+                    style={{ padding: '10px 14px', fontSize: '13px' }}
                   >
-                    {copied ? '✓ Copied' : 'Share Link 🔗'}
+                    {copied ? '✓ Link' : 'Share 🔗'}
                   </button>
                 </div>
               </div>
@@ -2086,6 +3077,9 @@ export default function PhotoboothPage() {
                       <div
                         key={idx}
                         className="real-strip-cell"
+                        onDragOver={(e) => handleDragOverCut(idx, e)}
+                        onDragLeave={handleDragLeaveCut}
+                        onDrop={(e) => handleDropOnCut(idx, e)}
                         style={{
                           transform:
                             isMotionMode && motionFrameIdx === idx
@@ -2094,13 +3088,40 @@ export default function PhotoboothPage() {
                           transition: 'transform 0.2s ease',
                           position: 'relative',
                           overflow: 'hidden',
+                          outline:
+                            dragOverCutIdx === idx
+                              ? '2px dashed var(--pink)'
+                              : 'none',
+                          outlineOffset: '-2px',
                         }}
                       >
                         <img
                           src={shot}
                           alt=""
-                          style={{ filter: selectedColorFilter.filter }}
+                          style={{
+                            filter: selectedColorFilter.filter,
+                            opacity: dragOverCutIdx === idx ? 0.5 : 1,
+                          }}
                         />
+                        {dragOverCutIdx === idx && (
+                          <div
+                            style={{
+                              position: 'absolute',
+                              inset: 0,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              background: 'rgba(255, 123, 163, 0.3)',
+                              color: '#FFFFFF',
+                              fontSize: '11px',
+                              fontWeight: 800,
+                              pointerEvents: 'none',
+                              textShadow: '0 1px 4px rgba(0,0,0,0.8)',
+                            }}
+                          >
+                            Drop on Cut 0{idx + 1} 📥
+                          </div>
+                        )}
                         <span className="frame-tag">0{idx + 1}</span>
 
                         {/* Optional 90s Film Cam Overlays */}
@@ -2143,6 +3164,72 @@ export default function PhotoboothPage() {
                     ))}
                   </div>
 
+                  {/* Interactive Neon Pen SVG Layer */}
+                  <svg
+                    viewBox="0 0 100 100"
+                    preserveAspectRatio="none"
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      width: '100%',
+                      height: '100%',
+                      pointerEvents: isDrawingMode ? 'auto' : 'none',
+                      zIndex: isDrawingMode ? 38 : 28,
+                      touchAction: 'none',
+                      cursor: isDrawingMode ? 'crosshair' : 'default',
+                    }}
+                    onPointerDown={(e) => {
+                      if (!isDrawingMode) return;
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const x = ((e.clientX - rect.left) / rect.width) * 100;
+                      const y = ((e.clientY - rect.top) / rect.height) * 100;
+                      setIsDrawing(true);
+                      setDoodleRedoStack([]);
+                      setDoodlePaths((prev) => [
+                        ...prev,
+                        { color: neonPenColor, width: doodleBrushWidth, points: [{ x, y }] },
+                      ]);
+                    }}
+                    onPointerMove={(e) => {
+                      if (!isDrawing || !isDrawingMode) return;
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const x = ((e.clientX - rect.left) / rect.width) * 100;
+                      const y = ((e.clientY - rect.top) / rect.height) * 100;
+                      setDoodlePaths((prev) => {
+                        if (prev.length === 0) return prev;
+                        const last = prev[prev.length - 1];
+                        const updatedLast = {
+                          ...last,
+                          points: [...last.points, { x, y }],
+                        };
+                        return [...prev.slice(0, -1), updatedLast];
+                      });
+                    }}
+                    onPointerUp={() => setIsDrawing(false)}
+                    onPointerLeave={() => setIsDrawing(false)}
+                  >
+                    {doodlePaths.map((path, pIdx) => {
+                      if (path.points.length < 2) return null;
+                      const d = pointsToBezierPath(path.points);
+                      const strokeW = (path.width || 5) * 0.16;
+                      return (
+                        <path
+                          key={pIdx}
+                          d={d}
+                          fill="none"
+                          stroke={path.color}
+                          strokeWidth={strokeW}
+                          vectorEffect="non-scaling-stroke"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          style={{
+                            filter: `drop-shadow(0 0 3px ${path.color}) drop-shadow(0 0 6px ${path.color})`,
+                          }}
+                        />
+                      );
+                    })}
+                  </svg>
+
                   {/* Interactive Draggable Placed Stickers Layer */}
                   {placedStickers.map((stk) => {
                     const isSelected = selectedStickerId === stk.id;
@@ -2152,6 +3239,10 @@ export default function PhotoboothPage() {
                         onPointerDown={(e) => {
                           e.stopPropagation();
                           setSelectedStickerId(stk.id);
+                          setIsDraggingSticker(true);
+                          try {
+                            e.currentTarget.setPointerCapture(e.pointerId);
+                          } catch {}
                           const stripEl = e.currentTarget.parentElement;
                           if (!stripEl) return;
                           const rect = stripEl.getBoundingClientRect();
@@ -2180,6 +3271,7 @@ export default function PhotoboothPage() {
                           };
 
                           const onPointerUp = () => {
+                            setIsDraggingSticker(false);
                             window.removeEventListener(
                               'pointermove',
                               onPointerMove,
@@ -2197,11 +3289,12 @@ export default function PhotoboothPage() {
                           position: 'absolute',
                           left: `${stk.x}%`,
                           top: `${stk.y}%`,
-                          transform: `translate(-50%, -50%) rotate(${stk.rotation}deg) scale(${stk.scale})`,
-                          cursor: 'grab',
+                          transform: `translate(-50%, -50%) rotate(${stk.rotation}deg) scale(${stk.scale}) ${stk.flipX ? 'scaleX(-1)' : ''}`,
+                          cursor: isDraggingSticker && isSelected ? 'grabbing' : 'grab',
                           userSelect: 'none',
                           touchAction: 'none',
                           zIndex: isSelected ? 35 : 25,
+                          transition: isDraggingSticker ? 'none' : 'transform 0.1s ease',
                         }}
                       >
                         {stk.isHangul ? (
@@ -2218,7 +3311,7 @@ export default function PhotoboothPage() {
                               fontWeight: 900,
                               fontFamily: 'var(--font-display)',
                               boxShadow: isSelected
-                                ? '0 0 0 3px rgba(255,123,163,0.4), 0 4px 12px rgba(0,0,0,0.15)'
+                                ? '0 0 0 3px rgba(255,123,163,0.4), 0 6px 16px rgba(0,0,0,0.22)'
                                 : '0 2px 8px rgba(0,0,0,0.12)',
                               whiteSpace: 'nowrap',
                               display: 'inline-block',
@@ -2231,7 +3324,7 @@ export default function PhotoboothPage() {
                             style={{
                               fontSize: '24px',
                               filter: isSelected
-                                ? 'drop-shadow(0 0 6px rgba(255,123,163,0.8)) drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
+                                ? 'drop-shadow(0 0 6px rgba(255,123,163,0.8)) drop-shadow(0 4px 8px rgba(0,0,0,0.35))'
                                 : 'drop-shadow(0 2px 4px rgba(0,0,0,0.25))',
                               display: 'inline-block',
                             }}
@@ -2330,6 +3423,34 @@ export default function PhotoboothPage() {
                               }}
                             >
                               ➕
+                            </button>
+                            <button
+                              onClick={() => flipStickerHorizontal(stk.id)}
+                              title="Flip Horizontal (⇄)"
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#FFFFFF',
+                                fontSize: '11px',
+                                cursor: 'pointer',
+                                padding: '2px 4px',
+                              }}
+                            >
+                              ⇄
+                            </button>
+                            <button
+                              onClick={() => duplicateSticker(stk.id)}
+                              title="Duplicate / Clone (+)"
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#FFFFFF',
+                                fontSize: '11px',
+                                cursor: 'pointer',
+                                padding: '2px 4px',
+                              }}
+                            >
+                              📑
                             </button>
                             <button
                               onClick={() => removeSticker(stk.id)}

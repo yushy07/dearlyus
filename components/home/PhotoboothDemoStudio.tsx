@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { ScrollReveal } from '@/components/ui';
 import { SceneBackdrop } from './SceneBackdrop';
+import { sounds } from '@/lib/sound';
 
 interface PhotoboothDemoStudioProps {
   partnerA: string;
@@ -11,6 +12,14 @@ interface PhotoboothDemoStudioProps {
   cityA?: string;
   cityB?: string;
   roomCode: string[];
+}
+
+export interface DemoPlacedSticker {
+  id: string;
+  emoji: string;
+  x: number; // percentage (0-100)
+  y: number; // percentage (0-100)
+  rotation: number;
 }
 
 const DEMO_THEMES = [
@@ -65,6 +74,39 @@ const DEMO_POSES = [
   'Pose 4: Blow a kiss or cozy candlelit dinner 🕯️',
 ];
 
+export const DEMO_COLOR_FILTERS = [
+  {
+    id: 'natural',
+    name: 'Natural Warm',
+    emoji: '☀️',
+    filter: 'contrast(1.05) brightness(1.02) saturate(1.1)',
+  },
+  {
+    id: 'haru-cyan',
+    name: 'Haru Cyan',
+    emoji: '🌊',
+    filter: 'contrast(1.12) brightness(1.06) saturate(0.9) hue-rotate(-8deg)',
+  },
+  {
+    id: 'mono',
+    name: 'Life4 Mono',
+    emoji: '🖤',
+    filter: 'grayscale(1) contrast(1.2) brightness(0.98)',
+  },
+  {
+    id: 'peach',
+    name: 'Peachy Glow',
+    emoji: '🍑',
+    filter: 'contrast(1.06) saturate(1.25) sepia(0.12)',
+  },
+  {
+    id: 'film90',
+    name: '90s Film',
+    emoji: '🎞️',
+    filter: 'contrast(1.08) brightness(0.96) sepia(0.24) saturate(1.15)',
+  },
+];
+
 export function PhotoboothDemoStudio({
   partnerA,
   partnerB,
@@ -72,22 +114,30 @@ export function PhotoboothDemoStudio({
   cityB = 'Jakarta',
   roomCode,
 }: PhotoboothDemoStudioProps) {
-  const [demoMode, setDemoMode] = useState<'simulated' | 'webcam'>('simulated');
+  const [demoMode, setDemoMode] = useState<'upload' | 'webcam'>('webcam');
   const [demoTheme, setDemoTheme] = useState(DEMO_THEMES[0]);
   const [demoPoseIdx, setDemoPoseIdx] = useState(0);
   const [demoFilter, setDemoFilter] = useState<
     'none' | 'sparkles' | 'hearts' | 'cat'
   >('none');
+  const [demoColorFilter, setDemoColorFilter] = useState(DEMO_COLOR_FILTERS[0]);
+  const [dragOverCutIdx, setDragOverCutIdx] = useState<number | null>(null);
+  const [clipboardCopied, setClipboardCopied] = useState(false);
   const [demoIsShooting, setDemoIsShooting] = useState(false);
   const [demoCountdown, setDemoCountdown] = useState<number | null>(null);
   const [demoFlashing, setDemoFlashing] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [targetRetakeIdx, setTargetRetakeIdx] = useState<number | null>(null);
   const [demoShots, setDemoShots] = useState<string[]>([
     '/photos/frame1.webp',
     '/photos/frame2.webp',
     '/photos/frame3.webp',
     '/photos/frame4.webp',
   ]);
-  const [demoStickers, setDemoStickers] = useState<string[]>(['💖', '✨']);
+  const [demoStickers, setDemoStickers] = useState<DemoPlacedSticker[]>([
+    { id: '1', emoji: '💖', x: 82, y: 15, rotation: 8 },
+    { id: '2', emoji: '✨', x: 18, y: 88, rotation: -6 },
+  ]);
   const [demoCoupleName, setDemoCoupleName] = useState(
     `${partnerA} ♡ ${partnerB}`,
   );
@@ -98,136 +148,436 @@ export function PhotoboothDemoStudio({
 
   const demoVideoRef = useRef<HTMLVideoElement>(null);
   const demoCanvasRef = useRef<HTMLCanvasElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const shootTimeoutsRef = useRef<NodeJS.Timeout[]>([]);
 
-  // Toggle live webcam in demo
+  // Clear pending shoot timeouts
+  const clearShootTimeouts = () => {
+    shootTimeoutsRef.current.forEach(clearTimeout);
+    shootTimeoutsRef.current = [];
+  };
+
+  useEffect(() => {
+    return () => clearShootTimeouts();
+  }, []);
+
+  // Toggle live webcam in studio with ideal 1080p constraints
   useEffect(() => {
     let stream: MediaStream | null = null;
+    setCameraError(null);
+
     if (demoMode === 'webcam') {
       navigator.mediaDevices
-        ?.getUserMedia({ video: { width: 640, height: 480 } })
+        ?.getUserMedia({
+          video: {
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+            facingMode: 'user',
+          },
+        })
         .then((s) => {
           stream = s;
           if (demoVideoRef.current) {
             demoVideoRef.current.srcObject = s;
-            demoVideoRef.current.play();
+            demoVideoRef.current.play().catch(() => {});
           }
         })
-        .catch(() => setDemoMode('simulated'));
+        .catch((err) => {
+          console.warn('Webcam permission or device error:', err);
+          setCameraError(
+            'Camera access was blocked or unavailable. Check browser permissions or upload photos.',
+          );
+          setDemoMode('upload');
+        });
     }
+
     return () => {
       if (stream) stream.getTracks().forEach((t) => t.stop());
+      if (demoVideoRef.current) {
+        demoVideoRef.current.srcObject = null;
+      }
     };
   }, [demoMode]);
 
-  const triggerDemoShoot = () => {
-    if (demoIsShooting) return;
-    setDemoIsShooting(true);
-    const newShots: string[] = [];
+  // Cancel any active shooting sequence
+  const cancelShoot = () => {
+    clearShootTimeouts();
+    setDemoCountdown(null);
+    setDemoFlashing(false);
+    setDemoIsShooting(false);
+    setTargetRetakeIdx(null);
+    sounds.playTick();
+  };
 
-    const shootIdx = (idx: number) => {
-      if (idx >= 4) {
+  // Drag & drop handlers for cut frames
+  const handleDragOverCut = (idx: number, e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOverCutIdx(idx);
+  };
+
+  const handleDragLeaveCut = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOverCutIdx(null);
+  };
+
+  const handleDropOnCut = (idx: number, e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOverCutIdx(null);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      sounds.playPop();
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const url = ev.target?.result as string;
+        if (url) {
+          setDemoShots((prev) => {
+            const next = [...prev];
+            next[idx] = url;
+            return next;
+          });
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Trigger shooting sequence (all 4 shots or targeted single shot retake)
+  const triggerDemoShoot = (specificIdx?: number) => {
+    if (demoIsShooting) return;
+    clearShootTimeouts();
+    setDemoIsShooting(true);
+
+    const isSingleRetake = typeof specificIdx === 'number';
+    const startIndex = isSingleRetake ? specificIdx : 0;
+    const endIndex = isSingleRetake ? specificIdx + 1 : 4;
+    const currentShots = [...demoShots];
+
+    const shootStep = (idx: number) => {
+      if (idx >= endIndex) {
         setDemoIsShooting(false);
+        setTargetRetakeIdx(null);
+        sounds.playCelebration();
         return;
       }
-      setDemoPoseIdx(idx);
-      setDemoCountdown(3);
 
-      setTimeout(() => setDemoCountdown(2), 700);
-      setTimeout(() => setDemoCountdown(1), 1400);
-      setTimeout(() => {
+      setDemoPoseIdx(idx % DEMO_POSES.length);
+      setDemoCountdown(3);
+      sounds.playCountdownBeep(false);
+
+      const t1 = setTimeout(() => {
+        setDemoCountdown(2);
+        sounds.playCountdownBeep(false);
+      }, 800);
+
+      const t2 = setTimeout(() => {
+        setDemoCountdown(1);
+        sounds.playCountdownBeep(false);
+      }, 1600);
+
+      const t3 = setTimeout(() => {
         setDemoCountdown(null);
         setDemoFlashing(true);
-        setTimeout(() => setDemoFlashing(false), 300);
+        sounds.playCountdownBeep(true);
+        sounds.playShutter();
+
+        const tFlash = setTimeout(() => setDemoFlashing(false), 250);
+        shootTimeoutsRef.current.push(tFlash);
 
         if (
           demoMode === 'webcam' &&
           demoVideoRef.current &&
           demoCanvasRef.current
         ) {
+          const v = demoVideoRef.current;
           const c = demoCanvasRef.current;
           const ctx = c.getContext('2d');
-          if (ctx) {
-            c.width = demoVideoRef.current.videoWidth || 640;
-            c.height = demoVideoRef.current.videoHeight || 480;
-            ctx.drawImage(demoVideoRef.current, 0, 0, c.width, c.height);
-            newShots.push(c.toDataURL('image/webp'));
-            setDemoShots([...newShots]);
+          if (ctx && v.videoWidth > 0) {
+            c.width = v.videoWidth;
+            c.height = v.videoHeight;
+
+            // Mirror horizontally so it matches preview
+            ctx.save();
+            ctx.translate(c.width, 0);
+            ctx.scale(-1, 1);
+            if (demoColorFilter.filter) {
+              ctx.filter = demoColorFilter.filter;
+            }
+            ctx.drawImage(v, 0, 0, c.width, c.height);
+            ctx.restore();
+
+            // Bake AR Filter emoji onto capture if active
+            if (demoFilter === 'sparkles') {
+              ctx.font = `${Math.round(c.width * 0.08)}px "Apple Color Emoji", sans-serif`;
+              ctx.textAlign = 'center';
+              ctx.fillText('✨', c.width * 0.2, c.height * 0.22);
+              ctx.fillText('🌟', c.width * 0.5, c.height * 0.16);
+              ctx.fillText('✨', c.width * 0.8, c.height * 0.22);
+            } else if (demoFilter === 'hearts') {
+              ctx.font = `${Math.round(c.width * 0.08)}px "Apple Color Emoji", sans-serif`;
+              ctx.textAlign = 'center';
+              ctx.fillText('💖', c.width * 0.25, c.height * 0.2);
+              ctx.fillText('💕', c.width * 0.75, c.height * 0.2);
+            } else if (demoFilter === 'cat') {
+              ctx.font = `${Math.round(c.width * 0.09)}px "Apple Color Emoji", sans-serif`;
+              ctx.textAlign = 'center';
+              ctx.fillText('🐱', c.width * 0.22, c.height * 0.22);
+              ctx.fillText('🐾', c.width * 0.78, c.height * 0.22);
+            }
+
+            currentShots[idx] = c.toDataURL('image/webp');
+            setDemoShots([...currentShots]);
           }
         } else {
-          newShots.push(`/photos/frame${idx + 1}.webp`);
-          setDemoShots([...newShots]);
+          // Simulated demo rotation
+          currentShots[idx] = `/photos/frame${idx + 1}.webp`;
+          setDemoShots([...currentShots]);
         }
 
-        setTimeout(() => shootIdx(idx + 1), 800);
-      }, 2100);
+        const tNext = setTimeout(() => shootStep(idx + 1), 850);
+        shootTimeoutsRef.current.push(tNext);
+      }, 2400);
+
+      shootTimeoutsRef.current.push(t1, t2, t3);
     };
 
-    shootIdx(0);
+    shootStep(startIndex);
   };
 
-  const addDemoSticker = (stk: string) => {
-    if (demoStickers.length < 6) {
-      setDemoStickers([...demoStickers, stk]);
-    }
+  // Add sticker onto the strip
+  const addDemoSticker = (emoji: string) => {
+    sounds.playPop();
+    if (demoStickers.length >= 8) return;
+    const defaultSpots = [
+      { x: 84, y: 38, rotation: 10 },
+      { x: 16, y: 62, rotation: -8 },
+      { x: 84, y: 65, rotation: 12 },
+      { x: 18, y: 36, rotation: -12 },
+      { x: 50, y: 88, rotation: 0 },
+      { x: 82, y: 88, rotation: 15 },
+    ];
+    const spot = defaultSpots[demoStickers.length % defaultSpots.length];
+    setDemoStickers((prev) => [
+      ...prev,
+      {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
+        emoji,
+        x: spot.x,
+        y: spot.y,
+        rotation: spot.rotation,
+      },
+    ]);
   };
 
-  const downloadDemoStrip = () => {
+  const removeDemoSticker = (id: string) => {
+    sounds.playTick();
+    setDemoStickers((prev) => prev.filter((s) => s.id !== id));
+  };
+
+  // Upload custom photo from device
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    sounds.playPop();
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const url = event.target?.result as string;
+      if (!url) return;
+      if (typeof targetRetakeIdx === 'number') {
+        const next = [...demoShots];
+        next[targetRetakeIdx] = url;
+        setDemoShots(next);
+        setTargetRetakeIdx(null);
+      } else {
+        // Fill first slot or replace all
+        setDemoShots((prev) => [url, prev[1], prev[2], prev[3]]);
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  // High-Resolution 600x1600 Canvas Strip Exporter with Baked Color Filter & Stickers
+  const generateDemoStripCanvas = async (): Promise<HTMLCanvasElement | null> => {
     const canvas = document.createElement('canvas');
     canvas.width = 600;
     canvas.height = 1600;
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) return null;
 
     // Background
-    ctx.fillStyle = demoTheme.bg.startsWith('linear')
-      ? '#FFFFFF'
-      : demoTheme.bg;
+    if (demoTheme.bg.startsWith('linear')) {
+      const grad = ctx.createLinearGradient(0, 0, 0, 1600);
+      if (demoTheme.id === 'sunset') {
+        grad.addColorStop(0, '#FFE4D6');
+        grad.addColorStop(1, '#FFD6E8');
+      } else {
+        grad.addColorStop(0, '#101726');
+        grad.addColorStop(1, '#1A2942');
+      }
+      ctx.fillStyle = grad;
+    } else {
+      ctx.fillStyle = demoTheme.bg;
+    }
     ctx.fillRect(0, 0, 600, 1600);
 
     // Border
     ctx.strokeStyle = demoTheme.border;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 3;
     ctx.strokeRect(16, 16, 568, 1568);
 
     // Header
     ctx.fillStyle = demoTheme.text;
-    ctx.font = 'bold 24px Pretendard, sans-serif';
+    ctx.font = 'bold 24px Pretendard, -apple-system, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('dearly us · 인생네컷', 300, 60);
+    ctx.fillText('DEARLY US · 인생네컷', 300, 62);
 
-    // 4 Photo Frames
+    // Helper to load images safely
+    const loadImage = (src: string): Promise<HTMLImageElement> => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(img);
+        img.src = src;
+      });
+    };
+
+    const loadedImages = await Promise.all(demoShots.map((s) => loadImage(s)));
+
+    // 4 Photo Frames with real image rendering and object-fit cover
     for (let i = 0; i < 4; i++) {
-      const y = 80 + i * 350;
-      ctx.fillStyle = '#F8F9FB';
-      ctx.fillRect(40, y, 520, 320);
-      ctx.strokeStyle = demoTheme.border;
-      ctx.strokeRect(40, y, 520, 320);
+      const y = 85 + i * 348;
+      const w = 516;
+      const h = 320;
+      const x = 42;
 
-      ctx.fillStyle = '#5B5E68';
-      ctx.font = 'bold 13px monospace';
-      ctx.fillText(
-        `0${i + 1} · ${cityA.toUpperCase()} ♡ ${cityB.toUpperCase()}`,
-        300,
-        y + 165,
-      );
+      ctx.fillStyle = '#F8F9FB';
+      ctx.fillRect(x, y, w, h);
+
+      const img = loadedImages[i];
+      if (img && img.width > 0 && img.height > 0) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(x, y, w, h);
+        ctx.clip();
+
+        if (demoColorFilter.filter) {
+          ctx.filter = demoColorFilter.filter;
+        }
+
+        const imgRatio = img.width / img.height;
+        const frameRatio = w / h;
+        let dw = w;
+        let dh = h;
+        let dx = x;
+        let dy = y;
+
+        if (imgRatio > frameRatio) {
+          dw = h * imgRatio;
+          dx = x - (dw - w) / 2;
+        } else {
+          dh = w / imgRatio;
+          dy = y - (dh - h) / 2;
+        }
+
+        ctx.drawImage(img, dx, dy, dw, dh);
+        ctx.restore();
+      }
+
+      // Frame border
+      ctx.strokeStyle = demoTheme.border;
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(x, y, w, h);
+
+      // Cut Number Tag
+      ctx.fillStyle = 'rgba(23, 24, 28, 0.72)';
+      ctx.fillRect(x + 8, y + 8, 30, 18);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 11px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(`0${i + 1}`, x + 23, y + 21);
     }
+
+    // Bake Placed Stickers onto Canvas
+    demoStickers.forEach((stk) => {
+      ctx.save();
+      const px = (stk.x / 100) * 600;
+      const py = (stk.y / 100) * 1600;
+      ctx.translate(px, py);
+      ctx.rotate((stk.rotation * Math.PI) / 180);
+      ctx.font = '36px "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetY = 3;
+      ctx.fillText(stk.emoji, 0, 0);
+      ctx.restore();
+    });
 
     // Footer
     ctx.fillStyle = demoTheme.text;
-    ctx.font = 'bold 20px Pretendard, sans-serif';
-    ctx.fillText(demoCoupleName, 300, 1510);
-    ctx.font = '14px monospace';
-    ctx.fillStyle = '#5B5E68';
+    ctx.font = 'bold 22px Pretendard, -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(demoCoupleName, 300, 1515);
+
+    ctx.font = '13px monospace';
+    ctx.fillStyle =
+      demoTheme.id === 'noir' || demoTheme.id === 'cyber'
+        ? '#8FA0B5'
+        : '#5B5E68';
     ctx.fillText(
       `ROOM: ${roomCode.join('')} · ${new Date().toLocaleDateString()}`,
       300,
-      1540,
+      1545,
     );
 
+    return canvas;
+  };
+
+  const downloadDemoStrip = async () => {
+    sounds.playTick();
+    const canvas = await generateDemoStripCanvas();
+    if (!canvas) return;
+
     const a = document.createElement('a');
-    a.download = `dearly-us-photostrip-${roomCode.join('')}.png`;
+    a.download = `dearly-us-photostrip-${roomCode.join('') || 'life4cuts'}.png`;
     a.href = canvas.toDataURL('image/png');
     a.click();
+    sounds.playCelebration();
+  };
+
+  const copyDemoStripToClipboard = async () => {
+    sounds.playTick();
+    try {
+      const canvas = await generateDemoStripCanvas();
+      if (!canvas) return;
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+        if (
+          typeof navigator.clipboard?.write === 'function' &&
+          typeof ClipboardItem !== 'undefined'
+        ) {
+          try {
+            await navigator.clipboard.write([
+              new ClipboardItem({ 'image/png': blob }),
+            ]);
+            setClipboardCopied(true);
+            sounds.playCelebration();
+            setTimeout(() => setClipboardCopied(false), 2600);
+            return;
+          } catch {
+            // fallback to download
+          }
+        }
+        downloadDemoStrip();
+      }, 'image/png');
+    } catch {
+      downloadDemoStrip();
+    }
   };
 
   return (
@@ -257,7 +607,7 @@ export function PhotoboothDemoStudio({
               <p>
                 A shared countdown fires the shot on both screens at once —
                 arrange into a 4-cut photostrip you can download or print as
-                fridge magnets. Try a live interactive test right here.
+                fridge magnets. Take live photos or upload your favorites right here.
               </p>
             </div>
           </ScrollReveal>
@@ -279,21 +629,38 @@ export function PhotoboothDemoStudio({
                     gap: '10px',
                   }}
                 >
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button
-                      className={`btn ${demoMode === 'simulated' ? 'btn-primary' : 'btn-ghost'}`}
-                      style={{ padding: '6px 14px', fontSize: '13px' }}
-                      onClick={() => setDemoMode('simulated')}
-                    >
-                      👫 Couple Demo
-                    </button>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                     <button
                       className={`btn ${demoMode === 'webcam' ? 'btn-primary' : 'btn-ghost'}`}
                       style={{ padding: '6px 14px', fontSize: '13px' }}
-                      onClick={() => setDemoMode('webcam')}
+                      onClick={() => {
+                        sounds.playPop();
+                        setDemoMode('webcam');
+                        setCameraError(null);
+                      }}
                     >
-                      📷 Test Live Camera
+                      📷 Live Camera
                     </button>
+                    <button
+                      className={`btn ${demoMode === 'upload' ? 'btn-primary' : 'btn-ghost'}`}
+                      style={{ padding: '6px 14px', fontSize: '13px' }}
+                      onClick={() => {
+                        sounds.playPop();
+                        setDemoMode('upload');
+                        setTargetRetakeIdx(null);
+                        fileInputRef.current?.click();
+                      }}
+                      title="Upload photos from your computer or phone"
+                    >
+                      📁 Upload Photos
+                    </button>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      accept="image/*"
+                      onChange={handlePhotoUpload}
+                      style={{ display: 'none' }}
+                    />
                   </div>
 
                   <div style={{ display: 'flex', gap: '6px' }}>
@@ -304,14 +671,45 @@ export function PhotoboothDemoStudio({
                         fontSize: '12px',
                         fontFamily: 'var(--font-mono)',
                       }}
-                      onClick={() =>
-                        setDemoPoseIdx((p) => (p + 1) % DEMO_POSES.length)
-                      }
+                      onClick={() => {
+                        sounds.playPop();
+                        setDemoPoseIdx((p) => (p + 1) % DEMO_POSES.length);
+                      }}
                     >
                       🎲 Shuffle Pose
                     </button>
                   </div>
                 </div>
+
+                {/* Camera Permission or Device Error Alert */}
+                {cameraError && (
+                  <div
+                    style={{
+                      background: 'rgba(255, 77, 106, 0.12)',
+                      border: '1px solid rgba(255, 77, 106, 0.35)',
+                      borderRadius: '8px',
+                      padding: '8px 12px',
+                      marginBottom: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      fontSize: '12px',
+                      color: '#FF6B8B',
+                    }}
+                  >
+                    <span>⚠️ {cameraError}</span>
+                    <button
+                      className="btn btn-ghost"
+                      style={{ padding: '2px 8px', fontSize: '11px', height: 'auto' }}
+                      onClick={() => {
+                        setCameraError(null);
+                        setDemoMode('webcam');
+                      }}
+                    >
+                      Retry
+                    </button>
+                  </div>
+                )}
 
                 {/* Camera Viewport Screen */}
                 <div className="booth-cam-stage">
@@ -319,6 +717,31 @@ export function PhotoboothDemoStudio({
                   <div className="pose-prompt-card">
                     <span>📸</span>
                     <span>{DEMO_POSES[demoPoseIdx]}</span>
+                  </div>
+
+                  {/* Live Filter HUD Badge */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '12px',
+                      right: '12px',
+                      background: 'rgba(14, 16, 22, 0.76)',
+                      backdropFilter: 'blur(8px)',
+                      border: '1px solid rgba(255, 255, 255, 0.18)',
+                      padding: '4px 10px',
+                      borderRadius: '16px',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      color: '#FFFFFF',
+                      zIndex: 10,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                    }}
+                  >
+                    <span>{demoColorFilter.emoji}</span>
+                    <span>{demoColorFilter.name}</span>
                   </div>
 
                   {demoMode === 'webcam' ? (
@@ -333,33 +756,73 @@ export function PhotoboothDemoStudio({
                             width: '100%',
                             height: '100%',
                             objectFit: 'cover',
+                            transform: 'scaleX(-1)', // Mirrored for natural selfie framing
+                            filter: demoColorFilter.filter,
                           }}
                         />
                         <div className="feed-city-badge pink">
-                          <span className="dot"></span> You (Live Camera)
+                          <span className="dot"></span> You (Live Mirrored Camera)
                         </div>
                       </div>
                     </div>
                   ) : (
-                    <div className="booth-duo-view">
-                      <div className="booth-feed-panel">
-                        <img
-                          src="/photos/face-calgary.webp"
-                          alt="Partner 1 feed"
-                        />
-                        <div className="feed-city-badge pink">
-                          <span className="dot"></span> {cityA} ({partnerA})
-                        </div>
-                      </div>
-                      <div className="booth-feed-panel">
-                        <img
-                          src="/photos/face-jakarta.webp"
-                          alt="Partner 2 feed"
-                        />
-                        <div className="feed-city-badge blue">
-                          <span className="dot"></span> {cityB} ({partnerB})
-                        </div>
-                      </div>
+                    <div
+                      onClick={() => {
+                        setTargetRetakeIdx(null);
+                        fileInputRef.current?.click();
+                      }}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        minHeight: '260px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: '#131418',
+                        cursor: 'pointer',
+                        padding: '24px',
+                        textAlign: 'center',
+                        border: '2px dashed rgba(255, 123, 163, 0.4)',
+                        borderRadius: '10px',
+                      }}
+                    >
+                      <span style={{ fontSize: '40px', marginBottom: '10px' }}>📁</span>
+                      <span
+                        style={{
+                          fontSize: '15px',
+                          fontWeight: 800,
+                          color: '#FFFFFF',
+                          marginBottom: '4px',
+                        }}
+                      >
+                        Photo Upload Mode
+                      </span>
+                      <span
+                        style={{
+                          fontSize: '12px',
+                          color: 'rgba(255, 255, 255, 0.65)',
+                          maxWidth: '300px',
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        Click to upload photos from your device, or drag and drop any picture directly onto the cut frames below.
+                      </span>
+                      <button
+                        className="btn btn-primary"
+                        style={{
+                          marginTop: '14px',
+                          padding: '6px 14px',
+                          fontSize: '12px',
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDemoMode('webcam');
+                          setCameraError(null);
+                        }}
+                      >
+                        📷 Switch to Live Camera
+                      </button>
                     </div>
                   )}
 
@@ -434,17 +897,16 @@ export function PhotoboothDemoStudio({
                   )}
                 </div>
 
-                {/* Shutter Trigger & AR Filter Controls */}
+                {/* Shutter Trigger, Color Tone & AR Filter Controls */}
                 <div
                   style={{
                     marginTop: '18px',
                     display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    flexWrap: 'wrap',
+                    flexDirection: 'column',
                     gap: '12px',
                   }}
                 >
+                  {/* Color Grading Filter Pills */}
                   <div
                     style={{
                       display: 'flex',
@@ -462,48 +924,123 @@ export function PhotoboothDemoStudio({
                         marginRight: '4px',
                       }}
                     >
-                      AR Filter:
+                      Color Tone:
                     </span>
-                    {[
-                      { id: 'none', label: 'None' },
-                      { id: 'sparkles', label: '✨ Glow' },
-                      { id: 'hearts', label: '💖 Hearts' },
-                      { id: 'cat', label: '🐱 Cat' },
-                    ].map((f) => (
+                    {DEMO_COLOR_FILTERS.map((cf) => (
                       <button
-                        key={f.id}
-                        onClick={() => setDemoFilter(f.id as any)}
+                        key={cf.id}
+                        onClick={() => {
+                          sounds.playPop();
+                          setDemoColorFilter(cf);
+                        }}
                         style={{
                           padding: '4px 10px',
                           borderRadius: '6px',
                           border:
-                            demoFilter === f.id
+                            demoColorFilter.id === cf.id
                               ? '1.5px solid var(--pink)'
                               : '1px solid var(--line)',
                           background:
-                            demoFilter === f.id
+                            demoColorFilter.id === cf.id
                               ? 'var(--pink-tint)'
                               : 'var(--paper)',
                           fontSize: '11px',
                           fontWeight: 700,
                           color: 'var(--ink)',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
                         }}
                       >
-                        {f.label}
+                        {cf.emoji} {cf.name}
                       </button>
                     ))}
                   </div>
 
-                  <button
-                    className="btn btn-grad"
-                    onClick={triggerDemoShoot}
-                    disabled={demoIsShooting}
-                    style={{ padding: '10px 24px', fontSize: '15px' }}
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      flexWrap: 'wrap',
+                      gap: '12px',
+                    }}
                   >
-                    {demoIsShooting
-                      ? 'Taking 4 Shots 📸...'
-                      : 'Take 4 Photos 📸'}
-                  </button>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        flexWrap: 'wrap',
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: '11.5px',
+                          fontFamily: 'var(--font-mono)',
+                          color: 'var(--ink-soft)',
+                          textTransform: 'uppercase',
+                          marginRight: '4px',
+                        }}
+                      >
+                        AR Filter:
+                      </span>
+                      {[
+                        { id: 'none', label: 'None' },
+                        { id: 'sparkles', label: '✨ Glow' },
+                        { id: 'hearts', label: '💖 Hearts' },
+                        { id: 'cat', label: '🐱 Cat' },
+                      ].map((f) => (
+                        <button
+                          key={f.id}
+                          onClick={() => {
+                            sounds.playPop();
+                            setDemoFilter(f.id as any);
+                          }}
+                          style={{
+                            padding: '4px 10px',
+                            borderRadius: '6px',
+                            border:
+                              demoFilter === f.id
+                                ? '1.5px solid var(--pink)'
+                                : '1px solid var(--line)',
+                            background:
+                              demoFilter === f.id
+                                ? 'var(--pink-tint)'
+                                : 'var(--paper)',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            color: 'var(--ink)',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {f.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      {demoIsShooting ? (
+                        <button
+                          className="btn btn-ghost"
+                          onClick={cancelShoot}
+                          style={{ padding: '10px 18px', fontSize: '14px', color: '#FF4D6A' }}
+                        >
+                          Cancel ⏹️
+                        </button>
+                      ) : null}
+
+                      <button
+                        className="btn btn-grad"
+                        onClick={() => triggerDemoShoot()}
+                        disabled={demoIsShooting}
+                        style={{ padding: '10px 24px', fontSize: '15px' }}
+                      >
+                        {demoIsShooting
+                          ? `Shooting Cut 0${demoPoseIdx + 1} 📸...`
+                          : 'Take 4 Photos 📸'}
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Theme Selector Palette */}
@@ -533,7 +1070,10 @@ export function PhotoboothDemoStudio({
                     {DEMO_THEMES.map((theme) => (
                       <button
                         key={theme.id}
-                        onClick={() => setDemoTheme(theme)}
+                        onClick={() => {
+                          sounds.playPop();
+                          setDemoTheme(theme);
+                        }}
                         style={{
                           padding: '6px 12px',
                           borderRadius: '6px',
@@ -552,6 +1092,7 @@ export function PhotoboothDemoStudio({
                           transform:
                             demoTheme.id === theme.id ? 'scale(1.03)' : 'none',
                           transition: 'all 0.15s ease',
+                          cursor: 'pointer',
                         }}
                       >
                         {theme.name}
@@ -562,19 +1103,39 @@ export function PhotoboothDemoStudio({
 
                 {/* Add Cute Stickers */}
                 <div style={{ marginTop: '16px' }}>
-                  <span
-                    style={{
-                      display: 'block',
-                      fontSize: '11.5px',
-                      fontFamily: 'var(--font-mono)',
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
-                      marginBottom: '8px',
-                      color: 'var(--ink-soft)',
-                    }}
-                  >
-                    Add Cute Stickers:
-                  </span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <span
+                      style={{
+                        fontSize: '11.5px',
+                        fontFamily: 'var(--font-mono)',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        color: 'var(--ink-soft)',
+                      }}
+                    >
+                      Add Cute Stickers ({demoStickers.length}/8):
+                    </span>
+                    {demoStickers.length > 0 && (
+                      <button
+                        onClick={() => {
+                          sounds.playTick();
+                          setDemoStickers([]);
+                        }}
+                        style={{
+                          padding: '2px 8px',
+                          borderRadius: '6px',
+                          border: '1px solid var(--line)',
+                          background: 'none',
+                          fontSize: '11px',
+                          color: 'var(--ink-soft)',
+                          fontFamily: 'var(--font-mono)',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Clear Stickers
+                      </button>
+                    )}
+                  </div>
                   <div
                     style={{
                       display: 'flex',
@@ -583,7 +1144,7 @@ export function PhotoboothDemoStudio({
                       alignItems: 'center',
                     }}
                   >
-                    {['💖', '✨', '🫰', '🌸', '👑', '💌', '🎀', '🧸', '🌟'].map(
+                    {['💖', '✨', '🫰', '🌸', '👑', '💌', '🎀', '🧸', '🌟', '🐾'].map(
                       (emoji, i) => (
                         <button
                           key={i}
@@ -595,29 +1156,18 @@ export function PhotoboothDemoStudio({
                             border: '1px solid var(--line)',
                             background: 'var(--paper)',
                             fontSize: '16px',
+                            cursor: 'pointer',
+                            transition: 'transform 0.1s ease',
                           }}
                         >
                           {emoji}
                         </button>
                       ),
                     )}
-                    {demoStickers.length > 0 && (
-                      <button
-                        onClick={() => setDemoStickers([])}
-                        style={{
-                          padding: '4px 8px',
-                          borderRadius: '6px',
-                          border: '1px solid var(--line)',
-                          background: 'none',
-                          fontSize: '11px',
-                          color: 'var(--ink-soft)',
-                          fontFamily: 'var(--font-mono)',
-                        }}
-                      >
-                        Clear
-                      </button>
-                    )}
                   </div>
+                  <p style={{ fontSize: '11px', color: 'var(--ink-soft)', marginTop: '6px', marginBottom: 0 }}>
+                    💡 Tap any emoji to add to your strip · Drag stickers on the strip to reposition · Tap to remove.
+                  </p>
                 </div>
               </div>
 
@@ -629,45 +1179,155 @@ export function PhotoboothDemoStudio({
                     background: demoTheme.bg,
                     color: demoTheme.text,
                     borderColor: demoTheme.border,
+                    position: 'relative',
                   }}
                 >
                   <div className="real-strip-brand">DEARLY US · 인생네컷</div>
 
                   <div className="real-strip-frames">
                     {demoShots.map((shotUrl, idx) => (
-                      <div key={idx} className="real-strip-cell">
-                        <img src={shotUrl} alt={`Photobooth shot ${idx + 1}`} />
+                      <div
+                        key={idx}
+                        className="real-strip-cell"
+                        onDragOver={(e) => handleDragOverCut(idx, e)}
+                        onDragLeave={handleDragLeaveCut}
+                        onDrop={(e) => handleDropOnCut(idx, e)}
+                        style={{
+                          position: 'relative',
+                          outline:
+                            dragOverCutIdx === idx
+                              ? '2px dashed var(--pink)'
+                              : 'none',
+                          outlineOffset: '-2px',
+                        }}
+                      >
+                        <img
+                          src={shotUrl}
+                          alt={`Photobooth shot ${idx + 1}`}
+                          style={{
+                            filter: demoColorFilter.filter,
+                            opacity: dragOverCutIdx === idx ? 0.5 : 1,
+                          }}
+                        />
+                        {dragOverCutIdx === idx && (
+                          <div
+                            style={{
+                              position: 'absolute',
+                              inset: 0,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              background: 'rgba(255, 123, 163, 0.3)',
+                              color: '#FFFFFF',
+                              fontSize: '11px',
+                              fontWeight: 800,
+                              pointerEvents: 'none',
+                              textShadow: '0 1px 4px rgba(0,0,0,0.8)',
+                            }}
+                          >
+                            Drop on Cut 0{idx + 1} 📥
+                          </div>
+                        )}
                         <span className="frame-tag">0{idx + 1}</span>
+
+                        {/* Individual Cut Retake / Replace Button */}
+                        <button
+                          onClick={() => {
+                            sounds.playPop();
+                            triggerDemoShoot(idx);
+                          }}
+                          disabled={demoIsShooting}
+                          title={`Retake Cut 0${idx + 1}`}
+                          style={{
+                            position: 'absolute',
+                            bottom: '4px',
+                            right: '4px',
+                            background: 'rgba(23, 24, 28, 0.75)',
+                            color: '#FFFFFF',
+                            border: 'none',
+                            borderRadius: '4px',
+                            padding: '2px 6px',
+                            fontSize: '9.5px',
+                            fontFamily: 'var(--font-mono)',
+                            cursor: 'pointer',
+                            backdropFilter: 'blur(4px)',
+                            opacity: 0.85,
+                            transition: 'opacity 0.15s ease',
+                          }}
+                        >
+                          🔄 Retake
+                        </button>
                       </div>
                     ))}
                   </div>
 
-                  {/* Placed Stickers on strip */}
-                  {demoStickers.length > 0 && (
+                  {/* Placed Stickers on strip directly with pointer capture drag */}
+                  {demoStickers.map((stk) => (
                     <div
+                      key={stk.id}
+                      onPointerDown={(e) => {
+                        e.stopPropagation();
+                        try {
+                          e.currentTarget.setPointerCapture(e.pointerId);
+                        } catch {}
+                        const stripEl = e.currentTarget.parentElement;
+                        if (!stripEl) return;
+                        const rect = stripEl.getBoundingClientRect();
+                        let hasMoved = false;
+
+                        const onPointerMove = (moveEvt: PointerEvent) => {
+                          hasMoved = true;
+                          const newX = Math.max(
+                            5,
+                            Math.min(
+                              95,
+                              ((moveEvt.clientX - rect.left) / rect.width) * 100,
+                            ),
+                          );
+                          const newY = Math.max(
+                            4,
+                            Math.min(
+                              96,
+                              ((moveEvt.clientY - rect.top) / rect.height) * 100,
+                            ),
+                          );
+                          setDemoStickers((prev) =>
+                            prev.map((s) =>
+                              s.id === stk.id
+                                ? { ...s, x: Math.round(newX), y: Math.round(newY) }
+                                : s,
+                            ),
+                          );
+                        };
+
+                        const onPointerUp = () => {
+                          window.removeEventListener('pointermove', onPointerMove);
+                          window.removeEventListener('pointerup', onPointerUp);
+                          if (!hasMoved) {
+                            removeDemoSticker(stk.id);
+                          }
+                        };
+
+                        window.addEventListener('pointermove', onPointerMove);
+                        window.addEventListener('pointerup', onPointerUp);
+                      }}
+                      title="Drag to reposition · Tap to remove"
                       style={{
                         position: 'absolute',
-                        top: '36px',
-                        right: '-10px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '4px',
-                        pointerEvents: 'none',
+                        left: `${stk.x}%`,
+                        top: `${stk.y}%`,
+                        transform: `translate(-50%, -50%) rotate(${stk.rotation}deg)`,
+                        fontSize: '22px',
+                        cursor: 'grab',
+                        userSelect: 'none',
+                        touchAction: 'none',
+                        filter: 'drop-shadow(0 2px 5px rgba(0,0,0,0.3))',
+                        zIndex: 10,
                       }}
                     >
-                      {demoStickers.map((stk, i) => (
-                        <span
-                          key={i}
-                          style={{
-                            fontSize: '18px',
-                            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
-                          }}
-                        >
-                          {stk}
-                        </span>
-                      ))}
+                      {stk.emoji}
                     </div>
-                  )}
+                  ))}
 
                   <div className="real-strip-footer">
                     <input
@@ -684,7 +1344,7 @@ export function PhotoboothDemoStudio({
                       }}
                     />
                     <div className="real-strip-serial">
-                      DEARLY US · <b>{roomCode.join('')}</b>
+                      DEARLY US · <b>{roomCode.join('') || 'LIFE4CUTS'}</b>
                     </div>
                   </div>
                 </div>
@@ -704,6 +1364,16 @@ export function PhotoboothDemoStudio({
                     style={{ justifyContent: 'center' }}
                   >
                     Download Photo Strip 💾
+                  </button>
+                  <button
+                    className="btn btn-ghost"
+                    onClick={copyDemoStripToClipboard}
+                    style={{
+                      justifyContent: 'center',
+                      color: clipboardCopied ? 'var(--pink)' : undefined,
+                    }}
+                  >
+                    {clipboardCopied ? '✓ Copied to Clipboard!' : 'Copy to Clipboard 📋'}
                   </button>
                   <Link
                     className="btn btn-grad"
