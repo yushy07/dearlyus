@@ -38,6 +38,11 @@ export interface PlacedSticker {
   flipX?: boolean;
 }
 
+export interface CutTransform {
+  rotation: number; // 0, 90, 180, 270
+  flipX: boolean;
+}
+
 import { pointsToBezierPath } from '@/lib/photobooth-bezier';
 export { pointsToBezierPath };
 
@@ -194,14 +199,75 @@ export default function PhotoboothPage() {
   const [cupidotPose, setCupidotPose] = useState<PoseIdea | null>(null);
   const [singleRetakeCutIdx, setSingleRetakeCutIdx] = useState<number | null>(null);
   const [freezeFrame, setFreezeFrame] = useState<string | null>(null);
-  const [dragOverCutIdx, setDragOverCutIdx] = useState<number | null>(null);
   const [isTwinStrip, setIsTwinStrip] = useState(false);
   const [clipboardCopied, setClipboardCopied] = useState(false);
   const [isDraggingSticker, setIsDraggingSticker] = useState(false);
+  const [dragOverCutIdx, setDragOverCutIdx] = useState<number | null>(null);
 
+  // Advanced Functional Controls: Timer, Manual/Auto, Grid, Flash & Sound
+  const [timerDuration, setTimerDuration] = useState<3 | 5 | 10>(3);
+  const [shootMode, setShootMode] = useState<'auto' | 'manual'>('auto');
+  const [showGrid, setShowGrid] = useState(false);
+  const [flashEnabled, setFlashEnabled] = useState(true);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [cutTransforms, setCutTransforms] = useState<CutTransform[]>([
+    { rotation: 0, flipX: false },
+    { rotation: 0, flipX: false },
+    { rotation: 0, flipX: false },
+    { rotation: 0, flipX: false },
+  ]);
+  const [brightness, setBrightness] = useState<number>(100);
+  const [contrast, setContrast] = useState<number>(100);
+  const [filmGrain, setFilmGrain] = useState<boolean>(false);
+  const [customFrameColor, setCustomFrameColor] = useState<string | null>(null);
+
+  const playSound = (action: () => void) => {
+    if (soundEnabled) action();
+  };
+
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const targetUploadCutRef = useRef<number | null>(null);
   const captureTimeoutsRef = useRef<NodeJS.Timeout[]>([]);
+
+  // Toggle live webcam when scene === 'BOOTH' and feedMode === 'webcam'
+  useEffect(() => {
+    let stream: MediaStream | null = null;
+    setCameraError(null);
+
+    if (scene === 'BOOTH' && feedMode === 'webcam') {
+      navigator.mediaDevices
+        ?.getUserMedia({
+          video: {
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+            facingMode: 'user',
+          },
+        })
+        .then((s) => {
+          stream = s;
+          if (videoRef.current) {
+            videoRef.current.srcObject = s;
+            videoRef.current.play().catch(() => {});
+          }
+        })
+        .catch((err) => {
+          console.warn('Webcam permission or device error:', err);
+          setCameraError(
+            'Camera access was blocked or unavailable. Check browser permissions or upload photos.',
+          );
+          setFeedMode('upload');
+        });
+    }
+
+    return () => {
+      if (stream) stream.getTracks().forEach((t) => t.stop());
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
+    };
+  }, [scene, feedMode]);
 
   const clearCaptureTimeouts = () => {
     captureTimeoutsRef.current.forEach(clearTimeout);
@@ -221,45 +287,111 @@ export default function PhotoboothPage() {
     return () => clearInterval(interval);
   }, [isMotionMode]);
 
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  // Live Webcam hook (Strictly video only, ideal 1080p high definition)
+  // Keyboard Shortcuts: Space (snap/next), Escape (cancel/deselect), Delete/Backspace (delete sticker), Ctrl+Z/Y (doodle)
   useEffect(() => {
-    let stream: MediaStream | null = null;
-    setCameraError(null);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName?.toLowerCase();
+      if (tag === 'input' || tag === 'textarea') return;
 
-    if (feedMode === 'webcam') {
-      navigator.mediaDevices
-        ?.getUserMedia({
-          video: {
-            width: { ideal: 1920 },
-            height: { ideal: 1080 },
-            facingMode: 'user',
-          },
-        })
-        .then((s) => {
-          stream = s;
-          if (videoRef.current) {
-            videoRef.current.srcObject = s;
-            videoRef.current.play().catch(() => {});
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (scene === 'BOOTH' && !isShooting) {
+          if (shootMode === 'manual') {
+            triggerSingleCutRetake(currentShotIdx);
+          } else {
+            startCaptureSequence();
           }
-        })
-        .catch((err) => {
-          console.warn('Webcam permission or device error:', err);
-          setCameraError(
-            'Camera access was blocked or unavailable. Check browser permissions or upload your photos.',
-          );
-          setFeedMode('upload');
-        });
-    }
-    return () => {
-      if (stream) stream.getTracks().forEach((t) => t.stop());
-      if (videoRef.current) {
-        videoRef.current.srcObject = null;
+        }
+      } else if (e.key === 'Escape') {
+        if (isShooting) {
+          cancelCaptureSequence();
+        } else if (selectedStickerId) {
+          setSelectedStickerId(null);
+        }
+      } else if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (selectedStickerId) {
+          removeSticker(selectedStickerId);
+        }
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        if (e.shiftKey) {
+          if (doodleRedoStack.length > 0) {
+            const next = doodleRedoStack[doodleRedoStack.length - 1];
+            setDoodleRedoStack((prev) => prev.slice(0, -1));
+            setDoodlePaths((prev) => [...prev, next]);
+            playSound(() => sounds.playTick());
+          }
+        } else {
+          if (doodlePaths.length > 0) {
+            const last = doodlePaths[doodlePaths.length - 1];
+            setDoodleRedoStack((prev) => [...prev, last]);
+            setDoodlePaths((prev) => prev.slice(0, -1));
+            playSound(() => sounds.playTick());
+          }
+        }
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+        if (doodleRedoStack.length > 0) {
+          const next = doodleRedoStack[doodleRedoStack.length - 1];
+          setDoodleRedoStack((prev) => prev.slice(0, -1));
+          setDoodlePaths((prev) => [...prev, next]);
+          playSound(() => sounds.playTick());
+        }
       }
     };
-  }, [feedMode]);
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [
+    scene,
+    isShooting,
+    shootMode,
+    currentShotIdx,
+    selectedStickerId,
+    doodlePaths,
+    doodleRedoStack,
+    soundEnabled,
+  ]);
+
+  // Move / Swap Cuts
+  const moveCut = (fromIdx: number, toIdx: number) => {
+    if (fromIdx < 0 || fromIdx >= 4 || toIdx < 0 || toIdx >= 4 || fromIdx === toIdx) return;
+    playSound(() => sounds.playPop());
+    setCapturedShots((prev) => {
+      const next = [...prev];
+      const temp = next[fromIdx];
+      next[fromIdx] = next[toIdx];
+      next[toIdx] = temp;
+      return next;
+    });
+    setCutTransforms((prev) => {
+      const next = [...prev];
+      const temp = next[fromIdx];
+      next[fromIdx] = next[toIdx];
+      next[toIdx] = temp;
+      return next;
+    });
+  };
+
+  // Rotate cut 90 deg clockwise
+  const rotateCut = (idx: number) => {
+    playSound(() => sounds.playTick());
+    setCutTransforms((prev) => {
+      const next = [...prev];
+      const cur = next[idx] || { rotation: 0, flipX: false };
+      next[idx] = { ...cur, rotation: (cur.rotation + 90) % 360 };
+      return next;
+    });
+  };
+
+  // Flip cut horizontally
+  const flipCut = (idx: number) => {
+    playSound(() => sounds.playTick());
+    setCutTransforms((prev) => {
+      const next = [...prev];
+      const cur = next[idx] || { rotation: 0, flipX: false };
+      next[idx] = { ...cur, flipX: !cur.flipX };
+      return next;
+    });
+  };
 
   // Cancel any active shooting sequence
   const cancelCaptureSequence = () => {
@@ -269,150 +401,118 @@ export default function PhotoboothPage() {
     setFlashing(false);
     setFreezeFrame(null);
     setSingleRetakeCutIdx(null);
-    sounds.playTick();
+    playSound(() => sounds.playTick());
   };
 
-  // Full 4-cut capture sequence with shutter freeze-flash
-  const startCaptureSequence = () => {
+  const grabCurrentFrame = (cutIdx: number): string => {
+    let shotUrl = `/photos/frame${(cutIdx % 4) + 1}.webp`;
+    if (feedMode === 'webcam' && videoRef.current && canvasRef.current) {
+      const c = canvasRef.current;
+      const ctx = c.getContext('2d');
+      if (ctx && videoRef.current.videoWidth > 0) {
+        c.width = videoRef.current.videoWidth;
+        c.height = videoRef.current.videoHeight;
+        // Mirrored for natural selfie capture
+        ctx.save();
+        ctx.translate(c.width, 0);
+        ctx.scale(-1, 1);
+        ctx.drawImage(videoRef.current, 0, 0, c.width, c.height);
+        ctx.restore();
+        shotUrl = c.toDataURL('image/webp');
+      }
+    }
+    return shotUrl;
+  };
+
+  // Unified Countdown and Snap Engine supporting 3s, 5s, 10s and Auto vs Manual
+  const triggerSnapForCut = (cutIdx: number, isAutoSequence = false) => {
     if (isShooting) return;
     clearCaptureTimeouts();
-    void activityRuntime.sendEvent('photo_start_countdown', {});
     setIsShooting(true);
-    setCurrentShotIdx(0);
-    setSingleRetakeCutIdx(null);
-    const newShots: string[] = [...capturedShots];
+    setCurrentShotIdx(cutIdx);
+    setSingleRetakeCutIdx(isAutoSequence ? null : cutIdx);
+    void activityRuntime.sendEvent('photo_start_countdown', { cut: cutIdx + 1 });
 
-    const shootStep = (idx: number) => {
-      if (idx >= selectedLayout.cuts) {
-        setIsShooting(false);
-        setFreezeFrame(null);
-        setScene('EDIT');
-        sounds.playCelebration();
-        void activityRuntime.sendEvent('photo_finish', {});
-        return;
-      }
+    const totalSeconds = timerDuration;
+    setCountdown(totalSeconds);
+    playSound(() => sounds.playCountdownBeep(false));
 
-      setCurrentShotIdx(idx);
-      setCountdown(3);
-      sounds.playCountdownBeep(false);
+    // Schedule countdown ticks
+    for (let s = totalSeconds - 1; s >= 1; s--) {
+      const delay = (totalSeconds - s) * 900;
+      const t = setTimeout(() => {
+        setCountdown(s);
+        playSound(() => sounds.playCountdownBeep(false));
+        void activityRuntime.sendEvent('photo_tick', { seconds: s });
+      }, delay);
+      captureTimeoutsRef.current.push(t);
+    }
 
-      const t1 = setTimeout(() => {
-        setCountdown(2);
-        sounds.playCountdownBeep(false);
-        void activityRuntime.sendEvent('photo_tick', { seconds: 2 });
-      }, 850);
-
-      const t2 = setTimeout(() => {
-        setCountdown(1);
-        sounds.playCountdownBeep(false);
-        void activityRuntime.sendEvent('photo_tick', { seconds: 1 });
-      }, 1700);
-
-      const t3 = setTimeout(() => {
-        setCountdown(null);
+    // Schedule snap at end
+    const snapDelay = totalSeconds * 900;
+    const tSnap = setTimeout(() => {
+      setCountdown(null);
+      if (flashEnabled) {
         setFlashing(true);
+        const tFlash = setTimeout(() => setFlashing(false), 260);
+        captureTimeoutsRef.current.push(tFlash);
+      }
+      playSound(() => {
         sounds.playCountdownBeep(true);
         sounds.playShutter();
-        void activityRuntime.sendEvent('photo_shutter', { shot: idx + 1 });
+      });
+      void activityRuntime.sendEvent('photo_shutter', { shot: cutIdx + 1 });
 
-        const tFlash = setTimeout(() => setFlashing(false), 250);
-        captureTimeoutsRef.current.push(tFlash);
+      const shotUrl = grabCurrentFrame(cutIdx);
 
-        let shotUrl = `/photos/frame${idx + 1}.webp`;
-        if (feedMode === 'webcam' && videoRef.current && canvasRef.current) {
-          const c = canvasRef.current;
-          const ctx = c.getContext('2d');
-          if (ctx && videoRef.current.videoWidth > 0) {
-            c.width = videoRef.current.videoWidth;
-            c.height = videoRef.current.videoHeight;
-            // Mirror horizontally so it matches preview
-            ctx.save();
-            ctx.translate(c.width, 0);
-            ctx.scale(-1, 1);
-            ctx.drawImage(videoRef.current, 0, 0, c.width, c.height);
-            ctx.restore();
-            shotUrl = c.toDataURL('image/webp');
-          }
-        }
-        newShots[idx] = shotUrl;
-        setCapturedShots([...newShots]);
-
-        // Polaroid freeze-flash frame feedback
-        setFreezeFrame(shotUrl);
-        const tFreeze = setTimeout(() => setFreezeFrame(null), 380);
-        captureTimeoutsRef.current.push(tFreeze);
-
-        const tNext = setTimeout(() => shootStep(idx + 1), 900);
-        captureTimeoutsRef.current.push(tNext);
-      }, 2550);
-
-      captureTimeoutsRef.current.push(t1, t2, t3);
-    };
-
-    shootStep(0);
-  };
-
-  // Single-cut targeted retake with visual state
-  const triggerSingleCutRetake = (targetIdx: number) => {
-    if (isShooting) return;
-    clearCaptureTimeouts();
-    setIsShooting(true);
-    setSingleRetakeCutIdx(targetIdx);
-    setCurrentShotIdx(targetIdx);
-    setCountdown(3);
-    sounds.playCountdownBeep(false);
-
-    const t1 = setTimeout(() => {
-      setCountdown(2);
-      sounds.playCountdownBeep(false);
-    }, 850);
-
-    const t2 = setTimeout(() => {
-      setCountdown(1);
-      sounds.playCountdownBeep(false);
-    }, 1700);
-
-    const t3 = setTimeout(() => {
-      setCountdown(null);
-      setFlashing(true);
-      sounds.playCountdownBeep(true);
-      sounds.playShutter();
-
-      const tFlash = setTimeout(() => setFlashing(false), 250);
-      captureTimeoutsRef.current.push(tFlash);
-
-      const nextShots = [...capturedShots];
-      let shotUrl = `/photos/frame${(targetIdx % 4) + 1}.webp`;
-      if (feedMode === 'webcam' && videoRef.current && canvasRef.current) {
-        const c = canvasRef.current;
-        const ctx = c.getContext('2d');
-        if (ctx && videoRef.current.videoWidth > 0) {
-          c.width = videoRef.current.videoWidth;
-          c.height = videoRef.current.videoHeight;
-          ctx.save();
-          ctx.translate(c.width, 0);
-          ctx.scale(-1, 1);
-          ctx.drawImage(videoRef.current, 0, 0, c.width, c.height);
-          ctx.restore();
-          shotUrl = c.toDataURL('image/webp');
-        }
-      }
-      nextShots[targetIdx] = shotUrl;
-      setCapturedShots(nextShots);
+      setCapturedShots((prev) => {
+        const next = [...prev];
+        next[cutIdx] = shotUrl;
+        return next;
+      });
 
       setFreezeFrame(shotUrl);
       const tFreeze = setTimeout(() => setFreezeFrame(null), 380);
       captureTimeoutsRef.current.push(tFreeze);
 
-      const tFinish = setTimeout(() => {
-        setIsShooting(false);
-        setSingleRetakeCutIdx(null);
-        sounds.playCelebration();
-      }, 700);
-      captureTimeoutsRef.current.push(tFinish);
-    }, 2550);
+      if (isAutoSequence) {
+        const nextIdx = cutIdx + 1;
+        if (nextIdx >= selectedLayout.cuts) {
+          const tFinish = setTimeout(() => {
+            setIsShooting(false);
+            setFreezeFrame(null);
+            setScene('EDIT');
+            playSound(() => sounds.playCelebration());
+            void activityRuntime.sendEvent('photo_finish', {});
+          }, 750);
+          captureTimeoutsRef.current.push(tFinish);
+        } else {
+          const tNext = setTimeout(() => {
+            triggerSnapForCut(nextIdx, true);
+          }, 950);
+          captureTimeoutsRef.current.push(tNext);
+        }
+      } else {
+        // Manual mode: complete single shot
+        const tFinish = setTimeout(() => {
+          setIsShooting(false);
+          setSingleRetakeCutIdx(null);
+          setCurrentShotIdx((prev) => (prev + 1) % 4);
+          playSound(() => sounds.playPop());
+        }, 500);
+        captureTimeoutsRef.current.push(tFinish);
+      }
+    }, snapDelay);
 
-    captureTimeoutsRef.current.push(t1, t2, t3);
+    captureTimeoutsRef.current.push(tSnap);
+  };
+
+  const startCaptureSequence = () => {
+    triggerSnapForCut(0, shootMode === 'auto');
+  };
+
+  const triggerSingleCutRetake = (targetIdx: number) => {
+    triggerSnapForCut(targetIdx, false);
   };
 
   // Custom device photo upload
@@ -511,6 +611,32 @@ export default function PhotoboothPage() {
     setSelectedStickerId(cloned.id);
   };
 
+  const bringForward = (id: string) => {
+    setPlacedStickers((prev) => {
+      const idx = prev.findIndex((s) => s.id === id);
+      if (idx === -1 || idx === prev.length - 1) return prev;
+      const next = [...prev];
+      const temp = next[idx];
+      next[idx] = next[idx + 1];
+      next[idx + 1] = temp;
+      playSound(() => sounds.playTick());
+      return next;
+    });
+  };
+
+  const sendBackward = (id: string) => {
+    setPlacedStickers((prev) => {
+      const idx = prev.findIndex((s) => s.id === id);
+      if (idx <= 0) return prev;
+      const next = [...prev];
+      const temp = next[idx];
+      next[idx] = next[idx - 1];
+      next[idx - 1] = temp;
+      playSound(() => sounds.playTick());
+      return next;
+    });
+  };
+
   const flipStickerHorizontal = (id: string) => {
     sounds.playTick();
     setPlacedStickers((prev) =>
@@ -559,6 +685,7 @@ export default function PhotoboothPage() {
       ctx.translate(offsetX, 0);
 
       // Background
+      const activeBg = customFrameColor || selectedStyle.bg;
       if (selectedStyle.foilEffect === 'holographic') {
         const grad = ctx.createLinearGradient(0, 0, 600, 1600);
         grad.addColorStop(0, '#FFD1DC');
@@ -577,13 +704,13 @@ export default function PhotoboothPage() {
         ctx.fillStyle = grad;
       } else if (selectedStyle.foilEffect === 'matte-foil') {
         ctx.fillStyle = '#101216';
-      } else if (selectedStyle.bg.startsWith('linear')) {
+      } else if (activeBg.startsWith('linear')) {
         const grad = ctx.createLinearGradient(0, 0, 0, 1600);
         grad.addColorStop(0, '#FFE4D6');
         grad.addColorStop(1, '#FFD6E8');
         ctx.fillStyle = grad;
       } else {
-        ctx.fillStyle = selectedStyle.bg;
+        ctx.fillStyle = activeBg;
       }
       ctx.fillRect(0, 0, 600, 1600);
 
@@ -614,48 +741,59 @@ export default function PhotoboothPage() {
           ctx.rect(42, y, 516, 320);
           ctx.clip();
 
-          // Apply selected color grading filter to photo
-          if (
+          // Apply selected color grading filter, brightness and contrast
+          let filterStr =
             selectedColorFilter &&
             selectedColorFilter.filter &&
             selectedColorFilter.filter !== 'none'
-          ) {
-            ctx.filter = selectedColorFilter.filter;
-          } else {
-            ctx.filter = 'none';
+              ? selectedColorFilter.filter
+              : '';
+          if (brightness !== 100) filterStr += ` brightness(${brightness}%)`;
+          if (contrast !== 100) filterStr += ` contrast(${contrast}%)`;
+          ctx.filter = filterStr.trim() || 'none';
+
+          const centerX = 42 + 516 / 2;
+          const centerY = y + 320 / 2;
+          ctx.translate(centerX, centerY);
+
+          const t = cutTransforms[i] || { rotation: 0, flipX: false };
+          if (t.rotation) {
+            ctx.rotate((t.rotation * Math.PI) / 180);
+          }
+          if (t.flipX) {
+            ctx.scale(-1, 1);
           }
 
+          const isRotated90 = t.rotation === 90 || t.rotation === 270;
+          const targetW = isRotated90 ? 320 : 516;
+          const targetH = isRotated90 ? 516 : 320;
           const imgRatio = img.width / img.height;
-          const frameRatio = 516 / 320;
-          let dw = 516;
-          let dh = 320;
-          let dx = 42;
-          let dy = y;
+          const frameRatio = targetW / targetH;
+          let dw = targetW;
+          let dh = targetH;
           if (imgRatio > frameRatio) {
-            dw = 320 * imgRatio;
-            dx = 42 - (dw - 516) / 2;
+            dw = targetH * imgRatio;
           } else {
-            dh = 516 / imgRatio;
-            dy = y - (dh - 320) / 2;
+            dh = targetW / imgRatio;
           }
-          ctx.drawImage(img, dx, dy, dw, dh);
+          ctx.drawImage(img, -dw / 2, -dh / 2, dw, dh);
           ctx.filter = 'none';
 
           // Optional 90s Film Cam light leak & LED date stamp
           if (isVintageCamMode) {
             const leakGrad = ctx.createRadialGradient(
-              42 + 516 * 0.85,
-              y + 40,
+              516 * 0.35,
+              -120,
               10,
-              42 + 516 * 0.85,
-              y + 40,
+              516 * 0.35,
+              -120,
               240,
             );
             leakGrad.addColorStop(0, 'rgba(255, 120, 50, 0.45)');
             leakGrad.addColorStop(0.4, 'rgba(255, 40, 100, 0.22)');
             leakGrad.addColorStop(1, 'rgba(255, 40, 100, 0)');
             ctx.fillStyle = leakGrad;
-            ctx.fillRect(42, y, 516, 320);
+            ctx.fillRect(-516 / 2, -320 / 2, 516, 320);
 
             ctx.save();
             ctx.font = 'bold 20px monospace';
@@ -667,8 +805,29 @@ export default function PhotoboothPage() {
             const yy = now.getFullYear().toString().slice(-2);
             const mm = now.getMonth() + 1;
             const dd = now.getDate();
-            ctx.fillText(`'${yy}  ${mm}  ${dd}`, 42 + 516 - 16, y + 320 - 16);
+            ctx.fillText(`'${yy}  ${mm}  ${dd}`, 516 / 2 - 16, 320 / 2 - 16);
             ctx.restore();
+          }
+
+          // Subtle Film Grain
+          if (filmGrain) {
+            const noiseCanvas = document.createElement('canvas');
+            noiseCanvas.width = 120;
+            noiseCanvas.height = 120;
+            const nCtx = noiseCanvas.getContext('2d');
+            if (nCtx) {
+              const nImg = nCtx.createImageData(120, 120);
+              for (let p = 0; p < nImg.data.length; p += 4) {
+                const v = Math.random() * 255;
+                nImg.data[p] = v;
+                nImg.data[p + 1] = v;
+                nImg.data[p + 2] = v;
+                nImg.data[p + 3] = 16;
+              }
+              nCtx.putImageData(nImg, 0, 0);
+              ctx.fillStyle = ctx.createPattern(noiseCanvas, 'repeat') || 'transparent';
+              ctx.fillRect(-516 / 2, -320 / 2, 516, 320);
+            }
           }
 
           ctx.restore();
@@ -1293,7 +1452,7 @@ export default function PhotoboothPage() {
                   gap: '8px',
                 }}
               >
-                <div style={{ display: 'flex', gap: '6px' }}>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
                   <button
                     className={`btn ${feedMode === 'webcam' ? 'btn-primary' : 'btn-ghost'}`}
                     style={{ padding: '5px 14px', fontSize: '12px' }}
@@ -1322,11 +1481,103 @@ export default function PhotoboothPage() {
                     style={{ display: 'none' }}
                     onChange={handleFileUpload}
                   />
+
+                  <div style={{ width: '1px', height: '18px', background: 'var(--line)', margin: '0 4px' }} />
+
+                  {/* Shutter Mode Selector: Auto vs Manual */}
+                  <div style={{ display: 'inline-flex', background: 'var(--paper)', borderRadius: '8px', padding: '2px', border: '1px solid var(--line)' }}>
+                    <button
+                      onClick={() => { playSound(() => sounds.playPop()); setShootMode('auto'); }}
+                      style={{
+                        padding: '3px 9px',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        borderRadius: '6px',
+                        border: 'none',
+                        background: shootMode === 'auto' ? 'var(--pink)' : 'transparent',
+                        color: shootMode === 'auto' ? '#FFFFFF' : 'var(--ink-soft)',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      ⏱️ Auto 4-Cuts
+                    </button>
+                    <button
+                      onClick={() => { playSound(() => sounds.playPop()); setShootMode('manual'); }}
+                      style={{
+                        padding: '3px 9px',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        borderRadius: '6px',
+                        border: 'none',
+                        background: shootMode === 'manual' ? 'var(--pink)' : 'transparent',
+                        color: shootMode === 'manual' ? '#FFFFFF' : 'var(--ink-soft)',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      📸 Manual Snap
+                    </button>
+                  </div>
+
+                  {/* Countdown Timer Duration (3s / 5s / 10s) */}
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                    <span style={{ fontSize: '11px', color: 'var(--ink-soft)', fontWeight: 600 }}>Timer:</span>
+                    {([3, 5, 10] as const).map((sec) => (
+                      <button
+                        key={sec}
+                        onClick={() => { playSound(() => sounds.playTick()); setTimerDuration(sec); }}
+                        style={{
+                          padding: '2px 7px',
+                          fontSize: '11px',
+                          fontWeight: 800,
+                          borderRadius: '6px',
+                          border: timerDuration === sec ? '1.5px solid var(--pink)' : '1px solid var(--line)',
+                          background: timerDuration === sec ? 'var(--pink-tint)' : 'var(--paper)',
+                          color: timerDuration === sec ? 'var(--pink)' : 'var(--ink-soft)',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {sec}s
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <div
-                  style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}
                 >
+                  {/* Composition Grid toggle */}
+                  <button
+                    className={`btn ${showGrid ? 'btn-primary' : 'btn-ghost'}`}
+                    onClick={() => setShowGrid(!showGrid)}
+                    style={{ padding: '5px 9px', fontSize: '11.5px' }}
+                    title="Toggle Rule-of-Thirds Composition Grid"
+                  >
+                    井 Grid
+                  </button>
+
+                  {/* Flash toggle */}
+                  <button
+                    className={`btn ${flashEnabled ? 'btn-primary' : 'btn-ghost'}`}
+                    onClick={() => setFlashEnabled(!flashEnabled)}
+                    style={{ padding: '5px 9px', fontSize: '11.5px' }}
+                    title={flashEnabled ? 'Flash Effect Active' : 'Flash Effect Off'}
+                  >
+                    {flashEnabled ? '⚡ Flash' : '⚡ Off'}
+                  </button>
+
+                  {/* Sound FX toggle */}
+                  <button
+                    className="btn btn-ghost"
+                    onClick={() => setSoundEnabled(!soundEnabled)}
+                    style={{ padding: '5px 9px', fontSize: '11.5px' }}
+                    title={soundEnabled ? 'Mute Shutter Sounds' : 'Unmute Shutter Sounds'}
+                  >
+                    {soundEnabled ? '🔔 Sound' : '🔕 Mute'}
+                  </button>
+
+                  {/* Mic toggle */}
                   <button
                     className="btn btn-ghost"
                     onClick={() => setMicMuted(!micMuted)}
@@ -1369,6 +1620,31 @@ export default function PhotoboothPage() {
 
               {/* Camera Screen Stage */}
               <div className="booth-cam-stage">
+                {/* Rule-of-Thirds Composition Grid Overlay */}
+                {showGrid && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      pointerEvents: 'none',
+                      zIndex: 12,
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr 1fr',
+                      gridTemplateRows: '1fr 1fr 1fr',
+                    }}
+                  >
+                    <div style={{ borderRight: '1px dashed rgba(255,255,255,0.3)', borderBottom: '1px dashed rgba(255,255,255,0.3)' }} />
+                    <div style={{ borderRight: '1px dashed rgba(255,255,255,0.3)', borderBottom: '1px dashed rgba(255,255,255,0.3)' }} />
+                    <div style={{ borderBottom: '1px dashed rgba(255,255,255,0.3)' }} />
+                    <div style={{ borderRight: '1px dashed rgba(255,255,255,0.3)', borderBottom: '1px dashed rgba(255,255,255,0.3)' }} />
+                    <div style={{ borderRight: '1px dashed rgba(255,255,255,0.3)', borderBottom: '1px dashed rgba(255,255,255,0.3)' }} />
+                    <div style={{ borderBottom: '1px dashed rgba(255,255,255,0.3)' }} />
+                    <div style={{ borderRight: '1px dashed rgba(255,255,255,0.3)' }} />
+                    <div style={{ borderRight: '1px dashed rgba(255,255,255,0.3)' }} />
+                    <div />
+                  </div>
+                )}
+
                 {/* Pose Prompt Top Banner */}
                 <div
                   className="pose-prompt-card"
@@ -1395,7 +1671,7 @@ export default function PhotoboothPage() {
                   </div>
                   <button
                     onClick={() => {
-                      sounds.playPop();
+                      playSound(() => sounds.playPop());
                       setCupidotPose(getCupidotPoseIdea());
                     }}
                     className="btn"
@@ -1706,10 +1982,10 @@ export default function PhotoboothPage() {
                 )}
 
                 {/* Studio Camera Flashbulb Effect */}
-                {flashing && (
+                {flashing && flashEnabled && (
                   <div className="camera-flash-overlay" aria-hidden="true" />
                 )}
-                {flashing && <div className="booth-camera-flash" />}
+                {flashing && flashEnabled && <div className="booth-camera-flash" />}
 
                 {/* AR Filter Overlays */}
                 {selectedArFilter.id === 'sparkles' && (
@@ -1847,7 +2123,7 @@ export default function PhotoboothPage() {
                   ))}
                 </div>
 
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                   {isShooting && (
                     <button
                       className="btn btn-ghost"
@@ -1857,16 +2133,29 @@ export default function PhotoboothPage() {
                       Cancel ⏹️
                     </button>
                   )}
-                  <button
-                    className="btn btn-grad"
-                    onClick={startCaptureSequence}
-                    disabled={isShooting}
-                    style={{ padding: '12px 28px', fontSize: '16px' }}
-                  >
-                    {isShooting
-                      ? `Taking Cut 0${currentShotIdx + 1}/04 📸...`
-                      : 'Take 4-Cut Photos 📸'}
-                  </button>
+                  {shootMode === 'manual' ? (
+                    <button
+                      className="btn btn-grad"
+                      onClick={() => triggerSingleCutRetake(currentShotIdx)}
+                      disabled={isShooting}
+                      style={{ padding: '12px 26px', fontSize: '15px' }}
+                    >
+                      {isShooting
+                        ? `Snapping Cut 0${currentShotIdx + 1} 📸...`
+                        : `Snap Cut 0${currentShotIdx + 1} of 04 📸 (${timerDuration}s)`}
+                    </button>
+                  ) : (
+                    <button
+                      className="btn btn-grad"
+                      onClick={startCaptureSequence}
+                      disabled={isShooting}
+                      style={{ padding: '12px 26px', fontSize: '15px' }}
+                    >
+                      {isShooting
+                        ? `Taking Cut 0${currentShotIdx + 1}/04 📸...`
+                        : `Take 4-Cut Photos 📸 (${timerDuration}s)`}
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -1878,16 +2167,21 @@ export default function PhotoboothPage() {
                   borderTop: '1px solid var(--line)',
                 }}
               >
-                <span
-                  style={{
-                    fontSize: '11.5px',
-                    fontFamily: 'var(--font-mono)',
-                    color: 'var(--ink-soft)',
-                    textTransform: 'uppercase',
-                  }}
-                >
-                  Live Capture Shots ({capturedShots.length} / 4):
-                </span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span
+                    style={{
+                      fontSize: '11.5px',
+                      fontFamily: 'var(--font-mono)',
+                      color: 'var(--ink-soft)',
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    Live Capture Shots ({capturedShots.length} / 4):
+                  </span>
+                  <span style={{ fontSize: '11px', color: 'var(--ink-soft)' }}>
+                    Tip: Use ◀ / ▶ to reorder · ↷ to rotate · ⇄ to flip
+                  </span>
+                </div>
                 <div
                   style={{
                     display: 'grid',
@@ -1902,22 +2196,30 @@ export default function PhotoboothPage() {
                       onDragOver={(e) => handleDragOverCut(i, e)}
                       onDragLeave={handleDragLeaveCut}
                       onDrop={(e) => handleDropOnCut(i, e)}
+                      onClick={() => {
+                        if (shootMode === 'manual' && !isShooting) {
+                          setCurrentShotIdx(i);
+                        }
+                      }}
                       style={{
                         aspectRatio: '4/3',
                         background: '#17181C',
                         borderRadius: '6px',
                         overflow: 'hidden',
                         position: 'relative',
+                        cursor: shootMode === 'manual' ? 'pointer' : 'default',
                         border:
                           dragOverCutIdx === i
                             ? '2px dashed var(--pink)'
-                            : currentShotIdx === i && isShooting
+                            : currentShotIdx === i && (isShooting || shootMode === 'manual')
                               ? '2px solid var(--pink)'
                               : '1px solid var(--line)',
                         boxShadow:
                           dragOverCutIdx === i
                             ? '0 0 14px rgba(255, 123, 163, 0.5)'
-                            : 'none',
+                            : currentShotIdx === i && shootMode === 'manual'
+                              ? '0 0 10px rgba(255, 123, 163, 0.4)'
+                              : 'none',
                         transition: 'border 0.15s ease, box-shadow 0.15s ease',
                       }}
                     >
@@ -1928,6 +2230,8 @@ export default function PhotoboothPage() {
                           width: '100%',
                           height: '100%',
                           objectFit: 'cover',
+                          filter: `${selectedColorFilter.filter} brightness(${brightness}%) contrast(${contrast}%)`,
+                          transform: `rotate(${cutTransforms[i]?.rotation || 0}deg) ${cutTransforms[i]?.flipX ? 'scaleX(-1)' : ''}`,
                           opacity: dragOverCutIdx === i ? 0.4 : 1,
                         }}
                       />
@@ -1955,11 +2259,12 @@ export default function PhotoboothPage() {
                           position: 'absolute',
                           top: '2px',
                           left: '4px',
-                          fontSize: '8px',
+                          fontSize: '8.5px',
+                          fontWeight: 700,
                           color: '#fff',
-                          background: 'rgba(0,0,0,0.6)',
-                          padding: '1px 3px',
-                          borderRadius: '2px',
+                          background: currentShotIdx === i && shootMode === 'manual' ? 'var(--pink)' : 'rgba(0,0,0,0.65)',
+                          padding: '1px 4px',
+                          borderRadius: '3px',
                         }}
                       >
                         0{i + 1}
@@ -1971,17 +2276,87 @@ export default function PhotoboothPage() {
                           right: '3px',
                           display: 'flex',
                           gap: '2px',
+                          zIndex: 5,
                         }}
+                        onClick={(e) => e.stopPropagation()}
                       >
+                        {i > 0 && (
+                          <button
+                            onClick={() => moveCut(i, i - 1)}
+                            disabled={isShooting}
+                            title="Move cut left"
+                            style={{
+                              background: 'rgba(0, 0, 0, 0.75)',
+                              border: '1px solid rgba(255, 255, 255, 0.25)',
+                              color: '#fff',
+                              fontSize: '8.5px',
+                              padding: '2px 4px',
+                              borderRadius: '3px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            ◀
+                          </button>
+                        )}
+                        {i < 3 && (
+                          <button
+                            onClick={() => moveCut(i, i + 1)}
+                            disabled={isShooting}
+                            title="Move cut right"
+                            style={{
+                              background: 'rgba(0, 0, 0, 0.75)',
+                              border: '1px solid rgba(255, 255, 255, 0.25)',
+                              color: '#fff',
+                              fontSize: '8.5px',
+                              padding: '2px 4px',
+                              borderRadius: '3px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            ▶
+                          </button>
+                        )}
+                        <button
+                          onClick={() => rotateCut(i)}
+                          disabled={isShooting}
+                          title="Rotate 90° clockwise"
+                          style={{
+                            background: 'rgba(0, 0, 0, 0.75)',
+                            border: '1px solid rgba(255, 255, 255, 0.25)',
+                            color: '#fff',
+                            fontSize: '8.5px',
+                            padding: '2px 4px',
+                            borderRadius: '3px',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          ↷
+                        </button>
+                        <button
+                          onClick={() => flipCut(i)}
+                          disabled={isShooting}
+                          title="Flip horizontally"
+                          style={{
+                            background: 'rgba(0, 0, 0, 0.75)',
+                            border: '1px solid rgba(255, 255, 255, 0.25)',
+                            color: '#fff',
+                            fontSize: '8.5px',
+                            padding: '2px 4px',
+                            borderRadius: '3px',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          ⇄
+                        </button>
                         <button
                           onClick={() => triggerSingleCutRetake(i)}
                           disabled={isShooting}
                           title={`Retake cut 0${i + 1}`}
                           style={{
-                            background: 'rgba(0, 0, 0, 0.72)',
-                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            background: 'rgba(0, 0, 0, 0.75)',
+                            border: '1px solid rgba(255, 255, 255, 0.25)',
                             color: '#fff',
-                            fontSize: '9px',
+                            fontSize: '8.5px',
                             padding: '2px 4px',
                             borderRadius: '3px',
                             cursor: 'pointer',
@@ -1997,10 +2372,10 @@ export default function PhotoboothPage() {
                           disabled={isShooting}
                           title={`Upload image for cut 0${i + 1} (or drag & drop)`}
                           style={{
-                            background: 'rgba(0, 0, 0, 0.72)',
-                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            background: 'rgba(0, 0, 0, 0.75)',
+                            border: '1px solid rgba(255, 255, 255, 0.25)',
                             color: '#fff',
-                            fontSize: '9px',
+                            fontSize: '8.5px',
                             padding: '2px 4px',
                             borderRadius: '3px',
                             cursor: 'pointer',
@@ -2020,14 +2395,26 @@ export default function PhotoboothPage() {
               <div
                 className="real-strip"
                 style={{
-                  background: selectedStyle.bg,
+                  background: customFrameColor || selectedStyle.bg,
                   color: selectedStyle.color,
                   borderColor: selectedStyle.border,
                 }}
               >
                 <div className="real-strip-brand">DEARLY US · 인생네컷</div>
 
-                <div className="real-strip-frames">
+                <div className="real-strip-frames" style={{ position: 'relative' }}>
+                  {filmGrain && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        pointerEvents: 'none',
+                        background: 'radial-gradient(rgba(255,255,255,0.06), rgba(0,0,0,0.12))',
+                        mixBlendMode: 'overlay',
+                        zIndex: 5,
+                      }}
+                    />
+                  )}
                   {capturedShots.map((shot, idx) => (
                     <div
                       key={idx}
@@ -2048,7 +2435,8 @@ export default function PhotoboothPage() {
                         src={shot}
                         alt={`Cut ${idx + 1}`}
                         style={{
-                          filter: selectedColorFilter.filter,
+                          filter: `${selectedColorFilter.filter} brightness(${brightness}%) contrast(${contrast}%)`,
+                          transform: `rotate(${cutTransforms[idx]?.rotation || 0}deg) ${cutTransforms[idx]?.flipX ? 'scaleX(-1)' : ''}`,
                           opacity: dragOverCutIdx === idx ? 0.5 : 1,
                         }}
                       />
@@ -2303,6 +2691,461 @@ export default function PhotoboothPage() {
                 ))}
               </div>
 
+              {/* Reorder & Orient Cuts */}
+              <div style={{ marginBottom: '22px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '8px',
+                  }}
+                >
+                  <label
+                    style={{
+                      fontSize: '12px',
+                      fontWeight: 800,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                    }}
+                  >
+                    Reorder &amp; Adjust Cuts:
+                  </label>
+                  <span style={{ fontSize: '11px', color: 'var(--ink-soft)' }}>
+                    ◀ / ▶ reorder · ↷ rotate · ⇄ flip
+                  </span>
+                </div>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(4, 1fr)',
+                    gap: '8px',
+                  }}
+                >
+                  {capturedShots.map((shot, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        background: '#17181C',
+                        borderRadius: '6px',
+                        overflow: 'hidden',
+                        position: 'relative',
+                        aspectRatio: '4/3',
+                        border: '1px solid var(--line)',
+                      }}
+                    >
+                      <img
+                        src={shot}
+                        alt={`Cut ${i + 1}`}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          filter: `${selectedColorFilter.filter} brightness(${brightness}%) contrast(${contrast}%)`,
+                          transform: `rotate(${cutTransforms[i]?.rotation || 0}deg) ${cutTransforms[i]?.flipX ? 'scaleX(-1)' : ''}`,
+                        }}
+                      />
+                      <span
+                        style={{
+                          position: 'absolute',
+                          top: '2px',
+                          left: '4px',
+                          fontSize: '8.5px',
+                          fontWeight: 700,
+                          color: '#fff',
+                          background: 'rgba(0,0,0,0.65)',
+                          padding: '1px 4px',
+                          borderRadius: '3px',
+                        }}
+                      >
+                        0{i + 1}
+                      </span>
+                      <div
+                        style={{
+                          position: 'absolute',
+                          bottom: '3px',
+                          right: '3px',
+                          display: 'flex',
+                          gap: '2px',
+                          zIndex: 5,
+                        }}
+                      >
+                        {i > 0 && (
+                          <button
+                            onClick={() => moveCut(i, i - 1)}
+                            title="Move cut left"
+                            style={{
+                              background: 'rgba(0, 0, 0, 0.75)',
+                              border: '1px solid rgba(255, 255, 255, 0.25)',
+                              color: '#fff',
+                              fontSize: '8.5px',
+                              padding: '2px 4px',
+                              borderRadius: '3px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            ◀
+                          </button>
+                        )}
+                        {i < 3 && (
+                          <button
+                            onClick={() => moveCut(i, i + 1)}
+                            title="Move cut right"
+                            style={{
+                              background: 'rgba(0, 0, 0, 0.75)',
+                              border: '1px solid rgba(255, 255, 255, 0.25)',
+                              color: '#fff',
+                              fontSize: '8.5px',
+                              padding: '2px 4px',
+                              borderRadius: '3px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            ▶
+                          </button>
+                        )}
+                        <button
+                          onClick={() => rotateCut(i)}
+                          title="Rotate 90° clockwise"
+                          style={{
+                            background: 'rgba(0, 0, 0, 0.75)',
+                            border: '1px solid rgba(255, 255, 255, 0.25)',
+                            color: '#fff',
+                            fontSize: '8.5px',
+                            padding: '2px 4px',
+                            borderRadius: '3px',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          ↷
+                        </button>
+                        <button
+                          onClick={() => flipCut(i)}
+                          title="Flip horizontally"
+                          style={{
+                            background: 'rgba(0, 0, 0, 0.75)',
+                            border: '1px solid rgba(255, 255, 255, 0.25)',
+                            color: '#fff',
+                            fontSize: '8.5px',
+                            padding: '2px 4px',
+                            borderRadius: '3px',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          ⇄
+                        </button>
+                        <button
+                          onClick={() => {
+                            targetUploadCutRef.current = i;
+                            fileInputRef.current?.click();
+                          }}
+                          title={`Upload photo for cut 0${i + 1}`}
+                          style={{
+                            background: 'rgba(0, 0, 0, 0.75)',
+                            border: '1px solid rgba(255, 255, 255, 0.25)',
+                            color: '#fff',
+                            fontSize: '8.5px',
+                            padding: '2px 4px',
+                            borderRadius: '3px',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          📁
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Photo Fine-Tuning Controls */}
+              <div
+                style={{
+                  background: 'var(--paper)',
+                  padding: '14px 16px',
+                  borderRadius: '10px',
+                  border: '1px solid var(--line)',
+                  marginBottom: '20px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: '12px',
+                      fontWeight: 800,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                    }}
+                  >
+                    Photo Fine-Tuning:
+                  </span>
+                  <button
+                    onClick={() => {
+                      sounds.playTick();
+                      setBrightness(100);
+                      setContrast(100);
+                      setFilmGrain(false);
+                    }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--pink)',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Reset Adjustments
+                  </button>
+                </div>
+
+                {/* Brightness Presets */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: '11.5px',
+                      color: 'var(--ink-soft)',
+                      minWidth: '70px',
+                      fontWeight: 600,
+                    }}
+                  >
+                    Brightness:
+                  </span>
+                  {[
+                    { label: '-15%', val: 85 },
+                    { label: '-10%', val: 90 },
+                    { label: 'Normal', val: 100 },
+                    { label: '+10%', val: 110 },
+                    { label: '+15%', val: 115 },
+                  ].map((b) => (
+                    <button
+                      key={b.val}
+                      onClick={() => {
+                        sounds.playTick();
+                        setBrightness(b.val);
+                      }}
+                      style={{
+                        padding: '3px 8px',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        borderRadius: '6px',
+                        border:
+                          brightness === b.val
+                            ? '1.5px solid var(--pink)'
+                            : '1px solid var(--line)',
+                        background:
+                          brightness === b.val
+                            ? 'var(--pink-tint)'
+                            : 'var(--bg)',
+                        color:
+                          brightness === b.val
+                            ? 'var(--pink)'
+                            : 'var(--ink-soft)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {b.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Contrast Presets */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: '11.5px',
+                      color: 'var(--ink-soft)',
+                      minWidth: '70px',
+                      fontWeight: 600,
+                    }}
+                  >
+                    Contrast:
+                  </span>
+                  {[
+                    { label: '-15%', val: 85 },
+                    { label: '-10%', val: 90 },
+                    { label: 'Normal', val: 100 },
+                    { label: '+10%', val: 110 },
+                    { label: '+15%', val: 115 },
+                  ].map((c) => (
+                    <button
+                      key={c.val}
+                      onClick={() => {
+                        sounds.playTick();
+                        setContrast(c.val);
+                      }}
+                      style={{
+                        padding: '3px 8px',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        borderRadius: '6px',
+                        border:
+                          contrast === c.val
+                            ? '1.5px solid var(--pink)'
+                            : '1px solid var(--line)',
+                        background:
+                          contrast === c.val
+                            ? 'var(--pink-tint)'
+                            : 'var(--bg)',
+                        color:
+                          contrast === c.val
+                            ? 'var(--pink)'
+                            : 'var(--ink-soft)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {c.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Film Grain Texture Toggle */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    paddingTop: '6px',
+                    borderTop: '1px solid var(--line)',
+                  }}
+                >
+                  <div>
+                    <span style={{ fontSize: '12px', fontWeight: 700 }}>
+                      🎞️ Vintage Film Grain
+                    </span>
+                    <p
+                      style={{
+                        fontSize: '11px',
+                        color: 'var(--ink-soft)',
+                        margin: '1px 0 0',
+                      }}
+                    >
+                      Adds organic film camera analog grain texture
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      sounds.playPop();
+                      setFilmGrain(!filmGrain);
+                    }}
+                    className={`btn ${filmGrain ? 'btn-primary' : 'btn-ghost'}`}
+                    style={{ padding: '3px 10px', fontSize: '11.5px' }}
+                  >
+                    {filmGrain ? '✓ Grain On' : 'Grain Off'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Frame Cardstock Color Palette */}
+              <div style={{ marginBottom: '20px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '8px',
+                  }}
+                >
+                  <label
+                    style={{
+                      fontSize: '12px',
+                      fontWeight: 800,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                    }}
+                  >
+                    Frame Cardstock Color:
+                  </label>
+                  {customFrameColor && (
+                    <button
+                      onClick={() => {
+                        sounds.playTick();
+                        setCustomFrameColor(null);
+                      }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--pink)',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Use Theme Default
+                    </button>
+                  )}
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: '8px',
+                    flexWrap: 'wrap',
+                    alignItems: 'center',
+                  }}
+                >
+                  {[
+                    { name: 'Classic White', hex: '#FFFFFF', border: '#E2E8F0' },
+                    { name: 'Charcoal Dark', hex: '#18191E', border: '#333742' },
+                    { name: 'Blush Pink', hex: '#FFE4E8', border: '#FECDD3' },
+                    { name: 'Buttercream', hex: '#FFFBEB', border: '#FEF3C7' },
+                    { name: 'Sky Blue', hex: '#E0F2FE', border: '#BAE6FD' },
+                    { name: 'Lavender Lilac', hex: '#F3E8FF', border: '#E9D5FF' },
+                    { name: 'Misty Sage', hex: '#E2ECE9', border: '#CBD5E1' },
+                    { name: 'Matcha Green', hex: '#DCFCE7', border: '#BBF7D0' },
+                  ].map((fc) => {
+                    const isSelected = customFrameColor === fc.hex;
+                    return (
+                      <button
+                        key={fc.hex}
+                        onClick={() => {
+                          sounds.playPop();
+                          setCustomFrameColor(fc.hex);
+                        }}
+                        title={fc.name}
+                        style={{
+                          width: '28px',
+                          height: '28px',
+                          borderRadius: '50%',
+                          background: fc.hex,
+                          border: isSelected
+                            ? '2.5px solid var(--pink)'
+                            : `1.5px solid ${fc.border}`,
+                          boxShadow: isSelected
+                            ? '0 0 10px rgba(255, 77, 128, 0.45)'
+                            : '0 1px 3px rgba(0,0,0,0.1)',
+                          cursor: 'pointer',
+                          transform: isSelected ? 'scale(1.15)' : 'scale(1)',
+                          transition: 'transform 0.15s ease, border 0.15s ease',
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+
               {/* Layout Switcher */}
               <div style={{ marginBottom: '20px' }}>
                 <label
@@ -2363,19 +3206,34 @@ export default function PhotoboothPage() {
               <div
                 className="real-strip"
                 style={{
-                  background: selectedStyle.bg,
+                  background: customFrameColor || selectedStyle.bg,
                   color: selectedStyle.color,
                   borderColor: selectedStyle.border,
                 }}
               >
                 <div className="real-strip-brand">DEARLY US · 인생네컷</div>
-                <div className="real-strip-frames">
+                <div className="real-strip-frames" style={{ position: 'relative' }}>
+                  {filmGrain && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        pointerEvents: 'none',
+                        background: 'radial-gradient(rgba(255,255,255,0.06), rgba(0,0,0,0.12))',
+                        mixBlendMode: 'overlay',
+                        zIndex: 5,
+                      }}
+                    />
+                  )}
                   {capturedShots.map((shot, idx) => (
                     <div key={idx} className="real-strip-cell">
                       <img
                         src={shot}
                         alt=""
-                        style={{ filter: selectedColorFilter.filter }}
+                        style={{
+                          filter: `${selectedColorFilter.filter} brightness(${brightness}%) contrast(${contrast}%)`,
+                          transform: `rotate(${cutTransforms[idx]?.rotation || 0}deg) ${cutTransforms[idx]?.flipX ? 'scaleX(-1)' : ''}`,
+                        }}
                       />
                       <span className="frame-tag">0{idx + 1}</span>
                     </div>
@@ -3026,7 +3884,7 @@ export default function PhotoboothPage() {
                 <div
                   className="real-strip"
                   style={{
-                    background: selectedStyle.bg,
+                    background: customFrameColor || selectedStyle.bg,
                     color: selectedStyle.color,
                     borderColor:
                       selectedStyle.foilEffect === 'matte-foil'
@@ -3072,7 +3930,19 @@ export default function PhotoboothPage() {
                   )}
 
                   <div className="real-strip-brand">DEARLY US · 인생네컷</div>
-                  <div className="real-strip-frames">
+                  <div className="real-strip-frames" style={{ position: 'relative' }}>
+                    {filmGrain && (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          inset: 0,
+                          pointerEvents: 'none',
+                          background: 'radial-gradient(rgba(255,255,255,0.06), rgba(0,0,0,0.12))',
+                          mixBlendMode: 'overlay',
+                          zIndex: 5,
+                        }}
+                      />
+                    )}
                     {capturedShots.map((shot, idx) => (
                       <div
                         key={idx}
@@ -3099,7 +3969,8 @@ export default function PhotoboothPage() {
                           src={shot}
                           alt=""
                           style={{
-                            filter: selectedColorFilter.filter,
+                            filter: `${selectedColorFilter.filter} brightness(${brightness}%) contrast(${contrast}%)`,
+                            transform: `rotate(${cutTransforms[idx]?.rotation || 0}deg) ${cutTransforms[idx]?.flipX ? 'scaleX(-1)' : ''}`,
                             opacity: dragOverCutIdx === idx ? 0.5 : 1,
                           }}
                         />
@@ -3437,6 +4308,34 @@ export default function PhotoboothPage() {
                               }}
                             >
                               ⇄
+                            </button>
+                            <button
+                              onClick={() => bringForward(stk.id)}
+                              title="Bring Forward Layer (⬆️)"
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#FFFFFF',
+                                fontSize: '11px',
+                                cursor: 'pointer',
+                                padding: '2px 4px',
+                              }}
+                            >
+                              ⬆️
+                            </button>
+                            <button
+                              onClick={() => sendBackward(stk.id)}
+                              title="Send Backward Layer (⬇️)"
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#FFFFFF',
+                                fontSize: '11px',
+                                cursor: 'pointer',
+                                padding: '2px 4px',
+                              }}
+                            >
+                              ⬇️
                             </button>
                             <button
                               onClick={() => duplicateSticker(stk.id)}

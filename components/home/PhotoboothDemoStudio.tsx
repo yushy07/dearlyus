@@ -128,6 +128,16 @@ export function PhotoboothDemoStudio({
   const [demoFlashing, setDemoFlashing] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [targetRetakeIdx, setTargetRetakeIdx] = useState<number | null>(null);
+  const [demoTimerDuration, setDemoTimerDuration] = useState<3 | 5>(3);
+  const [demoShootMode, setDemoShootMode] = useState<'auto' | 'manual'>('auto');
+  const [demoCutTransforms, setDemoCutTransforms] = useState<
+    { rotation: number; flipX: boolean }[]
+  >([
+    { rotation: 0, flipX: false },
+    { rotation: 0, flipX: false },
+    { rotation: 0, flipX: false },
+    { rotation: 0, flipX: false },
+  ]);
   const [demoShots, setDemoShots] = useState<string[]>([
     '/photos/frame1.webp',
     '/photos/frame2.webp',
@@ -244,6 +254,81 @@ export function PhotoboothDemoStudio({
     }
   };
 
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      sounds.playPop();
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const url = ev.target?.result as string;
+        if (url) {
+          if (typeof targetRetakeIdx === 'number') {
+            setDemoShots((prev) => {
+              const next = [...prev];
+              next[targetRetakeIdx] = url;
+              return next;
+            });
+            setTargetRetakeIdx(null);
+          } else {
+            setDemoShots((prev) => [
+              url,
+              prev[1] || url,
+              prev[2] || url,
+              prev[3] || url,
+            ]);
+          }
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+    e.target.value = '';
+  };
+
+  const moveDemoCut = (fromIdx: number, toIdx: number) => {
+    if (
+      fromIdx < 0 ||
+      fromIdx >= demoShots.length ||
+      toIdx < 0 ||
+      toIdx >= demoShots.length
+    )
+      return;
+    sounds.playPop();
+    setDemoShots((prev) => {
+      const next = [...prev];
+      const temp = next[fromIdx];
+      next[fromIdx] = next[toIdx];
+      next[toIdx] = temp;
+      return next;
+    });
+    setDemoCutTransforms((prev) => {
+      const next = [...prev];
+      const temp = next[fromIdx];
+      next[fromIdx] = next[toIdx];
+      next[toIdx] = temp;
+      return next;
+    });
+  };
+
+  const rotateDemoCut = (idx: number) => {
+    sounds.playTick();
+    setDemoCutTransforms((prev) => {
+      const next = [...prev];
+      const cur = next[idx] || { rotation: 0, flipX: false };
+      next[idx] = { ...cur, rotation: (cur.rotation + 90) % 360 };
+      return next;
+    });
+  };
+
+  const flipDemoCut = (idx: number) => {
+    sounds.playTick();
+    setDemoCutTransforms((prev) => {
+      const next = [...prev];
+      const cur = next[idx] || { rotation: 0, flipX: false };
+      next[idx] = { ...cur, flipX: !cur.flipX };
+      return next;
+    });
+  };
+
   // Trigger shooting sequence (all 4 shots or targeted single shot retake)
   const triggerDemoShoot = (specificIdx?: number) => {
     if (demoIsShooting) return;
@@ -251,8 +336,13 @@ export function PhotoboothDemoStudio({
     setDemoIsShooting(true);
 
     const isSingleRetake = typeof specificIdx === 'number';
-    const startIndex = isSingleRetake ? specificIdx : 0;
-    const endIndex = isSingleRetake ? specificIdx + 1 : 4;
+    const isAuto = isSingleRetake ? false : demoShootMode === 'auto';
+    const startIndex = isSingleRetake
+      ? specificIdx
+      : demoShootMode === 'manual'
+        ? demoPoseIdx
+        : 0;
+    const endIndex = isAuto ? 4 : startIndex + 1;
     const currentShots = [...demoShots];
 
     const shootStep = (idx: number) => {
@@ -264,20 +354,18 @@ export function PhotoboothDemoStudio({
       }
 
       setDemoPoseIdx(idx % DEMO_POSES.length);
-      setDemoCountdown(3);
-      sounds.playCountdownBeep(false);
+      const totalSec = demoTimerDuration;
+      for (let s = totalSec; s >= 1; s--) {
+        const delay = (totalSec - s) * 800;
+        const t = setTimeout(() => {
+          setDemoCountdown(s);
+          sounds.playCountdownBeep(false);
+        }, delay);
+        shootTimeoutsRef.current.push(t);
+      }
 
-      const t1 = setTimeout(() => {
-        setDemoCountdown(2);
-        sounds.playCountdownBeep(false);
-      }, 800);
-
-      const t2 = setTimeout(() => {
-        setDemoCountdown(1);
-        sounds.playCountdownBeep(false);
-      }, 1600);
-
-      const t3 = setTimeout(() => {
+      const snapDelay = totalSec * 800;
+      const tSnap = setTimeout(() => {
         setDemoCountdown(null);
         setDemoFlashing(true);
         sounds.playCountdownBeep(true);
@@ -336,11 +424,17 @@ export function PhotoboothDemoStudio({
           setDemoShots([...currentShots]);
         }
 
-        const tNext = setTimeout(() => shootStep(idx + 1), 850);
-        shootTimeoutsRef.current.push(tNext);
-      }, 2400);
+        if (isAuto && idx + 1 < endIndex) {
+          const tNext = setTimeout(() => shootStep(idx + 1), 850);
+          shootTimeoutsRef.current.push(tNext);
+        } else {
+          setDemoIsShooting(false);
+          setTargetRetakeIdx(null);
+          sounds.playCelebration();
+        }
+      }, snapDelay);
 
-      shootTimeoutsRef.current.push(t1, t2, t3);
+      shootTimeoutsRef.current.push(tSnap);
     };
 
     shootStep(startIndex);
@@ -374,29 +468,6 @@ export function PhotoboothDemoStudio({
   const removeDemoSticker = (id: string) => {
     sounds.playTick();
     setDemoStickers((prev) => prev.filter((s) => s.id !== id));
-  };
-
-  // Upload custom photo from device
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    sounds.playPop();
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const url = event.target?.result as string;
-      if (!url) return;
-      if (typeof targetRetakeIdx === 'number') {
-        const next = [...demoShots];
-        next[targetRetakeIdx] = url;
-        setDemoShots(next);
-        setTargetRetakeIdx(null);
-      } else {
-        // Fill first slot or replace all
-        setDemoShots((prev) => [url, prev[1], prev[2], prev[3]]);
-      }
-    };
-    reader.readAsDataURL(file);
-    e.target.value = '';
   };
 
   // High-Resolution 600x1600 Canvas Strip Exporter with Baked Color Filter & Stickers
@@ -468,22 +539,32 @@ export function PhotoboothDemoStudio({
           ctx.filter = demoColorFilter.filter;
         }
 
-        const imgRatio = img.width / img.height;
-        const frameRatio = w / h;
-        let dw = w;
-        let dh = h;
-        let dx = x;
-        let dy = y;
-
-        if (imgRatio > frameRatio) {
-          dw = h * imgRatio;
-          dx = x - (dw - w) / 2;
-        } else {
-          dh = w / imgRatio;
-          dy = y - (dh - h) / 2;
+        const transform = demoCutTransforms[i] || { rotation: 0, flipX: false };
+        const cx = x + w / 2;
+        const cy = y + h / 2;
+        ctx.translate(cx, cy);
+        if (transform.rotation !== 0) {
+          ctx.rotate((transform.rotation * Math.PI) / 180);
+        }
+        if (transform.flipX) {
+          ctx.scale(-1, 1);
         }
 
-        ctx.drawImage(img, dx, dy, dw, dh);
+        const isRotated = transform.rotation % 180 !== 0;
+        const renderW = isRotated ? h : w;
+        const renderH = isRotated ? w : h;
+        const imgRatio = img.width / img.height;
+        const frameRatio = renderW / renderH;
+        let dw = renderW;
+        let dh = renderH;
+
+        if (imgRatio > frameRatio) {
+          dw = renderH * imgRatio;
+        } else {
+          dh = renderW / imgRatio;
+        }
+
+        ctx.drawImage(img, -dw / 2, -dh / 2, dw, dh);
         ctx.restore();
       }
 
@@ -629,7 +710,7 @@ export function PhotoboothDemoStudio({
                     gap: '10px',
                   }}
                 >
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
                     <button
                       className={`btn ${demoMode === 'webcam' ? 'btn-primary' : 'btn-ghost'}`}
                       style={{ padding: '6px 14px', fontSize: '13px' }}
@@ -661,6 +742,101 @@ export function PhotoboothDemoStudio({
                       onChange={handlePhotoUpload}
                       style={{ display: 'none' }}
                     />
+
+                    {/* Shoot Mode (Auto Sequence vs Manual Snap) */}
+                    <div
+                      style={{
+                        display: 'inline-flex',
+                        background: 'var(--paper)',
+                        padding: '2px',
+                        borderRadius: '6px',
+                        border: '1px solid var(--line)',
+                      }}
+                    >
+                      <button
+                        onClick={() => {
+                          sounds.playTick();
+                          setDemoShootMode('auto');
+                        }}
+                        style={{
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          border: 'none',
+                          background:
+                            demoShootMode === 'auto' ? 'var(--pink)' : 'transparent',
+                          color:
+                            demoShootMode === 'auto' ? '#FFFFFF' : 'var(--ink-soft)',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        ⚡ Auto 4-Cut
+                      </button>
+                      <button
+                        onClick={() => {
+                          sounds.playTick();
+                          setDemoShootMode('manual');
+                        }}
+                        style={{
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          border: 'none',
+                          background:
+                            demoShootMode === 'manual'
+                              ? 'var(--pink)'
+                              : 'transparent',
+                          color:
+                            demoShootMode === 'manual'
+                              ? '#FFFFFF'
+                              : 'var(--ink-soft)',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        📸 Single Snap
+                      </button>
+                    </div>
+
+                    {/* Timer Duration (3s vs 5s) */}
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                      <span style={{ fontSize: '11px', color: 'var(--ink-soft)', fontWeight: 600 }}>
+                        Timer:
+                      </span>
+                      {([3, 5] as const).map((sec) => (
+                        <button
+                          key={sec}
+                          onClick={() => {
+                            sounds.playTick();
+                            setDemoTimerDuration(sec);
+                          }}
+                          style={{
+                            padding: '2px 7px',
+                            fontSize: '11px',
+                            fontWeight: 800,
+                            borderRadius: '6px',
+                            border:
+                              demoTimerDuration === sec
+                                ? '1.5px solid var(--pink)'
+                                : '1px solid var(--line)',
+                            background:
+                              demoTimerDuration === sec
+                                ? 'var(--pink-tint)'
+                                : 'var(--paper)',
+                            color:
+                              demoTimerDuration === sec
+                                ? 'var(--pink)'
+                                : 'var(--ink-soft)',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {sec}s
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   <div style={{ display: 'flex', gap: '6px' }}>
@@ -1206,6 +1382,7 @@ export function PhotoboothDemoStudio({
                           alt={`Photobooth shot ${idx + 1}`}
                           style={{
                             filter: demoColorFilter.filter,
+                            transform: `rotate(${demoCutTransforms[idx]?.rotation || 0}deg) ${demoCutTransforms[idx]?.flipX ? 'scaleX(-1)' : ''}`,
                             opacity: dragOverCutIdx === idx ? 0.5 : 1,
                           }}
                         />
@@ -1230,33 +1407,106 @@ export function PhotoboothDemoStudio({
                         )}
                         <span className="frame-tag">0{idx + 1}</span>
 
-                        {/* Individual Cut Retake / Replace Button */}
-                        <button
-                          onClick={() => {
-                            sounds.playPop();
-                            triggerDemoShoot(idx);
-                          }}
-                          disabled={demoIsShooting}
-                          title={`Retake Cut 0${idx + 1}`}
+                        {/* Cut Actions Toolbar: Reorder, Rotate, Flip, Retake */}
+                        <div
                           style={{
                             position: 'absolute',
-                            bottom: '4px',
-                            right: '4px',
-                            background: 'rgba(23, 24, 28, 0.75)',
-                            color: '#FFFFFF',
-                            border: 'none',
-                            borderRadius: '4px',
-                            padding: '2px 6px',
-                            fontSize: '9.5px',
-                            fontFamily: 'var(--font-mono)',
-                            cursor: 'pointer',
-                            backdropFilter: 'blur(4px)',
-                            opacity: 0.85,
-                            transition: 'opacity 0.15s ease',
+                            bottom: '3px',
+                            right: '3px',
+                            display: 'flex',
+                            gap: '2px',
+                            zIndex: 6,
                           }}
+                          onClick={(e) => e.stopPropagation()}
                         >
-                          🔄 Retake
-                        </button>
+                          {idx > 0 && (
+                            <button
+                              onClick={() => moveDemoCut(idx, idx - 1)}
+                              disabled={demoIsShooting}
+                              title="Move Cut Left (◀)"
+                              style={{
+                                background: 'rgba(23, 24, 28, 0.85)',
+                                color: '#FFFFFF',
+                                border: '1px solid rgba(255, 255, 255, 0.25)',
+                                borderRadius: '3px',
+                                padding: '1px 4px',
+                                fontSize: '8.5px',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              ◀
+                            </button>
+                          )}
+                          {idx < 3 && (
+                            <button
+                              onClick={() => moveDemoCut(idx, idx + 1)}
+                              disabled={demoIsShooting}
+                              title="Move Cut Right (▶)"
+                              style={{
+                                background: 'rgba(23, 24, 28, 0.85)',
+                                color: '#FFFFFF',
+                                border: '1px solid rgba(255, 255, 255, 0.25)',
+                                borderRadius: '3px',
+                                padding: '1px 4px',
+                                fontSize: '8.5px',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              ▶
+                            </button>
+                          )}
+                          <button
+                            onClick={() => rotateDemoCut(idx)}
+                            disabled={demoIsShooting}
+                            title="Rotate 90° Clockwise (↷)"
+                            style={{
+                              background: 'rgba(23, 24, 28, 0.85)',
+                              color: '#FFFFFF',
+                              border: '1px solid rgba(255, 255, 255, 0.25)',
+                              borderRadius: '3px',
+                              padding: '1px 4px',
+                              fontSize: '8.5px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            ↷
+                          </button>
+                          <button
+                            onClick={() => flipDemoCut(idx)}
+                            disabled={demoIsShooting}
+                            title="Flip Horizontal (⇄)"
+                            style={{
+                              background: 'rgba(23, 24, 28, 0.85)',
+                              color: '#FFFFFF',
+                              border: '1px solid rgba(255, 255, 255, 0.25)',
+                              borderRadius: '3px',
+                              padding: '1px 4px',
+                              fontSize: '8.5px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            ⇄
+                          </button>
+                          <button
+                            onClick={() => {
+                              sounds.playPop();
+                              triggerDemoShoot(idx);
+                            }}
+                            disabled={demoIsShooting}
+                            title={`Retake Cut 0${idx + 1}`}
+                            style={{
+                              background: 'rgba(23, 24, 28, 0.85)',
+                              color: '#FFFFFF',
+                              border: '1px solid rgba(255, 255, 255, 0.25)',
+                              borderRadius: '3px',
+                              padding: '1px 4px',
+                              fontSize: '8.5px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            🔄
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>

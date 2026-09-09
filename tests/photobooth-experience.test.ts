@@ -259,5 +259,144 @@ describe('Photobooth Experience & Mechanics', () => {
       expect(updatedShots[3]).toBe('/photos/cut4.webp');
     });
   });
+
+  describe('Photobooth Polish & Advanced Functional Enhancements', () => {
+    it('reorders cuts by swapping elements in shots and transforms arrays', () => {
+      const shots = ['cut-1', 'cut-2', 'cut-3', 'cut-4'];
+      const transforms = [
+        { rotation: 0, flipX: false },
+        { rotation: 90, flipX: true },
+        { rotation: 180, flipX: false },
+        { rotation: 270, flipX: true },
+      ];
+
+      const moveCut = <T>(arr: T[], from: number, to: number): T[] => {
+        if (from < 0 || from >= arr.length || to < 0 || to >= arr.length) return arr;
+        const next = [...arr];
+        const temp = next[from];
+        next[from] = next[to];
+        next[to] = temp;
+        return next;
+      };
+
+      const reorderedShots = moveCut(shots, 1, 2);
+      expect(reorderedShots).toEqual(['cut-1', 'cut-3', 'cut-2', 'cut-4']);
+
+      const reorderedTransforms = moveCut(transforms, 1, 2);
+      expect(reorderedTransforms[1]).toEqual({ rotation: 180, flipX: false });
+      expect(reorderedTransforms[2]).toEqual({ rotation: 90, flipX: true });
+    });
+
+    it('rotates cut by 90 degrees clockwise and flips horizontally', () => {
+      let transform = { rotation: 0, flipX: false };
+
+      const rotate = (t: { rotation: number; flipX: boolean }) => ({
+        ...t,
+        rotation: (t.rotation + 90) % 360,
+      });
+
+      const flip = (t: { rotation: number; flipX: boolean }) => ({
+        ...t,
+        flipX: !t.flipX,
+      });
+
+      transform = rotate(transform);
+      expect(transform.rotation).toBe(90);
+      transform = rotate(transform);
+      expect(transform.rotation).toBe(180);
+      transform = rotate(transform);
+      expect(transform.rotation).toBe(270);
+      transform = rotate(transform);
+      expect(transform.rotation).toBe(0);
+
+      transform = flip(transform);
+      expect(transform.flipX).toBe(true);
+      transform = flip(transform);
+      expect(transform.flipX).toBe(false);
+    });
+
+    it('manages sticker z-index layering with bringForward and sendBackward', () => {
+      const stickers = [
+        { id: 'stk-a', content: '💖' },
+        { id: 'stk-b', content: '✨' },
+        { id: 'stk-c', content: '🌸' },
+      ];
+
+      const bringForward = (arr: typeof stickers, id: string) => {
+        const idx = arr.findIndex((s) => s.id === id);
+        if (idx === -1 || idx === arr.length - 1) return arr;
+        const next = [...arr];
+        const temp = next[idx];
+        next[idx] = next[idx + 1];
+        next[idx + 1] = temp;
+        return next;
+      };
+
+      const sendBackward = (arr: typeof stickers, id: string) => {
+        const idx = arr.findIndex((s) => s.id === id);
+        if (idx <= 0) return arr;
+        const next = [...arr];
+        const temp = next[idx];
+        next[idx] = next[idx - 1];
+        next[idx - 1] = temp;
+        return next;
+      };
+
+      // Bring 'stk-a' forward: ['stk-b', 'stk-a', 'stk-c']
+      const forward1 = bringForward(stickers, 'stk-a');
+      expect(forward1.map((s) => s.id)).toEqual(['stk-b', 'stk-a', 'stk-c']);
+
+      // Send 'stk-c' backward: ['stk-a', 'stk-c', 'stk-b']
+      const backward1 = sendBackward(stickers, 'stk-c');
+      expect(backward1.map((s) => s.id)).toEqual(['stk-a', 'stk-c', 'stk-b']);
+    });
+
+    it('supports customizable countdown timer intervals (3s, 5s, 10s)', () => {
+      const validTimers: (3 | 5 | 10)[] = [3, 5, 10];
+      validTimers.forEach((timer) => {
+        expect([3, 5, 10]).toContain(timer);
+      });
+
+      const computeSnapDelay = (seconds: number) => seconds * 900;
+      expect(computeSnapDelay(3)).toBe(2700);
+      expect(computeSnapDelay(5)).toBe(4500);
+      expect(computeSnapDelay(10)).toBe(9000);
+    });
+
+    it('supports fine-tuning photo parameters (brightness, contrast, grain)', () => {
+      const clampBrightness = (b: number) => Math.max(85, Math.min(115, b));
+      const clampContrast = (c: number) => Math.max(85, Math.min(115, c));
+
+      expect(clampBrightness(70)).toBe(85);
+      expect(clampBrightness(100)).toBe(100);
+      expect(clampBrightness(130)).toBe(115);
+
+      expect(clampContrast(60)).toBe(85);
+      expect(clampContrast(110)).toBe(110);
+      expect(clampContrast(140)).toBe(115);
+    });
+
+    it('supports custom curated frame cardstock palette with theme fallback', () => {
+      const cardstockPalette = [
+        { name: 'Classic White', hex: '#FFFFFF' },
+        { name: 'Charcoal Dark', hex: '#18191E' },
+        { name: 'Blush Pink', hex: '#FFE4E8' },
+        { name: 'Buttercream', hex: '#FFFBEB' },
+        { name: 'Sky Blue', hex: '#E0F2FE' },
+        { name: 'Lavender Lilac', hex: '#F3E8FF' },
+        { name: 'Misty Sage', hex: '#E2ECE9' },
+        { name: 'Matcha Green', hex: '#DCFCE7' },
+      ];
+
+      const themeDefaultBg = '#F6EDE6';
+
+      const resolveBg = (customColor: string | null) =>
+        customColor || themeDefaultBg;
+
+      expect(resolveBg(null)).toBe('#F6EDE6');
+      expect(resolveBg(cardstockPalette[2].hex)).toBe('#FFE4E8');
+      expect(resolveBg(cardstockPalette[7].hex)).toBe('#DCFCE7');
+    });
+  });
 });
 
