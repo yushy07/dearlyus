@@ -1067,6 +1067,8 @@ export function AudioPlayer() {
 
         {/* Modal Opener / Indicator */}
         <button
+          className="audio-studio-toggle"
+          aria-label={isOpen ? 'Close sound studio' : 'Open sound studio'}
           onClick={() => {
             sounds.playPop();
             setIsOpen(!isOpen);

@@ -4,17 +4,7 @@
   position: relative;
   width: 100%;
   overflow: hidden;
-  /* Atmospheric transition from dark hero (#0b0f19) into Denim (#93AECA) and Soft Sky (#BED1E3) */
-  background: linear-gradient(
-    180deg,
-    #0b0f19 0%,
-    #0d1424 15%,
-    #1b2a47 35%,
-    #3f5a82 55%,
-    #6284a8 72%,
-    #93AECA 88%,
-    #BED1E3 100%
-  );
+  background: #0b0f19;
   padding: 24px clamp(16px, 4vw, 48px) 18px;
   box-sizing: border-box;
   z-index: 10;
@@ -376,4 +366,93 @@
 
 .card:hover .arrowRight {
   transform: translateX(3px);
+}
+
+/* Restrained bridge surfaces joining the preserved hero to the landscape. */
+.bridgeContainer {
+  padding-block: 36px 28px;
+}
+.marqueeWrapper {
+  background: transparent;
+  border-radius: 0;
+  border: 0;
+  border-bottom: 1px solid #2a323d;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+.marqueeTrack {
+  animation: none;
+  flex-wrap: wrap;
+  width: auto;
+  justify-content: center;
+  gap: 12px 28px;
+}
+.marqueeItem:nth-child(n + 4) {
+  display: none;
+}
+.highlightPink,
+.highlightBlue {
+  color: #c3b8b4;
+  text-shadow: none;
+}
+.card,
+.card:hover {
+  background: transparent;
+  border: 0;
+  border-top: 1px solid #444044;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+.card {
+  border-radius: 0;
+  padding: 24px 16px;
+}
+.card:hover {
+  border-color: #c49b9b;
+  transform: translateY(-3px);
+}
+.iconEmblem,
+.cardBadge {
+  background: #30292f;
+  border-color: #514149;
+  color: #dbb8b4;
+  box-shadow: none;
+}
+.cardTitle {
+  font-family: var(--font-serif);
+  font-size: 25px;
+  font-weight: 400;
+  color: #f4e9e0;
+}
+.marqueeItem span.highlightPink,
+.marqueeItem span.highlightBlue,
+.sparkleDot {
+  color: #d0b0b0;
+}
+.cardTitle,
+.cardDesc,
+.cardFooter {
+  text-shadow: none;
+}
+.cardDesc {
+  color: #bcc1c4;
+  line-height: 1.65;
+}
+.cardFooter,
+.card:hover .cardFooter {
+  padding: 14px 0 0;
+  background: transparent;
+  border: 0;
+  border-top: 1px solid #303945;
+  border-radius: 0;
+  box-shadow: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bridgeContainer * {
+    animation: none !important;
+    transition: none !important;
+  }
+  .card:hover {
+    transform: none;
+  }
 }

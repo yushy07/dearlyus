@@ -26,18 +26,34 @@ export function CoPresenceBridge({ onExploreStage }: CoPresenceBridgeProps) {
   const marqueeItems = [
     { text: '인생네컷 Life4Cuts Photobooth', highlight: 'pink', icon: '📸' },
     { text: 'Interactive 3D Distance Globe', highlight: 'blue', icon: '🌍' },
-    { text: '35+ Realtime Couple Duels & Games', highlight: 'pink', icon: '🎮' },
+    {
+      text: '35+ Realtime Couple Duels & Games',
+      highlight: 'pink',
+      icon: '🎮',
+    },
     { text: 'Live Shared Audio & Spotify Sync', highlight: 'blue', icon: '🎵' },
-    { text: 'Sealed Love Letters & Keepsake Vault', highlight: 'pink', icon: '💌' },
-    { text: 'Instant Peer-to-Peer Sync · 0 Latency', highlight: 'blue', icon: '⚡' },
-    { text: '100% In-Browser · No Apps to Install', highlight: 'pink', icon: '✨' },
+    {
+      text: 'Sealed Love Letters & Keepsake Vault',
+      highlight: 'pink',
+      icon: '💌',
+    },
+    {
+      text: 'Instant Peer-to-Peer Sync · 0 Latency',
+      highlight: 'blue',
+      icon: '⚡',
+    },
+    {
+      text: '100% In-Browser · No Apps to Install',
+      highlight: 'pink',
+      icon: '✨',
+    },
   ];
 
   return (
-    <section className={styles.bridgeContainer} aria-label="Dearly Us Feature Bridge">
-      {/* Dreamy Ethereal Fog / Mist Horizon Layer */}
-      <div className={styles.fogMist} aria-hidden="true" />
-
+    <section
+      className={styles.bridgeContainer}
+      aria-label="Dearly Us Feature Bridge"
+    >
       <div className={styles.innerWrap}>
         {/* =================================================================== */}
         {/* 1. INFINITE LIVE VALUE-PROP & ROMANCE MARQUEE                       */}
@@ -85,7 +101,8 @@ export function CoPresenceBridge({ onExploreStage }: CoPresenceBridgeProps) {
               </div>
               <h3 className={styles.cardTitle}>Dual-Cam Photostrip</h3>
               <p className={styles.cardDesc}>
-                Snap 4-cut candid memories side-by-side with live filters, vintage frames, and stickers.
+                Snap 4-cut candid memories side-by-side with live filters,
+                vintage frames, and stickers.
               </p>
               <div className={styles.cardFooter}>
                 <span>Open Photobooth</span>
@@ -112,7 +129,8 @@ export function CoPresenceBridge({ onExploreStage }: CoPresenceBridgeProps) {
               </div>
               <h3 className={styles.cardTitle}>Distance & Timezone</h3>
               <p className={styles.cardDesc}>
-                Spin the interactive 3D globe calculating exact distance between Calgary & Jakarta in realtime.
+                Spin the interactive 3D globe calculating exact distance between
+                Calgary & Jakarta in realtime.
               </p>
               <div className={styles.cardFooter}>
                 <span>Spin 3D Globe</span>
@@ -139,7 +157,8 @@ export function CoPresenceBridge({ onExploreStage }: CoPresenceBridgeProps) {
               </div>
               <h3 className={styles.cardTitle}>Play & Draw Together</h3>
               <p className={styles.cardDesc}>
-                Late-night couple trivia, 2-player synchronized drawing, playful debates, and co-op duels.
+                Late-night couple trivia, 2-player synchronized drawing, playful
+                debates, and co-op duels.
               </p>
               <div className={styles.cardFooter}>
                 <span>Pick an Activity</span>
@@ -166,7 +185,8 @@ export function CoPresenceBridge({ onExploreStage }: CoPresenceBridgeProps) {
               </div>
               <h3 className={styles.cardTitle}>Date Passport & Vault</h3>
               <p className={styles.cardDesc}>
-                Preserve relationship milestones with 3D wax-sealed letters, digital stamps, and scrapbooks.
+                Preserve relationship milestones with 3D wax-sealed letters,
+                digital stamps, and scrapbooks.
               </p>
               <div className={styles.cardFooter}>
                 <span>View Passport</span>

@@ -1,5 +1,6 @@
 'use client';
 
+import { BrandLogo } from '@/components/shared/BrandLogo';
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { AuthButton } from '@/components/shared/AuthButton';
@@ -182,38 +183,7 @@ export function DearlyCinematicHero({
       >
         {/* Left Brand Emblem & Animated Pulse Dots */}
         <Link href="/" className={styles.brandLink} aria-label="Dearly Us Home">
-          <span
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              filter: 'drop-shadow(0 2px 10px rgba(244, 114, 182, 0.45))',
-            }}
-          >
-            <svg width="28" height="28" viewBox="0 0 128 128" fill="none">
-              <rect width="128" height="128" rx="36" fill="#0F172A" />
-              <path
-                d="M64 77 C51 93 29 86 29 64 C29 45 48 38 64 58"
-                stroke="#F472B6"
-                strokeWidth="12"
-                strokeLinecap="round"
-              />
-              <path
-                d="M64 58 C80 38 99 45 99 64 C99 86 77 93 64 77"
-                stroke="#60A5FA"
-                strokeWidth="12"
-                strokeLinecap="round"
-              />
-              <circle cx="64" cy="67" r="5" fill="#FFFFFF" />
-            </svg>
-          </span>
-          <span className={styles.brandText}>
-            Dearly<span style={{ color: '#F472B6' }}>Us</span>
-            <span className={styles.brandDots} aria-hidden="true">
-              <i className={styles.dotPink}></i>
-              <i className={styles.dotBlue}></i>
-            </span>
-          </span>
+          <BrandLogo tone="light" />
         </Link>
 
         {/* Center Navigation Links */}
@@ -243,7 +213,13 @@ export function DearlyCinematicHero({
             aria-label="Print shop"
             title="Print shop"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
               <path
                 d="M5 8h14l-1.2 12.1a1.5 1.5 0 0 1-1.5 1.4H7.7a1.5 1.5 0 0 1-1.5-1.4L5 8Z"
                 stroke="currentColor"

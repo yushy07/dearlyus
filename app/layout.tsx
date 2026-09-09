@@ -23,8 +23,9 @@ export const metadata: Metadata = {
   icons: {
     icon: '/favicon.svg',
     shortcut: '/favicon.svg',
-    apple: '/favicon.svg',
+    apple: '/apple-touch-icon.png',
   },
+  manifest: '/manifest.json',
   openGraph: {
     title: 'Dearly Us ♡ — Made for the moments that belong to you two.',
     description:
@@ -33,10 +34,10 @@ export const metadata: Metadata = {
     siteName: 'Dearly Us',
     images: [
       {
-        url: '/og.svg',
+        url: '/og.png',
         width: 1200,
         height: 630,
-        alt: 'Dearly Us — a photo strip with one partner in pink and one in blue, side by side in the same frame.',
+        alt: 'Dearly Us — our intertwined heart logo beside a keepsake photo strip for two.',
       },
     ],
     locale: 'en_US',
@@ -47,7 +48,7 @@ export const metadata: Metadata = {
     title: 'Dearly Us ♡ — Made for the moments that belong to you two.',
     description:
       'Korean Life4Cuts photobooth, IQ Duel, couple quiz, debates, drawing, arcade, and memory keepsakes — a realtime date platform for two screens across any timezone.',
-    images: ['/og.svg'],
+    images: ['/og.png'],
   },
 };
 

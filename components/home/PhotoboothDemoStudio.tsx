@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { ScrollReveal } from '@/components/ui';
+import { SceneBackdrop } from './SceneBackdrop';
 
 interface PhotoboothDemoStudioProps {
   partnerA: string;
@@ -74,7 +75,9 @@ export function PhotoboothDemoStudio({
   const [demoMode, setDemoMode] = useState<'simulated' | 'webcam'>('simulated');
   const [demoTheme, setDemoTheme] = useState(DEMO_THEMES[0]);
   const [demoPoseIdx, setDemoPoseIdx] = useState(0);
-  const [demoFilter, setDemoFilter] = useState<'none' | 'sparkles' | 'hearts' | 'cat'>('none');
+  const [demoFilter, setDemoFilter] = useState<
+    'none' | 'sparkles' | 'hearts' | 'cat'
+  >('none');
   const [demoIsShooting, setDemoIsShooting] = useState(false);
   const [demoCountdown, setDemoCountdown] = useState<number | null>(null);
   const [demoFlashing, setDemoFlashing] = useState(false);
@@ -85,7 +88,9 @@ export function PhotoboothDemoStudio({
     '/photos/frame4.webp',
   ]);
   const [demoStickers, setDemoStickers] = useState<string[]>(['💖', '✨']);
-  const [demoCoupleName, setDemoCoupleName] = useState(`${partnerA} ♡ ${partnerB}`);
+  const [demoCoupleName, setDemoCoupleName] = useState(
+    `${partnerA} ♡ ${partnerB}`,
+  );
 
   useEffect(() => {
     setDemoCoupleName(`${partnerA} ♡ ${partnerB}`);
@@ -134,7 +139,11 @@ export function PhotoboothDemoStudio({
         setDemoFlashing(true);
         setTimeout(() => setDemoFlashing(false), 300);
 
-        if (demoMode === 'webcam' && demoVideoRef.current && demoCanvasRef.current) {
+        if (
+          demoMode === 'webcam' &&
+          demoVideoRef.current &&
+          demoCanvasRef.current
+        ) {
           const c = demoCanvasRef.current;
           const ctx = c.getContext('2d');
           if (ctx) {
@@ -170,7 +179,9 @@ export function PhotoboothDemoStudio({
     if (!ctx) return;
 
     // Background
-    ctx.fillStyle = demoTheme.bg.startsWith('linear') ? '#FFFFFF' : demoTheme.bg;
+    ctx.fillStyle = demoTheme.bg.startsWith('linear')
+      ? '#FFFFFF'
+      : demoTheme.bg;
     ctx.fillRect(0, 0, 600, 1600);
 
     // Border
@@ -194,7 +205,11 @@ export function PhotoboothDemoStudio({
 
       ctx.fillStyle = '#5B5E68';
       ctx.font = 'bold 13px monospace';
-      ctx.fillText(`0${i + 1} · ${cityA.toUpperCase()} ♡ ${cityB.toUpperCase()}`, 300, y + 165);
+      ctx.fillText(
+        `0${i + 1} · ${cityA.toUpperCase()} ♡ ${cityB.toUpperCase()}`,
+        300,
+        y + 165,
+      );
     }
 
     // Footer
@@ -216,17 +231,28 @@ export function PhotoboothDemoStudio({
   };
 
   return (
-    <div style={{ background: '#ECAAC2', padding: '72px 0 84px' }}>
+    <div className="home-studio-sequence">
       {/* Photobooth Live Interactive Showcase (Dearly Us 인생네컷) */}
-      <section className="section" id="photobooth-demo" style={{ padding: 0, margin: 0, background: 'transparent', borderTop: 'none' }}>
+      <section
+        className="section"
+        id="photobooth-demo"
+        style={{
+          padding: 0,
+          margin: 0,
+          background: 'transparent',
+          borderTop: 'none',
+        }}
+      >
+        <SceneBackdrop scene="studio" />
         <canvas ref={demoCanvasRef} style={{ display: 'none' }} />
         <div className="wrap">
           <ScrollReveal animation="fade-up">
             <div className="section-head">
               <div className="kicker">Online Photobooth · 인생네컷</div>
               <h2>
-                Capture both of you in <span className="grad">one frame</span> —
-                at the exact same second.
+                A moment together.
+                <br />
+                <span className="grad">A little proof to keep.</span>
               </h2>
               <p>
                 A shared countdown fires the shot on both screens at once —
@@ -239,7 +265,9 @@ export function PhotoboothDemoStudio({
           <ScrollReveal animation="scale" delay={0.1}>
             <div className="booth-showcase-grid">
               {/* Left: Interactive Studio Booth Stage */}
-              <div className={`booth-box ${demoTheme.id === 'vintage' ? 'vintage-automat' : ''}`}>
+              <div
+                className={`booth-box ${demoTheme.id === 'vintage' ? 'vintage-automat' : ''}`}
+              >
                 {/* Studio Controls Header */}
                 <div
                   style={{
@@ -276,7 +304,9 @@ export function PhotoboothDemoStudio({
                         fontSize: '12px',
                         fontFamily: 'var(--font-mono)',
                       }}
-                      onClick={() => setDemoPoseIdx((p) => (p + 1) % DEMO_POSES.length)}
+                      onClick={() =>
+                        setDemoPoseIdx((p) => (p + 1) % DEMO_POSES.length)
+                      }
                     >
                       🎲 Shuffle Pose
                     </button>
@@ -313,13 +343,19 @@ export function PhotoboothDemoStudio({
                   ) : (
                     <div className="booth-duo-view">
                       <div className="booth-feed-panel">
-                        <img src="/photos/face-calgary.webp" alt="Partner 1 feed" />
+                        <img
+                          src="/photos/face-calgary.webp"
+                          alt="Partner 1 feed"
+                        />
                         <div className="feed-city-badge pink">
                           <span className="dot"></span> {cityA} ({partnerA})
                         </div>
                       </div>
                       <div className="booth-feed-panel">
-                        <img src="/photos/face-jakarta.webp" alt="Partner 2 feed" />
+                        <img
+                          src="/photos/face-jakarta.webp"
+                          alt="Partner 2 feed"
+                        />
                         <div className="feed-city-badge blue">
                           <span className="dot"></span> {cityB} ({partnerB})
                         </div>
@@ -349,9 +385,15 @@ export function PhotoboothDemoStudio({
                         zIndex: 6,
                       }}
                     >
-                      <span style={{ animation: 'pulse 1.5s infinite' }}>✨</span>
-                      <span style={{ animation: 'pulse 1.2s infinite 0.3s' }}>🌟</span>
-                      <span style={{ animation: 'pulse 1.4s infinite 0.6s' }}>✨</span>
+                      <span style={{ animation: 'pulse 1.5s infinite' }}>
+                        ✨
+                      </span>
+                      <span style={{ animation: 'pulse 1.2s infinite 0.3s' }}>
+                        🌟
+                      </span>
+                      <span style={{ animation: 'pulse 1.4s infinite 0.6s' }}>
+                        ✨
+                      </span>
                     </div>
                   )}
                   {demoFilter === 'hearts' && (
@@ -368,7 +410,9 @@ export function PhotoboothDemoStudio({
                       }}
                     >
                       <span style={{ animation: 'float 2s infinite' }}>💖</span>
-                      <span style={{ animation: 'float 2.4s infinite 0.5s' }}>💕</span>
+                      <span style={{ animation: 'float 2.4s infinite 0.5s' }}>
+                        💕
+                      </span>
                     </div>
                   )}
                   {demoFilter === 'cat' && (
@@ -437,7 +481,9 @@ export function PhotoboothDemoStudio({
                               ? '1.5px solid var(--pink)'
                               : '1px solid var(--line)',
                           background:
-                            demoFilter === f.id ? 'var(--pink-tint)' : 'var(--paper)',
+                            demoFilter === f.id
+                              ? 'var(--pink-tint)'
+                              : 'var(--paper)',
                           fontSize: '11px',
                           fontWeight: 700,
                           color: 'var(--ink)',
@@ -454,7 +500,9 @@ export function PhotoboothDemoStudio({
                     disabled={demoIsShooting}
                     style={{ padding: '10px 24px', fontSize: '15px' }}
                   >
-                    {demoIsShooting ? 'Taking 4 Shots 📸...' : 'Take 4 Photos 📸'}
+                    {demoIsShooting
+                      ? 'Taking 4 Shots 📸...'
+                      : 'Take 4 Photos 📸'}
                   </button>
                 </div>
 
@@ -479,7 +527,9 @@ export function PhotoboothDemoStudio({
                   >
                     Photostrip Theme &amp; Room Style:
                   </span>
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <div
+                    style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}
+                  >
                     {DEMO_THEMES.map((theme) => (
                       <button
                         key={theme.id}
@@ -495,8 +545,12 @@ export function PhotoboothDemoStudio({
                           color: theme.text,
                           fontWeight: 700,
                           fontSize: '11.5px',
-                          boxShadow: demoTheme.id === theme.id ? 'var(--shadow)' : 'none',
-                          transform: demoTheme.id === theme.id ? 'scale(1.03)' : 'none',
+                          boxShadow:
+                            demoTheme.id === theme.id
+                              ? 'var(--shadow)'
+                              : 'none',
+                          transform:
+                            demoTheme.id === theme.id ? 'scale(1.03)' : 'none',
                           transition: 'all 0.15s ease',
                         }}
                       >
@@ -673,13 +727,25 @@ export function PhotoboothDemoStudio({
       </section>
 
       {/* Quiz Live Demo Showcase */}
-      <section className="section" id="quiz-demo" style={{ background: 'transparent', borderTop: 'none', padding: '64px 0 0' }}>
+      <section
+        className="section"
+        id="quiz-demo"
+        style={{
+          background: 'transparent',
+          borderTop: 'none',
+          padding: '64px 0 0',
+        }}
+      >
         <div className="wrap">
           <ScrollReveal animation="fade-up">
             <div className="qd-grid">
               <div className="section-head" style={{ margin: 0 }}>
                 <div className="kicker">See it in action</div>
-                <h2>Watch a round of our most-played game.</h2>
+                <h2>
+                  Still finding little things
+                  <br />
+                  <em>to love about you.</em>
+                </h2>
                 <img
                   className="qd-art"
                   src="/photos/quiz-duo.webp"
@@ -752,12 +818,23 @@ export function PhotoboothDemoStudio({
       </section>
 
       {/* Keepsake Print Band */}
-      <section className="section print-band" id="print" style={{ padding: '64px 0 0', margin: 0, background: 'transparent', borderTop: 'none' }}>
+      <section
+        className="section print-band"
+        id="print"
+        style={{
+          padding: '64px 0 0',
+          margin: 0,
+          background: 'transparent',
+          borderTop: 'none',
+        }}
+      >
         <div className="wrap">
           <ScrollReveal animation="fade-up">
             <div className="pb-grid">
               <div className="pb-copy">
-                <div className="kicker">Digital Keepsakes &amp; Print Sheets</div>
+                <div className="kicker">
+                  Digital Keepsakes &amp; Print Sheets
+                </div>
                 <h2>
                   Preserve your memories with{' '}
                   <span className="grad">printable DIY keepsakes</span>.
@@ -768,7 +845,8 @@ export function PhotoboothDemoStudio({
                 </p>
                 <ul className="pb-feats">
                   <li>
-                    300 DPI high-res printable photo sheets for standard 4×6 paper
+                    300 DPI high-res printable photo sheets for standard 4×6
+                    paper
                   </li>
                   <li>
                     Matching couple lockscreen &amp; desktop wallpaper pairs
@@ -780,7 +858,8 @@ export function PhotoboothDemoStudio({
                     Open Keepsakes Studio <span className="arr">▷</span>
                   </Link>
                   <span className="pb-ships">
-                    ✨ 300 DPI high-res layouts · Print at home or any local photo kiosk
+                    ✨ 300 DPI high-res layouts · Print at home or any local
+                    photo kiosk
                   </span>
                 </div>
               </div>

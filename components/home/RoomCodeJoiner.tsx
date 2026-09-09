@@ -65,15 +65,16 @@ export function RoomCodeJoiner({ roomCode, setRoomCode }: RoomCodeJoinerProps) {
   };
 
   return (
-    <div style={{ background: '#FAF0D4', padding: '64px 0 54px' }}>
+    <div className="home-room" style={{ padding: '64px 0 54px' }}>
       {/* Closer Headline & Interactive Code Joiner */}
       <section className="section closer" style={{ padding: 0, margin: 0 }}>
         <div className="wrap">
           <div className="closer-grid">
             <div>
               <h2>
-                One sanctuary of games &amp; moments for{' '}
-                <span className="grad">two hearts apart</span>.
+                Your person.
+                <br />
+                <span className="grad">Your little world.</span>
               </h2>
             </div>
             <div className="closer-aside">
@@ -156,7 +157,11 @@ export function RoomCodeJoiner({ roomCode, setRoomCode }: RoomCodeJoinerProps) {
       </section>
 
       {/* Stats Band (Social Proof) */}
-      <section className="section stats" id="stats" style={{ padding: '48px 0 0', margin: 0 }}>
+      <section
+        className="section stats"
+        id="stats"
+        style={{ padding: '48px 0 0', margin: 0 }}
+      >
         <div className="wrap">
           <div className="statgrid">
             <div className="stat">

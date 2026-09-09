@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { ScrollReveal } from '@/components/ui';
+import { KeepsakeArtwork } from './KeepsakeArtwork';
 
 export function HomeActivitiesGrid() {
   return (
@@ -10,7 +11,6 @@ export function HomeActivitiesGrid() {
       className="section"
       id="activities"
       style={{
-        background: '#DABBE0',
         padding: '72px 0 84px',
         margin: 0,
       }}
@@ -37,7 +37,8 @@ export function HomeActivitiesGrid() {
               New · the ones we can&apos;t stop playing
             </span>
 
-            <Link className="act card-3d" href="/letter">
+            <Link className="act card-3d home-letter-card" href="/letter">
+              <KeepsakeArtwork kind="letter" />
               <div className="ic layer-z2">
                 <svg viewBox="0 0 34 34" fill="none">
                   <rect
@@ -78,16 +79,17 @@ export function HomeActivitiesGrid() {
                 <span className="badge new layer-z3">New</span>
               </h3>
               <p>
-                Write to the two of you years from now. Pick a date up to
-                twelve years out — we hold the letter sealed until that
-                morning, then send it to you, to them, or to both.
+                Write to the two of you years from now. Pick a date up to twelve
+                years out — we hold the letter sealed until that morning, then
+                send it to you, to them, or to both.
               </p>
               <span className="go layer-z2">
                 Write a letter <span className="arr">▷</span>
               </span>
             </Link>
 
-            <Link className="act card-3d" href="/scrapbook">
+            <Link className="act card-3d home-feature-art" href="/scrapbook">
+              <KeepsakeArtwork kind="scrapbook" />
               <div className="ic layer-z2">
                 <svg viewBox="0 0 34 34" fill="none">
                   <rect
@@ -122,16 +124,17 @@ export function HomeActivitiesGrid() {
                 <span className="badge new layer-z3">New</span>
               </h3>
               <p>
-                The one thing here you come back to. Tape your real
-                photostrips onto paper pages, draw on them, write captions in
-                your own hand — both of you on the same page at once.
+                The one thing here you come back to. Tape your real photostrips
+                onto paper pages, draw on them, write captions in your own hand
+                — both of you on the same page at once.
               </p>
               <span className="go layer-z2">
                 Open the book <span className="arr">▷</span>
               </span>
             </Link>
 
-            <Link className="act card-3d" href="/birthday">
+            <Link className="act card-3d home-gift-card" href="/birthday">
+              <KeepsakeArtwork kind="gift" />
               <div className="ic layer-z2">
                 <svg viewBox="0 0 34 34" fill="none">
                   <rect
@@ -211,9 +214,9 @@ export function HomeActivitiesGrid() {
                   <span className="badge on">Always free</span>
                 </h3>
                 <p>
-                  The realtime 인생네컷 booth for two — a shared countdown
-                  fires the shot on both screens at once, so every frame holds
-                  both of you.
+                  The realtime 인생네컷 booth for two — a shared countdown fires
+                  the shot on both screens at once, so every frame holds both of
+                  you.
                 </p>
               </div>
               <span className="arr-go">Open the booth ▷</span>
@@ -373,8 +376,8 @@ export function HomeActivitiesGrid() {
                 Our Future <span className="badge new">New</span>
               </h3>
               <p>
-                Design your future together — home, travel, money, tiny humans
-                — then turn it into a scrapbook vision board + plan.
+                Design your future together — home, travel, money, tiny humans —
+                then turn it into a scrapbook vision board + plan.
               </p>
             </Link>
 
@@ -568,8 +571,8 @@ export function HomeActivitiesGrid() {
               </div>
               <h3>Snap Hunt</h3>
               <p>
-                Race your homes to match a loose clue — cleverest find takes
-                the round.
+                Race your homes to match a loose clue — cleverest find takes the
+                round.
               </p>
             </Link>
 
@@ -594,8 +597,8 @@ export function HomeActivitiesGrid() {
               </div>
               <h3>Riddle Night</h3>
               <p>
-                The legendary riddles — talk them out, lock in privately,
-                reveal together.
+                The legendary riddles — talk them out, lock in privately, reveal
+                together.
               </p>
             </Link>
 
@@ -669,8 +672,8 @@ export function HomeActivitiesGrid() {
                 The Lab <span className="badge new">New</span>
               </h3>
               <p>
-                A study date with a scoreboard — real math &amp; science,
-                versus or co-op.
+                A study date with a scoreboard — real math &amp; science, versus
+                or co-op.
               </p>
             </Link>
 
@@ -683,8 +686,8 @@ export function HomeActivitiesGrid() {
                 Honest Cards <span className="badge new">New</span>
               </h3>
               <p>
-                A deck of honest questions — you both answer privately, it
-                opens at once.
+                A deck of honest questions — you both answer privately, it opens
+                at once.
               </p>
             </Link>
 
@@ -711,8 +714,8 @@ export function HomeActivitiesGrid() {
                 100 Dates Bucket List <span className="badge new">New</span>
               </h3>
               <p>
-                Scratch off milestone cards from late-night video call dates
-                to airport hugs and grocery runs.
+                Scratch off milestone cards from late-night video call dates to
+                airport hugs and grocery runs.
               </p>
             </Link>
 
@@ -739,8 +742,8 @@ export function HomeActivitiesGrid() {
                 Time Capsule Letters <span className="badge new">New</span>
               </h3>
               <p>
-                Write letters to future you, sealed in a vault until your
-                chosen reunion anniversary.
+                Write letters to future you, sealed in a vault until your chosen
+                reunion anniversary.
               </p>
             </Link>
           </div>

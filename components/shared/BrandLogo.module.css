@@ -1,0 +1,53 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  line-height: 1;
+  text-shadow: none;
+  letter-spacing: 0;
+}
+.dark {
+  --brand-ink: #493039;
+  --brand-accent: #945663;
+}
+.light {
+  --brand-ink: #faf3e8;
+  --brand-accent: #dab4b6;
+}
+.mark {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  color: var(--brand-accent);
+}
+.wordmark {
+  font-family: var(--font-serif, Georgia, serif);
+  font-size: 27px;
+  font-weight: 600;
+  letter-spacing: -0.055em;
+  color: var(--brand-ink);
+}
+.wordmark em {
+  font-weight: 600;
+  color: var(--brand-accent);
+}
+.period {
+  color: var(--brand-accent);
+}
+.large .mark {
+  width: 48px;
+  height: 48px;
+}
+.large .wordmark {
+  font-size: 34px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .mark {
+    transition: transform 0.3s ease;
+  }
+  a:hover .mark {
+    transform: rotate(-4deg);
+  }
+}

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { AuroraBackground, ShinyText } from '@/components/ui';
+import { SceneBackdrop } from './SceneBackdrop';
 
 interface InteractivePlaygroundProps {
   partnerA: string;
@@ -20,7 +20,12 @@ export function InteractivePlayground({
   roomCode,
 }: InteractivePlaygroundProps) {
   // Photobooth machine simulator state
-  const [litFrames, setLitFrames] = useState<boolean[]>([false, false, false, false]);
+  const [litFrames, setLitFrames] = useState<boolean[]>([
+    false,
+    false,
+    false,
+    false,
+  ]);
   const [shotStep, setShotStep] = useState<number>(0);
   const [countNum, setCountNum] = useState<string>('');
   const [flashing, setFlashing] = useState<boolean>(false);
@@ -68,17 +73,16 @@ export function InteractivePlayground({
 
   return (
     <section
-      className="hero"
+      className="hero home-landscape"
       id="top"
       style={{
         position: 'relative',
         overflow: 'hidden',
-        background: '#BED1E3',
         paddingTop: '32px',
         paddingBottom: '64px',
       }}
     >
-      <AuroraBackground />
+      <SceneBackdrop scene="landscape" />
 
       <div className="wrap" style={{ position: 'relative', zIndex: 2 }}>
         <div className="hero-copy">
@@ -92,7 +96,8 @@ export function InteractivePlayground({
             }}
           >
             <span className="eyebrow" style={{ margin: 0 }}>
-              LIVE CO-PRESENCE STAGE · <ShinyText text={`${cityA.toUpperCase()} ⟷ ${cityB.toUpperCase()}`} />
+              LIVE CO-PRESENCE STAGE · {cityA.toUpperCase()} ⟷{' '}
+              {cityB.toUpperCase()}
             </span>
             <div
               style={{
@@ -113,17 +118,18 @@ export function InteractivePlayground({
           </div>
 
           <h2>
-            Two Hearts.
+            A little closer.
             <br />
-            <span className="pink">One Realtime</span>{' '}
-            <span className="blue">Screen</span>.
+            <em>Even from here.</em>
           </h2>
 
           <p className="lede">
             <span style={{ color: 'var(--blue)', fontWeight: 700 }}>
               Synchronized across any distance.
             </span>{' '}
-            Spin the interactive 3D globe to check flight paths and live distance, or snap authentic Korean Life4Cuts photostrips together across the miles.
+            Spin the interactive 3D globe to check flight paths and live
+            distance, or snap authentic Korean Life4Cuts photostrips together
+            across the miles.
           </p>
 
           <div className="cta-row">
@@ -136,6 +142,7 @@ export function InteractivePlayground({
           </div>
 
           <div
+            className="home-browser-note"
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -185,7 +192,13 @@ export function InteractivePlayground({
                   <stop offset="68%" stopColor="#5495D6" />
                   <stop offset="100%" stopColor="#3A6FAE" />
                 </radialGradient>
-                <linearGradient id="gl-landfill" x1=".15" y1="0" x2=".9" y2=".9">
+                <linearGradient
+                  id="gl-landfill"
+                  x1=".15"
+                  y1="0"
+                  x2=".9"
+                  y2=".9"
+                >
                   <stop offset="0%" stopColor="#6FD189" />
                   <stop offset="45%" stopColor="#41B76B" />
                   <stop offset="78%" stopColor="#2A9A57" />
@@ -205,7 +218,14 @@ export function InteractivePlayground({
               </defs>
 
               {/* Lit sphere background */}
-              <circle cx="300" cy="300" r="252" fill="#7FC0FF" opacity=".40" className="gl-halo" />
+              <circle
+                cx="300"
+                cy="300"
+                r="252"
+                fill="#7FC0FF"
+                opacity=".40"
+                className="gl-halo"
+              />
               <circle cx="300" cy="300" r="252" fill="url(#gl-sphere)" />
 
               {/* Globe continent paths & graticules */}
@@ -218,17 +238,41 @@ export function InteractivePlayground({
                   className="gl-glow"
                   d="M 140 200 Q 200 160 260 200 T 380 240 T 440 180 Q 490 230 460 330 T 340 420 T 220 400 Z"
                 />
-                <ellipse cx="300" cy="300" rx="210" ry="250" className="gl-grat" />
-                <ellipse cx="300" cy="300" rx="140" ry="250" className="gl-grat" />
-                <ellipse cx="300" cy="300" rx="70" ry="250" className="gl-grat" />
+                <ellipse
+                  cx="300"
+                  cy="300"
+                  rx="210"
+                  ry="250"
+                  className="gl-grat"
+                />
+                <ellipse
+                  cx="300"
+                  cy="300"
+                  rx="140"
+                  ry="250"
+                  className="gl-grat"
+                />
+                <ellipse
+                  cx="300"
+                  cy="300"
+                  rx="70"
+                  ry="250"
+                  className="gl-grat"
+                />
                 <line x1="300" y1="48" x2="300" y2="552" className="gl-grat" />
                 <line x1="48" y1="300" x2="552" y2="300" className="gl-grat" />
                 <line x1="80" y1="200" x2="520" y2="200" className="gl-grat" />
                 <line x1="80" y1="400" x2="520" y2="400" className="gl-grat" />
 
                 {/* Connecting Arcs */}
-                <path d="M 478 214 C 418 188 360 220 320 286" className="gl-arc pink" />
-                <path d="M 126 392 C 188 420 244 386 282 312" className="gl-arc blue" />
+                <path
+                  d="M 478 214 C 418 188 360 220 320 286"
+                  className="gl-arc pink"
+                />
+                <path
+                  d="M 126 392 C 188 420 244 386 282 312"
+                  className="gl-arc blue"
+                />
               </g>
             </svg>
 
@@ -284,7 +328,9 @@ export function InteractivePlayground({
                   <div className="count">
                     <span className="num">{countNum}</span>
                   </div>
-                  {flashing && <div className="flash" style={{ opacity: 0.9 }}></div>}
+                  {flashing && (
+                    <div className="flash" style={{ opacity: 0.9 }}></div>
+                  )}
 
                   <div className={`frame ${litFrames[0] ? 'lit' : ''}`}>
                     <span className="num">01</span>
@@ -335,19 +381,43 @@ export function InteractivePlayground({
                 <div className="strip" id="strip2" aria-hidden="true">
                   <div className="frame lit">
                     <span className="num">01</span>
-                    <img className="shot" src="/photos/b1.webp" width="503" height="377" alt="" />
+                    <img
+                      className="shot"
+                      src="/photos/b1.webp"
+                      width="503"
+                      height="377"
+                      alt=""
+                    />
                   </div>
                   <div className="frame lit">
                     <span className="num">02</span>
-                    <img className="shot" src="/photos/b2.webp" width="503" height="377" alt="" />
+                    <img
+                      className="shot"
+                      src="/photos/b2.webp"
+                      width="503"
+                      height="377"
+                      alt=""
+                    />
                   </div>
                   <div className="frame lit">
                     <span className="num">03</span>
-                    <img className="shot" src="/photos/b3.webp" width="503" height="377" alt="" />
+                    <img
+                      className="shot"
+                      src="/photos/b3.webp"
+                      width="503"
+                      height="377"
+                      alt=""
+                    />
                   </div>
                   <div className="frame lit">
                     <span className="num">04</span>
-                    <img className="shot" src="/photos/b4.webp" width="503" height="377" alt="" />
+                    <img
+                      className="shot"
+                      src="/photos/b4.webp"
+                      width="503"
+                      height="377"
+                      alt=""
+                    />
                   </div>
                   <div className="serial">
                     dearly us · <b>7K2QF</b>

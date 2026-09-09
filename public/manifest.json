@@ -4,8 +4,8 @@
   "description": "Made for the moments that belong to you two. Realtime games, Korean Life4Cuts photobooth, and 35 activities for couples.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FAF8F5",
-  "theme_color": "#1C1924",
+  "background_color": "#FAF3E8",
+  "theme_color": "#493039",
   "orientation": "portrait-primary",
   "categories": ["lifestyle", "entertainment", "social"],
   "icons": [
@@ -16,19 +16,15 @@
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon-192.svg",
+      "src": "/icons/icon-192.png",
       "sizes": "192x192",
-      "type": "image/svg+xml"
-    },
-    {
-      "src": "/icons/icon-512.svg",
-      "sizes": "512x512",
-      "type": "image/svg+xml"
-    },
-    {
-      "src": "/og.png",
-      "sizes": "512x512",
       "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ],
   "shortcuts": [

@@ -1,5 +1,6 @@
 'use client';
 
+import { BrandLogo } from '@/components/shared/BrandLogo';
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { sounds } from '@/lib/sound';
@@ -355,30 +356,7 @@ export default function DarePage() {
               onClick={() => sounds.playPop()}
               aria-label="Dearly Us Home"
             >
-              <span className="brand-emblem" aria-hidden="true">
-                <svg width="28" height="28" viewBox="0 0 128 128" fill="none">
-                  <rect width="128" height="128" rx="36" fill="#1C1924" />
-                  <path
-                    d="M64 77 C51 93 29 86 29 64 C29 45 48 38 64 58"
-                    stroke="#FF4E78"
-                    strokeWidth="12"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M64 58 C80 38 99 45 99 64 C99 86 77 93 64 77"
-                    stroke="#437EEB"
-                    strokeWidth="12"
-                    strokeLinecap="round"
-                  />
-                  <circle cx="64" cy="67" r="5" fill="#FFFFFF" />
-                </svg>
-              </span>
-              <span className="brand-dearly">Dearly</span>
-              <span className="brand-us">Us</span>
-              <span className="dots">
-                <i className="p"></i>
-                <i className="b"></i>
-              </span>
+              <BrandLogo tone="light" />
             </Link>
           </div>
 

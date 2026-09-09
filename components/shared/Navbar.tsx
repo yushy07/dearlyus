@@ -1,5 +1,6 @@
 'use client';
 
+import { BrandLogo } from '@/components/shared/BrandLogo';
 import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -41,30 +42,7 @@ export function Navbar({
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             {/* Brand Emblem & Logo */}
             <Link className="brand" href="/" aria-label="Dearly Us Home">
-              <span className="brand-emblem" aria-hidden="true">
-                <svg width="28" height="28" viewBox="0 0 128 128" fill="none">
-                  <rect width="128" height="128" rx="36" fill="#0F172A" />
-                  <path
-                    d="M64 77 C51 93 29 86 29 64 C29 45 48 38 64 58"
-                    stroke="#F472B6"
-                    strokeWidth="12"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M64 58 C80 38 99 45 99 64 C99 86 77 93 64 77"
-                    stroke="#60A5FA"
-                    strokeWidth="12"
-                    strokeLinecap="round"
-                  />
-                  <circle cx="64" cy="67" r="5" fill="#FFFFFF" />
-                </svg>
-              </span>
-              <span className="brand-dearly">Dearly</span>
-              <span className="brand-us">Us</span>
-              <span className="dots" aria-hidden="true">
-                <i className="p"></i>
-                <i className="b"></i>
-              </span>
+              <BrandLogo tone="light" />
             </Link>
 
             {/* Desktop Navigation Links */}
@@ -88,7 +66,13 @@ export function Navbar({
                   aria-label="Print shop"
                   title="Print shop"
                 >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                  >
                     <path
                       d="M5 8h14l-1.2 12.1a1.5 1.5 0 0 1-1.5 1.4H7.7a1.5 1.5 0 0 1-1.5-1.4L5 8Z"
                       stroke="currentColor"
@@ -108,7 +92,9 @@ export function Navbar({
 
             {/* In-room context display */}
             {isInsideRoom && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div
+                style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
+              >
                 <span
                   style={{
                     fontFamily: 'var(--font-mono)',
@@ -151,7 +137,14 @@ export function Navbar({
           </div>
 
           {/* Right Nav Action */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              flexShrink: 0,
+            }}
+          >
             {rightAction ? (
               rightAction
             ) : isInsideRoom ? (
@@ -196,7 +189,11 @@ export function Navbar({
                       ? `/room/${space.activeRoomCode}`
                       : '/our-space'
                   }
-                  style={{ fontSize: '12.5px', padding: '7px 16px', borderRadius: '9999px' }}
+                  style={{
+                    fontSize: '12.5px',
+                    padding: '7px 16px',
+                    borderRadius: '9999px',
+                  }}
                 >
                   Start date night ▷
                 </Link>

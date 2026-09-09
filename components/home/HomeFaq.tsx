@@ -36,7 +36,6 @@ export function HomeFaq() {
       className="section"
       id="faq"
       style={{
-        background: '#C8DCBA',
         padding: '80px 0 100px',
         margin: 0,
       }}

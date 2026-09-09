@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { SceneBackdrop } from './SceneBackdrop';
 
 export function CuratedJourneyBand() {
   return (
@@ -9,7 +10,6 @@ export function CuratedJourneyBand() {
       className="section august-band"
       id="curated-journey"
       style={{
-        background: '#EEBFD1',
         padding: '64px 0',
         margin: 0,
       }}
@@ -23,15 +23,20 @@ export function CuratedJourneyBand() {
               width="1440"
               height="930"
             />
+            <SceneBackdrop scene="garden" />
             <span className="august-stamp">✦ Curated Sanctuary Experience</span>
           </span>
           <span className="august-body">
             <span className="august-eyebrow">Couples Night Sanctuary</span>
             <h2>
-              The <em>Complete Date Journey</em> — an entire evening, beautifully planned.
+              An evening,
+              <br />
+              <em>just for the two of you.</em>
             </h2>
             <p>
-              Seven intimate moments to experience synchronously in one room, across any distance. From cozy warmup banters to deep connection cards and matching keepsakes.
+              Seven intimate moments to experience synchronously in one room,
+              across any distance. From cozy warmup banters to deep connection
+              cards and matching keepsakes.
             </p>
 
             <ul className="august-run" style={{ marginTop: '20px' }}>
