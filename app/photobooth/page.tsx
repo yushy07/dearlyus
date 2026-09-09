@@ -220,6 +220,7 @@ export default function PhotoboothPage() {
   const [contrast, setContrast] = useState<number>(100);
   const [filmGrain, setFilmGrain] = useState<boolean>(false);
   const [customFrameColor, setCustomFrameColor] = useState<string | null>(null);
+  const [isComparingOriginal, setIsComparingOriginal] = useState<boolean>(false);
 
   const playSound = (action: () => void) => {
     if (soundEnabled) action();
@@ -976,6 +977,110 @@ export default function PhotoboothPage() {
 
     const a = document.createElement('a');
     a.download = `dearly-us-${isTwinStrip ? 'twin-strip' : 'photostrip'}-${roomCode}.png`;
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+
+    sounds.playCelebration();
+    setConfettiActive(true);
+    setTimeout(() => setConfettiActive(false), 4000);
+  };
+
+  // 4×6" Archival Photo Paper Print Sheet Engine (1200×1800 at 300 DPI) for Photo Kiosks & Home Printing
+  const generatePrintSheet4x6Canvas = async (): Promise<HTMLCanvasElement | null> => {
+    const singleStripCanvas = await generateStripCanvas(false);
+    if (!singleStripCanvas) return null;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 1200;
+    canvas.height = 1800;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+
+    // 1. Archival White Photo Paper Background
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, 1200, 1800);
+
+    // 2. Header and Footer lab metadata
+    ctx.fillStyle = '#64748B';
+    ctx.font = 'bold 13px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(
+      'DEARLY US · 4×6" ARCHIVAL PHOTO PAPER (300 DPI) · KOREAN LIFE4CUTS KEEPSAKE',
+      600,
+      48,
+    );
+
+    ctx.font = '11px monospace';
+    ctx.fillStyle = '#94A3B8';
+    ctx.fillText(
+      'PRINT AT 100% SCALE (BORDERLESS OR FIT TO 4×6" / 10×15CM PHOTO PAPER) · 2 STRIPS PER SHEET',
+      600,
+      1745,
+    );
+
+    // 3. Draw Left & Right Strips side-by-side (515px width each)
+    // Left: x=55..570 | Center Gutter: 570..630 | Right: x=630..1145
+    ctx.drawImage(singleStripCanvas, 55, 80, 515, 1600);
+    ctx.drawImage(singleStripCanvas, 630, 80, 515, 1600);
+
+    // 4. Center Scissor Cutting Guide
+    ctx.save();
+    ctx.setLineDash([10, 8]);
+    ctx.strokeStyle = '#94A3B8';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(600, 65);
+    ctx.lineTo(600, 1715);
+    ctx.stroke();
+
+    ctx.font = 'bold 13px monospace';
+    ctx.fillStyle = '#64748B';
+    ctx.textAlign = 'center';
+    ctx.fillText('✂ CUT HERE ✂', 600, 72);
+    ctx.fillText('✂ CUT HERE ✂', 600, 1710);
+    ctx.restore();
+
+    // 5. Corner Crop Marks for Precision Trimming
+    const drawCornerCropMarks = (x: number, y: number, w: number, h: number) => {
+      ctx.save();
+      ctx.strokeStyle = '#CBD5E1';
+      ctx.lineWidth = 1.5;
+      const tick = 18;
+      // Top-left
+      ctx.beginPath();
+      ctx.moveTo(x, y + tick);
+      ctx.lineTo(x, y);
+      ctx.lineTo(x + tick, y);
+      // Top-right
+      ctx.moveTo(x + w - tick, y);
+      ctx.lineTo(x + w, y);
+      ctx.lineTo(x + w, y + tick);
+      // Bottom-left
+      ctx.beginPath();
+      ctx.moveTo(x, y + h - tick);
+      ctx.lineTo(x, y + h);
+      ctx.lineTo(x + tick, y + h);
+      // Bottom-right
+      ctx.moveTo(x + w - tick, y + h);
+      ctx.lineTo(x + w, y + h);
+      ctx.lineTo(x + w, y + h - tick);
+      ctx.stroke();
+      ctx.restore();
+    };
+
+    drawCornerCropMarks(55, 80, 515, 1600);
+    drawCornerCropMarks(630, 80, 515, 1600);
+
+    return canvas;
+  };
+
+  const downloadPrintSheet4x6 = async () => {
+    sounds.playTick();
+    const canvas = await generatePrintSheet4x6Canvas();
+    if (!canvas) return;
+
+    const a = document.createElement('a');
+    a.download = `dearly-us-4x6-print-sheet-${roomCode}.png`;
     a.href = canvas.toDataURL('image/png');
     a.click();
 
@@ -2888,24 +2993,51 @@ export default function PhotoboothPage() {
                   >
                     Photo Fine-Tuning:
                   </span>
-                  <button
-                    onClick={() => {
-                      sounds.playTick();
-                      setBrightness(100);
-                      setContrast(100);
-                      setFilmGrain(false);
-                    }}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: 'var(--pink)',
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Reset Adjustments
-                  </button>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <button
+                      onPointerDown={() => setIsComparingOriginal(true)}
+                      onPointerUp={() => setIsComparingOriginal(false)}
+                      onPointerLeave={() => setIsComparingOriginal(false)}
+                      style={{
+                        background: isComparingOriginal
+                          ? 'var(--pink)'
+                          : 'var(--paper-raised)',
+                        color: isComparingOriginal ? '#fff' : 'var(--ink)',
+                        border: '1px solid var(--line)',
+                        borderRadius: '6px',
+                        padding: '3px 9px',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        cursor: 'pointer',
+                        userSelect: 'none',
+                        transition: 'all 0.15s ease',
+                      }}
+                      title="Press and hold to view raw un-graded camera original; release to return to graded look"
+                    >
+                      👁️ {isComparingOriginal ? 'Raw Original...' : 'Hold to Compare'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        sounds.playTick();
+                        setBrightness(100);
+                        setContrast(100);
+                        setFilmGrain(false);
+                      }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--pink)',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Reset Adjustments
+                    </button>
+                  </div>
                 </div>
 
                 {/* Brightness Presets */}
@@ -3202,18 +3334,58 @@ export default function PhotoboothPage() {
             </div>
 
             {/* Right Strip */}
-            <div className="strip-preview-holder">
+            <div
+              className="strip-preview-holder"
+              onPointerDown={() => setIsComparingOriginal(true)}
+              onPointerUp={() => setIsComparingOriginal(false)}
+              onPointerLeave={() => setIsComparingOriginal(false)}
+              title="Tip: Press & hold anywhere on the strip to compare against RAW camera original"
+            >
               <div
                 className="real-strip"
                 style={{
-                  background: customFrameColor || selectedStyle.bg,
-                  color: selectedStyle.color,
-                  borderColor: selectedStyle.border,
+                  background: isComparingOriginal
+                    ? '#FFFFFF'
+                    : customFrameColor || selectedStyle.bg,
+                  color: isComparingOriginal ? '#17181C' : selectedStyle.color,
+                  borderColor: isComparingOriginal
+                    ? '#E2E8F0'
+                    : selectedStyle.border,
+                  position: 'relative',
                 }}
               >
+                {/* Hold to Compare Floating Badge */}
+                {isComparingOriginal && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '12px',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      background: 'rgba(23, 24, 28, 0.92)',
+                      color: '#FFFFFF',
+                      padding: '5px 12px',
+                      borderRadius: '20px',
+                      fontSize: '11px',
+                      fontWeight: 800,
+                      letterSpacing: '0.5px',
+                      zIndex: 50,
+                      pointerEvents: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      boxShadow: '0 4px 14px rgba(0,0,0,0.4)',
+                      border: '1px solid rgba(255, 255, 255, 0.25)',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    <span style={{ color: '#FFD700' }}>👁️</span> RAW ORIGINAL (NO GRADING)
+                  </div>
+                )}
+
                 <div className="real-strip-brand">DEARLY US · 인생네컷</div>
                 <div className="real-strip-frames" style={{ position: 'relative' }}>
-                  {filmGrain && (
+                  {filmGrain && !isComparingOriginal && (
                     <div
                       style={{
                         position: 'absolute',
@@ -3231,7 +3403,9 @@ export default function PhotoboothPage() {
                         src={shot}
                         alt=""
                         style={{
-                          filter: `${selectedColorFilter.filter} brightness(${brightness}%) contrast(${contrast}%)`,
+                          filter: isComparingOriginal
+                            ? 'none'
+                            : `${selectedColorFilter.filter} brightness(${brightness}%) contrast(${contrast}%)`,
                           transform: `rotate(${cutTransforms[idx]?.rotation || 0}deg) ${cutTransforms[idx]?.flipX ? 'scaleX(-1)' : ''}`,
                         }}
                       />
@@ -3831,6 +4005,25 @@ export default function PhotoboothPage() {
                   }}
                 >
                   Download High-Res {isTwinStrip ? 'Twin-Strip (1200×1600)' : 'Strip (600×1600)'} PNG 💾
+                </button>
+                <button
+                  className="btn btn-ghost"
+                  onClick={downloadPrintSheet4x6}
+                  style={{
+                    width: '100%',
+                    justifyContent: 'center',
+                    padding: '10px 14px',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    border: '1px solid var(--line)',
+                    background: 'var(--paper)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}
+                  title="Export print-ready 1200×1800 px sheet (standard 4×6 inch photo paper at 300 DPI) with scissor cut guide"
+                >
+                  <span>🖨️</span> Download 4×6" Print Sheet (1200×1800) PNG
                 </button>
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <button

@@ -397,6 +397,91 @@ describe('Photobooth Experience & Mechanics', () => {
       expect(resolveBg(cardstockPalette[2].hex)).toBe('#FFE4E8');
       expect(resolveBg(cardstockPalette[7].hex)).toBe('#DCFCE7');
     });
+
+    it('bypasses color grading and grain when Hold to Compare is active', () => {
+      const activeFilter = 'contrast(1.15) brightness(1.05) saturate(1.2)';
+      const brightness = 110;
+      const contrast = 95;
+
+      const resolveFilterStyle = (
+        isComparing: boolean,
+        filterStr: string,
+        b: number,
+        c: number,
+      ) => {
+        if (isComparing) return 'none';
+        return `${filterStr} brightness(${b}%) contrast(${c}%)`;
+      };
+
+      // Graded / Styled state
+      const styledFilter = resolveFilterStyle(
+        false,
+        activeFilter,
+        brightness,
+        contrast,
+      );
+      expect(styledFilter).toBe(
+        'contrast(1.15) brightness(1.05) saturate(1.2) brightness(110%) contrast(95%)',
+      );
+
+      // Raw camera compare state
+      const rawFilter = resolveFilterStyle(
+        true,
+        activeFilter,
+        brightness,
+        contrast,
+      );
+      expect(rawFilter).toBe('none');
+
+      // Film grain bypass check
+      const shouldRenderGrain = (grainEnabled: boolean, isComparing: boolean) =>
+        grainEnabled && !isComparing;
+
+      expect(shouldRenderGrain(true, false)).toBe(true);
+      expect(shouldRenderGrain(true, true)).toBe(false);
+      expect(shouldRenderGrain(false, true)).toBe(false);
+    });
+
+    it('calculates 4×6" print sheet layout dimensions and exact symmetry', () => {
+      // Standard 4×6 inch photo paper at 300 DPI: 1200 × 1800 px
+      const SHEET_WIDTH = 1200;
+      const SHEET_HEIGHT = 1800;
+
+      const STRIP_WIDTH = 515;
+      const STRIP_HEIGHT = 1600;
+
+      const LEFT_OFFSET_X = 55;
+      const RIGHT_OFFSET_X = 630;
+      const OFFSET_Y = 80;
+
+      expect(SHEET_WIDTH / SHEET_HEIGHT).toBe(2 / 3); // 4x6 aspect ratio
+
+      // Left strip span: 55 -> 570
+      const leftStripEnd = LEFT_OFFSET_X + STRIP_WIDTH;
+      expect(leftStripEnd).toBe(570);
+
+      // Right strip span: 630 -> 1145
+      const rightStripEnd = RIGHT_OFFSET_X + STRIP_WIDTH;
+      expect(rightStripEnd).toBe(1145);
+
+      // Right margin: 1200 - 1145 = 55px (perfect symmetry with left margin 55px)
+      const rightMargin = SHEET_WIDTH - rightStripEnd;
+      expect(rightMargin).toBe(LEFT_OFFSET_X);
+
+      // Center gutter: 570 to 630 = 60px
+      const centerGutter = RIGHT_OFFSET_X - leftStripEnd;
+      expect(centerGutter).toBe(60);
+
+      // Center cutting line down x = 600 (exact midpoint of gutter: 570 + 30 = 600)
+      const centerCutX = leftStripEnd + centerGutter / 2;
+      expect(centerCutX).toBe(600);
+      expect(centerCutX).toBe(SHEET_WIDTH / 2);
+
+      // Vertical margins
+      const bottomMargin = SHEET_HEIGHT - (OFFSET_Y + STRIP_HEIGHT);
+      expect(bottomMargin).toBe(120);
+      expect(OFFSET_Y).toBe(80);
+    });
   });
 });
 

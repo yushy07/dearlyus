@@ -121,6 +121,7 @@ export function PhotoboothDemoStudio({
     'none' | 'sparkles' | 'hearts' | 'cat'
   >('none');
   const [demoColorFilter, setDemoColorFilter] = useState(DEMO_COLOR_FILTERS[0]);
+  const [isComparingOriginal, setIsComparingOriginal] = useState(false);
   const [dragOverCutIdx, setDragOverCutIdx] = useState<number | null>(null);
   const [clipboardCopied, setClipboardCopied] = useState(false);
   const [demoIsShooting, setDemoIsShooting] = useState(false);
@@ -631,6 +632,106 @@ export function PhotoboothDemoStudio({
     sounds.playCelebration();
   };
 
+  // 4×6" Archival Print Sheet Canvas Engine (1200×1800 px at 300 DPI)
+  const generateDemoPrintSheet4x6Canvas = async (): Promise<HTMLCanvasElement | null> => {
+    const singleStrip = await generateDemoStripCanvas();
+    if (!singleStrip) return null;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 1200;
+    canvas.height = 1800;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+
+    // 1. Archival White Photo Paper Background
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, 1200, 1800);
+
+    // 2. Header and Footer lab metadata
+    ctx.fillStyle = '#64748B';
+    ctx.font = 'bold 13px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(
+      'DEARLY US · 4×6" ARCHIVAL PHOTO PAPER (300 DPI) · KOREAN LIFE4CUTS KEEPSAKE',
+      600,
+      48,
+    );
+
+    ctx.font = '11px monospace';
+    ctx.fillStyle = '#94A3B8';
+    ctx.fillText(
+      'PRINT AT 100% SCALE (BORDERLESS OR FIT TO 4×6" / 10×15CM PHOTO PAPER) · 2 STRIPS PER SHEET',
+      600,
+      1745,
+    );
+
+    // 3. Draw Left & Right Strips (515px width each)
+    ctx.drawImage(singleStrip, 55, 80, 515, 1600);
+    ctx.drawImage(singleStrip, 630, 80, 515, 1600);
+
+    // 4. Center Scissor Cutting Guide
+    ctx.save();
+    ctx.setLineDash([10, 8]);
+    ctx.strokeStyle = '#94A3B8';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(600, 65);
+    ctx.lineTo(600, 1715);
+    ctx.stroke();
+
+    ctx.font = 'bold 13px monospace';
+    ctx.fillStyle = '#64748B';
+    ctx.textAlign = 'center';
+    ctx.fillText('✂ CUT HERE ✂', 600, 72);
+    ctx.fillText('✂ CUT HERE ✂', 600, 1710);
+    ctx.restore();
+
+    // 5. Corner Crop Marks for Precision Trimming
+    const drawCornerCropMarks = (x: number, y: number, w: number, h: number) => {
+      ctx.save();
+      ctx.strokeStyle = '#CBD5E1';
+      ctx.lineWidth = 1.5;
+      const tick = 18;
+      // Top-left
+      ctx.beginPath();
+      ctx.moveTo(x, y + tick);
+      ctx.lineTo(x, y);
+      ctx.lineTo(x + tick, y);
+      // Top-right
+      ctx.moveTo(x + w - tick, y);
+      ctx.lineTo(x + w, y);
+      ctx.lineTo(x + w, y + tick);
+      // Bottom-left
+      ctx.beginPath();
+      ctx.moveTo(x, y + h - tick);
+      ctx.lineTo(x, y + h);
+      ctx.lineTo(x + tick, y + h);
+      // Bottom-right
+      ctx.moveTo(x + w - tick, y + h);
+      ctx.lineTo(x + w, y + h);
+      ctx.lineTo(x + w, y + h - tick);
+      ctx.stroke();
+      ctx.restore();
+    };
+
+    drawCornerCropMarks(55, 80, 515, 1600);
+    drawCornerCropMarks(630, 80, 515, 1600);
+
+    return canvas;
+  };
+
+  const downloadDemoPrintSheet4x6 = async () => {
+    sounds.playTick();
+    const canvas = await generateDemoPrintSheet4x6Canvas();
+    if (!canvas) return;
+
+    const a = document.createElement('a');
+    a.download = `dearly-us-4x6-print-sheet-${roomCode.join('') || 'life4cuts'}.png`;
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+    sounds.playCelebration();
+  };
+
   const copyDemoStripToClipboard = async () => {
     sounds.playTick();
     try {
@@ -1130,6 +1231,32 @@ export function PhotoboothDemoStudio({
                         {cf.emoji} {cf.name}
                       </button>
                     ))}
+                    <button
+                      onPointerDown={() => setIsComparingOriginal(true)}
+                      onPointerUp={() => setIsComparingOriginal(false)}
+                      onPointerLeave={() => setIsComparingOriginal(false)}
+                      style={{
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                        border: '1px solid var(--line)',
+                        background: isComparingOriginal
+                          ? 'var(--pink)'
+                          : 'var(--paper)',
+                        color: isComparingOriginal ? '#fff' : 'var(--ink)',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        userSelect: 'none',
+                        transition: 'all 0.15s ease',
+                        marginLeft: 'auto',
+                      }}
+                      title="Press & hold to preview raw un-graded camera photos"
+                    >
+                      👁️ {isComparingOriginal ? 'Raw Original...' : 'Hold to Compare'}
+                    </button>
                   </div>
 
                   <div
@@ -1348,16 +1475,53 @@ export function PhotoboothDemoStudio({
               </div>
 
               {/* Right: Live 4-Cut Photostrip Real Output */}
-              <div className="strip-preview-holder">
+              <div
+                className="strip-preview-holder"
+                onPointerDown={() => setIsComparingOriginal(true)}
+                onPointerUp={() => setIsComparingOriginal(false)}
+                onPointerLeave={() => setIsComparingOriginal(false)}
+                title="Tip: Press & hold anywhere on the strip to compare against RAW camera original"
+              >
                 <div
                   className="real-strip"
                   style={{
-                    background: demoTheme.bg,
-                    color: demoTheme.text,
-                    borderColor: demoTheme.border,
+                    background: isComparingOriginal ? '#FFFFFF' : demoTheme.bg,
+                    color: isComparingOriginal ? '#17181C' : demoTheme.text,
+                    borderColor: isComparingOriginal
+                      ? '#E3E5EA'
+                      : demoTheme.border,
                     position: 'relative',
                   }}
                 >
+                  {/* Hold to Compare Floating Badge */}
+                  {isComparingOriginal && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '12px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        background: 'rgba(23, 24, 28, 0.92)',
+                        color: '#FFFFFF',
+                        padding: '5px 12px',
+                        borderRadius: '20px',
+                        fontSize: '11px',
+                        fontWeight: 800,
+                        letterSpacing: '0.5px',
+                        zIndex: 50,
+                        pointerEvents: 'none',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        boxShadow: '0 4px 14px rgba(0,0,0,0.4)',
+                        border: '1px solid rgba(255, 255, 255, 0.25)',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      <span style={{ color: '#FFD700' }}>👁️</span> RAW ORIGINAL (NO GRADING)
+                    </div>
+                  )}
+
                   <div className="real-strip-brand">DEARLY US · 인생네컷</div>
 
                   <div className="real-strip-frames">
@@ -1381,7 +1545,9 @@ export function PhotoboothDemoStudio({
                           src={shotUrl}
                           alt={`Photobooth shot ${idx + 1}`}
                           style={{
-                            filter: demoColorFilter.filter,
+                            filter: isComparingOriginal
+                              ? 'none'
+                              : demoColorFilter.filter,
                             transform: `rotate(${demoCutTransforms[idx]?.rotation || 0}deg) ${demoCutTransforms[idx]?.flipX ? 'scaleX(-1)' : ''}`,
                             opacity: dragOverCutIdx === idx ? 0.5 : 1,
                           }}
@@ -1614,6 +1780,19 @@ export function PhotoboothDemoStudio({
                     style={{ justifyContent: 'center' }}
                   >
                     Download Photo Strip 💾
+                  </button>
+                  <button
+                    className="btn btn-ghost"
+                    onClick={downloadDemoPrintSheet4x6}
+                    style={{
+                      justifyContent: 'center',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      border: '1px solid var(--line)',
+                    }}
+                    title="Export print-ready 1200×1800 px sheet (standard 4×6 inch photo paper at 300 DPI)"
+                  >
+                    Download 4×6" Print Sheet 🖨️
                   </button>
                   <button
                     className="btn btn-ghost"
