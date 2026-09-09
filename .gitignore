@@ -134,4 +134,11 @@ Cupidot_Features_and_Functionality.md
 Cupidot_Intelligence_and_Behavior.md
 Dearly_Us_Roadmap_Local_and_Supabase.md
 
+# Ad-hoc, Scratch & Screenshot Capture Scripts
+scripts/capture-*.js
+scripts/capture-*.mjs
+scripts/*.tmp.js
+scripts/*.temp.js
+scripts/scratch/
+
 

@@ -312,9 +312,8 @@ dearlyus/
 │   ├── logo.svg                  # Primary brand lockup
 │   ├── brand-mark.svg            # Entwined ribbon-heart mark
 │   └── scenes/                   # Atmospheric backdrop images (e.g. garden-evening.png)
-└── scripts/                      # Utility scripts:
-    ├── capture-all-screenshots.js # Automated Playwright capture suite for all 10 app views
-    └── generate-brand-assets.mjs  # SVG and raster asset generator for icons & OG images
+└── scripts/                      # Brand assets generator script
+    └── generate-brand-assets.mjs # SVG and raster asset generator for icons & OG images
 ```
 
 ---
@@ -360,13 +359,6 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-### Capturing Fresh App Screenshots
-
-```bash
-# Automatically capture all 10 live app views with Playwright
-node scripts/capture-all-screenshots.js
-```
 
 ### Testing & Verification
 
