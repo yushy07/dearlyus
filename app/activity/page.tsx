@@ -6,6 +6,7 @@ import { ArrowUpRight, Search, Heart, Sparkles } from 'lucide-react';
 import { Navbar } from '@/components/shared';
 import { useCoupleProfile } from '@/lib/couple';
 import './activity-collection.css';
+import { ActivityIllustration } from './ActivityIllustration';
 
 type Category = 'all' | 'play' | 'talk' | 'make' | 'distance';
 const categories: { id: Category; label: string }[] = [
@@ -34,7 +35,7 @@ const activities: {
     title: 'Know Me Quiz',
     description: 'You know their coffee order. What about their secret dream?',
     category: 'talk',
-    motif: 'cards',
+    motif: 'quiz',
   },
   {
     href: '/letter',
@@ -62,133 +63,133 @@ const activities: {
     title: 'Date Host',
     description: 'Let a friendly third wheel get the conversation going.',
     category: 'talk',
-    motif: 'cards',
+    motif: 'host',
   },
   {
     href: '/arcade',
     title: 'The Arcade',
     description: 'Tiny games. Big rematches. One very smug winner.',
     category: 'play',
-    motif: 'dice',
+    motif: 'arcade',
   },
   {
     href: '/scrapbook',
     title: 'Digital Scrapbook',
     description: 'Tape down your photos and write around the edges.',
     category: 'make',
-    motif: 'photo',
+    motif: 'scrapbook',
   },
   {
     href: '/match',
     title: 'Love Match',
     description: 'Find the unexpected places your personalities meet.',
     category: 'talk',
-    motif: 'cards',
+    motif: 'match',
   },
   {
     href: '/iq',
     title: 'IQ Duel',
     description: 'The same questions. Two wonderfully competitive minds.',
     category: 'play',
-    motif: 'dice',
+    motif: 'iq',
   },
   {
     href: '/riddle',
     title: 'Riddle Night',
     description: 'Put your heads together and follow the clues.',
     category: 'play',
-    motif: 'dice',
+    motif: 'riddle',
   },
   {
     href: '/lab',
     title: 'The Lab',
     description: 'A little science, a little teamwork, a new challenge.',
     category: 'play',
-    motif: 'dice',
+    motif: 'lab',
   },
   {
     href: '/debate',
     title: 'The Great Debate',
     description: 'Pick a side and make your most convincing case.',
     category: 'talk',
-    motif: 'cards',
+    motif: 'debate',
   },
   {
     href: '/court',
     title: 'Couples Court',
     description: 'Bring your most harmless dispute before the court.',
     category: 'play',
-    motif: 'dice',
+    motif: 'court',
   },
   {
     href: '/draw',
     title: 'Draw Together',
     description: 'Two canvases and one prompt. Artistic talent optional.',
     category: 'make',
-    motif: 'photo',
+    motif: 'draw',
   },
   {
     href: '/hunt',
     title: 'Snap Hunt',
     description: 'Find it, photograph it, and race back with your discovery.',
     category: 'play',
-    motif: 'photo',
+    motif: 'hunt',
   },
   {
     href: '/future',
     title: 'Our Future',
     description: 'Give your someday a place to start taking shape.',
     category: 'make',
-    motif: 'letter',
+    motif: 'future',
   },
   {
     href: '/birthday',
     title: 'Birthday Gift',
     description: 'Make a small surprise that feels entirely like them.',
     category: 'make',
-    motif: 'letter',
+    motif: 'birthday',
   },
   {
     href: '/fashion',
     title: 'Fashion Show',
     description: 'One brief. Two looks. Time for your runway moment.',
     category: 'play',
-    motif: 'cards',
+    motif: 'fashion',
   },
   {
     href: '/shirts',
     title: 'Matching Shirts',
     description: 'Create something that says we belong together.',
     category: 'make',
-    motif: 'photo',
+    motif: 'shirts',
   },
   {
     href: '/forecast',
     title: 'Love Forecast',
     description: 'A little romantic weather report for your day.',
     category: 'distance',
-    motif: 'ticket',
+    motif: 'forecast',
   },
   {
     href: '/timezone',
     title: 'Timezone & Reunion',
     description: 'Find your shared hours and count down to the next hello.',
     category: 'distance',
-    motif: 'ticket',
+    motif: 'timezone',
   },
   {
     href: '/bucket',
     title: '100 Dates Bucket List',
     description: 'Collect firsts, small adventures, and someday plans.',
     category: 'distance',
-    motif: 'ticket',
+    motif: 'bucket',
   },
   {
     href: '/date',
     title: 'Date Night Planner',
     description: 'Turn what should we do into a lovely little evening.',
     category: 'distance',
-    motif: 'ticket',
+    motif: 'date',
   },
 ];
 
@@ -213,6 +214,8 @@ function resetTilt(event: PointerEvent<HTMLAnchorElement>) {
   event.currentTarget.style.setProperty('--tilt-y', '0deg');
 }
 function ObjectArt({ motif }: { motif: string }) {
+  if (!['photo', 'dice', 'letter', 'cards'].includes(motif))
+    return <ActivityIllustration activity={motif} />;
   return (
     <div
       className={`collection-object collection-object--${motif}`}

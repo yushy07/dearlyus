@@ -736,3 +736,14 @@
     transform: none !important;
   }
 }
+.collection-object--unique {
+  width: 167px;
+  height: 149px;
+  transform: rotate(-8deg) translateY(10px);
+}
+.collection-object--unique svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
