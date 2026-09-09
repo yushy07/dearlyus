@@ -247,7 +247,7 @@ export default function DateHostPage() {
         {/* Scenario Card */}
         <div
           style={{
-            background: '#FFFFFF',
+            background: 'var(--paper-raised)',
             border: '1px solid var(--line)',
             borderRadius: '20px',
             padding: '36px 32px',

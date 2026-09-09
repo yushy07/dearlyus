@@ -73,7 +73,7 @@ export default function BirthdayPage() {
 
         <div
           style={{
-            background: '#FFFFFF',
+            background: 'var(--paper-raised)',
             border: '1px solid var(--line)',
             borderRadius: '20px',
             padding: '40px 32px',
@@ -171,7 +171,7 @@ export default function BirthdayPage() {
                   width: '180px',
                   margin: '0 auto 20px',
                   padding: '12px',
-                  background: '#FFFFFF',
+                  background: 'var(--paper-raised)',
                   border: '2px solid var(--pink)',
                   borderRadius: '16px',
                   boxShadow: 'var(--shadow)',

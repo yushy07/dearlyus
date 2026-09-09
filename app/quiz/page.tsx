@@ -712,7 +712,7 @@ export default function QuizPage() {
           /* Finished Screen */
           <div
             style={{
-              background: '#FFFFFF',
+              background: 'var(--paper-raised)',
               border: '1px solid var(--line)',
               borderRadius: '24px',
               padding: '48px 32px',
@@ -840,7 +840,7 @@ export default function QuizPage() {
         >
           <div
             style={{
-              background: '#FFF',
+              background: 'var(--paper-raised)',
               borderRadius: '20px',
               padding: '28px',
               maxWidth: '540px',

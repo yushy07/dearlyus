@@ -78,7 +78,7 @@ export default function BlogPage() {
                   key={post.slug}
                   onClick={() => setSelectedPost(post)}
                   style={{
-                    background: '#FFFFFF',
+                    background: 'var(--paper-raised)',
                     border: '1px solid #E7E1D8',
                     borderRadius: '16px',
                     overflow: 'hidden',
@@ -191,7 +191,7 @@ export default function BlogPage() {
             style={{
               maxWidth: '720px',
               margin: '0 auto',
-              background: '#FFFFFF',
+              background: 'var(--paper-raised)',
               border: '1px solid #E7E1D8',
               borderRadius: '16px',
               padding: '40px 36px',

@@ -170,7 +170,7 @@ export default function RiddlePage() {
 
         <div
           style={{
-            background: '#fff',
+            background: 'var(--paper-raised)',
             border: '1px solid var(--line)',
             borderRadius: '16px',
             padding: '36px 28px',

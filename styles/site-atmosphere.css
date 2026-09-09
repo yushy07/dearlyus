@@ -1,0 +1,181 @@
+/* Shared inner-page atmosphere. The cinematic homepage keeps its own direction. */
+.site-romantic {
+  --paper: #faf3e8;
+  --paper-raised: #fffbf5;
+  --paper-subtle: #eee2d7;
+  --ink: #493039;
+  --ink-soft: #796369;
+  --ink-muted: #796369;
+  --line: #dccbc3;
+  --pink: #945663;
+  --blue: #596f65;
+  --pink-tint: #f0dcda;
+  --blue-tint: #e4e8df;
+  --pink-glow: transparent;
+  --blue-glow: transparent;
+  --grad-primary: #794c58;
+  --grad-subtle: #f0e3da;
+  --shadow: 0 4px 18px #4930390a;
+  --shadow-lg: 0 16px 38px #49303912;
+  --shadow-soft: 0 6px 20px #4930390b;
+  min-height: 100vh;
+  color: var(--ink);
+  background-color: var(--paper);
+  background-image: url('/scenes/rose-garden-lines.svg');
+  background-repeat: no-repeat;
+  background-position: center 70px;
+  background-size: max(1200px, 100%) 670px;
+}
+.site-romantic--keepsake {
+  --paper: #f3e8d9;
+  --paper-subtle: #e8d6c4;
+}
+.site-romantic--rose {
+  --paper: #f2e5df;
+  --paper-subtle: #e8d5d0;
+}
+.site-romantic--night {
+  --paper: #30232d;
+  --paper-raised: #44323e;
+  --paper-subtle: #513b47;
+  --ink: #fff5ea;
+  --ink-soft: #d6bbc0;
+  --line: #745863;
+  --pink: #d8adb4;
+  --blue: #b8c8b8;
+}
+.site-romantic-content > :first-child {
+  background: transparent !important;
+}
+.site-romantic :is(h1, h2) {
+  font-family: var(--font-serif) !important;
+  letter-spacing: -0.035em;
+}
+.site-romantic h1 {
+  font-weight: 600 !important;
+  line-height: 1.12 !important;
+}
+.site-romantic .grad {
+  background: none !important;
+  -webkit-text-fill-color: currentColor;
+  color: var(--pink);
+}
+.site-romantic .bar {
+  background: #382b31 !important;
+  border-color: #79646a;
+  box-shadow: 0 8px 24px #382b3126;
+  backdrop-filter: none;
+}
+.site-romantic .bar:hover {
+  background: #493039 !important;
+  box-shadow: 0 8px 24px #382b3126;
+}
+.site-romantic .bar :is(.btn-grad, .nav-passport-pill) {
+  background: #79515e !important;
+  color: #fff5eb !important;
+  border-color: #a77d89;
+  box-shadow: none;
+}
+.site-romantic :is(.btn, .act, .card, .panel) {
+  box-shadow: var(--shadow-soft);
+}
+.site-romantic :is(.btn-grad, .btn-primary) {
+  background: #794c58;
+  color: #fffaf3;
+  border-color: #794c58;
+  box-shadow: none;
+}
+.site-romantic .btn::before,
+.site-romantic .btn::after {
+  display: none;
+}
+.site-romantic .btn {
+  text-shadow: none;
+}
+.site-romantic .btn:hover {
+  box-shadow: none;
+}
+.site-romantic .act {
+  background: var(--paper-raised);
+  border-color: var(--line);
+  border-radius: 8px;
+}
+.site-romantic .act .seamline {
+  background: #bc8d93;
+  height: 2px;
+}
+.site-romantic .act h3 {
+  font-family: var(--font-serif);
+  font-size: 23px;
+  font-weight: 600;
+}
+.site-romantic .act:hover {
+  background: var(--pink-tint);
+  border-color: #b4878c;
+  box-shadow: var(--shadow);
+}
+.site-romantic
+  :is(input:not([type='range']):not([type='color']), textarea, select) {
+  accent-color: #945663;
+}
+.site-romantic :is(a, button, input, textarea, select):focus-visible {
+  outline: 2px solid var(--pink);
+  outline-offset: 4px;
+}
+.site-romantic footer {
+  background: #eadbd2 !important;
+}
+.site-romantic footer > div:first-child {
+  background: #b99092 !important;
+  height: 1px !important;
+}
+.site-romantic .activity-passport {
+  background: #493039 !important;
+  border-color: #b89687 !important;
+  box-shadow: 0 10px 28px #4930391a !important;
+}
+.site-romantic .activity-photobooth {
+  background: #eadad3 !important;
+}
+.site-romantic .activity-filter[aria-pressed='true'] {
+  background: #794c58 !important;
+  color: #fffaf3 !important;
+  box-shadow: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-romantic .act,
+  .site-romantic .btn {
+    transition: none;
+  }
+}
+.site-romantic .activity-filter {
+  background: var(--paper-raised) !important;
+}
+.site-romantic .badge.hot {
+  background: #794c58;
+  color: #fffaf3;
+}
+.site-romantic .badge.new {
+  background: var(--pink-tint);
+  color: #794c58;
+  border-color: var(--line);
+}
+.site-romantic .border-glow-mask {
+  background: var(--paper-raised) !important;
+  box-shadow: none !important;
+  border: 1px solid var(--line);
+}
+.site-romantic .border-glow-mask::before {
+  display: none;
+}
+.site-romantic .border-glow-mask > span,
+.site-romantic .shiny-text {
+  background: none !important;
+  color: var(--pink);
+  -webkit-text-fill-color: currentColor !important;
+  animation: none;
+}
+.site-romantic .cupidot-activity-guidance {
+  background: var(--paper-subtle) !important;
+  border-color: var(--line) !important;
+}

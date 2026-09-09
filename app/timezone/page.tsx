@@ -374,7 +374,7 @@ export default function TimezoneHubPage() {
           {/* City 1 Card */}
           <div
             className="booth-box"
-            style={{ padding: '28px 24px', background: '#FFFFFF' }}
+            style={{ padding: '28px 24px', background: 'var(--paper-raised)' }}
           >
             <div
               style={{
@@ -437,7 +437,7 @@ export default function TimezoneHubPage() {
           {/* City 2 Card */}
           <div
             className="booth-box"
-            style={{ padding: '28px 24px', background: '#FFFFFF' }}
+            style={{ padding: '28px 24px', background: 'var(--paper-raised)' }}
           >
             <div
               style={{
@@ -938,7 +938,7 @@ export default function TimezoneHubPage() {
                 padding: '10px 16px',
                 borderRadius: '8px',
                 border: '1px solid var(--line)',
-                background: '#fff',
+                background: 'var(--paper-raised)',
                 fontSize: '14px',
               }}
             />

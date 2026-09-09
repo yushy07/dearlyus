@@ -109,7 +109,7 @@ export function KeepsakeApprovalModal({
     >
       <div
         style={{
-          background: '#FFFFFF',
+          background: 'var(--paper-raised)',
           borderRadius: '28px',
           width: '100%',
           maxWidth: '540px',
@@ -223,7 +223,7 @@ export function KeepsakeApprovalModal({
 
           <div
             style={{
-              background: '#FFFFFF',
+              background: 'var(--paper-raised)',
               borderRadius: '12px',
               padding: '12px',
               fontSize: '13.5px',

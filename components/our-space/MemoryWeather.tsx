@@ -109,7 +109,7 @@ export function MemoryWeather({
   return (
     <div
       style={{
-        background: '#FFFFFF',
+        background: 'var(--paper-raised)',
         borderRadius: '24px',
         padding: '24px',
         border: '1px solid rgba(244, 114, 182, 0.25)',

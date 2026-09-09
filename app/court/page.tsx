@@ -186,13 +186,30 @@ export default function CourtPage() {
               lineHeight: 1.5,
             }}
           >
-            A 100% fictional, lighthearted courtroom game for silly pretend debates (stolen hoodies, playlist monopolies, and extra fries). Pure play, zero real blame.
+            A 100% fictional, lighthearted courtroom game for silly pretend
+            debates (stolen hoodies, playlist monopolies, and extra fries). Pure
+            play, zero real blame.
           </p>
-          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', margin: '12px 0 16px' }}>
-            <Link className="btn btn-ghost" href="/our-space" style={{ fontSize: '12.5px', padding: '4px 12px' }}>
+          <div
+            style={{
+              display: 'flex',
+              gap: '8px',
+              justifyContent: 'center',
+              margin: '12px 0 16px',
+            }}
+          >
+            <Link
+              className="btn btn-ghost"
+              href="/our-space"
+              style={{ fontSize: '12.5px', padding: '4px 12px' }}
+            >
               ← Return to Our Space
             </Link>
-            <Link className="btn btn-ghost" href="/activity" style={{ fontSize: '12.5px', padding: '4px 12px' }}>
+            <Link
+              className="btn btn-ghost"
+              href="/activity"
+              style={{ fontSize: '12.5px', padding: '4px 12px' }}
+            >
               Choose Another Activity
             </Link>
           </div>
@@ -211,7 +228,7 @@ export default function CourtPage() {
         {/* Court Case Card */}
         <div
           style={{
-            background: '#FFFFFF',
+            background: 'var(--paper-raised)',
             border: '1px solid var(--line)',
             borderRadius: '20px',
             padding: '36px 32px',

@@ -950,7 +950,7 @@ export default function ArcadePage() {
   return (
     <div
       style={{
-        background: '#0F1016',
+        background: 'var(--paper-raised)',
         minHeight: '100vh',
         paddingBottom: '80px',
         color: '#F8FAFC',
@@ -961,7 +961,10 @@ export default function ArcadePage() {
       {/* Top Bar with Neon Glow */}
       <header
         className="bar"
-        style={{ background: '#141724', borderBottom: '1px solid #282C3F' }}
+        style={{
+          background: 'var(--paper-raised)',
+          borderBottom: '1px solid #282C3F',
+        }}
       >
         <div
           className="wrap"
@@ -987,7 +990,7 @@ export default function ArcadePage() {
               style={{
                 fontFamily: 'var(--font-mono)',
                 fontSize: '12px',
-                background: '#1D2132',
+                background: 'var(--paper-raised)',
                 color: '#E2E8F0',
                 padding: '5px 14px',
                 borderRadius: '20px',
@@ -1021,16 +1024,16 @@ export default function ArcadePage() {
           <div
             style={{
               display: 'inline-block',
-              background: 'linear-gradient(90deg, #FF4E78, #8B5CF6, #3B82F6)',
+              background: 'var(--line)',
               padding: '2px',
               borderRadius: '24px',
-              boxShadow: '0 0 20px rgba(255, 78, 120, 0.4)',
+              boxShadow: 'none',
               marginBottom: '10px',
             }}
           >
             <div
               style={{
-                background: '#151722',
+                background: 'var(--paper-raised)',
                 padding: '6px 20px',
                 borderRadius: '22px',
                 fontFamily: 'var(--font-mono)',
@@ -1056,7 +1059,7 @@ export default function ArcadePage() {
             Two Screens,{' '}
             <span
               style={{
-                background: 'linear-gradient(135deg, #FF7BA3, #60A5FA)',
+                background: 'var(--pink)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}
@@ -1143,8 +1146,8 @@ export default function ArcadePage() {
         {/* ========================================================================= */}
         <div
           style={{
-            background: 'linear-gradient(180deg, #1F2333 0%, #131520 100%)',
-            border: '3px solid #383E58',
+            background: 'var(--paper-raised)',
+            border: '3px solid var(--line)',
             borderRadius: '28px',
             padding: '24px 20px',
             boxShadow:
@@ -1204,7 +1207,7 @@ export default function ArcadePage() {
               <button
                 onClick={() => setCrtEffect(!crtEffect)}
                 style={{
-                  background: '#1A1D2B',
+                  background: 'var(--paper-raised)',
                   border: '1px solid #333952',
                   color: crtEffect ? '#34D399' : '#64748B',
                   borderRadius: '8px',
@@ -1219,7 +1222,7 @@ export default function ArcadePage() {
               <button
                 onClick={() => setSoundEnabled(!soundEnabled)}
                 style={{
-                  background: '#1A1D2B',
+                  background: 'var(--paper-raised)',
                   border: '1px solid #333952',
                   color: soundEnabled ? '#FDE047' : '#64748B',
                   borderRadius: '8px',
@@ -1506,7 +1509,7 @@ export default function ArcadePage() {
                     style={{
                       padding: '10px 20px',
                       fontSize: '14px',
-                      background: '#232635',
+                      background: 'var(--paper-raised)',
                       color: '#fff',
                     }}
                   >
@@ -1524,7 +1527,7 @@ export default function ArcadePage() {
             style={{
               marginTop: '18px',
               padding: '16px',
-              background: '#151722',
+              background: 'var(--paper-raised)',
               borderRadius: '16px',
               border: '1px solid #282C3D',
               display: 'flex',

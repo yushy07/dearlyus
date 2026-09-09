@@ -259,7 +259,7 @@ export default function LetterPage() {
           <form
             onSubmit={handleSeal}
             style={{
-              background: '#FFFFFF',
+              background: 'var(--paper-raised)',
               border: '1px solid var(--line)',
               borderRadius: '20px',
               padding: '36px 32px',
@@ -558,7 +558,7 @@ export default function LetterPage() {
         ) : (
           <div
             style={{
-              background: '#FFFFFF',
+              background: 'var(--paper-raised)',
               border: '1px solid var(--line)',
               borderRadius: '20px',
               padding: '40px 32px',

@@ -54,6 +54,7 @@ export const metadata: Metadata = {
 
 import { GlobalExperience } from '@/components/shared/GlobalExperience';
 import { AppProviders } from '@/components/providers/AppProviders';
+import { SiteAtmosphere } from '@/components/shared/SiteAtmosphere';
 
 export default function RootLayout({
   children,
@@ -105,7 +106,7 @@ export default function RootLayout({
       </head>
       <body suppressHydrationWarning>
         <AppProviders>
-          {children}
+          <SiteAtmosphere>{children}</SiteAtmosphere>
           <GlobalExperience />
         </AppProviders>
       </body>

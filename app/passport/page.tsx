@@ -529,7 +529,7 @@ export default function PassportPage() {
           {/* Quick Share Banner */}
           <div
             style={{
-              background: '#FFFFFF',
+              background: 'var(--paper-raised)',
               border: '1px solid var(--line)',
               borderRadius: '24px',
               padding: '28px',
@@ -565,7 +565,7 @@ export default function PassportPage() {
                   fontSize: '13.5px',
                   fontWeight: 800,
                   borderRadius: '24px',
-                  background: 'linear-gradient(135deg, #1E1B4B, #2E1065)',
+                  background: '#493039',
                   border: '1.5px solid rgba(253, 230, 138, 0.6)',
                   color: '#FDE68A',
                   cursor: 'pointer',
@@ -709,7 +709,7 @@ export default function PassportPage() {
                 fontSize: '13px',
                 color: 'var(--ink)',
                 fontStyle: 'italic',
-                background: '#FFFFFF',
+                background: 'var(--paper-raised)',
                 border: '1px solid var(--line)',
                 borderRadius: '12px',
                 padding: '10px 14px',
@@ -795,7 +795,7 @@ export default function PassportPage() {
               ) : (
                 <div
                   style={{
-                    background: '#FFFFFF',
+                    background: 'var(--paper-raised)',
                     border: '1px solid rgba(0,0,0,0.08)',
                     borderRadius: '12px',
                     padding: '12px 14px',

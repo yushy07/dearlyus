@@ -385,7 +385,7 @@ export default function ScrapbookPage() {
               {item.type === 'polaroid' && (
                 <div
                   style={{
-                    background: '#FFFFFF',
+                    background: 'var(--paper-raised)',
                     padding: '12px 12px 28px 12px',
                     borderRadius: '4px',
                     boxShadow:
@@ -553,7 +553,7 @@ export default function ScrapbookPage() {
               padding: '12px 18px',
               borderRadius: '10px',
               border: '1px solid #D8CFC4',
-              background: '#fff',
+              background: 'var(--paper-raised)',
               fontSize: '14px',
             }}
           />

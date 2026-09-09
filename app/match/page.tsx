@@ -126,8 +126,7 @@ export default function MatchPage() {
     };
     if (typeof snapshot.pairIndex === 'number')
       setQIndex(Math.min(snapshot.pairIndex, QUESTIONS.length - 1));
-    if (typeof snapshot.score === 'number')
-      setMatchCount(snapshot.score);
+    if (typeof snapshot.score === 'number') setMatchCount(snapshot.score);
     if (snapshot.completed) setCalculated(true);
   }, [runtime.snapshot]);
 
@@ -203,7 +202,7 @@ export default function MatchPage() {
         {!calculated ? (
           <div
             style={{
-              background: '#fff',
+              background: 'var(--paper-raised)',
               border: '1px solid var(--line)',
               borderRadius: '16px',
               padding: '32px 28px',
@@ -287,7 +286,7 @@ export default function MatchPage() {
           /* Results Breakdown */
           <div
             style={{
-              background: '#fff',
+              background: 'var(--paper-raised)',
               border: '1px solid var(--line)',
               borderRadius: '16px',
               padding: '40px 32px',
@@ -310,7 +309,7 @@ export default function MatchPage() {
                 fontFamily: 'var(--font-display)',
                 fontSize: '44px',
                 fontWeight: 900,
-                background: 'linear-gradient(100deg, var(--pink), var(--blue))',
+                background: 'var(--grad-primary)',
                 WebkitBackgroundClip: 'text',
                 color: 'transparent',
                 marginBottom: '8px',
@@ -327,7 +326,8 @@ export default function MatchPage() {
                 lineHeight: 1.5,
               }}
             >
-              Matching choices are fun to discover, and different answers make for the best conversations. No grades, no relationship evaluation.
+              Matching choices are fun to discover, and different answers make
+              for the best conversations. No grades, no relationship evaluation.
             </p>
 
             {/* Breakdown of each question */}
@@ -406,7 +406,8 @@ export default function MatchPage() {
                           color: 'var(--ink)',
                         }}
                       >
-                        Both picked: <em>&ldquo;{q.options[pick1]?.text}&rdquo;</em>
+                        Both picked:{' '}
+                        <em>&ldquo;{q.options[pick1]?.text}&rdquo;</em>
                       </p>
                     ) : (
                       <div
@@ -421,7 +422,8 @@ export default function MatchPage() {
                             {partnerA}:
                           </strong>{' '}
                           <em>
-                            &ldquo;{q.options[pick1]?.text ?? 'Not answered'}&rdquo;
+                            &ldquo;{q.options[pick1]?.text ?? 'Not answered'}
+                            &rdquo;
                           </em>
                         </div>
                         <div>
@@ -429,7 +431,8 @@ export default function MatchPage() {
                             {partnerB}:
                           </strong>{' '}
                           <em>
-                            &ldquo;{q.options[pick2]?.text ?? 'Not answered'}&rdquo;
+                            &ldquo;{q.options[pick2]?.text ?? 'Not answered'}
+                            &rdquo;
                           </em>
                         </div>
                       </div>

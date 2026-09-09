@@ -76,7 +76,7 @@ function DiceFace({ val }: { val: number }) {
       style={{
         width: '56px',
         height: '56px',
-        background: '#FFFFFF',
+        background: 'var(--paper-raised)',
         border: '2px solid #D1D5DB',
         borderRadius: '12px',
         boxShadow: '0 8px 16px rgba(0,0,0,0.12)',
@@ -450,7 +450,7 @@ export default function DarePage() {
         {/* Minigame Arena Card */}
         <div
           style={{
-            background: '#fff',
+            background: 'var(--paper-raised)',
             border: '1px solid var(--line)',
             borderRadius: '20px',
             padding: '36px 28px',
@@ -555,8 +555,7 @@ export default function DarePage() {
                       width: '150px',
                       height: '150px',
                       borderRadius: '50%',
-                      background:
-                        'linear-gradient(135deg, var(--pink), var(--blue))',
+                      background: 'var(--grad-primary)',
                       color: '#fff',
                       border: 'none',
                       fontSize: '32px',

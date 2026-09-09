@@ -408,7 +408,7 @@ export default function CardsPage() {
         {/* Inputs */}
         <div
           style={{
-            background: '#FFFFFF',
+            background: 'var(--paper-raised)',
             border: '1px solid var(--line)',
             borderRadius: '16px',
             padding: '24px',
@@ -540,7 +540,8 @@ export default function CardsPage() {
                     fontStyle: partnerAnswer ? 'normal' : 'italic',
                   }}
                 >
-                  {partnerAnswer || `Awaiting ${partnerB} to share their response.`}
+                  {partnerAnswer ||
+                    `Awaiting ${partnerB} to share their response.`}
                 </p>
               </div>
 

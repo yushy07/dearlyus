@@ -161,7 +161,7 @@ export default function KeepsakeStudioPage() {
                 key={item.id}
                 onClick={() => setSelectedKeepsake(item)}
                 style={{
-                  background: '#FFFFFF',
+                  background: 'var(--paper-raised)',
                   border:
                     selectedKeepsake.id === item.id
                       ? '2px solid var(--pink)'
@@ -236,7 +236,7 @@ export default function KeepsakeStudioPage() {
           {/* Keepsake Generator & Download Panel */}
           <div
             style={{
-              background: '#FFFFFF',
+              background: 'var(--paper-raised)',
               border: '1px solid var(--line)',
               borderRadius: '20px',
               padding: '32px',

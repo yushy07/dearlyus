@@ -107,7 +107,9 @@ export function DateNightCapsuleModal({
       onClose();
     } catch (err: any) {
       console.error('Failed to seal date night capsule:', err);
-      setSaveError(err?.message || 'Failed to seal capsule to shelf. Please try again.');
+      setSaveError(
+        err?.message || 'Failed to seal capsule to shelf. Please try again.',
+      );
     }
   };
 
@@ -133,7 +135,7 @@ export function DateNightCapsuleModal({
     >
       <div
         style={{
-          background: '#FFFFFF',
+          background: 'var(--paper-raised)',
           borderRadius: '28px',
           width: '100%',
           maxWidth: '580px',
@@ -456,7 +458,8 @@ export function DateNightCapsuleModal({
             </p>
           ) : (
             <p style={{ fontSize: '12px', color: '#A16207', margin: 0 }}>
-              Insert a gentle starter template for your keepsake reflection without sending any personal data.
+              Insert a gentle starter template for your keepsake reflection
+              without sending any personal data.
             </p>
           )}
         </div>

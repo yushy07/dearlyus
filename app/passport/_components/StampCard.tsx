@@ -184,7 +184,7 @@ export function StampCard({
       {isUnlocked && (
         <div
           style={{
-            background: '#FFFFFF',
+            background: 'var(--paper-raised)',
             border: '1px solid rgba(0,0,0,0.06)',
             borderRadius: '10px',
             padding: '8px 10px',

@@ -391,7 +391,7 @@ export default function ForecastPage() {
             {/* Dial 1: Sweetness Barometer */}
             <div
               style={{
-                background: '#FFFFFF',
+                background: 'var(--paper-raised)',
                 borderRadius: '18px',
                 padding: '22px',
                 border: '1.5px solid #FFD6E8',
@@ -429,7 +429,7 @@ export default function ForecastPage() {
             {/* Dial 2: Stolen Hoodie Warning */}
             <div
               style={{
-                background: '#FFFFFF',
+                background: 'var(--paper-raised)',
                 borderRadius: '18px',
                 padding: '22px',
                 border: '1.5px solid #FFE0D1',
@@ -467,7 +467,7 @@ export default function ForecastPage() {
             {/* Dial 3: Laughter Humidity */}
             <div
               style={{
-                background: '#FFFFFF',
+                background: 'var(--paper-raised)',
                 borderRadius: '18px',
                 padding: '22px',
                 border: '1.5px solid #D6E8FF',

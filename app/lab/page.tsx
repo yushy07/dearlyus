@@ -103,7 +103,7 @@ export default function LabPage() {
 
         <div
           style={{
-            background: '#fff',
+            background: 'var(--paper-raised)',
             border: '1px solid var(--line)',
             borderRadius: '20px',
             padding: '40px 32px',

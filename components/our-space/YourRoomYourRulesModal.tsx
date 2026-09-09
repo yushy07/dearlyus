@@ -49,7 +49,9 @@ export function YourRoomYourRulesModal({
   const [quietHoursActive, setQuietHoursActive] = useState(() =>
     getQuietHoursEnabled(),
   );
-  const [quietStart, setQuietStart] = useState(() => getQuietHoursWindow().start);
+  const [quietStart, setQuietStart] = useState(
+    () => getQuietHoursWindow().start,
+  );
   const [quietEnd, setQuietEnd] = useState(() => getQuietHoursWindow().end);
 
   // Surprise Us Allow-List (M08, R06)
@@ -108,7 +110,11 @@ export function YourRoomYourRulesModal({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  const handleToggleSurprisePref = (key: string, currentVal: boolean, setter: (v: boolean) => void) => {
+  const handleToggleSurprisePref = (
+    key: string,
+    currentVal: boolean,
+    setter: (v: boolean) => void,
+  ) => {
     sounds.playPop();
     const next = !currentVal;
     setter(next);
@@ -122,7 +128,10 @@ export function YourRoomYourRulesModal({
     const next = !resurfacingEnabled;
     setResurfacingEnabled(next);
     try {
-      localStorage.setItem('dearly_resurfacing_enabled', next ? 'true' : 'false');
+      localStorage.setItem(
+        'dearly_resurfacing_enabled',
+        next ? 'true' : 'false',
+      );
     } catch {}
   };
 
@@ -161,7 +170,7 @@ export function YourRoomYourRulesModal({
     >
       <div
         style={{
-          background: '#FFFFFF',
+          background: 'var(--paper-raised)',
           borderRadius: '28px',
           width: '100%',
           maxWidth: '580px',
@@ -642,7 +651,8 @@ export function YourRoomYourRulesModal({
               marginBottom: '10px',
             }}
           >
-            Tailor what activities the recommendation engine can suggest. You can filter out camera or deep modes anytime.
+            Tailor what activities the recommendation engine can suggest. You
+            can filter out camera or deep modes anytime.
           </span>
           <div
             style={{
@@ -760,7 +770,7 @@ export function YourRoomYourRulesModal({
           >
             Keepsakes & Privacy
           </strong>
-          
+
           {/* Architectural Guarantee Notice */}
           <div
             style={{
@@ -776,11 +786,25 @@ export function YourRoomYourRulesModal({
           >
             <span style={{ fontSize: '15px' }}>🔒</span>
             <div>
-              <div style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--ink)' }}>
+              <div
+                style={{
+                  fontSize: '12.5px',
+                  fontWeight: 700,
+                  color: 'var(--ink)',
+                }}
+              >
                 Mutual Keepsake Consent Guaranteed
               </div>
-              <div style={{ fontSize: '11.5px', color: 'var(--ink-soft)', marginTop: '2px', lineHeight: 1.4 }}>
-                Keepsakes are never auto-saved without mutual approval from both of you. This is an architectural guarantee built into Dearly Us.
+              <div
+                style={{
+                  fontSize: '11.5px',
+                  color: 'var(--ink-soft)',
+                  marginTop: '2px',
+                  lineHeight: 1.4,
+                }}
+              >
+                Keepsakes are never auto-saved without mutual approval from both
+                of you. This is an architectural guarantee built into Dearly Us.
               </div>
             </div>
           </div>
@@ -800,7 +824,8 @@ export function YourRoomYourRulesModal({
               onChange={handleToggleResurfacing}
             />
             <span>
-              Allow gentle resurfacing of mutually approved keepsakes on our home shelf
+              Allow gentle resurfacing of mutually approved keepsakes on our
+              home shelf
             </span>
           </label>
         </div>

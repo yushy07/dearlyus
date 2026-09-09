@@ -118,7 +118,7 @@ export function KeepsakeDetailModal({
     >
       <div
         style={{
-          background: '#FFFFFF',
+          background: 'var(--paper-raised)',
           borderRadius: '28px',
           width: '100%',
           maxWidth: '560px',

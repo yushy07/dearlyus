@@ -335,7 +335,7 @@ export default function BucketListPage() {
               style={{
                 width: `${progressPercent}%`,
                 height: '100%',
-                background: 'linear-gradient(90deg, var(--pink), var(--blue))',
+                background: 'var(--grad-primary)',
                 borderRadius: '6px',
                 transition: 'width 0.4s ease',
               }}
@@ -472,7 +472,7 @@ export default function BucketListPage() {
         >
           <div
             style={{
-              background: '#FFFFFF',
+              background: 'var(--paper-raised)',
               borderRadius: '24px',
               padding: '32px 28px',
               maxWidth: '480px',

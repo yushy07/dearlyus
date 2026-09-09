@@ -69,7 +69,7 @@ export default function CreatorsPage() {
         <span
           style={{
             display: 'inline-block',
-            background: 'linear-gradient(135deg, var(--pink), var(--blue))',
+            background: 'var(--grad-primary)',
             padding: '6px 16px',
             borderRadius: '20px',
             fontSize: '13px',
@@ -111,7 +111,7 @@ export default function CreatorsPage() {
         {/* Card 1: Submit Video */}
         <div
           style={{
-            background: '#fff',
+            background: 'var(--paper-raised)',
             borderRadius: '20px',
             boxShadow: 'var(--shadow-lg)',
             padding: '32px',
@@ -277,7 +277,7 @@ export default function CreatorsPage() {
         {/* Card 2: Creator Program Application */}
         <div
           style={{
-            background: '#fff',
+            background: 'var(--paper-raised)',
             borderRadius: '20px',
             boxShadow: 'var(--shadow-lg)',
             padding: '32px',

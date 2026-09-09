@@ -100,7 +100,7 @@ export default function TermsPage() {
         {/* Main Terms Body */}
         <div
           style={{
-            background: '#FFFFFF',
+            background: 'var(--paper-raised)',
             border: '1px solid var(--line)',
             borderRadius: '20px',
             padding: '40px 36px',
@@ -282,7 +282,10 @@ export default function TermsPage() {
             </p>
             <p style={{ margin: 0 }}>
               For questions about these Terms, please review our{' '}
-              <Link href="/privacy" style={{ color: 'var(--pink)', fontWeight: 700 }}>
+              <Link
+                href="/privacy"
+                style={{ color: 'var(--pink)', fontWeight: 700 }}
+              >
                 privacy policy
               </Link>
               .

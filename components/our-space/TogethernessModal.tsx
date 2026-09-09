@@ -274,7 +274,7 @@ export function TogethernessModal({
     >
       <div
         style={{
-          background: '#FFFFFF',
+          background: 'var(--paper-raised)',
           borderRadius: '28px',
           width: '100%',
           maxWidth: '620px',
@@ -436,7 +436,7 @@ export function TogethernessModal({
 
             <div
               style={{
-                background: '#FFFFFF',
+                background: 'var(--paper-raised)',
                 padding: '16px',
                 borderRadius: '14px',
                 border: '1px solid var(--line)',
@@ -518,7 +518,7 @@ export function TogethernessModal({
             ) : !quickSparkRevealed ? (
               <div
                 style={{
-                  background: '#FFFFFF',
+                  background: 'var(--paper-raised)',
                   borderRadius: '14px',
                   padding: '18px',
                   border: '1px solid var(--line)',
@@ -587,7 +587,7 @@ export function TogethernessModal({
             ) : (
               <div
                 style={{
-                  background: '#FFFFFF',
+                  background: 'var(--paper-raised)',
                   borderRadius: '14px',
                   padding: '18px',
                   border: '1px solid var(--line)',
@@ -975,7 +975,7 @@ export function TogethernessModal({
 
             <div
               style={{
-                background: '#FFFFFF',
+                background: 'var(--paper-raised)',
                 padding: '16px',
                 borderRadius: '14px',
                 border: '1px solid var(--line)',
@@ -1145,7 +1145,7 @@ export function TogethernessModal({
 
                 <div
                   style={{
-                    background: '#FFFFFF',
+                    background: 'var(--paper-raised)',
                     borderRadius: '14px',
                     padding: '16px',
                     border: '1px solid var(--line)',

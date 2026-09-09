@@ -108,7 +108,7 @@ export default function PrivacyPage() {
         >
           <div
             style={{
-              background: '#FFFFFF',
+              background: 'var(--paper-raised)',
               border: '1px solid var(--line)',
               borderRadius: '16px',
               padding: '22px',
@@ -140,7 +140,7 @@ export default function PrivacyPage() {
 
           <div
             style={{
-              background: '#FFFFFF',
+              background: 'var(--paper-raised)',
               border: '1px solid var(--line)',
               borderRadius: '16px',
               padding: '22px',
@@ -173,7 +173,7 @@ export default function PrivacyPage() {
 
           <div
             style={{
-              background: '#FFFFFF',
+              background: 'var(--paper-raised)',
               border: '1px solid var(--line)',
               borderRadius: '16px',
               padding: '22px',
@@ -209,7 +209,7 @@ export default function PrivacyPage() {
         {/* Main Content Body */}
         <div
           style={{
-            background: '#FFFFFF',
+            background: 'var(--paper-raised)',
             border: '1px solid var(--line)',
             borderRadius: '20px',
             padding: '40px 36px',

@@ -639,7 +639,11 @@ export default function ProfilePage() {
             partnerA={ownMember?.displayName || profile.displayName}
             partnerB={partner?.displayName || 'Your person'}
             partnerTime={partnerLocalTime}
-            timezoneA={profile?.timezone || timezone || Intl.DateTimeFormat().resolvedOptions().timeZone}
+            timezoneA={
+              profile?.timezone ||
+              timezone ||
+              Intl.DateTimeFormat().resolvedOptions().timeZone
+            }
             timezoneB={partner?.timezone}
             activeRoomCode={space?.activeRoomCode}
             keepsakes={keepsakes}
@@ -1381,7 +1385,7 @@ export default function ProfilePage() {
         >
           <div
             style={{
-              background: '#FFF',
+              background: 'var(--paper-raised)',
               borderRadius: '24px',
               padding: '30px',
               maxWidth: '440px',

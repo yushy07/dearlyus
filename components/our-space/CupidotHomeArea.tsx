@@ -198,7 +198,7 @@ export function CupidotHomeArea({
               style={{
                 width: `${chapterProgress.progressPercent}%`,
                 height: '100%',
-                background: 'linear-gradient(90deg, var(--pink), var(--blue))',
+                background: 'var(--grad-primary)',
                 borderRadius: '3px',
                 transition: 'width 0.4s ease',
               }}
@@ -210,7 +210,7 @@ export function CupidotHomeArea({
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div
             style={{
-              background: '#FFFFFF',
+              background: 'var(--paper-raised)',
               border: '1px solid rgba(255, 143, 178, 0.35)',
               borderRadius: '16px',
               padding: '8px 14px',
@@ -278,7 +278,7 @@ export function CupidotHomeArea({
         {/* Tonight Card: One Clear Next Action & Safe Presence */}
         <div
           style={{
-            background: '#FFFFFF',
+            background: 'var(--paper-raised)',
             border: '1.5px solid var(--line)',
             borderRadius: '28px',
             padding: '24px',
@@ -413,7 +413,7 @@ export function CupidotHomeArea({
         {/* Ritual Corner */}
         <div
           style={{
-            background: '#FFFFFF',
+            background: 'var(--paper-raised)',
             border: '1px solid var(--line)',
             borderRadius: '24px',
             padding: '20px',
@@ -446,8 +446,7 @@ export function CupidotHomeArea({
                   color: 'var(--ink)',
                 }}
               >
-                {homeState.upcomingRitual?.title ||
-                  'No Scheduled Ritual Yet'}
+                {homeState.upcomingRitual?.title || 'No Scheduled Ritual Yet'}
               </h4>
             </div>
             <button
@@ -488,9 +487,7 @@ export function CupidotHomeArea({
               <button
                 type="button"
                 className="btn btn-ghost"
-                onClick={() =>
-                  snoozeRitual(homeState.upcomingRitual!.id, 24)
-                }
+                onClick={() => snoozeRitual(homeState.upcomingRitual!.id, 24)}
                 style={{ fontSize: '12px', padding: '6px 12px' }}
               >
                 Snooze (+1 day) 💤
@@ -519,7 +516,7 @@ export function CupidotHomeArea({
         {/* Home Decor & Souvenirs Collection Shelf */}
         <div
           style={{
-            background: '#FFFFFF',
+            background: 'var(--paper-raised)',
             border: '1px solid var(--line)',
             borderRadius: '24px',
             padding: '20px',
@@ -662,7 +659,7 @@ export function CupidotHomeArea({
           }).length > 0 && (
             <div
               style={{
-                background: '#FFFFFF',
+                background: 'var(--paper-raised)',
                 border: '1px solid var(--line)',
                 borderRadius: '24px',
                 padding: '20px',
@@ -712,13 +709,15 @@ export function CupidotHomeArea({
                     if (k.status !== 'finalized') return false;
                     try {
                       const archived = JSON.parse(
-                        localStorage.getItem('dearly_archived_keepsakes') || '[]',
+                        localStorage.getItem('dearly_archived_keepsakes') ||
+                          '[]',
                       );
                       if (archived.includes(k.id)) return false;
                     } catch {}
                     return (
-                      localStorage.getItem(`dearly_keepsake_resurface_${k.id}`) !==
-                      'false'
+                      localStorage.getItem(
+                        `dearly_keepsake_resurface_${k.id}`,
+                      ) !== 'false'
                     );
                   })
                   .slice(0, 4)
@@ -743,12 +742,12 @@ export function CupidotHomeArea({
                         {k.kind === 'photostrip'
                           ? '📸'
                           : k.kind === 'letter'
-                          ? '💌'
-                          : k.kind === 'passport'
-                          ? '✈️'
-                          : k.kind === 'scrapbook'
-                          ? '🎨'
-                          : '✨'}
+                            ? '💌'
+                            : k.kind === 'passport'
+                              ? '✈️'
+                              : k.kind === 'scrapbook'
+                                ? '🎨'
+                                : '✨'}
                       </div>
                       <strong
                         style={{

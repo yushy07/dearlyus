@@ -454,8 +454,7 @@ export function TimezoneBridge({
       {scheduledDate && (
         <div
           style={{
-            background:
-              'linear-gradient(135deg, var(--pink-tint), var(--blue-tint))',
+            background: 'var(--grad-subtle)',
             padding: '12px 16px',
             borderRadius: '14px',
             border: '1px solid var(--line)',
@@ -499,7 +498,7 @@ export function TimezoneBridge({
           style={{
             marginTop: '16px',
             padding: '16px',
-            background: '#FFFFFF',
+            background: 'var(--paper-raised)',
             borderRadius: '16px',
             border: '1px solid #FBCFE8',
           }}

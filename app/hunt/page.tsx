@@ -224,7 +224,7 @@ export default function HuntPage() {
 
         <div
           style={{
-            background: '#fff',
+            background: 'var(--paper-raised)',
             border: '1px solid var(--line)',
             borderRadius: '20px',
             padding: '32px 24px',
@@ -392,7 +392,7 @@ export default function HuntPage() {
               {capturedPhoto && (
                 <div
                   style={{
-                    background: '#fff',
+                    background: 'var(--paper-raised)',
                     padding: '12px 12px 24px',
                     borderRadius: '8px',
                     boxShadow: '0 4px 12px rgba(0,0,0,0.1)',

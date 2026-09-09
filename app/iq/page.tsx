@@ -166,7 +166,7 @@ export default function IQPage() {
         {!finished ? (
           <div
             style={{
-              background: '#fff',
+              background: 'var(--paper-raised)',
               border: '1px solid var(--line)',
               borderRadius: '16px',
               padding: '36px 28px',
@@ -259,7 +259,7 @@ export default function IQPage() {
         ) : (
           <div
             style={{
-              background: '#fff',
+              background: 'var(--paper-raised)',
               border: '1px solid var(--line)',
               borderRadius: '16px',
               padding: '40px 28px',

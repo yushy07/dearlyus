@@ -1,1258 +1,462 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState, type PointerEvent, type CSSProperties } from 'react';
 import Link from 'next/link';
-import {
-  ShinyText,
-  GlowBadge,
-  ScrollProgress,
-  ScrollReveal,
-} from '@/components/ui';
-import { useCoupleProfile } from '@/lib/couple';
-import { sounds } from '@/lib/sound';
+import { ArrowUpRight, Search, Heart, Sparkles } from 'lucide-react';
 import { Navbar } from '@/components/shared';
+import { useCoupleProfile } from '@/lib/couple';
+import './activity-collection.css';
 
-const CATEGORIES = [
-  { id: 'all', label: '✨ All Dates', count: '22' },
-  { id: 'duels', label: '🎮 Games & Duels', count: '8' },
-  { id: 'quizzes', label: '💬 Talk & Quizzes', count: '5' },
-  { id: 'keepsakes', label: '📸 Photo & Keepsakes', count: '6' },
-  { id: 'travel', label: '✈️ Distance & Travel', count: '3' },
+type Category = 'all' | 'play' | 'talk' | 'make' | 'distance';
+const categories: { id: Category; label: string }[] = [
+  { id: 'all', label: 'All experiences' },
+  { id: 'play', label: 'A little competition' },
+  { id: 'talk', label: 'Closer conversations' },
+  { id: 'make', label: 'Make a memory' },
+  { id: 'distance', label: 'Across the miles' },
 ];
+const activities: {
+  href: string;
+  title: string;
+  description: string;
+  category: Exclude<Category, 'all'>;
+  motif: string;
+}[] = [
+  {
+    href: '/photobooth',
+    title: 'The Photobooth',
+    description: 'A shared countdown. A strip of little moments to keep.',
+    category: 'make',
+    motif: 'photo',
+  },
+  {
+    href: '/quiz',
+    title: 'Know Me Quiz',
+    description: 'You know their coffee order. What about their secret dream?',
+    category: 'talk',
+    motif: 'cards',
+  },
+  {
+    href: '/letter',
+    title: 'Letters to the Future',
+    description: 'A little of today, sealed for the two of you tomorrow.',
+    category: 'make',
+    motif: 'letter',
+  },
+  {
+    href: '/dare',
+    title: 'Truth or Dare',
+    description: 'A brave answer or a playful dare. Your move.',
+    category: 'play',
+    motif: 'dice',
+  },
+  {
+    href: '/cards',
+    title: 'Honest Cards',
+    description: 'Make room for the conversations you rarely get to have.',
+    category: 'talk',
+    motif: 'cards',
+  },
+  {
+    href: '/host',
+    title: 'Date Host',
+    description: 'Let a friendly third wheel get the conversation going.',
+    category: 'talk',
+    motif: 'cards',
+  },
+  {
+    href: '/arcade',
+    title: 'The Arcade',
+    description: 'Tiny games. Big rematches. One very smug winner.',
+    category: 'play',
+    motif: 'dice',
+  },
+  {
+    href: '/scrapbook',
+    title: 'Digital Scrapbook',
+    description: 'Tape down your photos and write around the edges.',
+    category: 'make',
+    motif: 'photo',
+  },
+  {
+    href: '/match',
+    title: 'Love Match',
+    description: 'Find the unexpected places your personalities meet.',
+    category: 'talk',
+    motif: 'cards',
+  },
+  {
+    href: '/iq',
+    title: 'IQ Duel',
+    description: 'The same questions. Two wonderfully competitive minds.',
+    category: 'play',
+    motif: 'dice',
+  },
+  {
+    href: '/riddle',
+    title: 'Riddle Night',
+    description: 'Put your heads together and follow the clues.',
+    category: 'play',
+    motif: 'dice',
+  },
+  {
+    href: '/lab',
+    title: 'The Lab',
+    description: 'A little science, a little teamwork, a new challenge.',
+    category: 'play',
+    motif: 'dice',
+  },
+  {
+    href: '/debate',
+    title: 'The Great Debate',
+    description: 'Pick a side and make your most convincing case.',
+    category: 'talk',
+    motif: 'cards',
+  },
+  {
+    href: '/court',
+    title: 'Couples Court',
+    description: 'Bring your most harmless dispute before the court.',
+    category: 'play',
+    motif: 'dice',
+  },
+  {
+    href: '/draw',
+    title: 'Draw Together',
+    description: 'Two canvases and one prompt. Artistic talent optional.',
+    category: 'make',
+    motif: 'photo',
+  },
+  {
+    href: '/hunt',
+    title: 'Snap Hunt',
+    description: 'Find it, photograph it, and race back with your discovery.',
+    category: 'play',
+    motif: 'photo',
+  },
+  {
+    href: '/future',
+    title: 'Our Future',
+    description: 'Give your someday a place to start taking shape.',
+    category: 'make',
+    motif: 'letter',
+  },
+  {
+    href: '/birthday',
+    title: 'Birthday Gift',
+    description: 'Make a small surprise that feels entirely like them.',
+    category: 'make',
+    motif: 'letter',
+  },
+  {
+    href: '/fashion',
+    title: 'Fashion Show',
+    description: 'One brief. Two looks. Time for your runway moment.',
+    category: 'play',
+    motif: 'cards',
+  },
+  {
+    href: '/shirts',
+    title: 'Matching Shirts',
+    description: 'Create something that says we belong together.',
+    category: 'make',
+    motif: 'photo',
+  },
+  {
+    href: '/forecast',
+    title: 'Love Forecast',
+    description: 'A little romantic weather report for your day.',
+    category: 'distance',
+    motif: 'ticket',
+  },
+  {
+    href: '/timezone',
+    title: 'Timezone & Reunion',
+    description: 'Find your shared hours and count down to the next hello.',
+    category: 'distance',
+    motif: 'ticket',
+  },
+  {
+    href: '/bucket',
+    title: '100 Dates Bucket List',
+    description: 'Collect firsts, small adventures, and someday plans.',
+    category: 'distance',
+    motif: 'ticket',
+  },
+  {
+    href: '/date',
+    title: 'Date Night Planner',
+    description: 'Turn what should we do into a lovely little evening.',
+    category: 'distance',
+    motif: 'ticket',
+  },
+];
+
+function tilt(event: PointerEvent<HTMLAnchorElement>) {
+  if (
+    event.pointerType !== 'mouse' ||
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  )
+    return;
+  const rect = event.currentTarget.getBoundingClientRect();
+  event.currentTarget.style.setProperty(
+    '--tilt-x',
+    `${((event.clientY - rect.top) / rect.height - 0.5) * -5}deg`,
+  );
+  event.currentTarget.style.setProperty(
+    '--tilt-y',
+    `${((event.clientX - rect.left) / rect.width - 0.5) * 6}deg`,
+  );
+}
+function resetTilt(event: PointerEvent<HTMLAnchorElement>) {
+  event.currentTarget.style.setProperty('--tilt-x', '0deg');
+  event.currentTarget.style.setProperty('--tilt-y', '0deg');
+}
+function ObjectArt({ motif }: { motif: string }) {
+  return (
+    <div
+      className={`collection-object collection-object--${motif}`}
+      aria-hidden="true"
+    >
+      {motif === 'photo' ? (
+        <>
+          <img src="/photos/frame2.webp" alt="" loading="lazy" />
+          <span>just us.</span>
+        </>
+      ) : motif === 'dice' ? (
+        <div className="collection-pips">
+          {Array.from({ length: 5 }, (_, i) => (
+            <i key={i} />
+          ))}
+        </div>
+      ) : motif === 'letter' ? (
+        <>
+          <div className="collection-envelope-flap" />
+          <span className="collection-seal">♥</span>
+        </>
+      ) : motif === 'ticket' ? (
+        <>
+          <small>DEARLY US AIR</small>
+          <b>YOU ↔ ME</b>
+          <span>ONE WAY TO SOMEDAY</span>
+        </>
+      ) : (
+        <>
+          <small>for the two of us</small>
+          <Heart size={38} strokeWidth={1.2} />
+          <span>one more question?</span>
+        </>
+      )}
+    </div>
+  );
+}
 
 export default function ActivityPage() {
   const { partnerA, partnerB } = useCoupleProfile();
-  const [selectedCategory, setSelectedCategory] = useState<
-    'all' | 'duels' | 'keepsakes' | 'quizzes' | 'travel'
-  >('all');
-
-  const handleSelectCategory = (
-    catId: 'all' | 'duels' | 'keepsakes' | 'quizzes' | 'travel',
-  ) => {
-    sounds.playPop();
-    setSelectedCategory(catId);
-  };
-
+  const [category, setCategory] = useState<Category>('all');
+  const [query, setQuery] = useState('');
+  const visible = activities.filter(
+    (item) =>
+      (category === 'all' || item.category === category) &&
+      `${item.title} ${item.description}`
+        .toLowerCase()
+        .includes(query.trim().toLowerCase()),
+  );
   return (
-    <div
-      style={{
-        background: 'var(--paper)',
-        minHeight: '100vh',
-        paddingBottom: '60px',
-      }}
-    >
-      <ScrollProgress />
+    <div className="activity-collection">
       <Navbar />
-      <main
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '24px',
-          padding: '16px 16px 40px',
-          maxWidth: '680px',
-          width: '100%',
-          margin: '0 auto',
-        }}
-      >
-
-        {/* Heading */}
-        <ScrollReveal animation="fade-up">
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
-              padding: '0 4px',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <GlowBadge text="22 Realtime Dates Live" size="sm" />
-            </div>
-            <h1
-              style={{
-                fontFamily: 'var(--font-display)',
-                fontWeight: 800,
-                fontSize: 'clamp(26px, 7vw, 34px)',
-                letterSpacing: '-.03em',
-                lineHeight: 1.1,
-              }}
-            >
-              Pick an <span style={{ color: 'var(--pink)' }}>activity</span> for{' '}
-              <span style={{ color: 'var(--blue)' }}>
-                {partnerA} &amp; {partnerB}
-              </span>
-              .
+      <main className="collection-main">
+        <section className="collection-hero" aria-labelledby="collection-title">
+          <div className="collection-intro">
+            <span className="collection-kicker">
+              <span /> THE DEARLY US DATE COLLECTION
+            </span>
+            <h1 id="collection-title">
+              A little time.
+              <br />A little closer<span className="collection-period">.</span>
             </h1>
-            <p style={{ color: 'var(--ink-soft)', fontSize: '15px' }}>
-              Realtime games &amp; dates for two screens in two places — played
-              in one shared room, at the same second.
+            <p>
+              For the silly nights, the deep talks, and the
+              <br className="collection-desktop-break" /> moments that become{' '}
+              <em>your thing.</em>
             </p>
+            <a href="#date-collection" className="collection-primary">
+              Find your next date <ArrowUpRight size={18} />
+            </a>
+            <div className="collection-dedication">
+              <Heart size={15} />
+              <span>
+                Set aside for {partnerA} &amp; {partnerB}
+              </span>
+            </div>
           </div>
-        </ScrollReveal>
-
-        {/* Category Filter Pills */}
-        <div
-          style={{
-            display: 'flex',
-            gap: '8px',
-            overflowX: 'auto',
-            padding: '4px 2px',
-            scrollbarWidth: 'none',
-          }}
+          <div
+            className="collection-still-life"
+            aria-label="A collection of photographs, conversation cards, and a letter"
+          >
+            <div className="collection-orbit">
+              GOOD COMPANY. LITTLE MOMENTS.
+            </div>
+            <Link
+              href="/cards"
+              className="collection-hero-deck"
+              aria-label="Open Honest Cards"
+            >
+              <span>01 / CONVERSATION</span>
+              <Heart size={48} strokeWidth={1} />
+              <strong>
+                Tell me
+                <br />
+                something
+                <br />
+                <em>only I know.</em>
+              </strong>
+              <small>HONEST CARDS · DEARLY US</small>
+            </Link>
+            <Link
+              href="/photobooth"
+              className="collection-hero-photo"
+              aria-label="Open the Photobooth"
+            >
+              <img
+                src="/photos/frame1.webp"
+                alt="A couple sharing a happy moment"
+              />
+              <span>this is our kind of night.</span>
+            </Link>
+            <Link
+              href="/letter"
+              className="collection-hero-letter"
+              aria-label="Write a letter to the future"
+            >
+              <ObjectArt motif="letter" />
+              <span>to us, with love.</span>
+            </Link>
+            <div className="collection-hero-die" aria-hidden="true">
+              <ObjectArt motif="dice" />
+            </div>
+            <span className="collection-scene-note">
+              a few ways to be together ↗
+            </span>
+          </div>
+        </section>
+        <section
+          id="date-collection"
+          className="collection-catalogue"
+          aria-labelledby="catalogue-title"
         >
-          {CATEGORIES.map((cat) => {
-            const active = selectedCategory === cat.id;
-            return (
+          <div className="collection-section-heading">
+            <div>
+              <span className="collection-kicker">
+                PICK THE MOOD. MAKE IT YOURS.
+              </span>
+              <h2 id="catalogue-title">What kind of night is it?</h2>
+            </div>
+            <label className="collection-search">
+              <Search size={17} />
+              <input
+                aria-label="Search activities"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Find your kind of date…"
+                type="search"
+              />
+            </label>
+          </div>
+          <div className="collection-filters" aria-label="Filter activities">
+            {categories.map((cat) => (
               <button
+                type="button"
                 key={cat.id}
-                onClick={() => handleSelectCategory(cat.id as any)}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: '20px',
-                  border: active
-                    ? '1px solid var(--pink)'
-                    : '1px solid var(--line)',
-                  background: active
-                    ? 'linear-gradient(135deg, var(--pink), var(--blue))'
-                    : '#FFFFFF',
-                  color: active ? '#FFFFFF' : 'var(--ink)',
-                  fontSize: '13px',
-                  fontWeight: active ? 700 : 500,
-                  whiteSpace: 'nowrap',
-                  cursor: 'pointer',
-                  boxShadow: active
-                    ? '0 4px 12px rgba(255, 78, 120, 0.25)'
-                    : 'var(--shadow-soft)',
-                  transition: 'all 0.15s ease',
-                  flexShrink: 0,
-                }}
+                aria-pressed={category === cat.id}
+                onClick={() => setCategory(cat.id)}
               >
-                {cat.label}{' '}
-                <span style={{ opacity: 0.8, fontSize: '11px' }}>
-                  ({cat.count})
+                {cat.label}
+                <span>
+                  {
+                    activities.filter(
+                      (item) => cat.id === 'all' || item.category === cat.id,
+                    ).length
+                  }
                 </span>
               </button>
-            );
-          })}
-        </div>
-
-        {/* Featured Date Passport Banner */}
-        <Link
-          href="/passport"
-          style={{
-            position: 'relative',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '6px',
-            padding: '22px',
-            borderRadius: '16px',
-            background:
-              'linear-gradient(135deg, #1E1B4B 0%, #2E1065 60%, #1E1B4B 100%)',
-            border: '2px solid rgba(253, 230, 138, 0.45)',
-            boxShadow: '0 12px 30px rgba(46, 16, 101, 0.25)',
-            color: '#FFFFFF',
-            textDecoration: 'none',
-            overflow: 'hidden',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '18px' }}>🌸</span>
-            <span
-              style={{
-                fontSize: '10.5px',
-                fontFamily: 'var(--font-mono)',
-                color: '#FDE68A',
-                fontWeight: 800,
-                letterSpacing: '1.5px',
-              }}
-            >
-              대한민국 · COUPLE SOUVENIR PASSPORT
-            </span>
+            ))}
           </div>
-
-          <h2
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontWeight: 800,
-              fontSize: '20px',
-              letterSpacing: '-.02em',
-              margin: '2px 0',
-            }}
-          >
-            Date Passport &amp; Stamps 💮
-          </h2>
-          <p
-            style={{
-              color: 'rgba(255, 255, 255, 0.8)',
-              fontSize: '13.5px',
-              maxWidth: '36ch',
-              lineHeight: 1.4,
-            }}
-          >
-            Earn authentic Korean rubber ink seals and collect sweet memory
-            notes for every date you finish!
-          </p>
-
-          <div
-            style={{
-              marginTop: '6px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              color: '#FDE68A',
-              fontWeight: 800,
-              fontSize: '13px',
-            }}
-          >
-            <span>Open Couple Passport</span>
-            <span>→</span>
+          <div className="collection-results" role="status">
+            {visible.length}{' '}
+            {visible.length === 1 ? 'experience' : 'experiences'} to share{' '}
+            <span>Made for two, wherever you are.</span>
           </div>
-
-          {/* Miniature Stamp Seal Graphic */}
-          <div
-            style={{
-              position: 'absolute',
-              right: '16px',
-              top: '50%',
-              transform: 'translateY(-50%) rotate(-6deg)',
-              width: '64px',
-              height: '64px',
-              borderRadius: '50%',
-              border: '3px dashed #FDE68A',
-              background: 'rgba(253, 230, 138, 0.1)',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '22px',
-              pointerEvents: 'none',
-            }}
-          >
-            <span>💮</span>
-            <span
-              style={{
-                fontSize: '7px',
-                color: '#FDE68A',
-                fontWeight: 900,
-                fontFamily: 'monospace',
-              }}
-            >
-              OFFICIAL
-            </span>
-          </div>
-        </Link>
-
-        {/* Featured Photobooth Banner */}
-        <Link
-          href="/photobooth"
-          style={{
-            position: 'relative',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '6px',
-            padding: '22px',
-            borderRadius: '14px',
-            background:
-              'linear-gradient(120deg, var(--pink-tint), var(--blue-tint))',
-            overflow: 'hidden',
-            border: '1px solid var(--line)',
-            boxShadow: 'var(--shadow-soft)',
-          }}
-        >
-          <h2
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontWeight: 800,
-              fontSize: '22px',
-              letterSpacing: '-.02em',
-            }}
-          >
-            Photobooth
-          </h2>
-          <p
-            style={{
-              color: 'var(--ink)',
-              opacity: 0.75,
-              fontSize: '14px',
-              maxWidth: '30ch',
-            }}
-          >
-            One shared countdown, both of you in every frame of the strip.
-          </p>
-          <span style={{ marginTop: '8px', fontWeight: 700, fontSize: '15px' }}>
-            Open the booth ▷
-          </span>
-
-          {/* Miniature Photo Strip Illustration */}
-          <div
-            style={{
-              position: 'absolute',
-              right: '-6px',
-              top: '50%',
-              transform: 'translateY(-50%) rotate(6deg)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '4px',
-              padding: '8px 6px 14px',
-              background: 'var(--paper-raised)',
-              boxShadow: 'var(--shadow-soft)',
-              borderRadius: '4px',
-            }}
-            aria-hidden="true"
-          >
-            <i
-              style={{
-                display: 'block',
-                width: '44px',
-                height: '32px',
-                background: 'linear-gradient(120deg, var(--pink), var(--blue))',
-                opacity: 0.65,
-                borderRadius: '2px',
-              }}
-            ></i>
-            <i
-              style={{
-                display: 'block',
-                width: '44px',
-                height: '32px',
-                background: 'linear-gradient(120deg, var(--pink), var(--blue))',
-                opacity: 0.45,
-                borderRadius: '2px',
-              }}
-            ></i>
-            <i
-              style={{
-                display: 'block',
-                width: '44px',
-                height: '32px',
-                background: 'linear-gradient(120deg, var(--pink), var(--blue))',
-                opacity: 0.55,
-                borderRadius: '2px',
-              }}
-            ></i>
-            <i
-              style={{
-                display: 'block',
-                width: '44px',
-                height: '32px',
-                background: 'linear-gradient(120deg, var(--pink), var(--blue))',
-                opacity: 0.35,
-                borderRadius: '2px',
-              }}
-            ></i>
-          </div>
-        </Link>
-
-        {/* Section: Games for two */}
-        <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: '11px',
-            fontWeight: 700,
-            letterSpacing: '.16em',
-            textTransform: 'uppercase',
-            color: 'var(--ink-soft)',
-            padding: '0 4px',
-          }}
-        >
-          Games for two
-        </span>
-
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-            gap: '12px',
-          }}
-        >
-          {[
-            {
-              href: '/quiz',
-              title: 'Know Me Quiz',
-              badge: '★',
-              desc: 'guess each other, score at the end',
-              category: 'quizzes',
-              icon: (
-                <svg
-                  viewBox="0 0 34 34"
-                  fill="none"
-                  style={{ width: '26px', height: '26px' }}
-                >
-                  <path
-                    d="M10 7a3.5 3.5 0 013.6 3.6c0 2.6-3.6 3.4-3.6 6"
-                    stroke="#FF7BA3"
-                    strokeWidth="2.4"
-                    strokeLinecap="round"
-                  />
-                  <circle cx="10" cy="22" r="1.7" fill="#FF7BA3" />
-                  <path
-                    d="M24 28s-6-3.6-6-8.2a3 3 0 015.2-2.1 3 3 0 015.2 2.1C28.4 24.4 24 28 24 28z"
-                    stroke="#5FA0FF"
-                    strokeWidth="2.4"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              ),
-            },
-            {
-              href: '/host',
-              title: 'Date Host',
-              badge: '★ Live',
-              desc: 'third-wheel host reacts & adapts questions',
-              category: 'quizzes',
-              icon: (
-                <span
-                  style={{
-                    fontSize: '26px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  🎙️
-                </span>
-              ),
-            },
-            {
-              href: '/dare',
-              title: 'Truth or Dare',
-              badge: 'New',
-              desc: 'lose the minigame, pick your fate',
-              category: 'duels',
-              icon: (
-                <svg
-                  viewBox="0 0 34 34"
-                  fill="none"
-                  style={{ width: '26px', height: '26px' }}
-                >
-                  <rect
-                    x="4"
-                    y="10"
-                    width="17"
-                    height="17"
-                    rx="3"
-                    stroke="#17181C"
-                    strokeWidth="2.4"
-                  />
-                  <circle cx="9.5" cy="15.5" r="1.6" fill="#5FA0FF" />
-                  <circle cx="15.5" cy="15.5" r="1.6" fill="#5FA0FF" />
-                  <circle cx="9.5" cy="21.5" r="1.6" fill="#5FA0FF" />
-                  <circle cx="15.5" cy="21.5" r="1.6" fill="#5FA0FF" />
-                  <path
-                    d="M25 15s-5-3.2-5-6.4a2.6 2.6 0 014.5-1.8A2.6 2.6 0 0129 8.6C29 11.8 25 15 25 15z"
-                    stroke="#FF7BA3"
-                    strokeWidth="2.4"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M24 19l2 3.2-3.2 1 2 3.2"
-                    stroke="#FF7BA3"
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              ),
-            },
-            {
-              href: '/cards',
-              title: 'Honest Cards',
-              badge: 'New',
-              desc: 'the questions you keep avoiding',
-              category: 'quizzes',
-              icon: (
-                <svg
-                  viewBox="0 0 34 34"
-                  fill="none"
-                  style={{ width: '26px', height: '26px' }}
-                >
-                  <rect
-                    x="4"
-                    y="8"
-                    width="14"
-                    height="20"
-                    rx="2.5"
-                    transform="rotate(-8 4 8)"
-                    stroke="#5FA0FF"
-                    strokeWidth="2.4"
-                  />
-                  <rect
-                    x="13"
-                    y="6"
-                    width="15"
-                    height="21"
-                    rx="2.5"
-                    fill="#fff"
-                    stroke="#17181C"
-                    strokeWidth="2.4"
-                  />
-                  <path
-                    d="M20.5 20s-4.5-2.7-4.5-5.6a2.2 2.2 0 013.8-1.5 2.2 2.2 0 013.8 1.5c0 2.9-3.1 5.6-3.1 5.6z"
-                    stroke="#FF7BA3"
-                    strokeWidth="2.4"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              ),
-            },
-            {
-              href: '/iq',
-              title: 'IQ Duel',
-              badge: 'New',
-              desc: 'same questions, head to head',
-              category: 'duels',
-              icon: (
-                <svg
-                  viewBox="0 0 34 34"
-                  fill="none"
-                  style={{ width: '26px', height: '26px' }}
-                >
-                  <rect
-                    x="4"
-                    y="4"
-                    width="11"
-                    height="11"
-                    rx="2"
-                    stroke="#FF7BA3"
-                    strokeWidth="2.4"
-                  />
-                  <rect
-                    x="19"
-                    y="4"
-                    width="11"
-                    height="11"
-                    rx="2"
-                    stroke="#5FA0FF"
-                    strokeWidth="2.4"
-                  />
-                  <rect
-                    x="4"
-                    y="19"
-                    width="11"
-                    height="11"
-                    rx="2"
-                    stroke="#5FA0FF"
-                    strokeWidth="2.4"
-                  />
-                  <path
-                    d="M21 24.5h7M24.5 21v7"
-                    stroke="#FF7BA3"
-                    strokeWidth="2.4"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              ),
-            },
-            {
-              href: '/riddle',
-              title: 'Riddle Night',
-              badge: 'New',
-              desc: 'famous riddles, talk it out',
-              category: 'duels',
-              icon: (
-                <svg
-                  viewBox="0 0 34 34"
-                  fill="none"
-                  style={{ width: '26px', height: '26px' }}
-                >
-                  <path
-                    d="M13 5a6 6 0 016.2 6.2c0 4.4-6.2 5.8-6.2 10.2"
-                    stroke="#FF7BA3"
-                    strokeWidth="2.4"
-                    strokeLinecap="round"
-                  />
-                  <circle cx="13" cy="27" r="2" fill="#FF7BA3" />
-                  <path
-                    d="M24 16l2 4.2 4.6.6-3.4 3.2.9 4.6L24 26.4l-4.1 2.2.9-4.6-3.4-3.2 4.6-.6z"
-                    stroke="#5FA0FF"
-                    strokeWidth="2.4"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              ),
-            },
-            {
-              href: '/lab',
-              title: 'The Lab',
-              badge: 'New',
-              desc: 'math & science, versus or co-op',
-              category: 'duels',
-              icon: (
-                <svg
-                  viewBox="0 0 34 34"
-                  fill="none"
-                  style={{ width: '26px', height: '26px' }}
-                >
-                  <path
-                    d="M14 5h6M15 5v8l7 12a2.5 2.5 0 01-2.2 3.8H11.2A2.5 2.5 0 019 25l7-12V5"
-                    stroke="#17181C"
-                    strokeWidth="2.4"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M12 21h10"
-                    stroke="#5FA0FF"
-                    strokeWidth="2.4"
-                    strokeLinecap="round"
-                  />
-                  <circle cx="15" cy="24.5" r="1.4" fill="#FF7BA3" />
-                  <circle cx="19" cy="25.5" r="1.1" fill="#FF7BA3" />
-                </svg>
-              ),
-            },
-            {
-              href: '/arcade',
-              title: 'Arcade',
-              desc: 'tiny retro tap games',
-              category: 'duels',
-              icon: (
-                <svg
-                  viewBox="0 0 34 34"
-                  fill="none"
-                  style={{ width: '26px', height: '26px' }}
-                >
-                  <rect
-                    x="4"
-                    y="7"
-                    width="26"
-                    height="17"
-                    rx="3"
-                    stroke="#17181C"
-                    strokeWidth="2.4"
-                  />
-                  <circle
-                    cx="11"
-                    cy="15"
-                    r="3"
-                    stroke="#FF7BA3"
-                    strokeWidth="2.4"
-                  />
-                  <path
-                    d="M11 12v-4"
-                    stroke="#FF7BA3"
-                    strokeWidth="2.4"
-                    strokeLinecap="round"
-                  />
-                  <circle cx="22" cy="14" r="1.6" fill="#5FA0FF" />
-                  <circle cx="26" cy="17" r="1.6" fill="#5FA0FF" />
-                  <path
-                    d="M11 28h12"
-                    stroke="#17181C"
-                    strokeWidth="2.4"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              ),
-            },
-            {
-              href: '/debate',
-              title: 'Debate',
-              desc: 'argue it out, AI judges',
-              category: 'duels',
-              icon: (
-                <svg
-                  viewBox="0 0 34 34"
-                  fill="none"
-                  style={{ width: '26px', height: '26px' }}
-                >
-                  <rect
-                    x="3"
-                    y="5"
-                    width="17"
-                    height="13"
-                    rx="3"
-                    stroke="#FF7BA3"
-                    strokeWidth="2.4"
-                  />
-                  <path
-                    d="M9 18l-2 4 5-2"
-                    stroke="#FF7BA3"
-                    strokeWidth="2.4"
-                    strokeLinejoin="round"
-                  />
-                  <rect
-                    x="14"
-                    y="14"
-                    width="17"
-                    height="13"
-                    rx="3"
-                    stroke="#5FA0FF"
-                    strokeWidth="2.4"
-                  />
-                  <path
-                    d="M25 27l2 4-5-2"
-                    stroke="#5FA0FF"
-                    strokeWidth="2.4"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              ),
-            },
-            {
-              href: '/draw',
-              title: 'Draw Together',
-              desc: 'same prompt, two canvases',
-              category: 'keepsakes',
-              icon: (
-                <svg
-                  viewBox="0 0 34 34"
-                  fill="none"
-                  style={{ width: '26px', height: '26px' }}
-                >
-                  <rect
-                    x="4"
-                    y="4"
-                    width="26"
-                    height="26"
-                    rx="3"
-                    stroke="#17181C"
-                    strokeWidth="2.4"
-                  />
-                  <path
-                    d="M22 8l4 4-12 12-4 1 1-4z"
-                    stroke="#FF7BA3"
-                    strokeWidth="2.4"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M7 27c3-5 6 1 9-3"
-                    stroke="#5FA0FF"
-                    strokeWidth="2.4"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              ),
-            },
-            {
-              href: '/court',
-              title: 'Couples Court',
-              desc: 'plead your case, get a verdict',
-              category: 'duels',
-              icon: (
-                <svg
-                  viewBox="0 0 34 34"
-                  fill="none"
-                  style={{ width: '26px', height: '26px' }}
-                >
-                  <path
-                    d="M17 5v22"
-                    stroke="#17181C"
-                    strokeWidth="2.4"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M6 12h22"
-                    stroke="#17181C"
-                    strokeWidth="2.4"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M6 12l-3 7h6z"
-                    stroke="#FF7BA3"
-                    strokeWidth="2.4"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M28 12l-3 7h6z"
-                    stroke="#5FA0FF"
-                    strokeWidth="2.4"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M12 29h10"
-                    stroke="#17181C"
-                    strokeWidth="2.4"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              ),
-            },
-            {
-              href: '/forecast',
-              title: 'Love Forecast',
-              badge: '🌦️ New',
-              desc: 'daily romantic weather & keepsake card',
-              category: 'travel',
-              icon: (
-                <span
-                  style={{
-                    fontSize: '26px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  🌦️
-                </span>
-              ),
-            },
-            {
-              href: '/hunt',
-              title: 'Snap Hunt',
-              desc: 'race to find it, snap it',
-              category: 'duels',
-              icon: (
-                <svg
-                  viewBox="0 0 34 34"
-                  fill="none"
-                  style={{ width: '26px', height: '26px' }}
-                >
-                  <circle
-                    cx="15"
-                    cy="15"
-                    r="9"
-                    stroke="#FF7BA3"
-                    strokeWidth="2.4"
-                  />
-                  <path
-                    d="M21.5 21.5l7 7"
-                    stroke="#5FA0FF"
-                    strokeWidth="2.4"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M15 11v8M11 15h8"
-                    stroke="#5FA0FF"
-                    strokeWidth="2.4"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              ),
-            },
-            {
-              href: '/match',
-              title: 'Love Match',
-              badge: 'New',
-              desc: 'same personality test, one score',
-              category: 'quizzes',
-              icon: (
-                <svg
-                  viewBox="0 0 34 34"
-                  fill="none"
-                  style={{ width: '26px', height: '26px' }}
-                >
-                  <path
-                    d="M13 25S4 19.4 4 13.6A4.2 4.2 0 0111.6 11"
-                    stroke="#FF7BA3"
-                    strokeWidth="2.4"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M21 25s9-5.6 9-11.4A4.2 4.2 0 0022.4 11"
-                    stroke="#5FA0FF"
-                    strokeWidth="2.4"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M12 17h3l2-3 3 6 2-3h3"
-                    stroke="#17181C"
-                    strokeWidth="2.4"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              ),
-            },
-            {
-              href: '/future',
-              title: 'Our Future',
-              badge: 'New',
-              desc: 'design it together — vision board',
-              category: 'keepsakes',
-              icon: (
-                <svg
-                  viewBox="0 0 34 34"
-                  fill="none"
-                  style={{ width: '26px', height: '26px' }}
-                >
-                  <circle
-                    cx="17"
-                    cy="19"
-                    r="6"
-                    stroke="#FF7BA3"
-                    strokeWidth="2.4"
-                  />
-                  <path
-                    d="M4 25h26"
-                    stroke="#17181C"
-                    strokeWidth="2.4"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M17 7v3M7 11l2 2M27 11l-2 2"
-                    stroke="#5FA0FF"
-                    strokeWidth="2.4"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M9 29h16"
-                    stroke="#5FA0FF"
-                    strokeWidth="2.4"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              ),
-            },
-            {
-              href: '/birthday',
-              title: 'Birthday Gift',
-              badge: 'New',
-              desc: 'gift page sealed in heart QR',
-              category: 'keepsakes',
-              icon: (
-                <svg
-                  viewBox="0 0 34 34"
-                  fill="none"
-                  style={{ width: '26px', height: '26px' }}
-                >
-                  <rect
-                    x="6"
-                    y="14"
-                    width="22"
-                    height="14"
-                    rx="2"
-                    stroke="#17181C"
-                    strokeWidth="2.4"
-                  />
-                  <rect
-                    x="4"
-                    y="9"
-                    width="26"
-                    height="5"
-                    rx="1.5"
-                    stroke="#17181C"
-                    strokeWidth="2.4"
-                  />
-                  <path d="M17 9v19" stroke="#FF7BA3" strokeWidth="2.4" />
-                  <path
-                    d="M17 9c-4.5 0-6.5-5-3-5 2 0 3 2.5 3 5zm0 0c4.5 0 6.5-5 3-5-2 0-3 2.5-3 5z"
-                    stroke="#FF7BA3"
-                    strokeWidth="2.4"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              ),
-            },
-          ]
-            .filter(
-              (card) =>
-                selectedCategory === 'all' ||
-                card.category === selectedCategory,
-            )
-            .map((card, idx) => (
+          <div className="collection-grid">
+            {visible.map((item) => (
               <Link
-                key={idx}
-                href={card.href}
-                onClick={() => sounds.playPop()}
-                className="act"
-                style={{
-                  borderRadius: '14px',
-                  padding: '18px 16px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '10px',
-                  boxShadow: 'var(--shadow-soft)',
-                }}
+                href={item.href}
+                key={item.href}
+                className={`collection-card collection-card--${item.category}`}
+                onPointerMove={tilt}
+                onPointerLeave={resetTilt}
+                onBlur={() => {}}
+                style={
+                  { '--tilt-x': '0deg', '--tilt-y': '0deg' } as CSSProperties
+                }
               >
-                <div
-                  style={{
-                    width: '42px',
-                    height: '42px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: '12px',
-                    background: 'var(--paper)',
-                  }}
-                >
-                  {card.icon}
+                <div className="collection-card-stage">
+                  <span className="collection-card-category">
+                    {categories.find((cat) => cat.id === item.category)?.label}
+                  </span>
+                  <ObjectArt motif={item.motif} />
+                  <span className="collection-card-number">
+                    {String(activities.indexOf(item) + 1).padStart(2, '0')}
+                  </span>
                 </div>
-                <h3 style={{ fontSize: '16px', fontWeight: 800, margin: 0 }}>
-                  {card.title}{' '}
-                  {card.badge && (
-                    <span
-                      style={{
-                        fontFamily: 'var(--font-mono)',
-                        fontSize: '9px',
-                        fontWeight: 700,
-                        letterSpacing: '.1em',
-                        textTransform: 'uppercase',
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                        color: '#fff',
-                        background:
-                          'linear-gradient(100deg, var(--pink), var(--blue))',
-                      }}
-                    >
-                      {card.badge}
-                    </span>
-                  )}
-                </h3>
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: '12.5px',
-                    color: 'var(--ink-soft)',
-                  }}
-                >
-                  {card.desc}
-                </p>
+                <div className="collection-card-copy">
+                  <h3>{item.title}</h3>
+                  <p>{item.description}</p>
+                  <span className="collection-card-cta">
+                    Let's do this <ArrowUpRight size={17} />
+                  </span>
+                </div>
               </Link>
             ))}
-        </div>
-
-        {/* Section: More */}
-        {(selectedCategory === 'all' ||
-          ['keepsakes', 'duels', 'travel'].includes(selectedCategory)) && (
-          <>
-            <span
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: '11px',
-                fontWeight: 700,
-                letterSpacing: '.16em',
-                textTransform: 'uppercase',
-                color: 'var(--ink-soft)',
-                padding: '0 4px',
-                marginTop: '10px',
-              }}
-            >
-              More Experiences
-            </span>
-
-            <div style={{ display: 'grid', gap: '12px' }}>
-              {[
-                {
-                  href: '/scrapbook',
-                  title: 'Digital Scrapbook',
-                  badge: 'New',
-                  category: 'keepsakes',
-                  desc: 'your photobooth strips on paper — tape them down, write notes',
-                  icon: (
-                    <svg
-                      viewBox="0 0 34 34"
-                      fill="none"
-                      style={{ width: '26px', height: '26px' }}
-                    >
-                      <rect
-                        x="5"
-                        y="5"
-                        width="24"
-                        height="24"
-                        rx="2"
-                        stroke="#17181C"
-                        strokeWidth="2.4"
-                      />
-                      <path
-                        d="M11 3v5"
-                        stroke="#FF7BA3"
-                        strokeWidth="2.4"
-                        strokeLinecap="round"
-                      />
-                      <rect
-                        x="10"
-                        y="11"
-                        width="7"
-                        height="11"
-                        rx="1"
-                        stroke="#5FA0FF"
-                        strokeWidth="2.4"
-                      />
-                      <path
-                        d="M20 14h5M20 19h4M20 24h6"
-                        stroke="#FF7BA3"
-                        strokeWidth="2.4"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                  ),
-                },
-                {
-                  href: '/letter',
-                  title: 'Letters to the Future',
-                  badge: 'New',
-                  category: 'keepsakes',
-                  desc: 'write now, delivered years from now to both of you',
-                  icon: (
-                    <svg
-                      viewBox="0 0 34 34"
-                      fill="none"
-                      style={{ width: '26px', height: '26px' }}
-                    >
-                      <rect
-                        x="4"
-                        y="8"
-                        width="26"
-                        height="18"
-                        rx="2"
-                        stroke="#17181C"
-                        strokeWidth="2.4"
-                      />
-                      <path
-                        d="M4 10l13 9 13-9"
-                        stroke="#5FA0FF"
-                        strokeWidth="2.4"
-                        strokeLinejoin="round"
-                      />
-                      <circle
-                        cx="27"
-                        cy="8"
-                        r="4.5"
-                        fill="#FFF"
-                        stroke="#FF7BA3"
-                        strokeWidth="2.2"
-                      />
-                      <path
-                        d="M27 6v2.2l1.5 1"
-                        stroke="#FF7BA3"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                  ),
-                },
-                {
-                  href: '/fashion',
-                  title: 'Fashion Show',
-                  badge: 'New',
-                  category: 'duels',
-                  desc: 'same brief & twist, AI stylist scores the runway',
-                  icon: <span style={{ fontSize: '24px' }}>👗</span>,
-                },
-                {
-                  href: '/shirts',
-                  title: 'Matching Shirts',
-                  badge: 'New',
-                  category: 'keepsakes',
-                  desc: 'design matching couple outfits & download free mockups',
-                  icon: <span style={{ fontSize: '24px' }}>👕</span>,
-                },
-                {
-                  href: '/timezone',
-                  title: 'Timezone & Reunion Hub',
-                  badge: 'New',
-                  category: 'travel',
-                  desc: 'daylight horizon, golden overlap hours & airport countdown',
-                  icon: <span style={{ fontSize: '24px' }}>🌍</span>,
-                },
-                {
-                  href: '/bucket',
-                  title: '100 Dates Bucket List',
-                  badge: 'New',
-                  category: 'travel',
-                  desc: 'scratch off milestones from virtual dates to airport hugs',
-                  icon: <span style={{ fontSize: '24px' }}>🎯</span>,
-                },
-                {
-                  href: '/date',
-                  title: 'Date Night Planner',
-                  badge: 'New',
-                  category: 'travel',
-                  desc: 'custom multi-game schedules, ambient soundscapes & cooking',
-                  icon: <span style={{ fontSize: '24px' }}>🌙</span>,
-                },
-              ]
-                .filter(
-                  (item) =>
-                    selectedCategory === 'all' ||
-                    item.category === selectedCategory,
-                )
-                .map((item, idx) => (
-                  <Link
-                    key={idx}
-                    href={item.href}
-                    onClick={() => sounds.playPop()}
-                    className="act"
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: '16px',
-                      padding: '18px 20px',
-                      borderRadius: '14px',
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: '42px',
-                        height: '42px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        borderRadius: '12px',
-                        background: 'var(--paper)',
-                        flex: 'none',
-                      }}
-                    >
-                      {item.icon}
-                    </div>
-                    <div
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '2px',
-                      }}
-                    >
-                      <h3
-                        style={{ fontSize: '16px', fontWeight: 800, margin: 0 }}
-                      >
-                        {item.title}{' '}
-                        {item.badge && (
-                          <span
-                            style={{
-                              fontFamily: 'var(--font-mono)',
-                              fontSize: '9px',
-                              padding: '2px 6px',
-                              borderRadius: '4px',
-                              color: '#fff',
-                              background:
-                                'linear-gradient(100deg, var(--pink), var(--blue))',
-                            }}
-                          >
-                            {item.badge}
-                          </span>
-                        )}
-                      </h3>
-                      <p
-                        style={{
-                          margin: 0,
-                          fontSize: '12.5px',
-                          color: 'var(--ink-soft)',
-                        }}
-                      >
-                        {item.desc}
-                      </p>
-                    </div>
-                    <span
-                      style={{
-                        marginLeft: 'auto',
-                        fontSize: '18px',
-                        color: 'var(--ink-soft)',
-                      }}
-                    >
-                      ▷
-                    </span>
-                  </Link>
-                ))}
+          </div>
+          {visible.length === 0 && (
+            <div className="collection-empty">
+              <Heart size={30} />
+              <h3>No dates found just yet.</h3>
+              <p>Try another word, or explore the whole collection.</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setQuery('');
+                  setCategory('all');
+                }}
+              >
+                Show all experiences
+              </button>
             </div>
-          </>
-        )}
-
-        {/* Footer info */}
-        <div
-          style={{
-            textAlign: 'center',
-            color: 'var(--ink-soft)',
-            fontFamily: 'var(--font-mono)',
-            fontSize: '12px',
-            marginTop: '20px',
-          }}
-        >
-          <Link href="/" style={{ textDecoration: 'underline' }}>
-            ← back to home
-          </Link>{' '}
-          · dearly us · made for the moments that belong to you two
+          )}
+        </section>
+        <Link href="/passport" className="collection-passport">
+          <div className="collection-mini-passport" aria-hidden="true">
+            <span>DEARLY US</span>
+            <Heart size={32} strokeWidth={1} />
+            <b>PASSPORT</b>
+          </div>
+          <div>
+            <span className="collection-kicker">
+              THE BEST PART? KEEPING IT.
+            </span>
+            <h2>Your dates deserve a little history.</h2>
+            <p>Collect stamps and memory notes in your shared Date Passport.</p>
+          </div>
+          <span className="collection-passport-link">
+            Open your passport <ArrowUpRight size={20} />
+          </span>
+        </Link>
+        <div className="collection-ending">
+          <Sparkles size={17} />
+          <p>No perfect plans needed. Just you two.</p>
+          <Link href="/">Back to home</Link>
         </div>
       </main>
     </div>

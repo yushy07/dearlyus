@@ -157,7 +157,7 @@ export default function FuturePage() {
         {/* Vision Board Container */}
         <div
           style={{
-            background: '#FFFFFF',
+            background: 'var(--paper-raised)',
             border: '2px solid var(--line)',
             borderRadius: '20px',
             padding: '36px 32px',
@@ -204,7 +204,7 @@ export default function FuturePage() {
               <div
                 key={item.id}
                 style={{
-                  background: '#fff',
+                  background: 'var(--paper-raised)',
                   border: '1px solid var(--line)',
                   borderRadius: '12px',
                   padding: '16px',
@@ -274,7 +274,7 @@ export default function FuturePage() {
         {/* Add Ideas Shelf */}
         <div
           style={{
-            background: '#fff',
+            background: 'var(--paper-raised)',
             border: '1px solid var(--line)',
             borderRadius: '16px',
             padding: '28px',

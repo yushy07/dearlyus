@@ -12,7 +12,9 @@ export interface CustomRitualModalProps {
   timezoneA?: string;
   timezoneB?: string;
   initialRitual?: CoupleRitual | null;
-  onSaveRitual: (ritual: Omit<CoupleRitual, 'id' | 'createdAt'> & { id?: string }) => void;
+  onSaveRitual: (
+    ritual: Omit<CoupleRitual, 'id' | 'createdAt'> & { id?: string },
+  ) => void;
 }
 
 export function CustomRitualModal({
@@ -140,7 +142,7 @@ export function CustomRitualModal({
     >
       <div
         style={{
-          background: '#FFFFFF',
+          background: 'var(--paper-raised)',
           borderRadius: '28px',
           width: '100%',
           maxWidth: '560px',
@@ -344,8 +346,15 @@ export function CustomRitualModal({
               color: 'var(--ink-soft)',
             }}
           >
-            <div style={{ fontWeight: 600, color: 'var(--ink)', marginBottom: '3px' }}>
-              Timezone aware: {timeOfDay} for {partnerAName} ({timezoneA || 'Local'})
+            <div
+              style={{
+                fontWeight: 600,
+                color: 'var(--ink)',
+                marginBottom: '3px',
+              }}
+            >
+              Timezone aware: {timeOfDay} for {partnerAName} (
+              {timezoneA || 'Local'})
             </div>
             {timezoneB && (
               <div style={{ fontSize: '11.5px', color: 'var(--ink-soft)' }}>
@@ -410,9 +419,19 @@ export function CustomRitualModal({
                   style={{ marginTop: '2px', cursor: 'not-allowed' }}
                 />
                 <div>
-                  <span>Gentle reminders for {partnerBName}: <strong>{remindersB ? 'Enabled' : 'Paused'}</strong></span>
-                  <div style={{ fontSize: '11px', color: 'var(--ink-muted)', marginTop: '2px' }}>
-                    {partnerBName} chooses their own reminder preference on their device.
+                  <span>
+                    Gentle reminders for {partnerBName}:{' '}
+                    <strong>{remindersB ? 'Enabled' : 'Paused'}</strong>
+                  </span>
+                  <div
+                    style={{
+                      fontSize: '11px',
+                      color: 'var(--ink-muted)',
+                      marginTop: '2px',
+                    }}
+                  >
+                    {partnerBName} chooses their own reminder preference on
+                    their device.
                   </div>
                 </div>
               </div>
