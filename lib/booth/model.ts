@@ -24,6 +24,7 @@ export type BoothDesign = {
   caption: string;
   date: string;
   composition: 'split' | 'backdrop';
+  backdrop?: 'linen' | 'rose' | 'sage' | 'midnight';
   stickers: Decoration[];
 };
 export const INITIAL_DESIGN: BoothDesign = {
@@ -40,6 +41,12 @@ export const THEMES = {
   rose: { paper: '#e9c2c5', ink: '#613d48' },
   ink: { paper: '#352a31', ink: '#fff2df' },
   sage: { paper: '#dce3d1', ink: '#475547' },
+};
+export const BACKDROPS = {
+  linen: '#e8ded0',
+  rose: '#d9b8ba',
+  sage: '#bac6b5',
+  midnight: '#464350',
 };
 export const FILTERS = {
   natural: 'none',

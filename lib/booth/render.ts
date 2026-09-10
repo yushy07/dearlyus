@@ -4,10 +4,12 @@ import {
   logicalSize,
   THEMES,
   FILTERS,
+  BACKDROPS,
   type Shot,
   type BoothDesign,
   type Photo,
 } from './model';
+import { personCutout } from './cutout';
 
 async function load(src: string): Promise<HTMLImageElement> {
   const image = new Image();
@@ -41,12 +43,17 @@ export async function renderBooth(
   ctx.font = '10px sans-serif';
   ctx.fillText('TWO PLACES. ONE LITTLE MEMORY.', size.width / 2, 73);
   const images = new Map<string, HTMLImageElement>();
+  const cutouts = new Map<string, HTMLCanvasElement>();
   await Promise.all(
     shots
       .flatMap((s) => [s.left, s.right])
       .filter((p): p is Photo => Boolean(p))
       .map(async (p) => images.set(p.id, await load(p.src))),
   );
+  if (design.composition === 'backdrop') {
+    for (const [id, image] of images)
+      cutouts.set(id, await personCutout(image));
+  }
   for (const [index, rect] of frameRects(design.layout).entries()) {
     ctx.fillStyle = '#e7ded2';
     ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
@@ -63,6 +70,31 @@ export async function renderBooth(
         return;
       }
       const img = images.get(photo.id)!;
+      if (design.composition === 'backdrop') {
+        const person = cutouts.get(photo.id)!;
+        const fit =
+          Math.min(
+            (solo ? rect.w * 0.85 : rect.w * 0.62) / person.width,
+            (rect.h * 0.94) / person.height,
+          ) * photo.crop.zoom;
+        const w = person.width * fit,
+          h = person.height * fit;
+        const center = solo ? 0.5 : photo.side === 'left' ? 0.31 : 0.69;
+        const px = rect.x + rect.w * (center + photo.crop.x * 0.22) - w / 2;
+        const py = rect.y + rect.h - h + photo.crop.y * rect.h * 0.2;
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(rect.x, rect.y, rect.w, rect.h);
+        ctx.clip();
+        ctx.filter = FILTERS[design.filter];
+        if (photo.crop.mirror) {
+          ctx.translate(px * 2 + w, 0);
+          ctx.scale(-1, 1);
+        }
+        ctx.drawImage(person, px, py, w, h);
+        ctx.restore();
+        return;
+      }
       ctx.save();
       ctx.beginPath();
       ctx.rect(x, rect.y, width, rect.h);
@@ -83,7 +115,7 @@ export async function renderBooth(
       ctx.restore();
     };
     if (design.composition === 'backdrop') {
-      ctx.fillStyle = '#e8d8d0';
+      ctx.fillStyle = BACKDROPS[design.backdrop ?? 'linen'] ?? BACKDROPS.linen;
       ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
     }
     draw(shot?.left, rect.x, solo ? rect.w : rect.w / 2);

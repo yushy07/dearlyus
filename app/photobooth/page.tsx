@@ -24,6 +24,7 @@ import {
   DEFAULT_CROP,
   FILTERS,
   THEMES,
+  BACKDROPS,
   POSES,
   type BoothDesign,
 } from '@/lib/booth/model';
@@ -34,6 +35,7 @@ import {
   printSheet,
 } from '@/lib/booth/render';
 import './studio.css';
+import { clearCutouts } from '@/lib/booth/cutout';
 export { pointsToBezierPath } from '@/lib/photobooth-bezier';
 
 const steps = ['Join', 'Get ready', 'Shoot', 'Decorate', 'Keep'];
@@ -64,6 +66,7 @@ export default function PhotoboothPage() {
   const [exporting, setExporting] = useState(false),
     [notice, setNotice] = useState(''),
     [stickerId, setStickerId] = useState('');
+  const [rendering, setRendering] = useState(false);
   const previewUrl = useRef(''),
     remoteVideo = useRef<HTMLVideoElement | null>(null),
     uploadInput = useRef<HTMLInputElement | null>(null);
@@ -98,6 +101,7 @@ export default function PhotoboothPage() {
   }, [booth.remoteStream, step]);
   useEffect(() => {
     let active = true;
+    setRendering(true);
     const timeout = setTimeout(() => {
       void renderBooth(booth.shots, booth.design, booth.solo, 0.6)
         .then(canvasBlob)
@@ -108,12 +112,17 @@ export default function PhotoboothPage() {
           previewUrl.current = url;
           setPreview(url);
           setRenderError('');
+          setRendering(false);
         })
-        .catch(() => {
-          if (active)
+        .catch((error) => {
+          if (active) {
+            setRendering(false);
             setRenderError(
-              'A photo could not be rendered. Please replace it before exporting.',
+              booth.design.composition === 'backdrop'
+                ? `${error instanceof Error ? error.message : 'Background removal is unavailable.'} You can switch to original backgrounds.`
+                : 'A photo could not be rendered. Please replace it before exporting.',
             );
+          }
         });
     }, 120);
     return () => {
@@ -121,7 +130,13 @@ export default function PhotoboothPage() {
       clearTimeout(timeout);
     };
   }, [booth.shots, booth.design, booth.solo]);
-  useEffect(() => () => URL.revokeObjectURL(previewUrl.current), []);
+  useEffect(
+    () => () => {
+      URL.revokeObjectURL(previewUrl.current);
+      clearCutouts();
+    },
+    [],
+  );
   const patch = (change: Partial<BoothDesign>) => {
     void booth.updateDesign({ ...booth.design, ...change });
   };
@@ -699,6 +714,56 @@ export default function PhotoboothPage() {
                     <fieldset disabled={!mayEdit}>
                       <legend>02 · Pick the feeling</legend>
                       <div className="studio-options">
+                        <button
+                          aria-pressed={booth.design.composition === 'split'}
+                          onClick={() => patch({ composition: 'split' })}
+                        >
+                          Original backgrounds
+                        </button>
+                        <button
+                          aria-pressed={booth.design.composition === 'backdrop'}
+                          onClick={() => patch({ composition: 'backdrop' })}
+                        >
+                          Together in one photo
+                        </button>
+                      </div>
+                      {booth.design.composition === 'backdrop' && (
+                        <>
+                          <p>
+                            One shared backdrop. Move closer using your framing
+                            controls below. Best with good light and one person
+                            in each photo.
+                          </p>
+                          <div className="studio-swatches">
+                            {Object.entries(BACKDROPS).map(([name, color]) => (
+                              <button
+                                key={name}
+                                style={{
+                                  background: color,
+                                  color:
+                                    name === 'midnight' ? '#fff8eb' : '#493039',
+                                }}
+                                aria-label={`${name} shared backdrop`}
+                                aria-pressed={
+                                  (booth.design.backdrop ?? 'linen') === name
+                                }
+                                onClick={() =>
+                                  patch({
+                                    backdrop: name as BoothDesign['backdrop'],
+                                  })
+                                }
+                              >
+                                {name}
+                              </button>
+                            ))}
+                          </div>
+                          <p>
+                            Free, on-device processing. The first use downloads
+                            the photo tool; your original photos are kept.
+                          </p>
+                        </>
+                      )}
+                      <div className="studio-options">
                         {Object.keys(FILTERS).map((filter) => (
                           <button
                             key={filter}
@@ -963,7 +1028,11 @@ export default function PhotoboothPage() {
                         </p>
                         <button
                           className="studio-selected"
-                          disabled={booth.approved.includes(booth.side)}
+                          disabled={
+                            rendering ||
+                            Boolean(renderError) ||
+                            booth.approved.includes(booth.side)
+                          }
                           onClick={() => void booth.approve()}
                         >
                           <Check size={15} />
@@ -975,7 +1044,13 @@ export default function PhotoboothPage() {
                     )}
                     <button
                       className="studio-primary"
-                      disabled={!allDone || !approved || exporting}
+                      disabled={
+                        rendering ||
+                        Boolean(renderError) ||
+                        !allDone ||
+                        !approved ||
+                        exporting
+                      }
                       onClick={() => void exportPhoto()}
                     >
                       <Download size={18} />
@@ -984,13 +1059,24 @@ export default function PhotoboothPage() {
                         : 'Download our photo'}
                     </button>
                     <button
-                      disabled={!approved || exporting}
+                      disabled={
+                        rendering ||
+                        Boolean(renderError) ||
+                        !approved ||
+                        exporting
+                      }
                       onClick={() => void exportPhoto(true)}
                     >
                       Download 4 × 6 print sheet
                     </button>
                     <button
-                      disabled={!approved || exporting || saving}
+                      disabled={
+                        rendering ||
+                        Boolean(renderError) ||
+                        !approved ||
+                        exporting ||
+                        saving
+                      }
                       onClick={() => void exportPhoto(false, true)}
                     >
                       Save to Our Space
@@ -1037,6 +1123,13 @@ export default function PhotoboothPage() {
                   <br />
                   <em>Same composition in preview and print.</em>
                 </p>
+                {rendering && (
+                  <p role="status">
+                    {booth.design.composition === 'backdrop'
+                      ? 'Preparing your shared backdrop…'
+                      : 'Updating your preview…'}
+                  </p>
+                )}
                 {renderError && <p role="alert">{renderError}</p>}
               </aside>
             </div>
