@@ -2,77 +2,68 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Ribbon, Navbar, Confetti } from '@/components/shared';
+import { Confetti, CoupleNameBar, ActivityShell } from '@/components/shared';
 import { sounds } from '@/lib/sound';
 import { useCoupleProfile } from '@/lib/couple';
+import { useActivityRuntime } from '@/hooks/useActivityRuntime';
+import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
 
 const SHIRT_COLORS = [
-  {
-    id: 'vintage-white',
-    name: 'Vintage Off-White',
-    hex: '#F7F5F0',
-    textHex: '#1E1E24',
-  },
-  {
-    id: 'washed-black',
-    name: 'Washed Charcoal',
-    hex: '#26262B',
-    textHex: '#F8F9FB',
-  },
-  { id: 'baby-pink', name: 'Blush Pink', hex: '#FDECEF', textHex: '#3D2A30' },
-  { id: 'sky-blue', name: 'Sky Blue', hex: '#E8F1F8', textHex: '#223843' },
+  { id: 'vintage-white', name: 'Vintage Cream', hex: '#F7F5F0', textHex: '#1E1E24' },
+  { id: 'washed-charcoal', name: 'Washed Charcoal', hex: '#26262B', textHex: '#F8F9FB' },
+  { id: 'blush-pink', name: 'Blush Rose', hex: '#FDECEF', textHex: '#3D2A30' },
+  { id: 'sky-blue', name: 'Sky Harbor', hex: '#E8F1F8', textHex: '#223843' },
   { id: 'matcha', name: 'Matcha Sage', hex: '#E9EFE6', textHex: '#2B3A28' },
-  {
-    id: 'navy',
-    name: 'Deep Midnight Navy',
-    hex: '#161E2E',
-    textHex: '#ECEFF4',
-  },
+  { id: 'midnight-navy', name: 'Midnight Navy', hex: '#161E2E', textHex: '#ECEFF4' },
 ];
 
-const SHIRT_EMOJIS = [
-  '🫰',
-  '💖',
-  '✨',
-  '☕',
-  '✈️',
-  '🌏',
-  '🍕',
-  '🧸',
-  '🌸',
-  '💌',
-  '🎬',
-  '🍜',
+const SHIRT_EMOJIS = ['🫰', '💖', '✨', '☕', '✈️', '🌏', '🍕', '🧸', '🌸', '💌', '🎬', '🍜'];
+
+const MOTIF_TEMPLATES = [
+  { label: 'Player 1 & Player 2', a: 'PLAYER 1', b: 'PLAYER 2', icon: '🎮' },
+  { label: 'Long Distance Coordinates', a: 'HERE WITH YOU', b: 'ALWAYS WITH YOU', icon: '✈️' },
+  { label: 'Coffee & Tea Ritual', a: 'COFFEE ENTHUSIAST', b: 'TEA DEVOTEE', icon: '☕' },
+  { label: 'Our City Haven', a: 'HOME IN MY HEART', b: 'SAFE IN YOUR ARMS', icon: '🏡' },
 ];
 
 export default function ShirtsStudioPage() {
-  const { partnerA, partnerB, cityA, cityB } = useCoupleProfile();
-  const [selectedColor, setSelectedColor] = useState(SHIRT_COLORS[0]);
-  const [customText, setCustomText] = useState(
-    `${cityA || partnerA} ♡ ${cityB || partnerB}`,
-  );
-  const [placedStickers, setPlacedStickers] = useState<string[]>([
-    '🫰',
-    '✈️',
-    '💖',
-  ]);
+  const { partnerA, partnerB, cityA, cityB, roomCode } = useCoupleProfile();
+  const { saveKeepsake, saving: keepsakeSaving } = useKeepsakeWriter();
+
+  const [colorA, setColorA] = useState(SHIRT_COLORS[0]);
+  const [colorB, setColorB] = useState(SHIRT_COLORS[1]);
+  const [textA, setTextA] = useState(`${partnerA.toUpperCase()} ♡ ${cityA || 'HOME'}`);
+  const [textB, setTextB] = useState(`${partnerB.toUpperCase()} ♡ ${cityB || 'AWAY'}`);
+  const [stickersA, setStickersA] = useState<string[]>(['🫰', '💖']);
+  const [stickersB, setStickersB] = useState<string[]>(['✈️', '💖']);
   const [viewSide, setViewSide] = useState<'FRONT' | 'BACK'>('FRONT');
-  const [saved, setSaved] = useState(false);
   const [confettiActive, setConfettiActive] = useState(false);
+  const [keepsakeSaved, setKeepsakeSaved] = useState(false);
 
-  useEffect(() => {
-    setCustomText(`${cityA || partnerA} ♡ ${cityB || partnerB}`);
-  }, [cityA, cityB, partnerA, partnerB]);
+  const runtime = useActivityRuntime({
+    sessionId: roomCode ? `room-${roomCode}-shirts` : 'local-shirts',
+    activityType: 'shirts',
+    roomId: roomCode || 'local',
+    transportMode: 'auto',
+    initialOptions: { viewSide },
+  });
 
-  const addSticker = (s: string) => {
-    if (placedStickers.length < 6) {
-      setPlacedStickers([...placedStickers, s]);
-      sounds.playCountdownBeep(false);
-    }
+  const applyMotif = (motif: typeof MOTIF_TEMPLATES[0]) => {
+    sounds.playPop();
+    setTextA(motif.a);
+    setTextB(motif.b);
   };
 
-  const removeSticker = (idx: number) => {
-    setPlacedStickers(placedStickers.filter((_, i) => i !== idx));
+  const addStickerToShirt = (shirt: 'A' | 'B', s: string) => {
+    sounds.playTick();
+    if (shirt === 'A' && stickersA.length < 5) setStickersA([...stickersA, s]);
+    if (shirt === 'B' && stickersB.length < 5) setStickersB([...stickersB, s]);
+  };
+
+  const removeSticker = (shirt: 'A' | 'B', idx: number) => {
+    sounds.playPop();
+    if (shirt === 'A') setStickersA(stickersA.filter((_, i) => i !== idx));
+    if (shirt === 'B') setStickersB(stickersB.filter((_, i) => i !== idx));
   };
 
   const handleExportPNG = () => {
@@ -81,477 +72,472 @@ export default function ShirtsStudioPage() {
 
     if (typeof document !== 'undefined') {
       const canvas = document.createElement('canvas');
-      canvas.width = 800;
-      canvas.height = 900;
+      canvas.width = 1200;
+      canvas.height = 800;
       const ctx = canvas.getContext('2d');
       if (ctx) {
-        // Background
         ctx.fillStyle = '#FAF8F5';
-        ctx.fillRect(0, 0, 800, 900);
+        ctx.fillRect(0, 0, 1200, 800);
 
-        // Header
-        ctx.fillStyle = '#222328';
-        ctx.font = 'bold 26px sans-serif';
+        ctx.fillStyle = '#17181C';
+        ctx.font = 'bold 28px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('DEARLY US · MATCHING COUPLE SHIRTS', 400, 60);
+        ctx.fillText('DEARLY US · MATCHING COUPLE SHIRTS', 600, 60);
 
-        // Shirt Silhouette
-        ctx.fillStyle = selectedColor.hex;
-        ctx.strokeStyle = '#222328';
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.moveTo(280, 140);
-        ctx.lineTo(220, 200);
-        ctx.lineTo(160, 260);
-        ctx.lineTo(220, 310);
-        ctx.lineTo(260, 270);
-        ctx.lineTo(260, 740);
-        ctx.lineTo(540, 740);
-        ctx.lineTo(540, 270);
-        ctx.lineTo(580, 310);
-        ctx.lineTo(640, 260);
-        ctx.lineTo(580, 200);
-        ctx.lineTo(520, 140);
-        ctx.quadraticCurveTo(400, 200, 280, 140);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
+        // Render Shirt A
+        renderShirtSilhouette(ctx, 320, 420, colorA.hex, colorA.textHex, textA, stickersA, partnerA);
+        // Render Shirt B
+        renderShirtSilhouette(ctx, 880, 420, colorB.hex, colorB.textHex, textB, stickersB, partnerB);
 
-        // Collar
-        ctx.beginPath();
-        ctx.arc(400, 140, 55, 0, Math.PI);
-        ctx.stroke();
-
-        // Custom Text
-        ctx.fillStyle = selectedColor.textHex;
-        ctx.font = 'bold 22px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText(customText.toUpperCase(), 400, 380);
-
-        ctx.font = '13px sans-serif';
-        ctx.fillText(`[ ${viewSide} VIEW ]`, 400, 420);
-
-        // Stickers
-        ctx.font = '36px sans-serif';
-        placedStickers.forEach((stk, idx) => {
-          const sx = 320 + (idx % 3) * 80;
-          const sy = 480 + Math.floor(idx / 3) * 70;
-          ctx.fillText(stk, sx, sy);
-        });
-
-        // Footer
         ctx.fillStyle = '#8B8E98';
         ctx.font = '13px monospace';
-        ctx.fillText(
-          `DESIGNED BY ${partnerA.toUpperCase()} & ${partnerB.toUpperCase()}`,
-          400,
-          830,
-        );
+        ctx.fillText(`DESIGNED BY ${partnerA.toUpperCase()} & ${partnerB.toUpperCase()} · [${viewSide} VIEW]`, 600, 750);
 
         const link = document.createElement('a');
-        link.download = `dearly-us-matching-shirt-${Date.now()}.png`;
+        link.download = `dearly-us-matching-shirts-${Date.now()}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
       }
     }
+    setTimeout(() => setConfettiActive(false), 3000);
+  };
 
-    setSaved(true);
-    setTimeout(() => {
-      setConfettiActive(false);
-      setSaved(false);
-    }, 3000);
+  const renderShirtSilhouette = (
+    ctx: CanvasRenderingContext2D,
+    cx: number,
+    cy: number,
+    fillHex: string,
+    textHex: string,
+    customTitle: string,
+    stickers: string[],
+    ownerName: string
+  ) => {
+    ctx.save();
+    ctx.translate(cx - 200, cy - 260);
+
+    ctx.fillStyle = fillHex;
+    ctx.strokeStyle = '#17181C';
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    ctx.moveTo(130, 40);
+    ctx.lineTo(80, 90);
+    ctx.lineTo(30, 140);
+    ctx.lineTo(80, 180);
+    ctx.lineTo(110, 150);
+    ctx.lineTo(110, 480);
+    ctx.lineTo(290, 480);
+    ctx.lineTo(290, 150);
+    ctx.lineTo(320, 180);
+    ctx.lineTo(370, 140);
+    ctx.lineTo(320, 90);
+    ctx.lineTo(270, 40);
+    ctx.quadraticCurveTo(200, 90, 130, 40);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // Collar
+    ctx.beginPath();
+    ctx.arc(200, 40, 40, 0, Math.PI);
+    ctx.stroke();
+
+    // Text
+    ctx.fillStyle = textHex;
+    ctx.font = 'bold 15px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(customTitle.toUpperCase(), 200, 220);
+
+    // Owner tag
+    ctx.font = '11px sans-serif';
+    ctx.fillText(`FOR: ${ownerName.toUpperCase()}`, 200, 245);
+
+    // Stickers
+    ctx.font = '28px sans-serif';
+    stickers.forEach((stk, idx) => {
+      const sx = 160 + (idx % 3) * 40;
+      const sy = 300 + Math.floor(idx / 3) * 45;
+      ctx.fillText(stk, sx, sy);
+    });
+
+    ctx.restore();
+  };
+
+  const handleSaveToKeepsakes = async () => {
+    if (keepsakeSaved || keepsakeSaving) return;
+    sounds.playCelebration();
+    try {
+      await saveKeepsake({
+        kind: 'activity',
+        title: `Matching Couple Shirts · ${textA} / ${textB}`,
+        activityPath: '/shirts',
+        caption: `Custom DIY shirt designs created in paired mini studio.`,
+        metadata: {
+          activityType: 'shirts',
+          colorA: colorA.name,
+          colorB: colorB.name,
+          textA,
+          textB,
+          date: new Date().toISOString(),
+        },
+      });
+      setKeepsakeSaved(true);
+    } catch (err) {
+      console.error('Failed to save shirts keepsake:', err);
+    }
   };
 
   return (
-    <div
-      style={{
-        background: 'var(--paper)',
-        minHeight: '100vh',
-        paddingBottom: '80px',
-        color: 'var(--ink)',
+    <ActivityShell
+      activityTitle="Matching Shirts Studio"
+      activitySubtitle="Paired Mini Studio · Side-by-Side Canvas, Shared Motifs & DIY Artwork"
+      currentStage={keepsakeSaved ? 'remember' : 'play'}
+      keepsakeSummary={{
+        kind: 'activity',
+        title: `Couple Shirts · ${colorA.name} & ${colorB.name}`,
+        subtitle: `${textA.slice(0, 15)} / ${textB.slice(0, 15)}`,
+        badge: '👕 DESIGNS READY',
       }}
+      guidancePhase={keepsakeSaved ? 'completed' : 'ready'}
+      guidancePrivacyNote="Both partners design complementary or matching shirts in a synchronized creative studio."
     >
-      <Ribbon
-        text={
-          <>
-            👕 Couple Matching Outfits ·{' '}
-            <b>Interactive Outfit Designer for Two</b>
-          </>
-        }
-      />
       <Confetti active={confettiActive} />
 
-      <Navbar
-        rightAction={
-          <Link
-            className="btn btn-ghost"
-            href="/fashion"
-            style={{ padding: '6px 12px', fontSize: '13px' }}
-          >
-            Fashion Runway ▷
-          </Link>
-        }
-      />
-
-      <main className="wrap" style={{ paddingTop: '36px', maxWidth: '980px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <span className="eyebrow">Digital Outfit Studio</span>
+      <div style={{ maxWidth: '1040px', margin: '0 auto', padding: '16px 0 40px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <CoupleNameBar />
           <h1
             style={{
-              fontSize: 'clamp(28px, 5vw, 44px)',
+              fontSize: 'clamp(26px, 4.5vw, 40px)',
               fontWeight: 800,
               margin: '8px 0',
+              fontFamily: 'var(--font-serif, Georgia, serif)',
             }}
           >
-            Design Matching <span className="grad">Couple Outfits</span>
+            Matching <span className="grad">Shirts Studio</span>
           </h1>
-          <p
-            style={{
-              color: 'var(--ink-soft)',
-              fontSize: '16px',
-              maxWidth: '54ch',
-              margin: '0 auto',
-            }}
-          >
-            Customize matching shirts with your city names, coordinates, and
-            photo stickers. Export high-res digital mockups for your couple
-            scrapbook.
+          <p style={{ color: 'var(--ink-soft)', fontSize: '15px', maxWidth: '54ch', margin: '0 auto' }}>
+            Design customized his &amp; hers matching shirts side-by-side with shared motifs, colorways, and downloadable DIY artwork.
           </p>
         </div>
 
-        <div className="booth-showcase-grid">
-          {/* Shirt Visual Canvas */}
+        {/* Motifs Ribbon */}
+        <div
+          style={{
+            display: 'flex',
+            gap: '8px',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            marginBottom: '20px',
+          }}
+        >
+          {MOTIF_TEMPLATES.map((m, i) => (
+            <button
+              key={i}
+              onClick={() => applyMotif(m)}
+              style={{
+                padding: '6px 14px',
+                borderRadius: '999px',
+                border: '1px solid var(--line)',
+                background: '#FFF',
+                fontSize: '12px',
+                fontWeight: 700,
+                cursor: 'pointer',
+              }}
+            >
+              {m.icon} {m.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Front / Back View Switcher & Action Controls */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '12px',
+            marginBottom: '24px',
+            padding: '10px 18px',
+            background: 'var(--paper-raised)',
+            borderRadius: '16px',
+            border: '1px solid var(--line)',
+          }}
+        >
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              onClick={() => setViewSide('FRONT')}
+              style={{
+                padding: '5px 14px',
+                borderRadius: '8px',
+                border: viewSide === 'FRONT' ? '2px solid #17181C' : '1px solid var(--line)',
+                background: viewSide === 'FRONT' ? '#17181C' : '#FFF',
+                color: viewSide === 'FRONT' ? '#FFF' : 'var(--ink)',
+                fontSize: '12px',
+                fontWeight: 700,
+                cursor: 'pointer',
+              }}
+            >
+              Front View
+            </button>
+            <button
+              onClick={() => setViewSide('BACK')}
+              style={{
+                padding: '5px 14px',
+                borderRadius: '8px',
+                border: viewSide === 'BACK' ? '2px solid #17181C' : '1px solid var(--line)',
+                background: viewSide === 'BACK' ? '#17181C' : '#FFF',
+                color: viewSide === 'BACK' ? '#FFF' : 'var(--ink)',
+                fontSize: '12px',
+                fontWeight: 700,
+                cursor: 'pointer',
+              }}
+            >
+              Back View
+            </button>
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              onClick={handleExportPNG}
+              className="btn btn-outline"
+              style={{ padding: '7px 16px', fontSize: '12.5px' }}
+            >
+              📥 Export Dual PNG
+            </button>
+            <button
+              onClick={handleSaveToKeepsakes}
+              disabled={keepsakeSaved || keepsakeSaving}
+              className="btn btn-primary"
+              style={{ padding: '7px 18px', fontSize: '12.5px' }}
+            >
+              {keepsakeSaved ? '✓ Saved to Keepsakes!' : keepsakeSaving ? 'Archiving...' : '💾 Save to Keepsakes'}
+            </button>
+          </div>
+        </div>
+
+        {/* SIDE-BY-SIDE SHIRTS STUDIO */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+            gap: '24px',
+            marginBottom: '32px',
+          }}
+        >
+          {/* SHIRT A */}
           <div
-            className="booth-box"
             style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '36px 20px',
-              minHeight: '440px',
+              background: 'var(--paper-raised)',
+              border: '1.5px solid #FFD6E8',
+              borderRadius: '20px',
+              padding: '24px',
+              boxShadow: 'var(--shadow-lg)',
             }}
           >
-            {/* Front / Back Toggle */}
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
-              <button
-                onClick={() => setViewSide('FRONT')}
-                className={`btn ${viewSide === 'FRONT' ? 'btn-primary' : 'btn-ghost'}`}
-                style={{ padding: '4px 14px', fontSize: '12px' }}
-              >
-                Front View
-              </button>
-              <button
-                onClick={() => setViewSide('BACK')}
-                className={`btn ${viewSide === 'BACK' ? 'btn-primary' : 'btn-ghost'}`}
-                style={{ padding: '4px 14px', fontSize: '12px' }}
-              >
-                Back View
-              </button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <span style={{ fontWeight: 800, fontSize: '15px', color: 'var(--pink)' }}>
+                🌸 {partnerA}&apos;s Shirt
+              </span>
+              <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--ink-soft)' }}>
+                {colorA.name}
+              </span>
             </div>
 
-            {/* Simulated T-Shirt Vector Mockup */}
+            {/* Color Palette */}
+            <div style={{ display: 'flex', gap: '6px', marginBottom: '14px' }}>
+              {SHIRT_COLORS.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => setColorA(c)}
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '50%',
+                    background: c.hex,
+                    border: colorA.id === c.id ? '2px solid #17181C' : '1px solid #CCC',
+                    boxShadow: colorA.id === c.id ? '0 0 0 2px var(--pink)' : 'none',
+                    cursor: 'pointer',
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* Custom Slogan Input */}
+            <input
+              type="text"
+              value={textA}
+              onChange={(e) => setTextA(e.target.value)}
+              placeholder="Slogan on shirt..."
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                borderRadius: '8px',
+                border: '1px solid var(--line)',
+                fontSize: '12.5px',
+                marginBottom: '14px',
+              }}
+            />
+
+            {/* Shirt Canvas Preview */}
             <div
               style={{
-                position: 'relative',
-                width: '280px',
                 height: '320px',
-                background: selectedColor.hex,
-                borderRadius: '24px 24px 12px 12px',
-                boxShadow:
-                  '0 16px 40px rgba(0,0,0,0.12), inset 0 2px 4px rgba(255,255,255,0.4)',
-                border: '2px solid rgba(0,0,0,0.08)',
+                background: colorA.hex,
+                color: colorA.textHex,
+                borderRadius: '16px',
+                border: '2px solid #17181C',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                padding: '24px',
-                transition: 'background 0.3s ease',
+                padding: '20px',
+                position: 'relative',
+                boxShadow: 'inset 0 0 20px rgba(0,0,0,0.05)',
               }}
             >
-              {/* Collar Ribbing */}
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '0',
-                  width: '90px',
-                  height: '24px',
-                  borderBottom: `2px solid ${selectedColor.textHex}`,
-                  borderRadius: '0 0 50px 50px',
-                  opacity: 0.25,
-                }}
-              />
-
-              {viewSide === 'FRONT' ? (
-                <>
-                  <div
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: '11px',
-                      fontWeight: 800,
-                      letterSpacing: '.18em',
-                      color: selectedColor.textHex,
-                      textTransform: 'uppercase',
-                      textAlign: 'center',
-                      marginBottom: '12px',
-                      opacity: 0.9,
-                    }}
+              <div style={{ width: '60px', height: '24px', borderBottom: '2px solid rgba(0,0,0,0.3)', borderRadius: '0 0 50% 50%', position: 'absolute', top: '10px' }} />
+              <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', opacity: 0.6, marginBottom: '6px' }}>
+                [{viewSide} VIEW]
+              </div>
+              <div style={{ fontSize: '15px', fontWeight: 800, textAlign: 'center', letterSpacing: '0.05em' }}>
+                {textA.toUpperCase()}
+              </div>
+              <div style={{ display: 'flex', gap: '8px', marginTop: '14px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                {stickersA.map((stk, idx) => (
+                  <span
+                    key={idx}
+                    onClick={() => removeSticker('A', idx)}
+                    title="Click to remove"
+                    style={{ fontSize: '24px', cursor: 'pointer' }}
                   >
-                    {customText}
-                  </div>
+                    {stk}
+                  </span>
+                ))}
+              </div>
+            </div>
 
-                  {/* Strip Graphics Box */}
-                  <div
-                    style={{
-                      width: '110px',
-                      height: '140px',
-                      background: '#FFFFFF',
-                      padding: '6px',
-                      borderRadius: '4px',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '4px',
-                    }}
-                  >
-                    <div
-                      style={{
-                        flex: 1,
-                        background: 'var(--paper)',
-                        borderRadius: '2px',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      <img
-                        src="/photos/frame1.webp"
-                        alt=""
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover',
-                        }}
-                      />
-                    </div>
-                    <div
-                      style={{
-                        flex: 1,
-                        background: 'var(--paper)',
-                        borderRadius: '2px',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      <img
-                        src="/photos/frame2.webp"
-                        alt=""
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover',
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Sticker Badges */}
-                  <div
-                    style={{ display: 'flex', gap: '6px', marginTop: '12px' }}
-                  >
-                    {placedStickers.map((stk, i) => (
-                      <span
-                        key={i}
-                        style={{
-                          fontSize: '18px',
-                          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
-                        }}
-                      >
-                        {stk}
-                      </span>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <div
-                  style={{ textAlign: 'center', color: selectedColor.textHex }}
+            {/* Sticker Adder */}
+            <div style={{ display: 'flex', gap: '6px', marginTop: '14px', flexWrap: 'wrap' }}>
+              {SHIRT_EMOJIS.slice(0, 6).map((stk) => (
+                <button
+                  key={stk}
+                  onClick={() => addStickerToShirt('A', stk)}
+                  style={{ background: '#FFF', border: '1px solid var(--line)', borderRadius: '6px', padding: '4px 8px', fontSize: '14px', cursor: 'pointer' }}
                 >
-                  <div style={{ fontSize: '42px', marginBottom: '8px' }}>
-                    💖
-                  </div>
-                  <div
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: '14px',
-                      fontWeight: 800,
-                    }}
-                  >
-                    DEARLY US CLUB
-                  </div>
-                  <div
-                    style={{ fontSize: '11px', opacity: 0.7, marginTop: '4px' }}
-                  >
-                    EST. 2026 · DISTANCE CLOSED
-                  </div>
-                </div>
-              )}
+                  {stk}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Customizer Panel */}
-          <div className="booth-box">
-            <span className="eyebrow">Design Controls</span>
-            <h3
-              style={{
-                fontSize: '20px',
-                fontWeight: 800,
-                margin: '6px 0 16px',
-              }}
-            >
-              Customize Twin Look
-            </h3>
-
-            {/* Palette */}
-            <div style={{ marginBottom: '18px' }}>
-              <label
-                style={{
-                  display: 'block',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  marginBottom: '8px',
-                }}
-              >
-                Fabric Color: <b>{selectedColor.name}</b>
-              </label>
-              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                {SHIRT_COLORS.map((c) => (
-                  <button
-                    key={c.id}
-                    onClick={() => setSelectedColor(c)}
-                    style={{
-                      width: '32px',
-                      height: '32px',
-                      borderRadius: '50%',
-                      background: c.hex,
-                      border:
-                        selectedColor.id === c.id
-                          ? '3px solid var(--pink)'
-                          : '1px solid var(--line)',
-                      boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
-                      cursor: 'pointer',
-                    }}
-                    title={c.name}
-                  />
-                ))}
-              </div>
+          {/* SHIRT B */}
+          <div
+            style={{
+              background: 'var(--paper-raised)',
+              border: '1.5px solid #D6E8FF',
+              borderRadius: '20px',
+              padding: '24px',
+              boxShadow: 'var(--shadow-lg)',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <span style={{ fontWeight: 800, fontSize: '15px', color: 'var(--blue)' }}>
+                💙 {partnerB}&apos;s Shirt
+              </span>
+              <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--ink-soft)' }}>
+                {colorB.name}
+              </span>
             </div>
 
-            {/* Custom Cities / Coordinates Text */}
-            <div style={{ marginBottom: '18px' }}>
-              <label
-                style={{
-                  display: 'block',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  marginBottom: '6px',
-                }}
-              >
-                Chest Typography:
-              </label>
-              <input
-                type="text"
-                value={customText}
-                onChange={(e) => setCustomText(e.target.value)}
-                maxLength={30}
-                style={{
-                  width: '100%',
-                  padding: '10px 12px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--line)',
-                  fontSize: '14px',
-                  fontWeight: 700,
-                }}
-              />
+            {/* Color Palette */}
+            <div style={{ display: 'flex', gap: '6px', marginBottom: '14px' }}>
+              {SHIRT_COLORS.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => setColorB(c)}
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '50%',
+                    background: c.hex,
+                    border: colorB.id === c.id ? '2px solid #17181C' : '1px solid #CCC',
+                    boxShadow: colorB.id === c.id ? '0 0 0 2px var(--blue)' : 'none',
+                    cursor: 'pointer',
+                  }}
+                />
+              ))}
             </div>
 
-            {/* Stickers Palette */}
-            <div style={{ marginBottom: '24px' }}>
-              <label
-                style={{
-                  display: 'block',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  marginBottom: '8px',
-                }}
-              >
-                Add Photo Stickers ({placedStickers.length}/6):
-              </label>
-              <div
-                style={{
-                  display: 'flex',
-                  gap: '6px',
-                  flexWrap: 'wrap',
-                  marginBottom: '10px',
-                }}
-              >
-                {SHIRT_EMOJIS.map((emoji) => (
-                  <button
-                    key={emoji}
-                    onClick={() => addSticker(emoji)}
-                    style={{
-                      background: '#fff',
-                      border: '1px solid var(--line)',
-                      borderRadius: '6px',
-                      padding: '6px 10px',
-                      fontSize: '16px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {emoji}
-                  </button>
-                ))}
-              </div>
-
-              {placedStickers.length > 0 && (
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                  {placedStickers.map((s, idx) => (
-                    <span
-                      key={idx}
-                      onClick={() => removeSticker(idx)}
-                      style={{
-                        background: 'var(--paper)',
-                        border: '1px solid var(--line)',
-                        borderRadius: '6px',
-                        padding: '2px 8px',
-                        fontSize: '12px',
-                        cursor: 'pointer',
-                      }}
-                      title="Click to remove"
-                    >
-                      {s} ✕
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <button
-              onClick={handleExportPNG}
-              className="btn btn-primary"
+            {/* Custom Slogan Input */}
+            <input
+              type="text"
+              value={textB}
+              onChange={(e) => setTextB(e.target.value)}
+              placeholder="Slogan on shirt..."
               style={{
                 width: '100%',
-                padding: '14px',
-                fontSize: '15px',
+                padding: '8px 12px',
+                borderRadius: '8px',
+                border: '1px solid var(--line)',
+                fontSize: '12.5px',
+                marginBottom: '14px',
+              }}
+            />
+
+            {/* Shirt Canvas Preview */}
+            <div
+              style={{
+                height: '320px',
+                background: colorB.hex,
+                color: colorB.textHex,
+                borderRadius: '16px',
+                border: '2px solid #17181C',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
                 justifyContent: 'center',
+                padding: '20px',
+                position: 'relative',
+                boxShadow: 'inset 0 0 20px rgba(0,0,0,0.05)',
               }}
             >
-              {saved
-                ? '✓ Digital Outfit Saved!'
-                : 'Download Outfit Mockup PNG 💾'}
-            </button>
+              <div style={{ width: '60px', height: '24px', borderBottom: '2px solid rgba(0,0,0,0.3)', borderRadius: '0 0 50% 50%', position: 'absolute', top: '10px' }} />
+              <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', opacity: 0.6, marginBottom: '6px' }}>
+                [{viewSide} VIEW]
+              </div>
+              <div style={{ fontSize: '15px', fontWeight: 800, textAlign: 'center', letterSpacing: '0.05em' }}>
+                {textB.toUpperCase()}
+              </div>
+              <div style={{ display: 'flex', gap: '8px', marginTop: '14px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                {stickersB.map((stk, idx) => (
+                  <span
+                    key={idx}
+                    onClick={() => removeSticker('B', idx)}
+                    title="Click to remove"
+                    style={{ fontSize: '24px', cursor: 'pointer' }}
+                  >
+                    {stk}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Sticker Adder */}
+            <div style={{ display: 'flex', gap: '6px', marginTop: '14px', flexWrap: 'wrap' }}>
+              {SHIRT_EMOJIS.slice(0, 6).map((stk) => (
+                <button
+                  key={stk}
+                  onClick={() => addStickerToShirt('B', stk)}
+                  style={{ background: '#FFF', border: '1px solid var(--line)', borderRadius: '6px', padding: '4px 8px', fontSize: '14px', cursor: 'pointer' }}
+                >
+                  {stk}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </ActivityShell>
   );
 }

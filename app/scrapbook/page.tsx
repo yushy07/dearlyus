@@ -3,14 +3,13 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import {
-  Ribbon,
-  Navbar,
   CoupleNameBar,
-  CupidotActivityGuidance,
+  ActivityShell,
 } from '@/components/shared';
 import { sounds } from '@/lib/sound';
 import { useCoupleProfile } from '@/lib/couple';
 import { useActivityRuntime } from '@/hooks/useActivityRuntime';
+import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
 
 interface ScrapbookItem {
   id: string;
@@ -23,43 +22,33 @@ interface ScrapbookItem {
   rotation: number;
 }
 
-function sanitizeSafeImageUrl(url?: string): string {
-  if (!url) return '/photos/frame1.webp';
-  const trimmed = url.trim();
-  const lower = trimmed.toLowerCase();
-  if (
-    lower.startsWith('/photos/') ||
-    (lower.startsWith('data:image/') &&
-      !lower.includes('svg+xml') &&
-      !lower.includes('html'))
-  ) {
-    return encodeURI(trimmed);
-  }
-  if (
-    (lower.startsWith('https://') || lower.startsWith('http://')) &&
-    !lower.includes('javascript:')
-  ) {
-    return encodeURI(trimmed);
-  }
-  return '/photos/frame1.webp';
-}
+const THEMES = [
+  { id: 'tokyo', name: 'Tokyo Reunion', icon: '🌸', bg: '#F7F2E8' },
+  { id: 'cozy', name: 'Cozy Morning Sanctuary', icon: '☕', bg: '#F5EFEB' },
+  { id: 'paris', name: 'Parisian Sunset', icon: '✨', bg: '#FAF5EE' },
+  { id: 'cabin', name: 'Rainy Mountain Cabin', icon: '🌲', bg: '#EFECE6' },
+  { id: 'distance', name: 'Miles Apart, One Heart', icon: '✈️', bg: '#F0F4F8' },
+];
 
 export default function ScrapbookPage() {
-  const { roomCode } = useCoupleProfile();
+  const { partnerA, partnerB, roomCode } = useCoupleProfile();
+  const { saveKeepsake, saving: keepsakeSaving } = useKeepsakeWriter();
+  const [selectedTheme, setSelectedTheme] = useState(THEMES[0]);
+
   const runtime = useActivityRuntime({
-    sessionId: `mock-scrapbook-${roomCode || 'local'}`,
+    sessionId: roomCode ? `room-${roomCode}-scrapbook` : 'local-scrapbook',
     activityType: 'scrapbook',
     roomId: roomCode || 'local',
-    transportMode: 'mock',
+    transportMode: 'auto',
   });
-  const { partnerA, partnerB } = useCoupleProfile();
+
   const [items, setItems] = useState<ScrapbookItem[]>([
     {
       id: '1',
       type: 'polaroid',
-      content: 'Tokyo Station Photo',
+      content: 'Reunion Station Photo',
       imageUrl: '/photos/frame1.webp',
-      sub: 'Tokyo Station · Aug 2026',
+      sub: `${partnerA} ♡ ${partnerB} · Station Memory`,
       x: 40,
       y: 30,
       rotation: -4,
@@ -67,10 +56,10 @@ export default function ScrapbookPage() {
     {
       id: '2',
       type: 'ticket',
-      content: 'REUNION PASS ♡ TOKYO',
-      sub: 'Countdown to our next visit',
-      x: 380,
-      y: 50,
+      content: 'REUNION BOARDING PASS ♡ EXPRESS',
+      sub: 'Countdown to our next chapter',
+      x: 360,
+      y: 40,
       rotation: 3,
     },
     {
@@ -79,13 +68,13 @@ export default function ScrapbookPage() {
       content:
         '“The time difference feels like nothing when we talk until sunrise.”',
       sub: `${partnerA} ♡ ${partnerB}`,
-      x: 60,
+      x: 50,
       y: 320,
       rotation: 2,
     },
     { id: '4', type: 'sticker', content: '💖', x: 260, y: 220, rotation: 12 },
-    { id: '5', type: 'sticker', content: '✈️', x: 520, y: 200, rotation: -8 },
-    { id: '6', type: 'sticker', content: '🌸', x: 120, y: 460, rotation: 5 },
+    { id: '5', type: 'sticker', content: '✈️', x: 500, y: 190, rotation: -8 },
+    { id: '6', type: 'sticker', content: '🌸', x: 120, y: 450, rotation: 5 },
   ]);
 
   const [activeItem, setActiveItem] = useState<string | null>(null);
@@ -97,7 +86,7 @@ export default function ScrapbookPage() {
     itemY: number;
   } | null>(null);
   const [newNoteText, setNewNoteText] = useState('');
-  const [exported, setExported] = useState(false);
+  const [keepsakeSaved, setKeepsakeSaved] = useState(false);
 
   const handlePointerDown = (e: React.PointerEvent, item: ScrapbookItem) => {
     setActiveItem(item.id);
@@ -146,7 +135,7 @@ export default function ScrapbookPage() {
       id: Date.now().toString(),
       type: 'note',
       content: newNoteText.trim(),
-      sub: 'Memory Note · Today',
+      sub: `Note by ${partnerA} · Today`,
       x: 100 + Math.random() * 200,
       y: 100 + Math.random() * 200,
       rotation: Math.floor(Math.random() * 12) - 6,
@@ -173,91 +162,103 @@ export default function ScrapbookPage() {
     if (activeItem) {
       setItems(items.filter((i) => i.id !== activeItem));
       setActiveItem(null);
+      sounds.playPop();
     }
   };
 
-  const exportScrapbook = () => {
+  const handleSaveScrapbook = async () => {
+    if (keepsakeSaved || keepsakeSaving) return;
     sounds.playCelebration();
-    setExported(true);
-    setTimeout(() => setExported(false), 3000);
+    try {
+      await saveKeepsake({
+        kind: 'activity',
+        title: `Scrapbook Wall · ${selectedTheme.name}`,
+        activityPath: '/scrapbook',
+        caption: `Preserved scrapbook collage with ${items.length} keepsake items & notes.`,
+        metadata: {
+          activityType: 'scrapbook',
+          theme: selectedTheme.name,
+          itemCount: items.length,
+          date: new Date().toISOString(),
+        },
+      });
+      setKeepsakeSaved(true);
+    } catch (err) {
+      console.error('Failed to save scrapbook keepsake:', err);
+    }
   };
 
   return (
-    <div
-      style={{
-        background: '#F4EFE6',
-        minHeight: '100vh',
-        paddingBottom: '80px',
-        color: '#2B231E',
+    <ActivityShell
+      activityTitle="Scrapbook Wall"
+      activitySubtitle="Corkboard Collage · Tape Down Polaroids, Ticket Stubs & Love Notes"
+      currentStage={keepsakeSaved ? 'remember' : items.length > 5 ? 'play' : 'ready'}
+      keepsakeSummary={{
+        kind: 'activity',
+        title: `Scrapbook Wall · ${selectedTheme.name}`,
+        subtitle: `${items.length} Keepsake Elements Pinned`,
+        badge: '📖 COLLAGE READY',
       }}
+      guidancePhase={keepsakeSaved ? 'completed' : 'ready'}
+      guidancePrivacyNote="All items pinned to your shared wall are synchronized across your couple space."
     >
-      <Ribbon
-        text={
-          <>
-            📖 Digital Scrapbook ·{' '}
-            <b>
-              Tape Down Polaroids, Ticket Stubs &amp; Memories on a Shared
-              Corkboard
-            </b>
-          </>
-        }
-      />
-
-      <Navbar
-        rightAction={
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button
-              onClick={exportScrapbook}
-              className="btn btn-primary"
-              style={{ padding: '6px 14px', fontSize: '13px' }}
-            >
-              {exported ? '✓ Saved Memory Sheet!' : 'Export Scrapbook PNG 💾'}
-            </button>
-          </div>
-        }
-      />
-
-      <main className="wrap" style={{ paddingTop: '36px', maxWidth: '960px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+      <div style={{ maxWidth: '960px', margin: '0 auto', padding: '16px 0 40px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <CoupleNameBar />
           <h1
             style={{
-              fontSize: 'clamp(28px, 4.5vw, 42px)',
+              fontSize: 'clamp(26px, 4.5vw, 40px)',
               fontWeight: 800,
               margin: '8px 0',
+              fontFamily: 'var(--font-serif, Georgia, serif)',
             }}
           >
             Our Digital <span className="grad">Scrapbook Wall</span>
           </h1>
-          <p
-            style={{
-              color: '#6B5B52',
-              fontSize: '16px',
-              maxWidth: '52ch',
-              margin: '0 auto',
-            }}
-          >
-            Pin photostrips, boarding passes, and love notes. Drag and rotate
-            items to build your couple album.
+          <p style={{ color: 'var(--ink-soft)', fontSize: '15px', maxWidth: '52ch', margin: '0 auto' }}>
+            Pin photostrips, boarding passes, and love notes. Drag, position, and build your shared couple corkboard.
           </p>
         </div>
 
-        {/* Cupidot Standard Activity Lifecycle Guidance */}
-        <CupidotActivityGuidance
-          activityName="Digital Scrapbook Wall"
-          phase={exported ? 'completed' : 'ready'}
-          partnerName={partnerB || 'Partner'}
-          privacyNote="Memories and polaroids placed on your shared scrapbook wall are preserved mutually in Our Space."
-          isDemoMode={true}
-          demoNotice="Scrapbook collage is in local client sandbox mode. Changes saved stay on this device until synchronized."
-        />
+        {/* Theme Selector Ribbon */}
+        <div
+          style={{
+            display: 'flex',
+            gap: '8px',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            marginBottom: '20px',
+          }}
+        >
+          {THEMES.map((th) => (
+            <button
+              key={th.id}
+              onClick={() => {
+                setSelectedTheme(th);
+                sounds.playTick();
+              }}
+              style={{
+                padding: '7px 14px',
+                borderRadius: '999px',
+                border: selectedTheme.id === th.id ? '2px solid #8A5D3B' : '1px solid #D8CFC4',
+                background: selectedTheme.id === th.id ? '#FFF' : 'rgba(255,255,255,0.6)',
+                fontSize: '12.5px',
+                fontWeight: 700,
+                color: '#2B231E',
+                cursor: 'pointer',
+              }}
+            >
+              {th.icon} {th.name}
+            </button>
+          ))}
+        </div>
 
         {/* Toolbar */}
         <div
           style={{
             background: '#FFFDF9',
             border: '1px solid #D8CFC4',
-            borderRadius: '12px',
+            borderRadius: '16px',
             padding: '12px 18px',
             marginBottom: '20px',
             display: 'flex',
@@ -265,307 +266,247 @@ export default function ScrapbookPage() {
             alignItems: 'center',
             flexWrap: 'wrap',
             gap: '12px',
+            boxShadow: '0 4px 14px rgba(0,0,0,0.03)',
           }}
         >
           {/* Sticker Palette */}
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
             <span
               style={{
-                fontSize: '12px',
-                fontWeight: 700,
+                fontSize: '11px',
+                fontWeight: 800,
+                fontFamily: 'var(--font-mono)',
                 textTransform: 'uppercase',
                 color: '#8A5D3B',
               }}
             >
-              + Pin Sticker:
+              + STAMP:
             </span>
-            {['💖', '✨', '✈️', '🌸', '💌', '📸', '🧸', '☕', '🍜'].map(
-              (stk) => (
-                <button
-                  key={stk}
-                  onClick={() => addStickerToBoard(stk)}
-                  style={{
-                    background: 'none',
-                    border: '1px solid #E2D9C8',
-                    borderRadius: '6px',
-                    padding: '4px 8px',
-                    fontSize: '16px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {stk}
-                </button>
-              ),
-            )}
-          </div>
-
-          <div style={{ display: 'flex', gap: '10px' }}>
-            {activeItem && (
+            {['💖', '✨', '✈️', '🌸', '💌', '📸', '🧸', '☕', '🍜'].map((stk) => (
               <button
-                onClick={removeSelected}
-                className="btn btn-ghost"
+                key={stk}
+                onClick={() => addStickerToBoard(stk)}
                 style={{
-                  padding: '6px 12px',
-                  fontSize: '12px',
-                  color: '#D93838',
+                  background: '#FFF',
+                  border: '1px solid #E2D9C8',
+                  borderRadius: '6px',
+                  padding: '4px 8px',
+                  fontSize: '15px',
+                  cursor: 'pointer',
                 }}
               >
-                ✕ Remove Item
+                {stk}
+              </button>
+            ))}
+          </div>
+
+          {/* New Sticky Note Form */}
+          <form onSubmit={addStickyNote} style={{ display: 'flex', gap: '6px' }}>
+            <input
+              type="text"
+              placeholder="Write a sweet note..."
+              value={newNoteText}
+              onChange={(e) => setNewNoteText(e.target.value)}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '8px',
+                border: '1px solid #D8CFC4',
+                fontSize: '12.5px',
+                width: '180px',
+              }}
+            />
+            <button
+              type="submit"
+              className="btn btn-sm"
+              style={{ background: '#8A5D3B', color: '#FFF', padding: '6px 12px' }}
+            >
+              + Pin Note
+            </button>
+          </form>
+
+          {/* Action Buttons */}
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {activeItem && (
+              <button
+                type="button"
+                onClick={removeSelected}
+                className="btn btn-outline"
+                style={{ padding: '6px 12px', fontSize: '12px', color: '#BE123C' }}
+              >
+                🗑️ Remove Selected
               </button>
             )}
-            <Link
-              href="/photobooth"
-              className="btn btn-ghost"
-              style={{ padding: '6px 12px', fontSize: '12px' }}
+
+            <button
+              onClick={handleSaveScrapbook}
+              disabled={keepsakeSaved || keepsakeSaving}
+              className="btn btn-primary"
+              style={{ padding: '6px 16px', fontSize: '12.5px' }}
             >
-              + Add Photobooth Cut 📸
-            </Link>
+              {keepsakeSaved ? '✓ Saved to Keepsakes!' : keepsakeSaving ? 'Saving...' : '💾 Save Scrapbook'}
+            </button>
           </div>
         </div>
 
-        {/* The Corkboard Canvas */}
+        {/* Corkboard Wall Container */}
         <div
           style={{
-            background: '#FAF6EE',
-            border: '12px solid #C4A482',
-            borderRadius: '20px',
-            minHeight: '560px',
             position: 'relative',
-            boxShadow:
-              'inset 0 0 20px rgba(0,0,0,0.1), 0 20px 40px rgba(0,0,0,0.12)',
+            width: '100%',
+            height: '560px',
+            background: selectedTheme.bg,
+            border: '8px solid #D4B895',
+            borderRadius: '20px',
+            boxShadow: 'inset 0 0 40px rgba(80,50,20,0.1), 0 16px 32px rgba(0,0,0,0.06)',
             overflow: 'hidden',
-            backgroundImage: 'radial-gradient(#D6C2A5 1px, transparent 1px)',
-            backgroundSize: '24px 24px',
-            perspective: '1200px',
-            transformStyle: 'preserve-3d',
+            touchAction: 'none',
           }}
         >
-          {items.map((item) => (
-            <div
-              key={item.id}
-              onClick={() => setActiveItem(item.id)}
-              onPointerDown={(e) => handlePointerDown(e, item)}
-              onPointerMove={(e) => handlePointerMove(e, item.id)}
-              onPointerUp={handlePointerUp}
-              onPointerCancel={handlePointerUp}
-              className="card-3d"
-              style={{
-                position: 'absolute',
-                top: `${item.y}px`,
-                left: `${item.x}px`,
-                transform: `rotate(${item.rotation}deg) translateZ(${activeItem === item.id ? 24 : 8}px)`,
-                cursor: 'grab',
-                zIndex: activeItem === item.id ? 10 : 2,
-                transition:
-                  draggingId === item.id
-                    ? 'none'
-                    : 'all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)',
-                touchAction: 'none',
-                userSelect: 'none',
-              }}
-            >
-              {/* Pushpin at top */}
+          {items.map((item) => {
+            const isSelected = activeItem === item.id;
+            return (
               <div
+                key={item.id}
+                onPointerDown={(e) => handlePointerDown(e, item)}
+                onPointerMove={(e) => handlePointerMove(e, item.id)}
+                onPointerUp={handlePointerUp}
                 style={{
                   position: 'absolute',
-                  top: '-10px',
-                  left: '50%',
-                  transform: 'translateX(-50%) translateZ(30px)',
-                  width: '16px',
-                  height: '16px',
-                  borderRadius: '50%',
-                  background:
-                    'radial-gradient(circle at 35% 35%, #FF7BA3, #C93B6B)',
-                  boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
-                  zIndex: 20,
+                  left: item.x,
+                  top: item.y,
+                  transform: `rotate(${item.rotation}deg)`,
+                  cursor: draggingId === item.id ? 'grabbing' : 'grab',
+                  userSelect: 'none',
+                  outline: isSelected ? '2px dashed #FF4D80' : 'none',
+                  outlineOffset: '4px',
+                  transition: draggingId === item.id ? 'none' : 'box-shadow 0.15s ease',
+                  zIndex: isSelected ? 20 : 5,
                 }}
-              />
-
-              {/* Polaroid Frame Item */}
-              {item.type === 'polaroid' && (
+              >
+                {/* Washi Tape Header */}
                 <div
                   style={{
-                    background: 'var(--paper-raised)',
-                    padding: '12px 12px 28px 12px',
-                    borderRadius: '4px',
-                    boxShadow:
-                      activeItem === item.id
-                        ? '0 16px 32px rgba(0,0,0,0.25)'
-                        : '0 8px 18px rgba(0,0,0,0.15)',
-                    border:
-                      activeItem === item.id
-                        ? '2px solid var(--pink)'
-                        : '1px solid #E0D8CC',
-                    width: '210px',
-                    transform: 'translateZ(10px)',
+                    position: 'absolute',
+                    top: '-10px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: '60px',
+                    height: '18px',
+                    background: 'rgba(255, 230, 200, 0.7)',
+                    border: '1px dashed rgba(200, 160, 120, 0.5)',
+                    borderRadius: '2px',
+                    zIndex: 2,
                   }}
-                >
+                />
+
+                {/* Polaroid Item */}
+                {item.type === 'polaroid' && (
                   <div
                     style={{
-                      width: '100%',
-                      height: '150px',
-                      background: '#2B231E',
-                      borderRadius: '2px',
-                      overflow: 'hidden',
-                      marginBottom: '8px',
+                      background: '#FFF',
+                      padding: '12px 12px 28px',
+                      borderRadius: '4px',
+                      boxShadow: '0 8px 20px rgba(0,0,0,0.12)',
+                      width: '210px',
                     }}
                   >
-                    <img
-                      src={sanitizeSafeImageUrl(item.imageUrl)}
-                      alt={item.sub || 'Polaroid frame'}
+                    <div
                       style={{
                         width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
+                        height: '170px',
+                        background: '#ECE6DC',
+                        borderRadius: '2px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '36px',
                       }}
-                    />
+                    >
+                      📸
+                    </div>
+                    <div
+                      style={{
+                        marginTop: '10px',
+                        fontSize: '12px',
+                        fontFamily: 'var(--font-mono)',
+                        textAlign: 'center',
+                        color: '#554B45',
+                        fontWeight: 600,
+                      }}
+                    >
+                      {item.sub || item.content}
+                    </div>
                   </div>
-                  <div
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '12px',
-                      color: '#5A4E45',
-                      textAlign: 'center',
-                    }}
-                  >
-                    {item.sub}
-                  </div>
-                </div>
-              )}
+                )}
 
-              {/* Virtual Flight Ticket Stub */}
-              {item.type === 'ticket' && (
-                <div
-                  style={{
-                    background: '#FEF9EF',
-                    border: '1.5px dashed #B88E56',
-                    borderRadius: '8px',
-                    padding: '14px 20px',
-                    boxShadow:
-                      activeItem === item.id
-                        ? '0 14px 28px rgba(0,0,0,0.2)'
-                        : '0 6px 14px rgba(0,0,0,0.1)',
-                    width: '260px',
-                    transform: 'translateZ(10px)',
-                  }}
-                >
+                {/* Boarding Pass / Ticket Item */}
+                {item.type === 'ticket' && (
                   <div
                     style={{
-                      fontSize: '10px',
-                      fontFamily: 'var(--font-mono)',
-                      color: '#8A5D3B',
-                      textTransform: 'uppercase',
+                      background: 'linear-gradient(135deg, #FFF9F2 0%, #FFF 100%)',
+                      border: '1.5px dashed #CBB8A2',
+                      padding: '16px 20px',
+                      borderRadius: '8px',
+                      boxShadow: '0 6px 16px rgba(0,0,0,0.08)',
+                      width: '260px',
                     }}
                   >
-                    REUNION MILESTONE PASS
+                    <div
+                      style={{
+                        fontSize: '11px',
+                        fontFamily: 'var(--font-mono)',
+                        fontWeight: 800,
+                        color: '#B45309',
+                        letterSpacing: '0.05em',
+                      }}
+                    >
+                      ✦ PASSENGER PASS
+                    </div>
+                    <div style={{ fontSize: '15px', fontWeight: 800, margin: '4px 0', color: '#2B231E' }}>
+                      {item.content}
+                    </div>
+                    <div style={{ fontSize: '11.5px', color: '#7E6E65' }}>{item.sub}</div>
                   </div>
+                )}
+
+                {/* Sticky Note Item */}
+                {item.type === 'note' && (
                   <div
                     style={{
-                      fontWeight: 800,
-                      fontSize: '15px',
-                      color: '#2B231E',
-                      marginTop: '2px',
+                      background: '#FEF9C3',
+                      padding: '18px',
+                      borderRadius: '2px',
+                      boxShadow: '0 6px 18px rgba(0,0,0,0.09)',
+                      width: '200px',
+                      fontFamily: 'var(--font-serif, Georgia, serif)',
+                      color: '#42372E',
+                    }}
+                  >
+                    <p style={{ margin: '0 0 10px', fontSize: '13.5px', lineHeight: 1.4, fontStyle: 'italic' }}>
+                      {item.content}
+                    </p>
+                    <div style={{ fontSize: '10.5px', color: '#8A7A6E', textAlign: 'right', fontWeight: 600 }}>
+                      {item.sub}
+                    </div>
+                  </div>
+                )}
+
+                {/* Sticker Item */}
+                {item.type === 'sticker' && (
+                  <div
+                    style={{
+                      fontSize: '38px',
+                      filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.12))',
                     }}
                   >
                     {item.content}
                   </div>
-                  <div
-                    style={{
-                      fontSize: '12px',
-                      color: '#8A5D3B',
-                      marginTop: '4px',
-                    }}
-                  >
-                    {item.sub}
-                  </div>
-                </div>
-              )}
-
-              {/* Handwritten Sticky Note */}
-              {item.type === 'note' && (
-                <div
-                  style={{
-                    background: '#FFF8B6',
-                    border: '1px solid #E8DE94',
-                    borderRadius: '2px',
-                    padding: '16px 18px',
-                    boxShadow:
-                      activeItem === item.id
-                        ? '0 14px 28px rgba(0,0,0,0.2)'
-                        : '0 6px 14px rgba(0,0,0,0.1)',
-                    width: '220px',
-                    transform: 'translateZ(10px)',
-                  }}
-                >
-                  <div
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontStyle: 'italic',
-                      fontSize: '14px',
-                      color: '#4A4028',
-                      lineHeight: 1.45,
-                    }}
-                  >
-                    {item.content}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: '11px',
-                      fontFamily: 'var(--font-mono)',
-                      color: '#7A6E48',
-                      marginTop: '8px',
-                      textAlign: 'right',
-                    }}
-                  >
-                    {item.sub}
-                  </div>
-                </div>
-              )}
-
-              {/* Cute Sticker */}
-              {item.type === 'sticker' && (
-                <div
-                  style={{
-                    fontSize: '44px',
-                    filter: 'drop-shadow(0 6px 10px rgba(0,0,0,0.2))',
-                    transform: 'translateZ(16px)',
-                  }}
-                >
-                  {item.content}
-                </div>
-              )}
-            </div>
-          ))}
+                )}
+              </div>
+            );
+          })}
         </div>
-
-        {/* Add Note Form */}
-        <form
-          onSubmit={addStickyNote}
-          style={{ marginTop: '24px', display: 'flex', gap: '10px' }}
-        >
-          <input
-            type="text"
-            placeholder="Write a sweet memory note to pin on the corkboard..."
-            value={newNoteText}
-            onChange={(e) => setNewNoteText(e.target.value)}
-            style={{
-              flex: 1,
-              padding: '12px 18px',
-              borderRadius: '10px',
-              border: '1px solid #D8CFC4',
-              background: 'var(--paper-raised)',
-              fontSize: '14px',
-            }}
-          />
-          <button
-            type="submit"
-            className="btn btn-primary"
-            style={{ padding: '12px 24px', fontSize: '13px' }}
-          >
-            + Pin Sticky Note
-          </button>
-        </form>
-      </main>
-    </div>
+      </div>
+    </ActivityShell>
   );
 }

@@ -3,70 +3,65 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useCoupleProfile } from '@/lib/couple';
-import { CoupleNameBar } from '@/components/shared';
+import { CoupleNameBar, ActivityShell } from '@/components/shared';
+import { sounds } from '@/lib/sound';
+import { useActivityRuntime } from '@/hooks/useActivityRuntime';
+import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
+
+export type BoardStage = 'someday' | 'exploring' | 'planning' | 'done';
 
 interface VisionItem {
   id: string;
   category: string;
   title: string;
   emoji: string;
+  stage: BoardStage;
+  proposedBy?: string;
+  isPrivate?: boolean;
 }
 
-const VISION_ELEMENTS: VisionItem[] = [
-  {
-    id: '1',
-    category: 'Home',
-    title: 'Cozy Loft with Big Windows',
-    emoji: '🏡',
-  },
-  { id: '2', category: 'Pets', title: 'Fluffy Golden Retriever', emoji: '🐕' },
-  {
-    id: '3',
-    category: 'Travel',
-    title: 'Cherry Blossom Trip in Japan',
-    emoji: '🌸',
-  },
-  {
-    id: '4',
-    category: 'Milestone',
-    title: 'Sunset Beach Wedding',
-    emoji: '💍',
-  },
-  {
-    id: '5',
-    category: 'Ritual',
-    title: 'Sunday Morning Coffee & Vinyls',
-    emoji: '☕',
-  },
-  {
-    id: '6',
-    category: 'Career',
-    title: 'Both Working in Same City',
-    emoji: '💼',
-  },
-  {
-    id: '7',
-    category: 'Travel',
-    title: 'Euro-rail Summer Roadtrip',
-    emoji: '🚆',
-  },
-  {
-    id: '8',
-    category: 'Home',
-    title: 'Big Plant Balcony with Fairy Lights',
-    emoji: '🌿',
-  },
+const STAGE_COLUMNS: { id: BoardStage; label: string; icon: string; desc: string }[] = [
+  { id: 'someday', label: 'Someday Dreams', icon: '💭', desc: 'Wishes, quiet fantasies & long-term hopes' },
+  { id: 'exploring', label: 'Exploring Options', icon: '🗺️', desc: 'Researching cities, bookings & floorplans' },
+  { id: 'planning', label: 'In Action / Planning', icon: '📌', desc: 'Dates locked, flight alerts & active preparations' },
+  { id: 'done', label: 'Realized & Cherished', icon: '✨', desc: 'Milestones we accomplished together' },
+];
+
+const PRESET_ELEMENTS: Omit<VisionItem, 'stage'>[] = [
+  { id: 'p1', category: 'Home', title: 'Cozy Sunlit Loft with Floor Plants', emoji: '🏡' },
+  { id: 'p2', category: 'Companion', title: 'Fluffy Golden Retriever Pup', emoji: '🐕' },
+  { id: 'p3', category: 'Adventure', title: 'Kyoto Cherry Blossom Spring Roadtrip', emoji: '🌸' },
+  { id: 'p4', category: 'Milestone', title: 'Intimate Sunset Beach Vows', emoji: '💍' },
+  { id: 'p5', category: 'Daily Ritual', title: 'Sunday French Press & Slow Vinyls', emoji: '☕' },
+  { id: 'p6', category: 'Distance', title: 'Official One-Way Flight & Permanent Reunion', emoji: '✈️' },
+  { id: 'p7', category: 'Home', title: 'Balcony Fairy Lights & Herb Garden', emoji: '🌿' },
+  { id: 'p8', category: 'Adventure', title: 'Scandinavian Aurora Train Journey', emoji: '🚆' },
 ];
 
 export default function FuturePage() {
-  const { partnerA, partnerB } = useCoupleProfile();
-  const [boardItems, setBoardItems] = useState<VisionItem[]>([
-    VISION_ELEMENTS[0],
-    VISION_ELEMENTS[1],
-    VISION_ELEMENTS[2],
+  const { partnerA, partnerB, roomCode } = useCoupleProfile();
+  const { saveKeepsake, saving: keepsakeSaving } = useKeepsakeWriter();
+
+  const [items, setItems] = useState<VisionItem[]>([
+    { ...PRESET_ELEMENTS[0], stage: 'planning', proposedBy: partnerA },
+    { ...PRESET_ELEMENTS[1], stage: 'someday', proposedBy: partnerB },
+    { ...PRESET_ELEMENTS[2], stage: 'exploring', proposedBy: partnerA },
+    { ...PRESET_ELEMENTS[5], stage: 'done', proposedBy: 'Both' },
   ]);
+
+  const [activePartnerFilter, setActivePartnerFilter] = useState<'all' | 'A' | 'B'>('all');
   const [customGoal, setCustomGoal] = useState('');
-  const [saved, setSaved] = useState(false);
+  const [customCategory, setCustomCategory] = useState('Dream');
+  const [customEmoji, setCustomEmoji] = useState('✨');
+  const [keepsakeSaved, setKeepsakeSaved] = useState(false);
+
+  const runtime = useActivityRuntime({
+    sessionId: roomCode ? `room-${roomCode}-future` : 'local-future',
+    activityType: 'future',
+    roomId: roomCode || 'local',
+    transportMode: 'auto',
+    initialOptions: { totalItems: items.length },
+  });
 
   useEffect(() => {
     try {
@@ -74,270 +69,426 @@ export default function FuturePage() {
       if (savedRaw) {
         const parsed = JSON.parse(savedRaw);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          setBoardItems(parsed);
+          setItems(parsed);
         }
       }
     } catch {}
   }, []);
 
-  const saveBoard = (items: VisionItem[]) => {
+  const persistItems = (newItems: VisionItem[]) => {
+    setItems(newItems);
     try {
-      localStorage.setItem('dearly_future_vision_board', JSON.stringify(items));
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2500);
+      localStorage.setItem('dearly_future_vision_board', JSON.stringify(newItems));
     } catch {}
   };
 
-  const addItem = (item: VisionItem) => {
-    if (!boardItems.find((b) => b.id === item.id)) {
-      const next = [...boardItems, item];
-      setBoardItems(next);
-      saveBoard(next);
-    }
+  const handleMoveStage = (id: string, newStage: BoardStage) => {
+    sounds.playPop();
+    const updated = items.map((it) => (it.id === id ? { ...it, stage: newStage } : it));
+    persistItems(updated);
+    void runtime.sendEvent('future_move_stage', { itemId: id, newStage });
   };
 
-  const addCustom = (e: React.FormEvent) => {
+  const handleAddPreset = (el: Omit<VisionItem, 'stage'>) => {
+    if (items.some((it) => it.title === el.title)) return;
+    sounds.playTick();
+    const newItem: VisionItem = {
+      ...el,
+      id: `vis-${Date.now()}`,
+      stage: 'someday',
+      proposedBy: activePartnerFilter === 'B' ? partnerB : partnerA,
+    };
+    const updated = [...items, newItem];
+    persistItems(updated);
+  };
+
+  const handleAddCustom = (e: React.FormEvent) => {
     e.preventDefault();
     if (!customGoal.trim()) return;
+    sounds.playCelebration();
     const newItem: VisionItem = {
-      id: Date.now().toString(),
-      category: 'Custom',
-      title: customGoal,
-      emoji: '✨',
+      id: `vis-${Date.now()}`,
+      category: customCategory,
+      title: customGoal.trim(),
+      emoji: customEmoji,
+      stage: 'someday',
+      proposedBy: activePartnerFilter === 'B' ? partnerB : partnerA,
     };
-    const next = [...boardItems, newItem];
-    setBoardItems(next);
-    saveBoard(next);
+    const updated = [...items, newItem];
+    persistItems(updated);
     setCustomGoal('');
   };
 
-  const removeItem = (id: string) => {
-    const next = boardItems.filter((b) => b.id !== id);
-    setBoardItems(next);
-    saveBoard(next);
+  const handleRemove = (id: string) => {
+    sounds.playPop();
+    const updated = items.filter((it) => it.id !== id);
+    persistItems(updated);
   };
 
-  return (
-    <div
-      style={{
-        background: 'var(--paper)',
-        minHeight: '100vh',
-        paddingBottom: '80px',
-      }}
-    >
-      <header className="bar">
-        <div className="wrap">
-          <Link className="brand" href="/">
-            dearly us
-            <span className="dots">
-              <i className="p"></i>
-              <i className="b"></i>
-            </span>
-          </Link>
-          <Link className="btn btn-ghost" href="/activity">
-            Activities ▷
-          </Link>
-        </div>
-      </header>
+  const handleSaveBoardKeepsake = async () => {
+    if (keepsakeSaved || keepsakeSaving) return;
+    sounds.playCelebration();
+    try {
+      const doneCount = items.filter((i) => i.stage === 'done').length;
+      await saveKeepsake({
+        kind: 'activity',
+        title: `Couple Someday Board · ${items.length} Milestones`,
+        activityPath: '/future',
+        caption: `Shared future blueprint with ${items.length} goals mapped across 4 progression stages (${doneCount} celebrated as done!).`,
+        metadata: {
+          activityType: 'future',
+          totalGoals: items.length,
+          doneGoals: doneCount,
+          date: new Date().toISOString(),
+        },
+      });
+      setKeepsakeSaved(true);
+    } catch (err) {
+      console.error('Failed to save future board keepsake:', err);
+    }
+  };
 
-      <main className="wrap" style={{ paddingTop: '36px', maxWidth: '860px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+  const doneCount = items.filter((i) => i.stage === 'done').length;
+
+  return (
+    <ActivityShell
+      activityTitle="Future Home & Someday Board"
+      activitySubtitle="Shared Dream Blueprint · 4-Column Horizon Progression & Private Proposals"
+      currentStage={keepsakeSaved ? 'remember' : items.length > 5 ? 'play' : 'ready'}
+      keepsakeSummary={{
+        kind: 'activity',
+        title: `Dream Board · ${items.length} Visions`,
+        subtitle: `${doneCount} Realized · ${items.length - doneCount} on Horizon`,
+        badge: '📌 BLUEPRINT READY',
+      }}
+      guidancePhase={keepsakeSaved ? 'completed' : 'ready'}
+      guidancePrivacyNote="Goals and milestones pinned to your shared blueprint sync mutually across your couple space."
+    >
+      <div style={{ maxWidth: '1080px', margin: '0 auto', padding: '16px 0 40px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <CoupleNameBar />
           <h1
-            style={{ fontSize: 'clamp(28px, 4vw, 42px)', marginBottom: '10px' }}
+            style={{
+              fontSize: 'clamp(26px, 4.5vw, 40px)',
+              fontWeight: 800,
+              margin: '8px 0',
+              fontFamily: 'var(--font-serif, Georgia, serif)',
+            }}
           >
             Design your future <span className="grad">together</span>.
           </h1>
-          <p style={{ color: 'var(--ink-soft)', fontSize: '16px' }}>
-            Pick and pin your dreams — homes, travel, pets, milestones — into a
-            shared scrapbook vision board.
+          <p style={{ color: 'var(--ink-soft)', fontSize: '15px', maxWidth: '54ch', margin: '0 auto' }}>
+            Map your shared milestones — from quiet Sunday morning rituals to dream city sanctuaries — across four living horizons.
           </p>
         </div>
 
-        {/* Vision Board Container */}
+        {/* View Controls & Action Bar */}
         <div
           style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '12px',
+            marginBottom: '24px',
+            padding: '12px 18px',
             background: 'var(--paper-raised)',
-            border: '2px solid var(--line)',
-            borderRadius: '20px',
-            padding: '36px 32px',
-            boxShadow: 'var(--shadow-lg)',
-            marginBottom: '32px',
-            position: 'relative',
+            borderRadius: '16px',
+            border: '1px solid var(--line)',
           }}
         >
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '24px',
-            }}
-          >
-            <h2 style={{ fontSize: '20px', fontWeight: 800 }}>
-              {partnerA} &amp; {partnerB}&apos;s Life Vision
-            </h2>
-            <span
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 800, color: 'var(--ink-soft)' }}>
+              FILTER PROPOSALS:
+            </span>
+            <button
+              onClick={() => setActivePartnerFilter('all')}
               style={{
-                fontFamily: 'var(--font-mono)',
+                padding: '5px 12px',
+                borderRadius: '999px',
+                border: activePartnerFilter === 'all' ? '2px solid #17181C' : '1px solid var(--line)',
+                background: activePartnerFilter === 'all' ? '#17181C' : '#FFF',
+                color: activePartnerFilter === 'all' ? '#FFF' : 'var(--ink)',
                 fontSize: '12px',
-                color: 'var(--ink-soft)',
+                fontWeight: 700,
+                cursor: 'pointer',
               }}
             >
-              {boardItems.length} Dreams Pinned
-            </span>
+              All Us ({items.length})
+            </button>
+            <button
+              onClick={() => setActivePartnerFilter('A')}
+              style={{
+                padding: '5px 12px',
+                borderRadius: '999px',
+                border: activePartnerFilter === 'A' ? '2px solid var(--pink)' : '1px solid var(--line)',
+                background: activePartnerFilter === 'A' ? '#FFF5F8' : '#FFF',
+                color: activePartnerFilter === 'A' ? 'var(--pink)' : 'var(--ink)',
+                fontSize: '12px',
+                fontWeight: 700,
+                cursor: 'pointer',
+              }}
+            >
+              🌸 {partnerA}
+            </button>
+            <button
+              onClick={() => setActivePartnerFilter('B')}
+              style={{
+                padding: '5px 12px',
+                borderRadius: '999px',
+                border: activePartnerFilter === 'B' ? '2px solid var(--blue)' : '1px solid var(--line)',
+                background: activePartnerFilter === 'B' ? '#F0F7FF' : '#FFF',
+                color: activePartnerFilter === 'B' ? 'var(--blue)' : 'var(--ink)',
+                fontSize: '12px',
+                fontWeight: 700,
+                cursor: 'pointer',
+              }}
+            >
+              💙 {partnerB}
+            </button>
           </div>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-              gap: '16px',
-              minHeight: '220px',
-              background: 'var(--paper)',
-              borderRadius: '14px',
-              padding: '20px',
-              border: '1px dashed var(--line)',
-            }}
+          <button
+            onClick={handleSaveBoardKeepsake}
+            disabled={keepsakeSaved || keepsakeSaving}
+            className="btn btn-primary"
+            style={{ padding: '8px 20px', fontSize: '13px' }}
           >
-            {boardItems.map((item) => (
+            {keepsakeSaved ? '✓ Saved to Keepsakes!' : keepsakeSaving ? 'Archiving...' : '💾 Save Blueprint to Keepsakes'}
+          </button>
+        </div>
+
+        {/* 4-COLUMN HORIZON BOARD */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: '16px',
+            marginBottom: '32px',
+          }}
+        >
+          {STAGE_COLUMNS.map((col) => {
+            const colItems = items.filter((it) => {
+              if (it.stage !== col.id) return false;
+              if (activePartnerFilter === 'A') return it.proposedBy === partnerA;
+              if (activePartnerFilter === 'B') return it.proposedBy === partnerB;
+              return true;
+            });
+
+            return (
               <div
-                key={item.id}
+                key={col.id}
                 style={{
                   background: 'var(--paper-raised)',
                   border: '1px solid var(--line)',
-                  borderRadius: '12px',
+                  borderRadius: '16px',
                   padding: '16px',
+                  display: 'flex',
+                  flexDirection: 'column',
                   boxShadow: 'var(--shadow-soft)',
-                  position: 'relative',
                 }}
               >
-                <button
-                  onClick={() => removeItem(item.id)}
-                  style={{
-                    position: 'absolute',
-                    top: '8px',
-                    right: '8px',
-                    border: 'none',
-                    background: 'none',
-                    fontSize: '12px',
-                    color: 'var(--ink-soft)',
-                    cursor: 'pointer',
-                  }}
-                >
-                  ✕
-                </button>
-                <div style={{ fontSize: '28px', marginBottom: '8px' }}>
-                  {item.emoji}
+                <div style={{ marginBottom: '12px', borderBottom: '1px solid var(--line)', paddingBottom: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontWeight: 800, fontSize: '14px', color: 'var(--ink)' }}>
+                      {col.icon} {col.label}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: '11px',
+                        fontFamily: 'var(--font-mono)',
+                        background: 'var(--paper)',
+                        padding: '2px 8px',
+                        borderRadius: '999px',
+                        border: '1px solid var(--line)',
+                      }}
+                    >
+                      {colItems.length}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '11px', color: 'var(--ink-soft)', marginTop: '2px' }}>
+                    {col.desc}
+                  </div>
                 </div>
-                <div
-                  style={{
-                    fontSize: '11px',
-                    fontFamily: 'var(--font-mono)',
-                    color: 'var(--pink)',
-                    textTransform: 'uppercase',
-                    fontWeight: 700,
-                  }}
-                >
-                  {item.category}
-                </div>
-                <h4
-                  style={{
-                    fontSize: '14px',
-                    fontWeight: 700,
-                    margin: '4px 0 0',
-                  }}
-                >
-                  {item.title}
-                </h4>
-              </div>
-            ))}
-          </div>
 
-          <div
-            style={{
-              marginTop: '24px',
-              display: 'flex',
-              gap: '12px',
-              justifyContent: 'flex-end',
-            }}
-          >
-            <button
-              className="btn btn-grad"
-              onClick={() => saveBoard(boardItems)}
-            >
-              {saved ? '✓ Saved to Shared Album!' : 'Save Vision Board 💾'}
-            </button>
-          </div>
+                {/* Items in Column */}
+                <div style={{ display: 'grid', gap: '10px', flex: 1, minHeight: '120px' }}>
+                  {colItems.map((item) => (
+                    <div
+                      key={item.id}
+                      style={{
+                        background: 'var(--paper)',
+                        border: '1px solid var(--line)',
+                        borderRadius: '10px',
+                        padding: '12px',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.02)',
+                        position: 'relative',
+                        transition: 'transform 0.15s ease',
+                      }}
+                    >
+                      <button
+                        onClick={() => handleRemove(item.id)}
+                        style={{
+                          position: 'absolute',
+                          top: '6px',
+                          right: '6px',
+                          border: 'none',
+                          background: 'none',
+                          fontSize: '11px',
+                          color: 'var(--ink-soft)',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        ✕
+                      </button>
+
+                      <div style={{ fontSize: '24px', marginBottom: '4px' }}>{item.emoji}</div>
+                      <div style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: 'var(--pink)', fontWeight: 800 }}>
+                        {item.category.toUpperCase()}
+                      </div>
+                      <div style={{ fontSize: '13.5px', fontWeight: 700, margin: '2px 0 8px', lineHeight: 1.35 }}>
+                        {item.title}
+                      </div>
+
+                      {/* Stage Mover Pill Selector */}
+                      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                        {STAGE_COLUMNS.map((sc) => {
+                          if (sc.id === item.stage) return null;
+                          return (
+                            <button
+                              key={sc.id}
+                              onClick={() => handleMoveStage(item.id, sc.id)}
+                              style={{
+                                fontSize: '10px',
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                border: '1px solid var(--line)',
+                                background: '#FFF',
+                                cursor: 'pointer',
+                                color: 'var(--ink-soft)',
+                              }}
+                            >
+                              → {sc.icon}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                  {colItems.length === 0 && (
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--ink-soft)',
+                        fontSize: '12px',
+                        fontStyle: 'italic',
+                        border: '1px dashed var(--line)',
+                        borderRadius: '8px',
+                        padding: '16px',
+                      }}
+                    >
+                      Drop dreams here...
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
 
-        {/* Add Ideas Shelf */}
+        {/* Ideas Inspiration Shelf & Custom Goal Form */}
         <div
           style={{
             background: 'var(--paper-raised)',
             border: '1px solid var(--line)',
             borderRadius: '16px',
-            padding: '28px',
+            padding: '24px 28px',
             boxShadow: 'var(--shadow)',
           }}
         >
-          <h3
-            style={{ fontSize: '17px', fontWeight: 800, marginBottom: '14px' }}
-          >
-            Ideas to pin to your board:
+          <h3 style={{ fontSize: '16px', fontWeight: 800, marginBottom: '12px' }}>
+            Inspiring Ideas to Pin to Someday:
           </h3>
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '10px',
-              marginBottom: '20px',
-            }}
-          >
-            {VISION_ELEMENTS.map((el) => (
-              <button
-                key={el.id}
-                onClick={() => addItem(el)}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '8px 14px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--line)',
-                  background: 'var(--paper)',
-                  fontSize: '13.5px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
-              >
-                <span>{el.emoji}</span>
-                <span>{el.title}</span>
-                <span style={{ color: 'var(--pink)', fontWeight: 800 }}>+</span>
-              </button>
-            ))}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '20px' }}>
+            {PRESET_ELEMENTS.map((el) => {
+              const alreadyAdded = items.some((it) => it.title === el.title);
+              return (
+                <button
+                  key={el.id}
+                  disabled={alreadyAdded}
+                  onClick={() => handleAddPreset(el)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '6px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--line)',
+                    background: alreadyAdded ? '#F3F4F6' : 'var(--paper)',
+                    fontSize: '12.5px',
+                    fontWeight: 600,
+                    cursor: alreadyAdded ? 'default' : 'pointer',
+                    opacity: alreadyAdded ? 0.5 : 1,
+                  }}
+                >
+                  <span>{el.emoji}</span>
+                  <span>{el.title}</span>
+                  <span style={{ color: 'var(--pink)', fontWeight: 800 }}>{alreadyAdded ? '✓' : '+'}</span>
+                </button>
+              );
+            })}
           </div>
 
-          <form onSubmit={addCustom} style={{ display: 'flex', gap: '10px' }}>
+          <form onSubmit={handleAddCustom} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <input
+              type="text"
+              value={customEmoji}
+              onChange={(e) => setCustomEmoji(e.target.value)}
+              placeholder="✨"
+              style={{
+                width: '50px',
+                padding: '10px',
+                textAlign: 'center',
+                borderRadius: '8px',
+                border: '1px solid var(--line)',
+                fontSize: '16px',
+              }}
+            />
+            <input
+              type="text"
+              value={customCategory}
+              onChange={(e) => setCustomCategory(e.target.value)}
+              placeholder="Category (e.g. Travel, Home)"
+              style={{
+                width: '150px',
+                padding: '10px 12px',
+                borderRadius: '8px',
+                border: '1px solid var(--line)',
+                fontSize: '13px',
+              }}
+            />
             <input
               type="text"
               value={customGoal}
               onChange={(e) => setCustomGoal(e.target.value)}
-              placeholder="Type your own custom milestone (e.g. Move in together next July)..."
+              placeholder="Inscribe a custom couple milestone..."
               style={{
                 flex: 1,
+                minWidth: '220px',
                 padding: '10px 14px',
                 borderRadius: '8px',
                 border: '1px solid var(--line)',
-                fontFamily: 'inherit',
+                fontSize: '13.5px',
               }}
             />
-            <button type="submit" className="btn btn-primary">
-              Add Goal +
+            <button type="submit" className="btn btn-primary" style={{ padding: '10px 20px', fontSize: '13px' }}>
+              Add to Someday +
             </button>
           </form>
         </div>
-      </main>
-    </div>
+      </div>
+    </ActivityShell>
   );
 }
