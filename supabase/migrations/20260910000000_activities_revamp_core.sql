@@ -1,493 +1,147 @@
--- ============================================================================
--- Dearly Us — Core Activities Revamp Database Schema & Authoritative Contracts
--- Migration: 20260910000000_activities_revamp_core.sql
--- ============================================================================
+-- Additive completion patch for the existing live Dearly Us activity backend.
+-- It extends the production couples/rooms/sessions contract; it does not create
+-- duplicate room, couple, session, event, answer, or keepsake models.
+begin;
 
--- 1. Couple Spaces Table
-CREATE TABLE IF NOT EXISTS public.couple_spaces (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  partner_a_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  partner_b_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('pending', 'active', 'paused', 'archived')),
-  anniversary_date DATE,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+alter table public.room_members
+  add column if not exists activity_role text,
+  add column if not exists last_ack_revision bigint not null default 0,
+  add column if not exists reconnect_metadata jsonb not null default '{}'::jsonb;
+alter table public.room_members drop constraint if exists room_members_activity_role_check;
+alter table public.room_members add constraint room_members_activity_role_check
+  check (activity_role is null or activity_role in ('host','partner','collaborator','spectator'));
+
+create table if not exists public.plans_and_milestones (
+  id uuid primary key default gen_random_uuid(),
+  couple_id uuid not null references public.couples(id) on delete cascade,
+  record_kind text not null check (record_kind in ('future_plan','reunion','bucket_date','date_plan','ritual','forecast','lab_session','love_match','date_night_capsule')),
+  record_key text not null,
+  title text not null,
+  payload jsonb not null default '{}'::jsonb check (pg_column_size(payload) <= 65536),
+  status text not null default 'active' check (status in ('draft','active','completed','archived')),
+  target_at timestamptz,
+  created_by uuid not null references auth.users(id),
+  updated_by uuid not null references auth.users(id),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (couple_id, record_kind, record_key)
 );
+create index if not exists plans_and_milestones_couple_updated_idx on public.plans_and_milestones(couple_id,updated_at desc);
 
--- 2. Date Rooms Table
-CREATE TABLE IF NOT EXISTS public.date_rooms (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  couple_id UUID NOT NULL REFERENCES public.couple_spaces(id) ON DELETE CASCADE,
-  room_code TEXT NOT NULL UNIQUE,
-  status TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'active', 'closed', 'expired')),
-  active_activity TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  expires_at TIMESTAMPTZ NOT NULL DEFAULT (now() + INTERVAL '24 hours')
+create table if not exists public.temporary_assets (
+  id uuid primary key default gen_random_uuid(),
+  couple_id uuid not null references public.couples(id) on delete cascade,
+  session_id uuid references public.activity_sessions(id) on delete cascade,
+  owner_id uuid not null references auth.users(id),
+  storage_bucket text not null default 'activity-assets',
+  storage_path text not null,
+  media_kind text not null check (media_kind in ('image','audio')),
+  mime_type text not null,
+  byte_size bigint not null check (byte_size between 1 and 12582912),
+  approval_state jsonb not null default '{}'::jsonb check (pg_column_size(approval_state) <= 8192),
+  expires_at timestamptz not null default (now() + interval '7 days'),
+  created_at timestamptz not null default now(),
+  unique (storage_bucket,storage_path)
 );
+create index if not exists temporary_assets_expiry_idx on public.temporary_assets(expires_at);
+create index if not exists temporary_assets_couple_idx on public.temporary_assets(couple_id,created_at desc);
 
--- 3. Activity Sessions Table
-CREATE TABLE IF NOT EXISTS public.activity_sessions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  room_id UUID NOT NULL REFERENCES public.date_rooms(id) ON DELETE CASCADE,
-  activity_type TEXT NOT NULL,
-  schema_version INT NOT NULL DEFAULT 1,
-  status TEXT NOT NULL DEFAULT 'drafting' CHECK (status IN ('drafting', 'active', 'locked', 'revealed', 'paused', 'completed', 'expired')),
-  round_number INT NOT NULL DEFAULT 0,
-  revision INT NOT NULL DEFAULT 0,
-  last_sequence INT NOT NULL DEFAULT 0,
-  snapshot JSONB NOT NULL DEFAULT '{}'::jsonb,
-  result_summary JSONB NOT NULL DEFAULT '{}'::jsonb,
-  started_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  completed_at TIMESTAMPTZ
-);
+alter table public.plans_and_milestones enable row level security;
+alter table public.temporary_assets enable row level security;
+drop policy if exists plans_member_read on public.plans_and_milestones;
+create policy plans_member_read on public.plans_and_milestones for select to authenticated using (public.is_couple_member(couple_id));
+drop policy if exists plans_member_insert on public.plans_and_milestones;
+create policy plans_member_insert on public.plans_and_milestones for insert to authenticated with check (public.is_couple_member(couple_id) and created_by=auth.uid() and updated_by=auth.uid());
+drop policy if exists plans_member_update on public.plans_and_milestones;
+create policy plans_member_update on public.plans_and_milestones for update to authenticated using (public.is_couple_member(couple_id)) with check (public.is_couple_member(couple_id) and updated_by=auth.uid());
+drop policy if exists plans_member_delete on public.plans_and_milestones;
+create policy plans_member_delete on public.plans_and_milestones for delete to authenticated using (public.is_couple_member(couple_id));
+drop policy if exists temporary_assets_member_read on public.temporary_assets;
+create policy temporary_assets_member_read on public.temporary_assets for select to authenticated using (public.is_couple_member(couple_id));
+drop policy if exists temporary_assets_owner_insert on public.temporary_assets;
+create policy temporary_assets_owner_insert on public.temporary_assets for insert to authenticated with check (owner_id=auth.uid() and public.is_couple_member(couple_id));
+drop policy if exists temporary_assets_member_update on public.temporary_assets;
+create policy temporary_assets_member_update on public.temporary_assets for update to authenticated using (public.is_couple_member(couple_id)) with check (public.is_couple_member(couple_id));
+drop policy if exists temporary_assets_owner_delete on public.temporary_assets;
+create policy temporary_assets_owner_delete on public.temporary_assets for delete to authenticated using (owner_id=auth.uid() and public.is_couple_member(couple_id));
 
--- 4. Room Events Table (Sequential Event Stream)
-CREATE TABLE IF NOT EXISTS public.room_events (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  session_id UUID NOT NULL REFERENCES public.activity_sessions(id) ON DELETE CASCADE,
-  sequence INT NOT NULL,
-  schema_version INT NOT NULL DEFAULT 1,
-  sender_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  event_name TEXT NOT NULL,
-  event_payload JSONB NOT NULL DEFAULT '{}'::jsonb,
-  client_time TIMESTAMPTZ,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  CONSTRAINT uq_room_events_session_sequence UNIQUE (session_id, sequence)
-);
+insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types) values
+('activity-assets','activity-assets',false,12582912,array['image/jpeg','image/png','image/webp','audio/webm','audio/ogg','audio/mpeg'])
+on conflict(id) do update set public=false,file_size_limit=excluded.file_size_limit,allowed_mime_types=excluded.allowed_mime_types;
+drop policy if exists activity_assets_member_read on storage.objects;
+create policy activity_assets_member_read on storage.objects for select to authenticated using (bucket_id='activity-assets' and public.is_couple_member(((storage.foldername(name))[1])::uuid));
+drop policy if exists activity_assets_owner_insert on storage.objects;
+create policy activity_assets_owner_insert on storage.objects for insert to authenticated with check (bucket_id='activity-assets' and public.is_couple_member(((storage.foldername(name))[1])::uuid) and (storage.foldername(name))[2]=auth.uid()::text);
+drop policy if exists activity_assets_owner_update on storage.objects;
+create policy activity_assets_owner_update on storage.objects for update to authenticated using (bucket_id='activity-assets' and owner_id=auth.uid()::text) with check (bucket_id='activity-assets' and owner_id=auth.uid()::text and public.is_couple_member(((storage.foldername(name))[1])::uuid));
+drop policy if exists activity_assets_owner_delete on storage.objects;
+create policy activity_assets_owner_delete on storage.objects for delete to authenticated using (bucket_id='activity-assets' and owner_id=auth.uid()::text);
 
--- 5. Private Answers Table (Zero-Leak Answer Vault)
-CREATE TABLE IF NOT EXISTS public.private_answers (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  session_id UUID NOT NULL REFERENCES public.activity_sessions(id) ON DELETE CASCADE,
-  round_number INT NOT NULL,
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  answer_payload JSONB NOT NULL,
-  locked_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  revealed_at TIMESTAMPTZ,
-  CONSTRAINT uq_private_answers_session_round_user UNIQUE (session_id, round_number, user_id)
-);
+create or replace function public.save_date_night_capsule(target_couple_id uuid,capsule_payload jsonb) returns jsonb language plpgsql security definer set search_path=public as $$
+declare actor uuid:=auth.uid(); p public.plans_and_milestones; k public.keepsakes; plan_key text;
+begin
+ if actor is null or not public.is_couple_member(target_couple_id) then raise exception 'FORBIDDEN'; end if;
+ if pg_column_size(coalesce(capsule_payload,'{}'::jsonb))>65536 then raise exception 'PAYLOAD_TOO_LARGE'; end if;
+ plan_key:=coalesce(nullif(capsule_payload->>'id',''),gen_random_uuid()::text);
+ insert into public.plans_and_milestones(couple_id,record_kind,record_key,title,payload,status,created_by,updated_by)
+ values(target_couple_id,'date_night_capsule',plan_key,coalesce(nullif(capsule_payload->>'title',''),'Our Date Night'),coalesce(capsule_payload,'{}'::jsonb),'completed',actor,actor) returning * into p;
+ insert into public.keepsakes(couple_id,created_by,kind,title,caption,activity_path,metadata,status,finalized_at)
+ values(target_couple_id,actor,'activity',p.title,nullif(capsule_payload->>'caption',''),'/date-planner',jsonb_build_object('planId',p.id,'recordKind',p.record_kind),'finalized',now()) returning * into k;
+ return jsonb_build_object('success',true,'keepsake',to_jsonb(k),'planId',p.id);
+end $$;
 
--- 6. Keepsakes Table (Memories & Artifacts)
-CREATE TABLE IF NOT EXISTS public.keepsakes (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  couple_id UUID NOT NULL REFERENCES public.couple_spaces(id) ON DELETE CASCADE,
-  created_by UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  kind TEXT NOT NULL CHECK (kind IN ('activity', 'photo', 'note', 'milestone')),
-  title TEXT NOT NULL,
-  caption TEXT,
-  media_url TEXT,
-  activity_path TEXT,
-  metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
+create or replace function public.record_ritual_entry(target_couple_id uuid,ritual_key text,entry_payload jsonb) returns jsonb language plpgsql security definer set search_path=public as $$
+declare actor uuid:=auth.uid(); day_key text;
+begin
+ if actor is null or not public.is_couple_member(target_couple_id) then raise exception 'FORBIDDEN'; end if;
+ if ritual_key !~ '^[a-z0-9][a-z0-9_-]{0,63}$' then raise exception 'INVALID_RITUAL_KEY'; end if;
+ if pg_column_size(coalesce(entry_payload,'{}'::jsonb))>65536 then raise exception 'PAYLOAD_TOO_LARGE'; end if;
+ day_key:=ritual_key||':'||current_date::text;
+ insert into public.plans_and_milestones(couple_id,record_kind,record_key,title,payload,created_by,updated_by)
+ values(target_couple_id,'ritual',day_key,ritual_key,coalesce(entry_payload,'{}'::jsonb),actor,actor)
+ on conflict(couple_id,record_kind,record_key) do update set payload=excluded.payload,updated_by=actor,updated_at=now();
+ return jsonb_build_object('success',true,'ritualKey',ritual_key,'recordKey',day_key);
+end $$;
 
--- 7. Plans and Milestones Table
-CREATE TABLE IF NOT EXISTS public.plans_and_milestones (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  couple_id UUID NOT NULL REFERENCES public.couple_spaces(id) ON DELETE CASCADE,
-  category TEXT NOT NULL, -- e.g. 'future', 'timezone', 'bucket', 'date_planner'
-  title TEXT NOT NULL,
-  status TEXT NOT NULL DEFAULT 'someday' CHECK (status IN ('someday', 'exploring', 'planning', 'done', 'favourite', 'archived')),
-  target_date DATE,
-  notes TEXT,
-  metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
+create or replace function public.save_scheduled_date(target_couple_id uuid,scheduled_date timestamptz,title text default 'Our Next Date Night') returns jsonb language plpgsql security definer set search_path=public as $$
+declare actor uuid:=auth.uid(); p public.plans_and_milestones;
+begin
+ if actor is null or not public.is_couple_member(target_couple_id) then raise exception 'FORBIDDEN'; end if;
+ if scheduled_date is null then raise exception 'INVALID_DATE'; end if;
+ if char_length(coalesce(title,'')) not between 1 and 120 then raise exception 'INVALID_TITLE'; end if;
+ insert into public.plans_and_milestones(couple_id,record_kind,record_key,title,target_at,payload,created_by,updated_by)
+ values(target_couple_id,'date_plan',gen_random_uuid()::text,title,scheduled_date,jsonb_build_object('scheduledAt',scheduled_date),actor,actor) returning * into p;
+ insert into public.relationship_milestones(couple_id,kind,title,occurred_at,metadata) values(target_couple_id,'planned_date',title,scheduled_date,jsonb_build_object('planId',p.id));
+ return jsonb_build_object('success',true,'scheduledAt',scheduled_date,'title',title,'planId',p.id);
+end $$;
 
--- 8. Temporary Assets Table (Private photos, audio clips with TTL)
-CREATE TABLE IF NOT EXISTS public.temporary_assets (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  couple_id UUID NOT NULL REFERENCES public.couple_spaces(id) ON DELETE CASCADE,
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  activity_type TEXT NOT NULL,
-  storage_path TEXT NOT NULL,
-  mime_type TEXT NOT NULL,
-  approved BOOLEAN NOT NULL DEFAULT false,
-  expires_at TIMESTAMPTZ NOT NULL DEFAULT (now() + INTERVAL '48 hours'),
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
+create or replace function public.register_temporary_activity_asset(target_couple_id uuid,target_session_id uuid,target_path text,target_media_kind text,target_mime_type text,target_byte_size bigint) returns jsonb language plpgsql security definer set search_path=public as $$
+declare actor uuid:=auth.uid(); saved public.temporary_assets;
+begin
+ if actor is null or not public.is_couple_member(target_couple_id) then raise exception 'FORBIDDEN'; end if;
+ if target_session_id is not null and not exists(select 1 from public.activity_sessions s where s.id=target_session_id and public.is_room_member(s.room_id)) then raise exception 'FORBIDDEN'; end if;
+ if (storage.foldername(target_path))[1]<>target_couple_id::text or (storage.foldername(target_path))[2]<>actor::text then raise exception 'INVALID_PATH'; end if;
+ insert into public.temporary_assets(couple_id,session_id,owner_id,storage_path,media_kind,mime_type,byte_size)
+ values(target_couple_id,target_session_id,actor,target_path,target_media_kind,target_mime_type,target_byte_size) returning * into saved;
+ return to_jsonb(saved);
+end $$;
 
--- ============================================================================
--- Row Level Security (RLS) Configuration
--- ============================================================================
+create or replace function public.acknowledge_activity_revision(target_session_id uuid,acknowledged_revision bigint,participant_role text default null,reconnect_info jsonb default '{}'::jsonb) returns jsonb language plpgsql security definer set search_path=public as $$
+declare actor uuid:=auth.uid(); target_room uuid;
+begin
+ select room_id into target_room from public.activity_sessions where id=target_session_id;
+ if actor is null or target_room is null or not public.is_room_member(target_room) then raise exception 'FORBIDDEN'; end if;
+ if acknowledged_revision<0 or pg_column_size(coalesce(reconnect_info,'{}'::jsonb))>8192 then raise exception 'INVALID_ACK'; end if;
+ update public.room_members set last_ack_revision=greatest(last_ack_revision,acknowledged_revision),activity_role=coalesce(participant_role,activity_role),reconnect_metadata=coalesce(reconnect_info,'{}'::jsonb),last_seen_at=now(),left_at=null where room_id=target_room and user_id=actor;
+ return jsonb_build_object('acknowledged',true,'revision',acknowledged_revision);
+end $$;
 
-ALTER TABLE public.couple_spaces ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.date_rooms ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.activity_sessions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.room_events ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.private_answers ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.keepsakes ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.plans_and_milestones ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.temporary_assets ENABLE ROW LEVEL SECURITY;
-
--- Helper Function: Check couple space membership
-CREATE OR REPLACE FUNCTION public.is_couple_member(space_id UUID, user_id UUID)
-RETURNS BOOLEAN
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public
-AS $$
-  SELECT EXISTS (
-    SELECT 1 FROM public.couple_spaces
-    WHERE id = space_id
-      AND (partner_a_id = user_id OR partner_b_id = user_id)
-  );
-$$;
-
--- Helper Function: Check session belongs to user's couple
-CREATE OR REPLACE FUNCTION public.is_session_couple_member(target_session_id UUID, user_id UUID)
-RETURNS BOOLEAN
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public
-AS $$
-  SELECT EXISTS (
-    SELECT 1
-    FROM public.activity_sessions s
-    JOIN public.date_rooms r ON r.id = s.room_id
-    JOIN public.couple_spaces c ON c.id = r.couple_id
-    WHERE s.id = target_session_id
-      AND (c.partner_a_id = user_id OR c.partner_b_id = user_id)
-  );
-$$;
-
--- RLS: couple_spaces
-CREATE POLICY couple_spaces_members_read ON public.couple_spaces
-  FOR SELECT TO authenticated
-  USING (partner_a_id = auth.uid() OR partner_b_id = auth.uid());
-
-CREATE POLICY couple_spaces_partner_update ON public.couple_spaces
-  FOR UPDATE TO authenticated
-  USING (partner_a_id = auth.uid() OR partner_b_id = auth.uid());
-
--- RLS: date_rooms
-CREATE POLICY date_rooms_couple_access ON public.date_rooms
-  FOR ALL TO authenticated
-  USING (public.is_couple_member(couple_id, auth.uid()));
-
--- RLS: activity_sessions
-CREATE POLICY activity_sessions_access ON public.activity_sessions
-  FOR ALL TO authenticated
-  USING (public.is_session_couple_member(id, auth.uid()));
-
--- RLS: room_events
-CREATE POLICY room_events_read ON public.room_events
-  FOR SELECT TO authenticated
-  USING (public.is_session_couple_member(session_id, auth.uid()));
-
--- room_events: direct inserts are prohibited, must use append_activity_event RPC
-CREATE POLICY room_events_insert_denial ON public.room_events
-  FOR INSERT TO authenticated
-  WITH CHECK (false);
-
--- RLS: private_answers (Zero-Leak Answer Vault)
-CREATE POLICY private_answers_select ON public.private_answers
-  FOR SELECT TO authenticated
-  USING (
-    user_id = auth.uid()
-    OR (revealed_at IS NOT NULL AND public.is_session_couple_member(session_id, auth.uid()))
-  );
-
--- private_answers: direct inserts prohibited, must use lock_private_answer RPC
-CREATE POLICY private_answers_insert_denial ON public.private_answers
-  FOR INSERT TO authenticated
-  WITH CHECK (false);
-
--- RLS: keepsakes
-CREATE POLICY keepsakes_access ON public.keepsakes
-  FOR ALL TO authenticated
-  USING (public.is_couple_member(couple_id, auth.uid()));
-
--- RLS: plans_and_milestones
-CREATE POLICY plans_and_milestones_access ON public.plans_and_milestones
-  FOR ALL TO authenticated
-  USING (public.is_couple_member(couple_id, auth.uid()));
-
--- RLS: temporary_assets
-CREATE POLICY temporary_assets_access ON public.temporary_assets
-  FOR ALL TO authenticated
-  USING (public.is_couple_member(couple_id, auth.uid()));
-
--- ============================================================================
--- Authoritative RPC Functions (SECURITY DEFINER)
--- ============================================================================
-
--- 1. append_activity_event
-CREATE OR REPLACE FUNCTION public.append_activity_event(
-  target_session_id UUID,
-  event_id UUID,
-  event_name TEXT,
-  event_payload JSONB DEFAULT '{}'::jsonb,
-  expected_revision INT DEFAULT NULL,
-  client_time TIMESTAMPTZ DEFAULT NULL
-)
-RETURNS JSONB
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-  v_session RECORD;
-  v_next_sequence INT;
-  v_next_revision INT;
-BEGIN
-  -- Validate caller membership
-  IF NOT public.is_session_couple_member(target_session_id, auth.uid()) THEN
-    RAISE EXCEPTION 'FORBIDDEN: Caller is not a member of this date session';
-  END IF;
-
-  -- Lock session for atomic sequence and revision increment
-  SELECT id, status, revision, last_sequence
-  INTO v_session
-  FROM public.activity_sessions
-  WHERE id = target_session_id
-  FOR UPDATE;
-
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'SESSION_UNAVAILABLE: Session % not found', target_session_id;
-  END IF;
-
-  IF v_session.status IN ('completed', 'expired') THEN
-    RAISE EXCEPTION 'SESSION_CLOSED: Session % is already %', target_session_id, v_session.status;
-  END IF;
-
-  IF expected_revision IS NOT NULL AND expected_revision <> v_session.revision THEN
-    RETURN jsonb_build_object(
-      'accepted', false,
-      'reason', 'REVISION_CONFLICT',
-      'current_revision', v_session.revision
-    );
-  END IF;
-
-  -- Check if event_id already appended (idempotency)
-  IF EXISTS (SELECT 1 FROM public.room_events WHERE id = event_id) THEN
-    RETURN jsonb_build_object(
-      'accepted', true,
-      'duplicate', true,
-      'revision', v_session.revision,
-      'sequence', v_session.last_sequence
-    );
-  END IF;
-
-  v_next_sequence := v_session.last_sequence + 1;
-  v_next_revision := v_session.revision + 1;
-
-  INSERT INTO public.room_events (
-    id, session_id, sequence, schema_version, sender_id, event_name, event_payload, client_time
-  ) VALUES (
-    event_id, target_session_id, v_next_sequence, 1, auth.uid(), event_name, event_payload, COALESCE(client_time, now())
-  );
-
-  UPDATE public.activity_sessions
-  SET last_sequence = v_next_sequence,
-      revision = v_next_revision
-  WHERE id = target_session_id;
-
-  RETURN jsonb_build_object(
-    'accepted', true,
-    'duplicate', false,
-    'revision', v_next_revision,
-    'sequence', v_next_sequence
-  );
-END;
-$$;
-
--- 2. lock_private_answer
-CREATE OR REPLACE FUNCTION public.lock_private_answer(
-  target_session_id UUID,
-  target_round INT,
-  answer_payload JSONB
-)
-RETURNS JSONB
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-  v_locked_count INT;
-BEGIN
-  IF NOT public.is_session_couple_member(target_session_id, auth.uid()) THEN
-    RAISE EXCEPTION 'FORBIDDEN: Caller is not a member of this date session';
-  END IF;
-
-  INSERT INTO public.private_answers (
-    session_id, round_number, user_id, answer_payload, locked_at
-  ) VALUES (
-    target_session_id, target_round, auth.uid(), answer_payload, now()
-  )
-  ON CONFLICT (session_id, round_number, user_id)
-  DO UPDATE SET answer_payload = EXCLUDED.answer_payload, locked_at = now();
-
-  SELECT count(*)
-  INTO v_locked_count
-  FROM public.private_answers
-  WHERE session_id = target_session_id
-    AND round_number = target_round;
-
-  RETURN jsonb_build_object(
-    'locked', true,
-    'bothLocked', (v_locked_count >= 2),
-    'lockedCount', v_locked_count
-  );
-END;
-$$;
-
--- 3. reveal_private_answers
-CREATE OR REPLACE FUNCTION public.reveal_private_answers(
-  target_session_id UUID,
-  target_round INT
-)
-RETURNS JSONB
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-  v_locked_count INT;
-  v_answers JSONB;
-BEGIN
-  IF NOT public.is_session_couple_member(target_session_id, auth.uid()) THEN
-    RAISE EXCEPTION 'FORBIDDEN: Caller is not a member of this date session';
-  END IF;
-
-  SELECT count(*)
-  INTO v_locked_count
-  FROM public.private_answers
-  WHERE session_id = target_session_id
-    AND round_number = target_round;
-
-  -- Mark revealed
-  UPDATE public.private_answers
-  SET revealed_at = now()
-  WHERE session_id = target_session_id
-    AND round_number = target_round
-    AND revealed_at IS NULL;
-
-  SELECT jsonb_agg(
-    jsonb_build_object(
-      'userId', user_id,
-      'answer', answer_payload,
-      'lockedAt', locked_at
-    )
-  )
-  INTO v_answers
-  FROM public.private_answers
-  WHERE session_id = target_session_id
-    AND round_number = target_round;
-
-  RETURN jsonb_build_object(
-    'roundNumber', target_round,
-    'answers', COALESCE(v_answers, '[]'::jsonb)
-  );
-END;
-$$;
-
--- 4. get_session_recovery
-CREATE OR REPLACE FUNCTION public.get_session_recovery(
-  target_session_id UUID,
-  after_sequence INT DEFAULT 0
-)
-RETURNS JSONB
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-  v_session RECORD;
-  v_events JSONB;
-BEGIN
-  IF NOT public.is_session_couple_member(target_session_id, auth.uid()) THEN
-    RAISE EXCEPTION 'FORBIDDEN: Caller is not a member of this date session';
-  END IF;
-
-  SELECT id, activity_type, schema_version, status, round_number, revision, last_sequence, snapshot, result_summary
-  INTO v_session
-  FROM public.activity_sessions
-  WHERE id = target_session_id;
-
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'SESSION_UNAVAILABLE: Session % not found', target_session_id;
-  END IF;
-
-  SELECT jsonb_agg(
-    jsonb_build_object(
-      'id', id,
-      'sequence', sequence,
-      'schemaVersion', schema_version,
-      'senderId', sender_id,
-      'type', event_name,
-      'payload', event_payload,
-      'clientCreatedAt', client_time,
-      'createdAt', created_at
-    ) ORDER BY sequence ASC
-  )
-  INTO v_events
-  FROM public.room_events
-  WHERE session_id = target_session_id
-    AND sequence > after_sequence;
-
-  RETURN jsonb_build_object(
-    'sessionId', v_session.id,
-    'activityType', v_session.activity_type,
-    'schemaVersion', v_session.schema_version,
-    'status', v_session.status,
-    'roundNumber', v_session.round_number,
-    'revision', v_session.revision,
-    'lastSequence', v_session.last_sequence,
-    'snapshot', v_session.snapshot,
-    'resultSummary', v_session.result_summary,
-    'events', COALESCE(v_events, '[]'::jsonb)
-  );
-END;
-$$;
-
--- 5. complete_activity
-CREATE OR REPLACE FUNCTION public.complete_activity(
-  target_session_id UUID,
-  result_snapshot JSONB DEFAULT '{}'::jsonb
-)
-RETURNS JSONB
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-BEGIN
-  IF NOT public.is_session_couple_member(target_session_id, auth.uid()) THEN
-    RAISE EXCEPTION 'FORBIDDEN: Caller is not a member of this date session';
-  END IF;
-
-  UPDATE public.activity_sessions
-  SET status = 'completed',
-      snapshot = snapshot || result_snapshot,
-      result_summary = result_snapshot,
-      completed_at = now()
-  WHERE id = target_session_id;
-
-  RETURN jsonb_build_object('completed', true);
-END;
-$$;
-
--- 6. set_activity_paused
-CREATE OR REPLACE FUNCTION public.set_activity_paused(
-  target_session_id UUID,
-  is_paused BOOLEAN
-)
-RETURNS JSONB
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-BEGIN
-  IF NOT public.is_session_couple_member(target_session_id, auth.uid()) THEN
-    RAISE EXCEPTION 'FORBIDDEN: Caller is not a member of this date session';
-  END IF;
-
-  UPDATE public.activity_sessions
-  SET status = CASE WHEN is_paused THEN 'paused' ELSE 'active' END
-  WHERE id = target_session_id;
-
-  RETURN public.get_session_recovery(target_session_id, 0);
-END;
-$$;
+revoke all on function public.save_date_night_capsule(uuid,jsonb) from public,anon;
+revoke all on function public.record_ritual_entry(uuid,text,jsonb) from public,anon;
+revoke all on function public.save_scheduled_date(uuid,timestamptz,text) from public,anon;
+revoke all on function public.register_temporary_activity_asset(uuid,uuid,text,text,text,bigint) from public,anon;
+revoke all on function public.acknowledge_activity_revision(uuid,bigint,text,jsonb) from public,anon;
+grant execute on function public.save_date_night_capsule(uuid,jsonb),public.record_ritual_entry(uuid,text,jsonb),public.save_scheduled_date(uuid,timestamptz,text),public.register_temporary_activity_asset(uuid,uuid,text,text,text,bigint),public.acknowledge_activity_revision(uuid,bigint,text,jsonb) to authenticated;
+revoke all on public.plans_and_milestones,public.temporary_assets from anon;
+grant select,insert,update,delete on public.plans_and_milestones,public.temporary_assets to authenticated;
+commit;
