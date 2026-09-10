@@ -8,6 +8,7 @@ import {
   DEFAULT_CROP,
   INITIAL_DESIGN,
   approvalKey,
+  simplifyStroke,
 } from '../lib/booth/model';
 describe('paired photobooth composition', () => {
   it('invalidates approval when a crop, caption or shot order changes', () => {
@@ -93,5 +94,15 @@ describe('paired photobooth composition', () => {
         expect(r.y + r.h).toBeLessThan(height - 80);
       }
     }
+  });
+  it('normalizes and caps shared drawing points', () => {
+    const points = Array.from({ length: 200 }, (_, index) => ({
+      x: index / 100,
+      y: -index / 100,
+    }));
+    const result = simplifyStroke(points, 24);
+    expect(result).toHaveLength(24);
+    expect(result.every((point) => point.x >= 0 && point.x <= 1)).toBe(true);
+    expect(result.every((point) => point.y >= 0 && point.y <= 1)).toBe(true);
   });
 });

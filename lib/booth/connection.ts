@@ -7,6 +7,16 @@ export type BoothRoom = {
   expiresAt: string;
 };
 export type BoothMessage = { type: string; [key: string]: unknown };
+export type PhotoTransferStatus = {
+  photoId: string;
+  state: 'sending' | 'retrying' | 'sent' | 'receiving' | 'received' | 'failed';
+  attempt?: number;
+};
+export type MediaConnectionState =
+  | 'idle'
+  | 'connecting'
+  | 'connected'
+  | 'unavailable';
 export type BoothSnapshot = {
   shots: unknown[];
   design: Record<string, unknown>;
@@ -23,8 +33,10 @@ type Envelope = { sender: string; message: BoothMessage };
 
 function boothError(message: string) {
   const text = message.toLowerCase();
-  if (text.includes('expired')) return 'This booth invitation has expired. Create a new booth to continue.';
-  if (text.includes('closed')) return 'This booth has been closed. Create a new booth to continue.';
+  if (text.includes('expired'))
+    return 'This booth invitation has expired. Create a new booth to continue.';
+  if (text.includes('closed'))
+    return 'This booth has been closed. Create a new booth to continue.';
   if (text.includes('full')) return 'This booth already has two people.';
   if (text.includes('stale') || text.includes('revision'))
     return 'A newer edit was saved by your partner. The booth will refresh before you continue.';
@@ -35,17 +47,26 @@ function boothError(message: string) {
 
 async function roomRpc<T>(name: string, args: Record<string, unknown>) {
   const sb = getSupabase();
-  if (!sb) throw new Error('Online booths are not configured yet. You can use the solo booth.');
+  if (!sb)
+    throw new Error(
+      'Online booths are not configured yet. You can use the solo booth.',
+    );
   const { data, error } = await sb.rpc(name, args);
   if (error) throw new Error(boothError(error.message));
   return data as T;
 }
 
 export async function getBoothState(roomId: string) {
-  return roomRpc<BoothSavedState>('get_photobooth_state', { target_room: roomId });
+  return roomRpc<BoothSavedState>('get_photobooth_state', {
+    target_room: roomId,
+  });
 }
 
-export async function saveBoothState(roomId: string, expectedRevision: number, snapshot: BoothSnapshot) {
+export async function saveBoothState(
+  roomId: string,
+  expectedRevision: number,
+  snapshot: BoothSnapshot,
+) {
   return roomRpc<BoothSavedState>('save_photobooth_state', {
     target_room: roomId,
     expected_revision: expectedRevision,
@@ -107,6 +128,7 @@ export class BoothConnection {
     }
   >();
   private acknowledgements = new Map<string, () => void>();
+  private completedTransfers = new Map<string, number>();
   private makingOffer = false;
   private ice: RTCIceServer[] = [{ urls: 'stun:stun.cloudflare.com:3478' }];
   constructor(
@@ -116,6 +138,8 @@ export class BoothConnection {
     private onPresence: (online: boolean) => void,
     private onStream: (stream: MediaStream | null) => void,
     private onError: (message: string) => void,
+    private onTransfer: (status: PhotoTransferStatus) => void = () => {},
+    private onMediaState: (status: MediaConnectionState) => void = () => {},
   ) {
     this.channel = this.sb.channel(`photobooth:${room.id}`, {
       config: { private: true, broadcast: { ack: true, self: false } },
@@ -169,11 +193,14 @@ export class BoothConnection {
         this.online = false;
         this.onPresence(false);
         this.onStream(null);
+        this.onMediaState('unavailable');
         this.pc?.close();
         this.pc = null;
       }
       for (const [id, transfer] of this.chunks)
         if (Date.now() - transfer.at > 30000) this.chunks.delete(id);
+      for (const [id, at] of this.completedTransfers)
+        if (Date.now() - at > 120000) this.completedTransfers.delete(id);
     }, 2500);
   }
   async send(message: BoothMessage) {
@@ -204,10 +231,16 @@ export class BoothConnection {
     pc.ontrack = (event) =>
       this.onStream(event.streams[0] ?? new MediaStream([event.track]));
     pc.onconnectionstatechange = () => {
-      if (pc.connectionState === 'failed') {
+      if (pc.connectionState === 'connecting') this.onMediaState('connecting');
+      if (pc.connectionState === 'connected') this.onMediaState('connected');
+      if (
+        pc.connectionState === 'failed' ||
+        pc.connectionState === 'disconnected'
+      ) {
         this.onStream(null);
+        this.onMediaState('unavailable');
         this.onError(
-          'Live video could not connect on this network. Shared photo capture still works through the private room.',
+          'Live video is unavailable on this network. Use the private shared upload slots below; editing and messages remain connected.',
         );
       }
     };
@@ -217,6 +250,7 @@ export class BoothConnection {
     this.stream = stream;
     this.pc?.close();
     this.pc = null;
+    this.onMediaState('connecting');
     await this.send({ type: 'media-ready' });
     if (this.userId === this.room.hostId && this.remoteId) await this.offer();
   }
@@ -234,9 +268,17 @@ export class BoothConnection {
   async sendPhoto(meta: BoothMessage, src: string) {
     const id = crypto.randomUUID(),
       count = Math.ceil(src.length / 40000);
+    const photoId = String(
+      (meta.photo as { id?: unknown } | undefined)?.id ?? id,
+    );
     if (src.length > 6000000)
       throw new Error('That photo is too large. Please try a smaller image.');
     for (let attempt = 0; attempt < 3; attempt++) {
+      this.onTransfer({
+        photoId,
+        state: attempt ? 'retrying' : 'sending',
+        attempt: attempt + 1,
+      });
       let acked = false;
       this.acknowledgements.set(id, () => {
         acked = true;
@@ -254,8 +296,12 @@ export class BoothConnection {
       while (!acked && Date.now() < until && !this.disposed)
         await new Promise((resolve) => setTimeout(resolve, 100));
       this.acknowledgements.delete(id);
-      if (acked) return;
+      if (acked) {
+        this.onTransfer({ photoId, state: 'sent', attempt: attempt + 1 });
+        return;
+      }
     }
+    this.onTransfer({ photoId, state: 'failed', attempt: 3 });
     throw new Error(
       'Your photo was kept on this device, but delivery failed. Use Resend photos after reconnecting.',
     );
@@ -323,6 +369,20 @@ export class BoothConnection {
           data.length > 40000
         )
           return;
+        if (this.completedTransfers.has(id)) {
+          await this.send({ type: 'photo-ack', id });
+          return;
+        }
+        const photo = (
+          meta as { photo?: { id?: unknown; shotId?: unknown; side?: unknown } }
+        )?.photo;
+        if (
+          (meta as BoothMessage)?.type !== 'photo' ||
+          typeof photo?.id !== 'string' ||
+          typeof photo?.shotId !== 'string' ||
+          (photo?.side !== 'left' && photo?.side !== 'right')
+        )
+          return;
         let transfer = this.chunks.get(id);
         if (!transfer) {
           if (this.chunks.size >= 12) return;
@@ -333,6 +393,7 @@ export class BoothConnection {
             meta: meta as BoothMessage,
           };
           this.chunks.set(id, transfer);
+          this.onTransfer({ photoId: photo.id, state: 'receiving' });
         }
         if (transfer.count !== count) return;
         transfer.parts[part] = data;
@@ -345,7 +406,9 @@ export class BoothConnection {
           const src = transfer.parts.join('');
           this.chunks.delete(id);
           if (!/^data:image\/(jpeg|webp|png);base64,/.test(src)) return;
+          this.completedTransfers.set(id, Date.now());
           this.onMessage({ ...transfer.meta, type: 'photo', src });
+          this.onTransfer({ photoId: photo.id, state: 'received' });
           await this.send({ type: 'photo-ack', id });
         }
         return;
@@ -360,6 +423,7 @@ export class BoothConnection {
     this.pc?.close();
     this.chunks.clear();
     this.acknowledgements.clear();
+    this.completedTransfers.clear();
     void this.sb.removeChannel(this.channel);
   }
 }

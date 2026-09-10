@@ -149,6 +149,33 @@ export async function renderBooth(
     ctx.fillText(sticker.text.slice(0, 24), 0, 0);
     ctx.restore();
   }
+  for (const stroke of design.strokes ?? []) {
+    if (stroke.points.length < 2) continue;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(
+      stroke.points[0].x * size.width,
+      stroke.points[0].y * size.height,
+    );
+    for (let index = 1; index < stroke.points.length - 1; index++) {
+      const point = stroke.points[index],
+        next = stroke.points[index + 1];
+      ctx.quadraticCurveTo(
+        point.x * size.width,
+        point.y * size.height,
+        ((point.x + next.x) / 2) * size.width,
+        ((point.y + next.y) / 2) * size.height,
+      );
+    }
+    const last = stroke.points.at(-1)!;
+    ctx.lineTo(last.x * size.width, last.y * size.height);
+    ctx.strokeStyle = stroke.color;
+    ctx.lineWidth = Math.max(2, Math.min(28, stroke.width));
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+    ctx.restore();
+  }
   return canvas;
 }
 export async function canvasBlob(canvas: HTMLCanvasElement) {

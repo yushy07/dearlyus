@@ -17,6 +17,13 @@ export type Decoration = {
   size: number;
   rotation: number;
 };
+export type DrawPoint = { x: number; y: number };
+export type DrawingStroke = {
+  id: string;
+  color: string;
+  width: number;
+  points: DrawPoint[];
+};
 export type BoothDesign = {
   layout: 'strip' | 'grid';
   theme: 'ivory' | 'rose' | 'ink' | 'sage';
@@ -26,6 +33,7 @@ export type BoothDesign = {
   composition: 'split' | 'backdrop';
   backdrop?: 'linen' | 'rose' | 'sage' | 'midnight';
   stickers: Decoration[];
+  strokes: DrawingStroke[];
 };
 export const INITIAL_DESIGN: BoothDesign = {
   layout: 'strip',
@@ -35,6 +43,7 @@ export const INITIAL_DESIGN: BoothDesign = {
   date: '',
   composition: 'split',
   stickers: [],
+  strokes: [],
 };
 export const THEMES = {
   ivory: { paper: '#fff8eb', ink: '#493039' },
@@ -87,6 +96,20 @@ export function clampCrop(crop: Crop): Crop {
     zoom: Math.max(1, Math.min(2.5, Number(crop.zoom) || 1)),
     mirror: Boolean(crop.mirror),
   };
+}
+export function simplifyStroke(points: DrawPoint[], maxPoints = 72) {
+  const clean = points
+    .filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y))
+    .map((point) => ({
+      x: Math.max(0, Math.min(1, point.x)),
+      y: Math.max(0, Math.min(1, point.y)),
+    }));
+  if (clean.length <= maxPoints) return clean;
+  const step = (clean.length - 1) / (maxPoints - 1);
+  return Array.from(
+    { length: maxPoints },
+    (_, index) => clean[Math.round(index * step)],
+  );
 }
 export function frameRects(layout: BoothDesign['layout']) {
   return layout === 'strip'

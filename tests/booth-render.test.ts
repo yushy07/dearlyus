@@ -27,10 +27,18 @@ function fixture() {
     translate: vi.fn(),
     rotate: vi.fn(),
     drawImage: vi.fn(),
+    moveTo: vi.fn(),
+    lineTo: vi.fn(),
+    quadraticCurveTo: vi.fn(),
+    stroke: vi.fn(),
     fillStyle: '',
     font: '',
     textAlign: '',
     filter: '',
+    strokeStyle: '',
+    lineWidth: 0,
+    lineCap: '',
+    lineJoin: '',
   };
   const canvas = { width: 0, height: 0, getContext: () => ctx };
   vi.stubGlobal('document', {

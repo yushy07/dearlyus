@@ -11,7 +11,9 @@ import {
   Heart,
   Mic,
   MicOff,
+  PenLine,
   RotateCcw,
+  Trash2,
   Upload,
   Users,
   X,
@@ -27,6 +29,9 @@ import {
   BACKDROPS,
   POSES,
   type BoothDesign,
+  type DrawPoint,
+  simplifyStroke,
+  logicalSize,
 } from '@/lib/booth/model';
 import {
   renderBooth,
@@ -36,6 +41,7 @@ import {
 } from '@/lib/booth/render';
 import './studio.css';
 import { clearCutouts } from '@/lib/booth/cutout';
+import { pointsToBezierPath } from '@/lib/photobooth-bezier';
 export { pointsToBezierPath } from '@/lib/photobooth-bezier';
 
 const steps = ['Join', 'Get ready', 'Shoot', 'Decorate', 'Keep'];
@@ -67,6 +73,10 @@ export default function PhotoboothPage() {
     [notice, setNotice] = useState(''),
     [stickerId, setStickerId] = useState('');
   const [rendering, setRendering] = useState(false);
+  const [drawColor, setDrawColor] = useState('#8f5361'),
+    [drawWidth, setDrawWidth] = useState(8),
+    [drawing, setDrawing] = useState<DrawPoint[]>([]),
+    [eraser, setEraser] = useState(false);
   const previewUrl = useRef(''),
     remoteVideo = useRef<HTMLVideoElement | null>(null),
     uploadInput = useRef<HTMLInputElement | null>(null);
@@ -213,6 +223,62 @@ export default function PhotoboothPage() {
       ),
     });
   }
+  const drawSize = logicalSize(booth.design.layout);
+  const drawPath = (points: DrawPoint[]) =>
+    pointsToBezierPath(
+      points.map((point) => ({
+        x: point.x * drawSize.width,
+        y: point.y * drawSize.height,
+      })),
+    );
+  const pointerPoint = (event: React.PointerEvent<SVGSVGElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    return {
+      x: (event.clientX - rect.left) / rect.width,
+      y: (event.clientY - rect.top) / rect.height,
+    };
+  };
+  const beginDrawing = (event: React.PointerEvent<SVGSVGElement>) => {
+    if (!mayEdit) return;
+    const point = pointerPoint(event);
+    event.currentTarget.setPointerCapture(event.pointerId);
+    if (eraser) {
+      const strokes = booth.design.strokes.filter(
+        (stroke) =>
+          !stroke.points.some(
+            (candidate) =>
+              Math.hypot(candidate.x - point.x, candidate.y - point.y) < 0.035,
+          ),
+      );
+      if (strokes.length !== booth.design.strokes.length) patch({ strokes });
+      return;
+    }
+    setDrawing([point]);
+  };
+  const continueDrawing = (event: React.PointerEvent<SVGSVGElement>) => {
+    if (
+      !drawing.length ||
+      eraser ||
+      !event.currentTarget.hasPointerCapture(event.pointerId)
+    )
+      return;
+    const point = pointerPoint(event),
+      last = drawing.at(-1)!;
+    if (Math.hypot(last.x - point.x, last.y - point.y) > 0.003)
+      setDrawing((current) => [...current, point].slice(-240));
+  };
+  const finishDrawing = () => {
+    if (drawing.length > 1) {
+      const stroke = {
+        id: crypto.randomUUID(),
+        color: drawColor,
+        width: drawWidth,
+        points: simplifyStroke(drawing),
+      };
+      patch({ strokes: [...booth.design.strokes.slice(-31), stroke] });
+    }
+    setDrawing([]);
+  };
   return (
     <div className="photo-studio">
       <header className="studio-header">
@@ -331,7 +397,7 @@ export default function PhotoboothPage() {
                     )
                   )
                     return;
-                  booth.leave();
+                  void booth.leave();
                   setStep(0);
                 }}
               >
@@ -388,6 +454,16 @@ export default function PhotoboothPage() {
                           : 'CAMERA CHECK'}
                       </small>
                     </div>
+                    {!booth.solo && booth.mediaState === 'unavailable' && (
+                      <div className="studio-fallback" role="status">
+                        <strong>Your private room is still connected.</strong>
+                        <span>
+                          Live video could not cross this network. Each person
+                          can upload four photos below; countdowns, edits, and
+                          approvals continue together.
+                        </span>
+                      </div>
+                    )}
                     <div
                       className={`studio-camera ${booth.solo ? 'solo' : ''} ${grid ? 'with-grid' : ''}`}
                     >
@@ -612,6 +688,19 @@ export default function PhotoboothPage() {
                             completeShot(booth.shots[i], booth.solo)
                               ? 'Paired & ready'
                               : 'Waiting for photo'}
+                            {booth.shots[i]?.[booth.side] &&
+                              booth.transfers[
+                                booth.shots[i][booth.side]!.id
+                              ] && (
+                                <em>
+                                  {' · '}
+                                  {
+                                    booth.transfers[
+                                      booth.shots[i][booth.side]!.id
+                                    ].state
+                                  }
+                                </em>
+                              )}
                           </small>
                         </button>
                       ))}
@@ -992,6 +1081,102 @@ export default function PhotoboothPage() {
                           <RotateCcw size={14} /> Undo design change
                         </button>
                       )}
+                    </fieldset>
+                    <fieldset disabled={!mayEdit}>
+                      <legend>06 · Draw together</legend>
+                      <p>
+                        Add a handwritten note or tiny doodle directly on the
+                        finished print.
+                      </p>
+                      <div className="studio-drawing-tools">
+                        {[
+                          '#493039',
+                          '#8f5361',
+                          '#c38278',
+                          '#66715e',
+                          '#fff8eb',
+                        ].map((color) => (
+                          <button
+                            key={color}
+                            className="studio-drawing-color"
+                            style={{ background: color }}
+                            aria-label={`Use ${color} ink`}
+                            aria-pressed={!eraser && drawColor === color}
+                            onClick={() => {
+                              setDrawColor(color);
+                              setEraser(false);
+                            }}
+                          />
+                        ))}
+                        <label>
+                          Pen size
+                          <input
+                            type="range"
+                            min="3"
+                            max="22"
+                            value={drawWidth}
+                            onChange={(event) =>
+                              setDrawWidth(Number(event.target.value))
+                            }
+                          />
+                        </label>
+                        <button
+                          aria-pressed={!eraser}
+                          onClick={() => setEraser(false)}
+                        >
+                          <PenLine size={14} /> Pen
+                        </button>
+                        <button
+                          aria-pressed={eraser}
+                          onClick={() => setEraser(true)}
+                        >
+                          Eraser
+                        </button>
+                        <button
+                          disabled={!booth.design.strokes.length}
+                          onClick={() =>
+                            patch({
+                              strokes: booth.design.strokes.slice(0, -1),
+                            })
+                          }
+                        >
+                          <RotateCcw size={14} /> Undo stroke
+                        </button>
+                        <button
+                          disabled={!booth.design.strokes.length}
+                          onClick={() => patch({ strokes: [] })}
+                        >
+                          <Trash2 size={14} /> Clear drawing
+                        </button>
+                      </div>
+                      <div
+                        className={`studio-drawing-paper ${booth.design.layout}`}
+                        style={{ background: THEMES[booth.design.theme].paper }}
+                      >
+                        {preview && (
+                          <img
+                            src={preview}
+                            alt="Your photobooth print drawing canvas"
+                          />
+                        )}
+                        <svg
+                          viewBox={`0 0 ${drawSize.width} ${drawSize.height}`}
+                          role="img"
+                          aria-label="Draw on your photobooth print"
+                          onPointerDown={beginDrawing}
+                          onPointerMove={continueDrawing}
+                          onPointerUp={finishDrawing}
+                          onPointerCancel={() => setDrawing([])}
+                        >
+                          {drawing.length > 1 && (
+                            <path
+                              d={drawPath(drawing)}
+                              stroke={drawColor}
+                              strokeWidth={drawWidth}
+                            />
+                          )}
+                        </svg>
+                      </div>
                     </fieldset>
                     <button
                       className="studio-primary"
