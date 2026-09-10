@@ -685,7 +685,7 @@
 }
 .studio-drawing-paper {
   position: relative;
-  width: min(100%, 360px);
+  width: min(100%, 220px);
   margin: 20px auto 0;
   overflow: hidden;
   border: 1px solid #cdb5a7;
