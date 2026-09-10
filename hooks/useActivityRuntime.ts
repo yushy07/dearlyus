@@ -41,7 +41,12 @@ export function useActivityRuntime<
     enabled = true,
   } = options;
 
-  const sessionId = rawSessionId || 'local-session';
+  const hasRealRoom = Boolean(
+    roomId && roomId !== 'local' && roomId !== 'mock-room',
+  );
+  const sessionId =
+    rawSessionId ||
+    (hasRealRoom ? `room-${roomId}-${activityType}` : 'local-session');
   // Activity setup is intentionally captured once. Pages pass inline option objects,
   // and treating those as a runtime dependency would reset a live local session on
   // every render.
@@ -64,10 +69,12 @@ export function useActivityRuntime<
   const transport = useMemo<ActivityTransport<TSnapshot>>(() => {
     if (customTransport) return customTransport;
 
+    const isMockExplicit = transportMode === 'mock';
     const useMock =
-      transportMode === 'mock' ||
-      (transportMode === 'auto' &&
-        (!isSupabaseConfigured() ||
+      isMockExplicit ||
+      !isSupabaseConfigured() ||
+      (!hasRealRoom &&
+        (transportMode === 'auto' ||
           sessionId.startsWith('mock-') ||
           sessionId === 'local-session'));
 
@@ -83,7 +90,15 @@ export function useActivityRuntime<
 
     const sbTransport = new SupabaseActivityTransport(roomId || '');
     return sbTransport;
-  }, [customTransport, transportMode, sessionId, roomId, userId, activityType]);
+  }, [
+    customTransport,
+    transportMode,
+    sessionId,
+    roomId,
+    userId,
+    activityType,
+    hasRealRoom,
+  ]);
 
   const runtimeRef = useRef<ActivityRuntime<TSnapshot> | null>(null);
 

@@ -154,6 +154,8 @@ export const HOST_DURABLE_EVENTS = [
   'host_prompt_change',
   'host_speaker_switch',
   'host_commentary',
+  'host_steer_signal',
+  'host_tone_change',
   'host_finish',
 ] as const;
 
@@ -215,6 +217,22 @@ export const hostActivityDefinition: ActivityDefinition<
         return {
           ...snapshot,
           commentary: [...snapshot.commentary, String(payload.text || '')],
+        };
+      }
+      case 'host_tone_change': {
+        const payload = (event.payload as Record<string, unknown>) || {};
+        return {
+          ...snapshot,
+          theme: String(payload.theme || snapshot.theme),
+        };
+      }
+      case 'host_steer_signal': {
+        const payload = (event.payload as Record<string, unknown>) || {};
+        const signal = String(payload.signal || '');
+        const sender = String(payload.senderName || 'Partner');
+        return {
+          ...snapshot,
+          commentary: [...snapshot.commentary, `[Signal from ${sender}]: Steer ${signal}`],
         };
       }
       case 'host_finish':
@@ -379,13 +397,19 @@ export interface CourtSnapshot {
   plea: string;
   verdict: string | null;
   penalty: string | null;
-  stage: 'filing' | 'arguments' | 'verdict' | 'closed';
+  consentA: boolean;
+  consentB: boolean;
+  objections: string[];
+  stage: 'filing' | 'consent' | 'arguments' | 'verdict' | 'closed';
   completed: boolean;
 }
 
 export const COURT_DURABLE_EVENTS = [
+  'court_case_change',
+  'court_consent',
   'court_plea',
   'court_argument',
+  'court_objection',
   'court_verdict',
   'court_close',
 ] as const;
@@ -415,6 +439,9 @@ export const courtActivityDefinition: ActivityDefinition<
       plea: '',
       verdict: null,
       penalty: null,
+      consentA: false,
+      consentB: false,
+      objections: [],
       stage: 'filing',
       completed: false,
     };
@@ -432,6 +459,38 @@ export const courtActivityDefinition: ActivityDefinition<
 
   reduce(snapshot: CourtSnapshot, event): CourtSnapshot {
     switch (event.type) {
+      case 'court_case_change': {
+        const payload = (event.payload as Record<string, unknown>) || {};
+        return {
+          ...snapshot,
+          caseTitle: String(payload.caseTitle || snapshot.caseTitle),
+          plaintiff: String(payload.plaintiff || snapshot.plaintiff),
+          defendant: String(payload.defendant || snapshot.defendant),
+          stage: 'consent',
+          consentA: false,
+          consentB: false,
+        };
+      }
+      case 'court_consent': {
+        const payload = (event.payload as Record<string, unknown>) || {};
+        const partner = String(payload.partner || 'A');
+        const nextA = partner === 'A' ? true : snapshot.consentA;
+        const nextB = partner === 'B' ? true : snapshot.consentB;
+        return {
+          ...snapshot,
+          consentA: nextA,
+          consentB: nextB,
+          stage: nextA && nextB ? 'arguments' : 'consent',
+        };
+      }
+      case 'court_objection': {
+        const payload = (event.payload as Record<string, unknown>) || {};
+        const text = String(payload.objection || 'Objection: Too cute!');
+        return {
+          ...snapshot,
+          objections: [...snapshot.objections, text],
+        };
+      }
       case 'court_plea': {
         const payload = (event.payload as Record<string, unknown>) || {};
         return {

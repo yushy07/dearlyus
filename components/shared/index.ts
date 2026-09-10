@@ -11,3 +11,4 @@ export * from './ReactionBursts';
 export * from './CupidotActivityGuidance';
 export * from './TogetherPulse';
 export * from './ConnectionRibbon';
+export * from './ActivityShell';
