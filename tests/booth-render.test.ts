@@ -5,7 +5,7 @@ import {
   BACKDROPS,
   type Shot,
 } from '../lib/booth/model';
-import { renderBooth } from '../lib/booth/render';
+import { printSheet, renderBooth } from '../lib/booth/render';
 import { personCutout } from '../lib/booth/cutout';
 
 vi.mock('../lib/booth/cutout', () => ({ personCutout: vi.fn() }));
@@ -125,5 +125,42 @@ describe('shared-background photo rendering', () => {
     await expect(
       renderBooth(shots, { ...INITIAL_DESIGN, composition: 'backdrop' }, false),
     ).rejects.toThrow('Portrait unavailable');
+  });
+
+  it('renders synchronized drawing strokes into the export', async () => {
+    const { ctx, shots } = fixture();
+    await renderBooth(
+      shots,
+      {
+        ...INITIAL_DESIGN,
+        strokes: [
+          {
+            id: 'note',
+            color: '#8f5361',
+            width: 8,
+            points: [
+              { x: 0.1, y: 0.2 },
+              { x: 0.3, y: 0.4 },
+              { x: 0.5, y: 0.3 },
+            ],
+          },
+        ],
+      },
+      false,
+    );
+    expect(ctx.quadraticCurveTo).toHaveBeenCalled();
+    expect(ctx.stroke).toHaveBeenCalledOnce();
+    expect(ctx.strokeStyle).toBe('#8f5361');
+  });
+
+  it('creates an exact 4 by 6 print canvas for either layout', async () => {
+    const { canvas } = fixture();
+    for (const layout of ['strip', 'grid'] as const) {
+      const sheet = await printSheet(
+        canvas as unknown as HTMLCanvasElement,
+        layout,
+      );
+      expect([sheet.width, sheet.height]).toEqual([1200, 1800]);
+    }
   });
 });

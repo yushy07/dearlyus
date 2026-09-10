@@ -106,5 +106,6 @@ export function useKeepsakeWriter() {
     saving,
     deleting,
     error,
+    canSaveKeepsake: Boolean(space?.id),
   };
 }

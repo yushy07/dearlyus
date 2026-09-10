@@ -59,7 +59,7 @@ const STICKERS = [
 ];
 export default function PhotoboothPage() {
   const booth = useBoothStudio();
-  const { saveKeepsake, saving } = useKeepsakeWriter();
+  const { saveKeepsake, saving, canSaveKeepsake } = useKeepsakeWriter();
   const [step, setStep] = useState(0),
     [code, setCode] = useState(''),
     [timer, setTimer] = useState(5);
@@ -87,6 +87,9 @@ export default function PhotoboothPage() {
   const approved =
     booth.solo ||
     (booth.approved.includes('left') && booth.approved.includes('right'));
+  const syncing = Object.values(booth.transfers).some((transfer) =>
+    ['sending', 'retrying', 'receiving'].includes(transfer.state),
+  );
   const myPhoto = booth.shots[selected]?.[booth.side];
   const sticker = booth.design.stickers.find((s) => s.id === stickerId);
   useEffect(() => {
@@ -1234,6 +1237,7 @@ export default function PhotoboothPage() {
                         Boolean(renderError) ||
                         !allDone ||
                         !approved ||
+                        syncing ||
                         exporting
                       }
                       onClick={() => void exportPhoto()}
@@ -1248,24 +1252,33 @@ export default function PhotoboothPage() {
                         rendering ||
                         Boolean(renderError) ||
                         !approved ||
+                        syncing ||
                         exporting
                       }
                       onClick={() => void exportPhoto(true)}
                     >
                       Download 4 × 6 print sheet
                     </button>
-                    <button
-                      disabled={
-                        rendering ||
-                        Boolean(renderError) ||
-                        !approved ||
-                        exporting ||
-                        saving
-                      }
-                      onClick={() => void exportPhoto(false, true)}
-                    >
-                      Save to Our Space
-                    </button>
+                    {canSaveKeepsake ? (
+                      <button
+                        disabled={
+                          rendering ||
+                          Boolean(renderError) ||
+                          !approved ||
+                          syncing ||
+                          exporting ||
+                          saving
+                        }
+                        onClick={() => void exportPhoto(false, true)}
+                      >
+                        Save to Our Space
+                      </button>
+                    ) : (
+                      <p className="studio-small">
+                        Direct download is ready. Connect an Our Space later if
+                        you also want a private shared copy.
+                      </p>
+                    )}
                     <p className="studio-small">
                       PNG ·{' '}
                       {booth.design.layout === 'strip'

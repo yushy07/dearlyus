@@ -59,6 +59,7 @@ export function useBoothStudio() {
     saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null),
     saveQueue = useRef<Promise<void>>(Promise.resolve()),
     touchTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const restoredCrops = useRef(new Map<string, Crop>());
   const media = useRef<MediaStream | null>(null),
     generation = useRef(0),
     cameraGeneration = useRef(0);
@@ -136,6 +137,23 @@ export function useBoothStudio() {
           .filter((shot): shot is Shot => Boolean(shot))
           .slice(0, 4)
       : [];
+    restoredCrops.current.clear();
+    if (Array.isArray(value.shots))
+      for (const shot of value.shots) {
+        if (!shot || typeof shot !== 'object') continue;
+        for (const side of ['left', 'right'] as const) {
+          const photo = (shot as Record<string, unknown>)[side];
+          if (
+            photo &&
+            typeof photo === 'object' &&
+            typeof (photo as { id?: unknown }).id === 'string'
+          )
+            restoredCrops.current.set(
+              (photo as { id: string }).id,
+              clampCrop((photo as { crop?: Crop }).crop ?? DEFAULT_CROP),
+            );
+        }
+      }
     const nextDesign = {
       ...INITIAL_DESIGN,
       ...(value.design && typeof value.design === 'object' ? value.design : {}),
@@ -776,7 +794,9 @@ export function useBoothStudio() {
           ...p,
           side: other,
           src: String(m.src),
-          crop: clampCrop(p.crop ?? DEFAULT_CROP),
+          crop:
+            restoredCrops.current.get(p.id) ??
+            clampCrop(p.crop ?? DEFAULT_CROP),
         }),
       );
     } else if (m.type === 'crop') {
