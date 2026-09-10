@@ -2,13 +2,23 @@
 
 import { useState, type PointerEvent, type CSSProperties } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight, Search, Heart, Sparkles } from 'lucide-react';
+import { ArrowUpRight, Search, Heart, Sparkles, Clock, Camera, Sparkle } from 'lucide-react';
 import { Navbar } from '@/components/shared';
 import { useCoupleProfile } from '@/lib/couple';
 import './activity-collection.css';
 import { ActivityIllustration } from './ActivityIllustration';
 
 type Category = 'all' | 'play' | 'talk' | 'make' | 'distance';
+type FilterTag =
+  | 'all'
+  | '10m'
+  | 'no-camera'
+  | 'low-energy'
+  | 'make-something'
+  | 'competitive'
+  | 'deep-talk'
+  | 'works-solo';
+
 const categories: { id: Category; label: string }[] = [
   { id: 'all', label: 'All experiences' },
   { id: 'play', label: 'A little competition' },
@@ -16,19 +26,43 @@ const categories: { id: Category; label: string }[] = [
   { id: 'make', label: 'Make a memory' },
   { id: 'distance', label: 'Across the miles' },
 ];
-const activities: {
+
+const FILTER_TAGS: { id: FilterTag; label: string }[] = [
+  { id: 'all', label: 'All Moods' },
+  { id: '10m', label: '⏱️ Under 15m' },
+  { id: 'no-camera', label: '🙈 No Camera' },
+  { id: 'low-energy', label: '☕ Low Energy' },
+  { id: 'make-something', label: '🎨 Make Something' },
+  { id: 'competitive', label: '⚡ Competitive' },
+  { id: 'deep-talk', label: '🕯️ Deep Talk' },
+  { id: 'works-solo', label: '👤 Works Solo' },
+];
+
+interface ActivityItem {
   href: string;
   title: string;
   description: string;
   category: Exclude<Category, 'all'>;
   motif: string;
-}[] = [
+  duration: string;
+  camera: 'none' | 'optional' | 'required';
+  energy: 'low' | 'medium' | 'high';
+  keepsake: string;
+  tags: FilterTag[];
+}
+
+const activities: ActivityItem[] = [
   {
     href: '/photobooth',
     title: 'The Photobooth',
-    description: 'A shared countdown. A strip of little moments to keep.',
+    description: 'A shared countdown. A vintage 4-cut photostrip of little moments to keep.',
     category: 'make',
     motif: 'photo',
+    duration: '10m',
+    camera: 'required',
+    energy: 'medium',
+    keepsake: '4-Cut Photostrip',
+    tags: ['10m', 'make-something'],
   },
   {
     href: '/quiz',
@@ -36,160 +70,302 @@ const activities: {
     description: 'You know their coffee order. What about their secret dream?',
     category: 'talk',
     motif: 'quiz',
+    duration: '15m',
+    camera: 'optional',
+    energy: 'medium',
+    keepsake: 'Quiz Receipt',
+    tags: ['deep-talk', 'competitive', 'works-solo'],
   },
   {
     href: '/letter',
     title: 'Letters to the Future',
-    description: 'A little of today, sealed for the two of you tomorrow.',
+    description: 'A little of today, sealed in wax and voice audio for the two of you tomorrow.',
     category: 'make',
     motif: 'letter',
+    duration: '20m',
+    camera: 'none',
+    energy: 'low',
+    keepsake: 'Wax-Sealed Letter',
+    tags: ['no-camera', 'low-energy', 'make-something', 'deep-talk', 'works-solo'],
   },
   {
     href: '/dare',
     title: 'Truth or Dare',
-    description: 'A brave answer or a playful dare. Your move.',
+    description: 'A brave answer, playful confession, or camera dare. Your move.',
     category: 'play',
     motif: 'dice',
+    duration: '15m',
+    camera: 'optional',
+    energy: 'high',
+    keepsake: 'Challenge Passport',
+    tags: ['competitive'],
   },
   {
     href: '/cards',
     title: 'Honest Cards',
-    description: 'Make room for the conversations you rarely get to have.',
+    description: 'Make room for the vulnerable, intimate conversations you rarely get to have.',
     category: 'talk',
     motif: 'cards',
+    duration: '20m',
+    camera: 'none',
+    energy: 'low',
+    keepsake: 'Reflection Keepsake',
+    tags: ['no-camera', 'low-energy', 'deep-talk', 'works-solo'],
   },
   {
     href: '/host',
     title: 'Date Host',
-    description: 'Let a friendly third wheel get the conversation going.',
+    description: 'A three-act structured evening with tone check-in, dilemmas, and thermal receipt.',
     category: 'talk',
     motif: 'host',
+    duration: '25m',
+    camera: 'optional',
+    energy: 'medium',
+    keepsake: 'Date Receipt',
+    tags: ['deep-talk', 'works-solo'],
   },
   {
     href: '/arcade',
     title: 'The Arcade',
-    description: 'Tiny games. Big rematches. One very smug winner.',
+    description: '60 FPS physics games. High score rematches. One very smug winner.',
     category: 'play',
     motif: 'arcade',
+    duration: '15m',
+    camera: 'none',
+    energy: 'high',
+    keepsake: 'Score Certificate',
+    tags: ['10m', 'no-camera', 'competitive', 'works-solo'],
   },
   {
     href: '/scrapbook',
     title: 'Digital Scrapbook',
-    description: 'Tape down your photos and write around the edges.',
+    description: 'Tape down your polaroids, concert tickets, and washi notes together.',
     category: 'make',
     motif: 'scrapbook',
+    duration: '20m',
+    camera: 'none',
+    energy: 'low',
+    keepsake: 'Corkboard Collage',
+    tags: ['no-camera', 'low-energy', 'make-something', 'works-solo'],
   },
   {
     href: '/match',
     title: 'Love Match',
-    description: 'Find the unexpected places your personalities meet.',
+    description: 'Personality constellation mapping where your instincts meet and complement.',
     category: 'talk',
     motif: 'match',
+    duration: '10m',
+    camera: 'none',
+    energy: 'low',
+    keepsake: 'Constellation Map',
+    tags: ['10m', 'no-camera', 'low-energy', 'deep-talk', 'works-solo'],
   },
   {
     href: '/iq',
     title: 'IQ Duel',
-    description: 'The same questions. Two wonderfully competitive minds.',
+    description: 'Simultaneous puzzles across logic, sequences, and spatial thinking.',
     category: 'play',
     motif: 'iq',
+    duration: '15m',
+    camera: 'none',
+    energy: 'high',
+    keepsake: 'Synergy Certificate',
+    tags: ['no-camera', 'competitive', 'works-solo'],
   },
   {
     href: '/riddle',
     title: 'Riddle Night',
-    description: 'Put your heads together and follow the clues.',
+    description: 'Cooperative mystery envelope with connected clues, hint ladder, and quest scroll.',
     category: 'play',
     motif: 'riddle',
+    duration: '15m',
+    camera: 'none',
+    energy: 'medium',
+    keepsake: 'Quest Scroll',
+    tags: ['no-camera', 'make-something', 'works-solo'],
   },
   {
     href: '/lab',
     title: 'The Lab',
-    description: 'A little science, a little teamwork, a new challenge.',
+    description: 'Shared co-working & study room with dual desks, presence lamps, and local audio.',
     category: 'play',
     motif: 'lab',
+    duration: '25m',
+    camera: 'none',
+    energy: 'low',
+    keepsake: 'Study Certificate',
+    tags: ['no-camera', 'low-energy', 'works-solo'],
   },
   {
     href: '/debate',
     title: 'The Great Debate',
-    description: 'Pick a side and make your most convincing case.',
+    description: '60s speech timer, evidence cards, Cupidot verdict, and peace accord parchment.',
     category: 'talk',
     motif: 'debate',
+    duration: '15m',
+    camera: 'optional',
+    energy: 'high',
+    keepsake: 'Peace Accord',
+    tags: ['competitive', 'works-solo'],
   },
   {
     href: '/court',
     title: 'Couples Court',
-    description: 'Bring your most harmless dispute before the court.',
+    description: 'Bring your most harmless domestic dispute before the judge with house rule keepsakes.',
     category: 'play',
     motif: 'court',
+    duration: '15m',
+    camera: 'optional',
+    energy: 'high',
+    keepsake: 'House Rule Gavel',
+    tags: ['competitive', 'works-solo'],
   },
   {
     href: '/draw',
     title: 'Draw Together',
-    description: 'Two canvases and one prompt. Artistic talent optional.',
+    description: 'Two canvases, one synchronized paper, prompt cycler, and live partner cursor.',
     category: 'make',
     motif: 'draw',
+    duration: '15m',
+    camera: 'none',
+    energy: 'low',
+    keepsake: 'Shared Drawing',
+    tags: ['no-camera', 'low-energy', 'make-something', 'works-solo'],
   },
   {
     href: '/hunt',
     title: 'Snap Hunt',
-    description: 'Find it, photograph it, and race back with your discovery.',
+    description: '60s sprint. Find the item in your room, photograph it, and reveal proof together.',
     category: 'play',
     motif: 'hunt',
+    duration: '10m',
+    camera: 'required',
+    energy: 'high',
+    keepsake: 'Discovery Card',
+    tags: ['10m', 'competitive'],
   },
   {
     href: '/future',
     title: 'Our Future',
-    description: 'Give your someday a place to start taking shape.',
+    description: '3-year collaborative vision board across home, travel, traditions, and closing the distance.',
     category: 'make',
     motif: 'future',
+    duration: '20m',
+    camera: 'none',
+    energy: 'low',
+    keepsake: 'Future Blueprint',
+    tags: ['no-camera', 'low-energy', 'make-something', 'deep-talk', 'works-solo'],
   },
   {
     href: '/birthday',
     title: 'Birthday Gift',
-    description: 'Make a small surprise that feels entirely like them.',
+    description: 'Surprise parcel workshop with interactive candle blowout, voucher, and heart QR.',
     category: 'make',
     motif: 'birthday',
+    duration: '15m',
+    camera: 'none',
+    energy: 'low',
+    keepsake: 'Birthday Parcel',
+    tags: ['no-camera', 'low-energy', 'make-something', 'works-solo'],
   },
   {
     href: '/fashion',
     title: 'Fashion Show',
-    description: 'One brief. Two looks. Time for your runway moment.',
+    description: 'Paper-doll styling studio with catwalk runway, peer rating, and editorial keepsake.',
     category: 'play',
     motif: 'fashion',
+    duration: '15m',
+    camera: 'optional',
+    energy: 'medium',
+    keepsake: 'Runway Programme',
+    tags: ['make-something', 'competitive', 'works-solo'],
   },
   {
     href: '/shirts',
     title: 'Matching Shirts',
-    description: 'Create something that says we belong together.',
+    description: 'Paired mini studio with side-by-side tees, linked motifs, and dual transparent export.',
     category: 'make',
     motif: 'shirts',
+    duration: '15m',
+    camera: 'none',
+    energy: 'low',
+    keepsake: 'Twin Tee Mockup',
+    tags: ['no-camera', 'low-energy', 'make-something', 'works-solo'],
   },
   {
     href: '/forecast',
     title: 'Love Forecast',
-    description: 'A little romantic weather report for your day.',
+    description: 'Daily emotional barometer with transparent care prescription and story card export.',
     category: 'distance',
     motif: 'forecast',
+    duration: '10m',
+    camera: 'none',
+    energy: 'low',
+    keepsake: 'Story Card (PNG)',
+    tags: ['10m', 'no-camera', 'low-energy', 'works-solo'],
   },
   {
     href: '/timezone',
     title: 'Timezone & Reunion',
-    description: 'Find your shared hours and count down to the next hello.',
+    description: 'Dual IANA clocks, 24-hr Golden Window ribbon, 3D orbit globe, and airport countdown.',
     category: 'distance',
     motif: 'timezone',
+    duration: '10m',
+    camera: 'none',
+    energy: 'low',
+    keepsake: 'Reunion Milestone',
+    tags: ['10m', 'no-camera', 'low-energy', 'works-solo'],
   },
   {
     href: '/bucket',
     title: '100 Dates Bucket List',
-    description: 'Collect firsts, small adventures, and someday plans.',
+    description: '100 curated date tickets with gold foil scratch-off and memory passport tracking.',
     category: 'distance',
     motif: 'bucket',
+    duration: '15m',
+    camera: 'none',
+    energy: 'low',
+    keepsake: 'Bucket Passport',
+    tags: ['no-camera', 'low-energy', 'make-something', 'works-solo'],
   },
   {
     href: '/date',
     title: 'Date Night Planner',
-    description: 'Turn what should we do into a lovely little evening.',
+    description: 'Site-wide orchestration layer with preference check, curated arcs, and thermal receipt.',
     category: 'distance',
     motif: 'date',
+    duration: '20m',
+    camera: 'optional',
+    energy: 'medium',
+    keepsake: 'Itinerary Receipt',
+    tags: ['deep-talk', 'works-solo'],
+  },
+];
+
+const CURATED_FLIGHTS = [
+  {
+    title: '🌙 Quiet Night In',
+    subtitle: 'Slow, comforting intimacy with dim lamps',
+    steps: ['Honest Cards (20m)', 'Draw Together (15m)', 'Letters to Tomorrow (20m)'],
+    path: '/date',
+  },
+  {
+    title: '⚡ Chaotic Rematch',
+    subtitle: 'Laughter, arcade reflexes, and silly poses',
+    steps: ['The Arcade (15m)', 'Couples Court (15m)', 'Photobooth Strip (10m)'],
+    path: '/date',
+  },
+  {
+    title: '☕ Reconnect After a Hard Week',
+    subtitle: 'Zero pressure, soft check-ins, and mutual grounding',
+    steps: ['Love Forecast (5m)', 'Timezone Horizon (10m)', 'The Lab Co-Work (25m)'],
+    path: '/date',
+  },
+  {
+    title: '🎨 Make a Keepsake',
+    subtitle: 'Co-design something tangible to print and cherish',
+    steps: ['Matching Shirts (15m)', 'Digital Scrapbook (20m)', 'Photobooth (10m)'],
+    path: '/date',
   },
 ];
 
@@ -209,10 +385,12 @@ function tilt(event: PointerEvent<HTMLAnchorElement>) {
     `${((event.clientX - rect.left) / rect.width - 0.5) * 6}deg`,
   );
 }
+
 function resetTilt(event: PointerEvent<HTMLAnchorElement>) {
   event.currentTarget.style.setProperty('--tilt-x', '0deg');
   event.currentTarget.style.setProperty('--tilt-y', '0deg');
 }
+
 function ObjectArt({ motif }: { motif: string }) {
   if (!['photo', 'dice', 'letter', 'cards'].includes(motif))
     return <ActivityIllustration activity={motif} />;
@@ -257,18 +435,23 @@ function ObjectArt({ motif }: { motif: string }) {
 export default function ActivityPage() {
   const { partnerA, partnerB } = useCoupleProfile();
   const [category, setCategory] = useState<Category>('all');
+  const [selectedTag, setSelectedTag] = useState<FilterTag>('all');
   const [query, setQuery] = useState('');
-  const visible = activities.filter(
-    (item) =>
-      (category === 'all' || item.category === category) &&
-      `${item.title} ${item.description}`
-        .toLowerCase()
-        .includes(query.trim().toLowerCase()),
-  );
+
+  const visible = activities.filter((item) => {
+    const matchesCategory = category === 'all' || item.category === category;
+    const matchesTag = selectedTag === 'all' || item.tags.includes(selectedTag);
+    const matchesQuery = `${item.title} ${item.description} ${item.keepsake}`
+      .toLowerCase()
+      .includes(query.trim().toLowerCase());
+    return matchesCategory && matchesTag && matchesQuery;
+  });
+
   return (
     <div className="activity-collection">
       <Navbar />
       <main className="collection-main">
+        {/* Hero Section */}
         <section className="collection-hero" aria-labelledby="collection-title">
           <div className="collection-intro">
             <span className="collection-kicker">
@@ -343,6 +526,57 @@ export default function ActivityPage() {
             </span>
           </div>
         </section>
+
+        {/* Curated Date Night Flight Sequences */}
+        <section style={{ margin: '0 0 54px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+            <span className="badge hot" style={{ fontSize: '11px' }}>
+              Curated Date Flights
+            </span>
+            <span style={{ fontSize: '12px', color: '#86636a', fontFamily: 'var(--font-mono)' }}>
+              3-ACT EVENING ARCS
+            </span>
+          </div>
+          <h2 style={{ fontSize: '26px', fontWeight: 800, color: '#493039', marginBottom: '18px' }}>
+            Don&apos;t know where to begin? Try a curated arc.
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
+            {CURATED_FLIGHTS.map((flight, idx) => (
+              <Link
+                key={idx}
+                href={flight.path}
+                style={{
+                  textDecoration: 'none',
+                  background: 'var(--paper-raised)',
+                  border: '1px solid var(--line)',
+                  borderRadius: '16px',
+                  padding: '20px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px',
+                  boxShadow: 'var(--shadow-sm)',
+                  transition: 'transform 0.15s ease',
+                }}
+              >
+                <h3 style={{ fontSize: '16.5px', fontWeight: 800, color: '#493039', margin: 0 }}>
+                  {flight.title}
+                </h3>
+                <p style={{ fontSize: '13px', color: '#796369', margin: 0, minHeight: '34px' }}>
+                  {flight.subtitle}
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', borderTop: '1px solid var(--line)', paddingTop: '10px' }}>
+                  {flight.steps.map((s, sIdx) => (
+                    <div key={sIdx} style={{ fontSize: '12px', color: '#945663', fontWeight: 600 }}>
+                      Act {sIdx + 1}: {s}
+                    </div>
+                  ))}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        {/* Main Catalogue Section */}
         <section
           id="date-collection"
           className="collection-catalogue"
@@ -366,6 +600,8 @@ export default function ActivityPage() {
               />
             </label>
           </div>
+
+          {/* Primary Category Buttons */}
           <div className="collection-filters" aria-label="Filter activities">
             {categories.map((cat) => (
               <button
@@ -385,11 +621,34 @@ export default function ActivityPage() {
               </button>
             ))}
           </div>
+
+          {/* Secondary Mood & Attribute Filter Pills */}
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', margin: '14px 0 20px' }}>
+            {FILTER_TAGS.map((tag) => (
+              <button
+                type="button"
+                key={tag.id}
+                onClick={() => setSelectedTag(tag.id)}
+                className={`btn ${selectedTag === tag.id ? 'btn-primary' : 'btn-ghost'}`}
+                style={{
+                  padding: '5px 12px',
+                  fontSize: '12px',
+                  borderRadius: '20px',
+                  border: selectedTag === tag.id ? 'none' : '1px solid var(--line)',
+                }}
+              >
+                {tag.label}
+              </button>
+            ))}
+          </div>
+
           <div className="collection-results" role="status">
             {visible.length}{' '}
             {visible.length === 1 ? 'experience' : 'experiences'} to share{' '}
             <span>Made for two, wherever you are.</span>
           </div>
+
+          {/* Activities Cards Grid */}
           <div className="collection-grid">
             {visible.map((item) => (
               <Link
@@ -413,15 +672,24 @@ export default function ActivityPage() {
                   </span>
                 </div>
                 <div className="collection-card-copy">
+                  <div style={{ display: 'flex', gap: '6px', marginBottom: '6px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', background: 'rgba(0,0,0,0.05)', padding: '2px 6px', borderRadius: '4px', color: '#796369' }}>
+                      ⏱️ {item.duration}
+                    </span>
+                    <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', background: 'rgba(0,0,0,0.05)', padding: '2px 6px', borderRadius: '4px', color: '#796369' }}>
+                      🎁 {item.keepsake}
+                    </span>
+                  </div>
                   <h3>{item.title}</h3>
                   <p>{item.description}</p>
                   <span className="collection-card-cta">
-                    Let's do this <ArrowUpRight size={17} />
+                    Let&apos;s do this <ArrowUpRight size={17} />
                   </span>
                 </div>
               </Link>
             ))}
           </div>
+
           {visible.length === 0 && (
             <div className="collection-empty">
               <Heart size={30} />
@@ -432,6 +700,7 @@ export default function ActivityPage() {
                 onClick={() => {
                   setQuery('');
                   setCategory('all');
+                  setSelectedTag('all');
                 }}
               >
                 Show all experiences
@@ -439,6 +708,8 @@ export default function ActivityPage() {
             </div>
           )}
         </section>
+
+        {/* Passport Banner */}
         <Link href="/passport" className="collection-passport">
           <div className="collection-mini-passport" aria-hidden="true">
             <span>DEARLY US</span>
@@ -456,6 +727,7 @@ export default function ActivityPage() {
             Open your passport <ArrowUpRight size={20} />
           </span>
         </Link>
+
         <div className="collection-ending">
           <Sparkles size={17} />
           <p>No perfect plans needed. Just you two.</p>
