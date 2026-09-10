@@ -7,7 +7,59 @@ export type BoothRoom = {
   expiresAt: string;
 };
 export type BoothMessage = { type: string; [key: string]: unknown };
+export type BoothSnapshot = {
+  shots: unknown[];
+  design: Record<string, unknown>;
+  approvals: string[];
+  editor?: string;
+  revision?: number;
+};
+export type BoothSavedState = {
+  revision: number;
+  snapshot: BoothSnapshot;
+  updatedAt?: string;
+};
 type Envelope = { sender: string; message: BoothMessage };
+
+function boothError(message: string) {
+  const text = message.toLowerCase();
+  if (text.includes('expired')) return 'This booth invitation has expired. Create a new booth to continue.';
+  if (text.includes('closed')) return 'This booth has been closed. Create a new booth to continue.';
+  if (text.includes('full')) return 'This booth already has two people.';
+  if (text.includes('stale') || text.includes('revision'))
+    return 'A newer edit was saved by your partner. The booth will refresh before you continue.';
+  if (text.includes('not a member') || text.includes('access'))
+    return 'You no longer have access to this private booth.';
+  return message;
+}
+
+async function roomRpc<T>(name: string, args: Record<string, unknown>) {
+  const sb = getSupabase();
+  if (!sb) throw new Error('Online booths are not configured yet. You can use the solo booth.');
+  const { data, error } = await sb.rpc(name, args);
+  if (error) throw new Error(boothError(error.message));
+  return data as T;
+}
+
+export async function getBoothState(roomId: string) {
+  return roomRpc<BoothSavedState>('get_photobooth_state', { target_room: roomId });
+}
+
+export async function saveBoothState(roomId: string, expectedRevision: number, snapshot: BoothSnapshot) {
+  return roomRpc<BoothSavedState>('save_photobooth_state', {
+    target_room: roomId,
+    expected_revision: expectedRevision,
+    next_snapshot: snapshot,
+  });
+}
+
+export async function touchBoothRoom(roomId: string) {
+  return roomRpc<BoothRoom>('touch_photobooth_room', { target_room: roomId });
+}
+
+export async function closeBoothRoom(roomId: string) {
+  await roomRpc('close_photobooth_room', { target_room: roomId });
+}
 export async function openBoothRoom(
   code?: string,
 ): Promise<{ room: BoothRoom; userId: string }> {
@@ -27,7 +79,7 @@ export async function openBoothRoom(
     code ? 'join_photobooth_room' : 'create_photobooth_room',
     code ? { invite_code: code.trim().toUpperCase() } : {},
   );
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(boothError(error.message));
   return { room: data as BoothRoom, userId: user.id };
 }
 

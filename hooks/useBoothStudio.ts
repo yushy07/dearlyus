@@ -2,7 +2,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   BoothConnection,
+  closeBoothRoom,
+  getBoothState,
   openBoothRoom,
+  saveBoothState,
+  touchBoothRoom,
   type BoothMessage,
   type BoothRoom,
 } from '@/lib/booth/connection';
@@ -44,6 +48,11 @@ export function useBoothStudio() {
     [cameraBusy, setCameraBusy] = useState(false);
   const connection = useRef<BoothConnection | null>(null),
     localVideo = useRef<HTMLVideoElement | null>(null);
+  const roomRef = useRef<BoothRoom | null>(null),
+    serverRevision = useRef(0),
+    saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null),
+    saveQueue = useRef<Promise<void>>(Promise.resolve()),
+    touchTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const media = useRef<MediaStream | null>(null),
     generation = useRef(0),
     cameraGeneration = useRef(0);
@@ -90,10 +99,77 @@ export function useBoothStudio() {
   const send = useCallback(async (m: BoothMessage) => {
     if (connection.current) await connection.current.send(m);
   }, []);
+  const snapshot = () => ({
+    shots: state.current.shots.map((shot) => ({
+      id: shot.id,
+      left: shot.left ? { id: shot.left.id, crop: shot.left.crop } : undefined,
+      right: shot.right ? { id: shot.right.id, crop: shot.right.crop } : undefined,
+    })),
+    design: state.current.design as unknown as Record<string, unknown>,
+    approvals: state.current.approved,
+    editor: state.current.editor,
+    revision: state.current.revision,
+  });
+  const restoreSnapshot = (saved: Awaited<ReturnType<typeof getBoothState>>) => {
+    const value = saved?.snapshot;
+    serverRevision.current = Number(saved?.revision) || 0;
+    if (!value) return;
+    const ids = Array.isArray(value.shots)
+      ? value.shots
+          .map((shot) =>
+            shot && typeof shot === 'object' && typeof (shot as { id?: unknown }).id === 'string'
+              ? { id: (shot as { id: string }).id }
+              : null,
+          )
+          .filter((shot): shot is Shot => Boolean(shot))
+          .slice(0, 4)
+      : [];
+    const nextDesign = {
+      ...INITIAL_DESIGN,
+      ...(value.design && typeof value.design === 'object' ? value.design : {}),
+      stickers: Array.isArray(value.design?.stickers) ? value.design.stickers : [],
+    } as BoothDesign;
+    const nextEditor: Side = value.editor === 'right' ? 'right' : 'left';
+    const nextApproved = Array.isArray(value.approvals)
+      ? value.approvals.filter((item): item is Side => item === 'left' || item === 'right')
+      : [];
+    state.current.shots = ids;
+    state.current.design = nextDesign;
+    state.current.editor = nextEditor;
+    state.current.revision = Math.max(0, Number(value.revision) || 0);
+    state.current.approved = nextApproved;
+    setShots(ids);
+    setDesign(nextDesign);
+    setEditor(nextEditor);
+    setRevision(state.current.revision);
+    setApproved(nextApproved);
+  };
+  const persistNow = () => {
+    const activeRoom = roomRef.current;
+    if (!activeRoom || state.current.side !== 'left') return;
+    const next = snapshot();
+    saveQueue.current = saveQueue.current.then(async () => {
+      try {
+        const saved = await saveBoothState(activeRoom.id, serverRevision.current, next);
+        serverRevision.current = Number(saved.revision);
+      } catch (e) {
+        if (e instanceof Error && e.message.includes('newer edit')) {
+          restoreSnapshot(await getBoothState(activeRoom.id));
+        }
+        fail(e);
+      }
+    });
+  };
+  const schedulePersist = () => {
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(persistNow, 300);
+  };
   const changeShots = (fn: (shots: Shot[]) => Shot[]) => {
     state.current.shots = fn(state.current.shots);
     setShots(state.current.shots);
     setApproved([]);
+    state.current.approved = [];
+    schedulePersist();
   };
   const resetReady = () => {
     readyRef.current = false;
@@ -122,6 +198,11 @@ export function useBoothStudio() {
     cancelLocal();
     connection.current?.close();
     connection.current = null;
+    roomRef.current = null;
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = null;
+    if (touchTimer.current) clearInterval(touchTimer.current);
+    touchTimer.current = null;
     media.current?.getTracks().forEach((t) => t.stop());
     media.current = null;
     setStream(null);
@@ -133,6 +214,8 @@ export function useBoothStudio() {
       generation.current++;
       cameraGeneration.current++;
       connection.current?.close();
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+      if (touchTimer.current) clearInterval(touchTimer.current);
       media.current?.getTracks().forEach((t) => t.stop());
       if (deadline.current) clearInterval(deadline.current);
     },
@@ -162,6 +245,7 @@ export function useBoothStudio() {
       setSide(role);
       state.current.side = role;
       setRoom(session.room);
+      roomRef.current = session.room;
       setShots([]);
       state.current.shots = [];
       setApproved([]);
@@ -169,6 +253,7 @@ export function useBoothStudio() {
         ...INITIAL_DESIGN,
         date: new Date().toISOString().slice(0, 10),
       });
+      restoreSnapshot(await getBoothState(session.room.id));
       const link = new BoothConnection(
         session.room,
         session.userId,
@@ -197,6 +282,15 @@ export function useBoothStudio() {
       const url = new URL(window.location.href);
       url.searchParams.set('room', session.room.code);
       window.history.replaceState(null, '', url);
+      touchTimer.current = setInterval(() => {
+        if (roomRef.current)
+          void touchBoothRoom(roomRef.current.id)
+            .then((fresh) => {
+              roomRef.current = fresh;
+              setRoom(fresh);
+            })
+            .catch(fail);
+      }, 5 * 60 * 1000);
     } catch (e) {
       fail(e);
       connection.current?.close();
@@ -453,6 +547,8 @@ export function useBoothStudio() {
     setDesign(next);
     setRevision(state.current.revision);
     setApproved([]);
+    state.current.approved = [];
+    schedulePersist();
     void send({
       type: 'design-state',
       design: next,
@@ -484,6 +580,7 @@ export function useBoothStudio() {
     if (state.current.side === 'left') {
       state.current.editor = next;
       setEditor(next);
+      schedulePersist();
       await send({
         type: 'design-state',
         design: state.current.design,
@@ -572,6 +669,8 @@ export function useBoothStudio() {
     )
       return;
     setApproved((prev) => [...new Set([...prev, state.current.side])]);
+    state.current.approved = [...new Set([...state.current.approved, state.current.side])];
+    schedulePersist();
     await send({
       type: 'approve',
       revision: state.current.revision,
@@ -689,7 +788,12 @@ export function useBoothStudio() {
         state.current.shots.every((shot) => completeShot(shot)) &&
         approvalKey(state.current.shots, state.current.design) === m.reviewKey
       )
-        setApproved((prev) => [...new Set([...prev, other])]);
+        setApproved((prev) => {
+          const next = [...new Set([...prev, other])];
+          state.current.approved = next;
+          schedulePersist();
+          return next;
+        });
     }
   };
   return {
@@ -731,11 +835,16 @@ export function useBoothStudio() {
     prepareFrames,
     approve,
     setError,
-    leave: () => {
+    leave: async () => {
+      const activeRoom = roomRef.current;
+      if (activeRoom) await closeBoothRoom(activeRoom.id).catch(fail);
       shutdown();
       setRoom(null);
       setSolo(false);
       setShots([]);
+      const url = new URL(window.location.href);
+      url.searchParams.delete('room');
+      window.history.replaceState(null, '', url);
     },
   };
 }
