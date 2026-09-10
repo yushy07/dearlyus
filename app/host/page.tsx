@@ -3,15 +3,13 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
-  Ribbon,
-  Navbar,
   Confetti,
   CoupleNameBar,
   AiConsentToggle,
-  CupidotActivityGuidance,
+  ActivityShell,
 } from '@/components/shared';
 import { sounds } from '@/lib/sound';
-import { downloadReceiptPNG, DateReceiptData } from '@/lib/receipt-canvas';
+import { DateReceiptData } from '@/lib/receipt-canvas';
 import { ThermalReceiptModal } from '@/components/shared/ThermalReceiptModal';
 import type { BotState } from '@/components/bot/CupidotBot';
 import { Cupidot2D } from '@/components/bot/Cupidot2D';
@@ -19,82 +17,217 @@ import { useCoupleProfile } from '@/lib/couple';
 import { useAiConsent } from '@/lib/ai-consent';
 import { generateAdaptiveQuestion } from '@/lib/gemini';
 import { useActivityRuntime } from '@/hooks/useActivityRuntime';
+import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
 
 interface HostScenario {
   id: number;
+  category: string;
   question: string;
   options: string[];
   commentary?: string;
 }
 
-const INITIAL_SCENARIOS: HostScenario[] = [
-  {
-    id: 1,
-    question:
-      'Scenario: We just landed in a dream city for our 2-week reunion trip, but our luggage was delayed by 24 hours. What is our game plan for day one?',
-    options: [
-      'Check into the hotel, order room service & sleep off jetlag',
-      'Buy cheap thrift outfits and start exploring immediately',
-      'Go to a 24-hour convenience store and feast on snacks',
-      'Hunt down the best local ramen / street food stall on foot',
-    ],
-    commentary: 'Observing your couple spontaneous travel instincts!',
-  },
-  {
-    id: 2,
-    question:
-      'Scenario: We enter a couple karaoke tournament at 2 AM in Tokyo. Which duet are we singing to guarantee first place?',
-    options: [
-      'A dramatic 90s ballad with full arm gestures',
-      'An energetic K-Pop song with synchronized hand choreography',
-      'A classic Disney duet we secretly both know all the words to',
-      'An upbeat rock anthem where we scream the chorus together',
-    ],
-    commentary: 'Assessing karaoke stage chemistry and song repertoire!',
-  },
+const HOST_TONES = [
+  { id: 'cozy', label: 'Cozy & Intimate', icon: '🕯️', desc: 'Soft questions, quiet moments, slow connection' },
+  { id: 'playful', label: 'Playful Debates', icon: '✨', desc: 'Silly hypothetical dilemmas & travel instincts' },
+  { id: 'deep', label: 'Soulful & Deep', icon: '🌊', desc: 'Meaningful reflections, dreams & unspoken thoughts' },
+  { id: 'chaotic', label: 'Late Night Chaos', icon: '🌙', desc: '2 AM absurdity, karaoke duets & high laughs' },
 ];
 
+const CURATED_SCENARIOS: Record<string, HostScenario[]> = {
+  cozy: [
+    {
+      id: 101,
+      category: 'Cozy Living',
+      question: 'A rainy Sunday afternoon with nowhere to be. What is our unspoken couple sanctuary ritual?',
+      options: [
+        'Brew tea/coffee in silence, curl under one thick duvet with two books',
+        'Cook a complex slow meal together while playing lo-fi jazz in the kitchen',
+        'Binge a nostalgic comfort show from start to finish with takeout on the carpet',
+        'Build a living room pillow fort, light candles, and just talk until evening',
+      ],
+      commentary: 'Observing your quiet Sunday frequency and cozy retreat chemistry!',
+    },
+    {
+      id: 102,
+      category: 'Tender Habit',
+      question: 'When one of us has had an exhausting day, what is the best non-verbal gesture of support?',
+      options: [
+        'An unprompted head or shoulder massage without asking any questions',
+        'Handing over a favorite warm drink and leaving quiet space to decompress',
+        'A long, silent 30-second hug before saying a single word',
+        'Putting away all chores quietly so there is zero mental clutter to face',
+      ],
+      commentary: 'Noting how you care for each other during quiet moments.',
+    },
+  ],
+  playful: [
+    {
+      id: 201,
+      category: 'Spontaneous Travel',
+      question: 'We just landed in a dream city for our 2-week reunion trip, but our luggage was delayed 24 hours. Game plan?',
+      options: [
+        'Check into the hotel, order room service & sleep off the jetlag',
+        'Buy cheap thrift outfits and start exploring immediately',
+        'Go to a 24-hour convenience store and feast on foreign snacks',
+        'Hunt down the best local ramen / street food stall on foot in the rain',
+      ],
+      commentary: 'Assessing couple spontaneous travel instincts and crisis resilience!',
+    },
+    {
+      id: 202,
+      category: 'Midnight Adventure',
+      question: 'We enter a couple karaoke tournament at 2 AM in Tokyo. Which duet are we singing to guarantee first place?',
+      options: [
+        'A dramatic 90s ballad with full impassioned arm gestures',
+        'An energetic pop track with synchronized hand choreography',
+        'A classic Disney duet we secretly both know all the words to',
+        'An upbeat rock anthem where we scream the chorus together',
+      ],
+      commentary: 'Observing your stage synergy and secret performance dreams!',
+    },
+  ],
+  deep: [
+    {
+      id: 301,
+      category: 'Life & Horizons',
+      question: 'If we could pause time for exactly one week with zero responsibilities, where do we go together?',
+      options: [
+        'A secluded cabin in the misty mountains with a wood stove and no signal',
+        'A quiet coastal village with stone cottages and long morning walks by the sea',
+        'A bustling historic European capital wandering bookstores and evening cafes',
+        'Right at home, phones turned off, cooking and resting in our own world',
+      ],
+      commentary: 'Dissecting your deepest shared haven and escape fantasies!',
+    },
+    {
+      id: 302,
+      category: 'Unspoken Devotion',
+      question: 'Looking ahead 10 years, what is the one quality about our bond that you hope never changes?',
+      options: [
+        'The effortless way we can laugh until our stomachs hurt at small things',
+        'How safe and peaceful it feels to be completely quiet next to each other',
+        'Our unwavering teamwork when life throws unexpected storms at us',
+        'The butterflies and warmth whenever we reunite after time apart',
+      ],
+      commentary: 'Touching upon the anchor that holds your relationship together.',
+    },
+  ],
+  chaotic: [
+    {
+      id: 401,
+      category: '2 AM Hypothetical',
+      question: 'A mysterious millionaire offers us $100,000, BUT we must wear matching medieval knight armor for 7 consecutive days. Do we take it?',
+      options: [
+        'Absolutely yes, we clank into grocery stores like royal champions',
+        'Only if we get custom matching capes and wooden swords',
+        'No way, the chafing and airport security would destroy us',
+        'We negotiate for $250,000 and then wear it for a month',
+      ],
+      commentary: 'Evaluating financial pragmatism versus couple public dignity!',
+    },
+    {
+      id: 402,
+      category: 'Wild Stakes',
+      question: 'Zombie apocalypse starts right now. What are our assigned couple roles?',
+      options: [
+        'One plans master survival strategy, the other hoards snacks and supplies',
+        'Both barricade the bedroom and watch movies until it blows over',
+        'We adopt a stray dog, find a sailboat, and live off fish in the ocean',
+        'We immediately become the neighborhood warlords with matching leather jackets',
+      ],
+      commentary: 'Survival chemistry tested and certified by the Host!',
+    },
+  ],
+};
+
 export default function DateHostPage() {
-  const [scenarios, setScenarios] = useState<HostScenario[]>(INITIAL_SCENARIOS);
+  const { partnerA, partnerB, roomCode } = useCoupleProfile();
+  const { hasAiConsent } = useAiConsent();
+  const { saveKeepsake, saving: keepsakeSaving } = useKeepsakeWriter();
+
+  const [actStage, setActStage] = useState<'checkin' | 'dilemmas' | 'closing'>('checkin');
+  const [selectedTone, setSelectedTone] = useState<string>('playful');
+  const [scenarios, setScenarios] = useState<HostScenario[]>(CURATED_SCENARIOS.playful);
   const [currentIdx, setCurrentIdx] = useState(0);
+
   const [partnerAPick, setPartnerAPick] = useState<number | null>(null);
   const [partnerBPick, setPartnerBPick] = useState<number | null>(null);
   const [revealed, setRevealed] = useState(false);
-  const { partnerA, partnerB, roomCode } = useCoupleProfile();
-  const runtime = useActivityRuntime({
-    sessionId: `mock-host-${roomCode || 'local'}`,
-    activityType: 'host',
-    roomId: roomCode || 'local',
-    transportMode: 'mock',
-    initialOptions: { theme: 'Third Wheel' },
-  });
-  const { hasAiConsent } = useAiConsent();
   const [hostCommentary, setHostCommentary] = useState<string | null>(null);
   const [confettiActive, setConfettiActive] = useState(false);
   const [totalRounds, setTotalRounds] = useState(1);
-  const [receiptModalData, setReceiptModalData] =
-    useState<DateReceiptData | null>(null);
+  const [receiptModalData, setReceiptModalData] = useState<DateReceiptData | null>(null);
   const [botState, setBotState] = useState<BotState>('idle');
+  const [steeringToast, setSteeringToast] = useState<string | null>(null);
+  const [keepsakeSaved, setKeepsakeSaved] = useState(false);
+
   const [sessionHistory, setSessionHistory] = useState<
-    Array<{ question: string; answerA: string; answerB: string }>
+    Array<{ question: string; answerA: string; answerB: string; agreement: boolean }>
   >([]);
+
+  const runtime = useActivityRuntime({
+    sessionId: roomCode ? `room-${roomCode}-host` : 'local-host',
+    activityType: 'host',
+    roomId: roomCode || 'local',
+    transportMode: 'auto',
+    initialOptions: { theme: selectedTone, promptIndex: currentIdx },
+  });
 
   const scenario = scenarios[currentIdx] || scenarios[0];
 
   useEffect(() => {
-    const index = Number(
-      (runtime.snapshot as { promptIndex?: number }).promptIndex,
-    );
-    if (Number.isFinite(index) && index < scenarios.length)
-      setCurrentIdx(index);
-  }, [runtime.snapshot, scenarios.length]);
+    const snap = runtime.snapshot as { promptIndex?: number; theme?: string };
+    if (typeof snap?.promptIndex === 'number' && snap.promptIndex < scenarios.length) {
+      setCurrentIdx(snap.promptIndex);
+    }
+    if (snap?.theme && CURATED_SCENARIOS[snap.theme] && snap.theme !== selectedTone) {
+      setSelectedTone(snap.theme);
+      setScenarios(CURATED_SCENARIOS[snap.theme]);
+    }
+  }, [runtime.snapshot, scenarios.length, selectedTone]);
+
+  const handleSelectTone = (toneId: string) => {
+    sounds.playPop();
+    setSelectedTone(toneId);
+    setScenarios(CURATED_SCENARIOS[toneId] || CURATED_SCENARIOS.playful);
+    setCurrentIdx(0);
+    void runtime.sendEvent('host_tone_change', { theme: toneId });
+  };
+
+  const handleStartHostNight = () => {
+    sounds.playCelebration();
+    setActStage('dilemmas');
+    setBotState('talking');
+    setTimeout(() => setBotState('happy'), 2200);
+  };
+
+  const handleSteerSignal = (signal: 'lighter' | 'deeper' | 'pause' | 'spark', senderName: string) => {
+    sounds.playTick();
+    void runtime.sendEvent('host_steer_signal', { signal, senderName });
+
+    const messages: Record<string, string> = {
+      lighter: `🕊️ ${senderName} requested a lighter vibe. Cupidot is easing the pressure!`,
+      deeper: `🌊 ${senderName} signaled for deeper depth. Diving into tender truths...`,
+      pause: `☕ ${senderName} signaled a tea pause. Take your time, lovebirds!`,
+      spark: `✨ ${senderName} sparked the host for an unexpected twist!`,
+    };
+
+    setSteeringToast(messages[signal]);
+    setBotState(signal === 'pause' ? 'sleeping' : 'thinking');
+    setTimeout(() => {
+      setSteeringToast(null);
+      setBotState('idle');
+    }, 3800);
+  };
 
   const handleReveal = () => {
     if (partnerAPick === null || partnerBPick === null) return;
     setRevealed(true);
     void runtime.sendEvent('host_speaker_switch', { activeSpeaker: partnerB });
 
-    if (partnerAPick === partnerBPick) {
+    const isMatch = partnerAPick === partnerBPick;
+    if (isMatch) {
       sounds.playCelebration();
       setConfettiActive(true);
       setBotState('celebration');
@@ -110,38 +243,43 @@ export default function DateHostPage() {
       question: scenario.question,
       answerA: scenario.options[partnerAPick],
       answerB: scenario.options[partnerBPick],
+      agreement: isMatch,
     };
     const updatedHistory = [...sessionHistory, currentRoundData];
     setSessionHistory(updatedHistory);
 
-    // Background pre-fetch next tailored dilemma based on accumulated multi-round threads
-    if (!hasAiConsent) return;
-
-    void generateAdaptiveQuestion({
-      partnerA: { name: partnerA, answer: scenario.options[partnerAPick] },
-      partnerB: { name: partnerB, answer: scenario.options[partnerBPick] },
-      mode: 'host',
-      mood: 'playful',
-      aiConsent: true,
-      history: updatedHistory,
-    })
-      .then((data: any) => {
-        if (data?.question && Array.isArray(data.options)) {
-          const nextScenario: HostScenario = {
-            id: Date.now(),
-            question: data.question,
-            options: data.options,
-            commentary: data.commentary || 'Observing your couple dynamics!',
-          };
-          const nextList = [...scenarios];
-          nextList.splice(currentIdx + 1, 0, nextScenario);
-          setScenarios(nextList);
-          if (data.commentary) {
-            setHostCommentary(data.commentary);
-          }
-        }
+    if (hasAiConsent) {
+      void generateAdaptiveQuestion({
+        partnerA: { name: partnerA, answer: scenario.options[partnerAPick] },
+        partnerB: { name: partnerB, answer: scenario.options[partnerBPick] },
+        mode: 'host',
+        mood: selectedTone,
+        aiConsent: true,
+        history: updatedHistory.map((h) => ({
+          question: h.question,
+          answerA: h.answerA,
+          answerB: h.answerB,
+        })),
       })
-      .catch(() => {});
+        .then((data: any) => {
+          if (data?.question && Array.isArray(data.options)) {
+            const nextScenario: HostScenario = {
+              id: Date.now(),
+              category: 'Adaptive Follow-Up',
+              question: data.question,
+              options: data.options,
+              commentary: data.commentary || 'Observing your real-time couple synergy!',
+            };
+            const nextList = [...scenarios];
+            nextList.splice(currentIdx + 1, 0, nextScenario);
+            setScenarios(nextList);
+            if (data.commentary) {
+              setHostCommentary(data.commentary);
+            }
+          }
+        })
+        .catch(() => {});
+    }
   };
 
   const handleNext = () => {
@@ -155,418 +293,662 @@ export default function DateHostPage() {
       setHostCommentary(null);
       setTotalRounds((r) => r + 1);
       setBotState('idle');
+    } else {
+      setActStage('closing');
+      sounds.playCelebration();
     }
   };
 
+  const calculateSyncPercent = () => {
+    if (sessionHistory.length === 0) return 85;
+    const matches = sessionHistory.filter((h) => h.agreement).length;
+    return Math.round((matches / sessionHistory.length) * 100);
+  };
+
+  const handleSaveDateReceipt = async () => {
+    if (keepsakeSaved || keepsakeSaving) return;
+    try {
+      await saveKeepsake({
+        kind: 'activity',
+        title: `Date Night Receipt · ${selectedTone.toUpperCase()} Session`,
+        activityPath: '/host',
+        caption: `Third Wheel Date Host completed with ${totalRounds} dilemmas explored and ${calculateSyncPercent()}% synergy!`,
+        metadata: {
+          activityType: 'host',
+          tone: selectedTone,
+          rounds: totalRounds,
+          syncPercent: calculateSyncPercent(),
+          date: new Date().toISOString(),
+        },
+      });
+      setKeepsakeSaved(true);
+      sounds.playCelebration();
+    } catch {
+      // Handled by writer
+    }
+  };
+
+  const currentShellStage =
+    actStage === 'checkin' ? 'ready' : actStage === 'dilemmas' ? 'play' : 'remember';
+
   return (
-    <div
-      style={{
-        background: 'var(--paper)',
-        minHeight: '100vh',
-        paddingBottom: '80px',
-        color: 'var(--ink)',
+    <ActivityShell
+      activityTitle="The Third Wheel Host"
+      activitySubtitle="3-Act Guided Date Night · Dynamic Scenarios & Observational Commentary"
+      currentStage={currentShellStage}
+      keepsakeSummary={{
+        kind: 'activity',
+        title: `Date Receipt · ${selectedTone.charAt(0).toUpperCase() + selectedTone.slice(1)} Night`,
+        subtitle: `${totalRounds} Dilemmas · ${calculateSyncPercent()}% Sync`,
+        badge: '🧾 RECEIPT READY',
       }}
+      guidancePhase={revealed ? 'revealed' : partnerAPick !== null || partnerBPick !== null ? 'locked' : 'ready'}
+      guidancePrivacyNote="Both partners lock in their strategies privately. The Host delivers commentary only once both cards turn over."
     >
-      <Ribbon
-        text={
-          <>
-            🎙️ Third Wheel Date Host ·{' '}
-            <b>Dynamic Scenarios &amp; Observational Commentary</b>
-          </>
-        }
-      />
       <Confetti active={confettiActive} />
 
-      <Navbar
-        rightAction={
-          <span
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '12px',
-              background: 'var(--paper-raised)',
-              padding: '4px 10px',
-              borderRadius: '6px',
-              border: '1px solid var(--line)',
-            }}
-          >
-            Scenario <b>#{totalRounds}</b>
-          </span>
-        }
-      />
-
-      <main className="wrap" style={{ paddingTop: '36px', maxWidth: '880px' }}>
+      <div style={{ maxWidth: '820px', margin: '0 auto', padding: '16px 0 40px' }}>
         <div style={{ maxWidth: '620px', margin: '0 auto 18px' }}>
           <AiConsentToggle />
         </div>
-        {/* 3D Cupidot Mascot Host */}
+
+        {/* Mascot Podium */}
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <div
-            style={{ width: '190px', height: '190px', margin: '0 auto -12px' }}
-          >
+          <div style={{ width: '190px', height: '190px', margin: '0 auto -12px' }}>
             <Cupidot2D state={botState} size={220} roam />
           </div>
           <CoupleNameBar />
           <h1
             style={{
-              fontSize: 'clamp(28px, 4.5vw, 42px)',
+              fontSize: 'clamp(26px, 4vw, 38px)',
               fontWeight: 800,
-              margin: '8px 0 10px',
+              margin: '8px 0 6px',
+              fontFamily: 'var(--font-serif, Georgia, serif)',
             }}
           >
             The <span className="grad">&ldquo;Third Wheel&rdquo;</span> Host
           </h1>
-          <p
-            style={{
-              color: 'var(--ink-soft)',
-              fontSize: '16px',
-              maxWidth: '52ch',
-              margin: '0 auto',
-            }}
-          >
-            Cupidot observes your real choices, tracks your synergy, and
-            delivers witty commentary while adapting every dilemma.
+          <p style={{ color: 'var(--ink-soft)', fontSize: '15px', maxWidth: '52ch', margin: '0 auto' }}>
+            Cupidot observes your real choices, tracks your synergy, and delivers witty commentary while adapting every dilemma.
           </p>
         </div>
 
-        {/* Cupidot Standard Activity Lifecycle Guidance */}
-        <CupidotActivityGuidance
-          activityName="The Third Wheel Host"
-          phase={
-            revealed
-              ? 'revealed'
-              : partnerAPick !== null || partnerBPick !== null
-                ? 'locked'
-                : 'ready'
-          }
-          partnerName={partnerB || 'Partner'}
-          isDemoMode={true}
-          demoNotice="Single-screen preview exploration. In synchronized date nights, each partner votes privately from their own device."
-          privacyNote="Picks are locked in privately until reveal. Cupidot provides host commentary once both choices are unveiled."
-        />
-
-        {/* Scenario Card */}
-        <div
-          style={{
-            background: 'var(--paper-raised)',
-            border: '1px solid var(--line)',
-            borderRadius: '20px',
-            padding: '36px 32px',
-            boxShadow: 'var(--shadow-lg)',
-            marginBottom: '32px',
-          }}
-        >
+        {/* Floating Steering Toast */}
+        {steeringToast && (
           <div
             style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '16px',
+              maxWidth: '520px',
+              margin: '0 auto 18px',
+              background: 'linear-gradient(135deg, #FFF9F5 0%, #FFFFFF 100%)',
+              border: '1.5px solid #FF9E7D',
+              borderRadius: '12px',
+              padding: '10px 18px',
+              fontSize: '13.5px',
+              fontWeight: 700,
+              color: 'var(--ink)',
+              boxShadow: '0 4px 16px rgba(255, 120, 80, 0.15)',
+              textAlign: 'center',
+              animation: 'gl-rise 0.25s ease',
             }}
           >
-            <span className="badge hot">Scenario #{totalRounds}</span>
-            <span
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: '12px',
-                color: 'var(--ink-soft)',
-              }}
-            >
-              Double-Blind Lock-In
-            </span>
+            {steeringToast}
           </div>
+        )}
 
-          <h2
-            style={{
-              fontSize: '22px',
-              fontWeight: 800,
-              lineHeight: 1.4,
-              marginBottom: '24px',
-            }}
-          >
-            {scenario.question}
-          </h2>
-
-          {/* Two-Player Lock-in Grid */}
+        {/* ACT I: CHECK-IN & TONE SELECTION */}
+        {actStage === 'checkin' && (
           <div
             style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-              gap: '20px',
-              marginBottom: '28px',
+              background: 'var(--paper-raised)',
+              border: '1px solid var(--line)',
+              borderRadius: '20px',
+              padding: '36px 32px',
+              boxShadow: 'var(--shadow-lg)',
+              animation: 'gl-rise 0.3s ease',
             }}
           >
-            {/* Player A */}
-            <div
-              style={{
-                background: '#FFF5F8',
-                border: '1.5px solid #FFD6E8',
-                borderRadius: '16px',
-                padding: '20px',
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: '12px',
-                }}
-              >
-                <span
-                  style={{
-                    fontWeight: 800,
-                    fontSize: '14px',
-                    color: 'var(--pink)',
-                  }}
-                >
-                  🌸 {partnerA}&apos;s Strategy
-                </span>
-                <span
-                  style={{
-                    fontSize: '12px',
-                    fontFamily: 'var(--font-mono)',
-                    color:
-                      partnerAPick !== null ? '#0A7D4D' : 'var(--ink-soft)',
-                    fontWeight: 700,
-                  }}
-                >
-                  {partnerAPick !== null ? '✓ Locked In' : 'Pick one...'}
-                </span>
-              </div>
-
-              <div style={{ display: 'grid', gap: '8px' }}>
-                {scenario.options.map((opt, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => !revealed && setPartnerAPick(idx)}
-                    disabled={revealed}
-                    style={{
-                      textAlign: 'left',
-                      padding: '10px 14px',
-                      borderRadius: '8px',
-                      border:
-                        partnerAPick === idx
-                          ? '2px solid var(--pink)'
-                          : '1px solid #FFD6E8',
-                      background:
-                        partnerAPick === idx ? '#FFF' : 'rgba(255,255,255,0.6)',
-                      fontSize: '13.5px',
-                      fontWeight: partnerAPick === idx ? 700 : 500,
-                      cursor: revealed ? 'default' : 'pointer',
-                    }}
-                  >
-                    {opt}
-                  </button>
-                ))}
-              </div>
+            <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+              <span className="badge hot" style={{ marginBottom: '10px' }}>
+                ACT I · EVENING VIBE CHECK
+              </span>
+              <h2 style={{ fontSize: '22px', fontWeight: 800, margin: '8px 0' }}>
+                What kind of energy do we want tonight?
+              </h2>
+              <p style={{ fontSize: '14px', color: 'var(--ink-soft)', margin: 0 }}>
+                Select a tone for your Host. Both of your devices will follow this tailored trajectory.
+              </p>
             </div>
 
-            {/* Player B */}
             <div
               style={{
-                background: '#F0F7FF',
-                border: '1.5px solid #D6E8FF',
-                borderRadius: '16px',
-                padding: '20px',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+                gap: '16px',
+                marginBottom: '32px',
               }}
             >
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: '12px',
-                }}
-              >
-                <span
-                  style={{
-                    fontWeight: 800,
-                    fontSize: '14px',
-                    color: 'var(--blue)',
-                  }}
-                >
-                  💙 {partnerB}&apos;s Strategy
-                </span>
-                <span
-                  style={{
-                    fontSize: '12px',
-                    fontFamily: 'var(--font-mono)',
-                    color:
-                      partnerBPick !== null ? '#0A7D4D' : 'var(--ink-soft)',
-                    fontWeight: 700,
-                  }}
-                >
-                  {partnerBPick !== null ? '✓ Locked In' : 'Pick one...'}
-                </span>
-              </div>
-
-              <div style={{ display: 'grid', gap: '8px' }}>
-                {scenario.options.map((opt, idx) => (
+              {HOST_TONES.map((t) => {
+                const isSelected = selectedTone === t.id;
+                return (
                   <button
-                    key={idx}
-                    onClick={() => !revealed && setPartnerBPick(idx)}
-                    disabled={revealed}
+                    key={t.id}
+                    onClick={() => handleSelectTone(t.id)}
                     style={{
                       textAlign: 'left',
-                      padding: '10px 14px',
-                      borderRadius: '8px',
-                      border:
-                        partnerBPick === idx
-                          ? '2px solid var(--blue)'
-                          : '1px solid #D6E8FF',
-                      background:
-                        partnerBPick === idx ? '#FFF' : 'rgba(255,255,255,0.6)',
-                      fontSize: '13.5px',
-                      fontWeight: partnerBPick === idx ? 700 : 500,
-                      cursor: revealed ? 'default' : 'pointer',
+                      padding: '18px',
+                      borderRadius: '14px',
+                      border: isSelected ? '2px solid var(--pink)' : '1px solid var(--line)',
+                      background: isSelected ? '#FFF5F8' : 'var(--paper)',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                      boxShadow: isSelected ? '0 4px 14px rgba(255, 77, 128, 0.12)' : 'none',
                     }}
                   >
-                    {opt}
+                    <div style={{ fontSize: '24px', marginBottom: '8px' }}>{t.icon}</div>
+                    <div style={{ fontWeight: 800, fontSize: '15px', color: isSelected ? 'var(--pink)' : 'var(--ink)' }}>
+                      {t.label}
+                    </div>
+                    <div style={{ fontSize: '12.5px', color: 'var(--ink-soft)', marginTop: '4px', lineHeight: 1.4 }}>
+                      {t.desc}
+                    </div>
                   </button>
-                ))}
-              </div>
+                );
+              })}
             </div>
-          </div>
 
-          {/* Reveal / Next Actions */}
-          <div style={{ textAlign: 'center' }}>
-            {!revealed ? (
+            <div style={{ textAlign: 'center' }}>
               <button
-                onClick={handleReveal}
-                disabled={partnerAPick === null || partnerBPick === null}
+                onClick={handleStartHostNight}
                 className="btn btn-primary"
+                style={{ padding: '14px 42px', fontSize: '15px' }}
+              >
+                Step to Host Podium &amp; Begin ▷
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ACT II: DILEMMAS & STEERING */}
+        {actStage === 'dilemmas' && (
+          <div>
+            {/* Steering Signal Ribbon */}
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '10px',
+                marginBottom: '18px',
+                padding: '10px 16px',
+                background: 'rgba(255,255,255,0.7)',
+                borderRadius: '12px',
+                border: '1px solid var(--line)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--ink-soft)' }}>
+                  STEER HOST:
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleSteerSignal('lighter', partnerA)}
+                  className="btn btn-ghost"
+                  style={{ fontSize: '12px', padding: '4px 10px', borderRadius: '8px' }}
+                >
+                  🕊️ Lighter
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSteerSignal('deeper', partnerA)}
+                  className="btn btn-ghost"
+                  style={{ fontSize: '12px', padding: '4px 10px', borderRadius: '8px' }}
+                >
+                  🌊 Deeper
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSteerSignal('pause', partnerA)}
+                  className="btn btn-ghost"
+                  style={{ fontSize: '12px', padding: '4px 10px', borderRadius: '8px' }}
+                >
+                  ☕ Pause
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSteerSignal('spark', partnerA)}
+                  className="btn btn-ghost"
+                  style={{ fontSize: '12px', padding: '4px 10px', borderRadius: '8px' }}
+                >
+                  ✨ Spark
+                </button>
+              </div>
+
+              <span
                 style={{
-                  padding: '12px 36px',
-                  fontSize: '15px',
-                  opacity:
-                    partnerAPick !== null && partnerBPick !== null ? 1 : 0.5,
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '12px',
+                  background: 'var(--paper-raised)',
+                  padding: '4px 10px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--line)',
                 }}
               >
-                Reveal Both Strategies 🔍
-              </button>
-            ) : (
-              <div style={{ animation: 'gl-rise 0.25s ease' }}>
+                Dilemma <b>#{totalRounds}</b> of {scenarios.length}
+              </span>
+            </div>
+
+            {/* Scenario Card */}
+            <div
+              style={{
+                background: 'var(--paper-raised)',
+                border: '1px solid var(--line)',
+                borderRadius: '20px',
+                padding: '36px 32px',
+                boxShadow: 'var(--shadow-lg)',
+                marginBottom: '28px',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '16px',
+                }}
+              >
+                <span className="badge hot">{scenario.category || 'Dilemma'}</span>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '12px',
+                    color: 'var(--ink-soft)',
+                  }}
+                >
+                  Double-Blind Lock-In
+                </span>
+              </div>
+
+              <h2
+                style={{
+                  fontSize: '21px',
+                  fontWeight: 800,
+                  lineHeight: 1.45,
+                  marginBottom: '24px',
+                  color: 'var(--ink)',
+                }}
+              >
+                {scenario.question}
+              </h2>
+
+              {/* Two-Player Lock-in Grid */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                  gap: '20px',
+                  marginBottom: '28px',
+                }}
+              >
+                {/* Player A */}
                 <div
                   style={{
-                    padding: '16px 20px',
-                    borderRadius: '12px',
-                    marginBottom: '16px',
-                    background:
-                      partnerAPick === partnerBPick ? '#E6F9F0' : '#FFF0F5',
-                    color:
-                      partnerAPick === partnerBPick ? '#0A7D4D' : 'var(--pink)',
-                    fontWeight: 800,
-                    fontSize: '16px',
+                    background: '#FFF5F8',
+                    border: '1.5px solid #FFD6E8',
+                    borderRadius: '16px',
+                    padding: '20px',
                   }}
                 >
-                  {partnerAPick === partnerBPick
-                    ? '✨ Unanimous Plan! You both chose the exact same adventure!'
-                    : `⚡ Different approaches! ${partnerA} voted for "${scenario.options[partnerAPick!]}" while ${partnerB} chose "${scenario.options[partnerBPick!]}".`}
-                </div>
-
-                {hostCommentary && (
                   <div
                     style={{
-                      padding: '14px 20px',
-                      borderRadius: '16px',
-                      background:
-                        'linear-gradient(135deg, #FFF5F8 0%, #FFFFFF 100%)',
-                      border: '1.5px solid rgba(255, 77, 128, 0.25)',
-                      fontSize: '14px',
-                      color: 'var(--ink)',
-                      marginBottom: '22px',
-                      display: 'inline-flex',
+                      display: 'flex',
+                      justifyContent: 'space-between',
                       alignItems: 'center',
-                      gap: '10px',
-                      boxShadow: '0 4px 16px rgba(255, 77, 128, 0.08)',
-                      textAlign: 'left',
-                      maxWidth: '560px',
+                      marginBottom: '12px',
                     }}
                   >
-                    <span style={{ fontSize: '24px' }}>ʚ🤖💘ɞ</span>
-                    <div>
-                      <div
+                    <span style={{ fontWeight: 800, fontSize: '14px', color: 'var(--pink)' }}>
+                      🌸 {partnerA}&apos;s Choice
+                    </span>
+                    <span
+                      style={{
+                        fontSize: '12px',
+                        fontFamily: 'var(--font-mono)',
+                        color: partnerAPick !== null ? '#0A7D4D' : 'var(--ink-soft)',
+                        fontWeight: 700,
+                      }}
+                    >
+                      {partnerAPick !== null ? '✓ Locked In' : 'Pick one...'}
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'grid', gap: '8px' }}>
+                    {scenario.options.map((opt, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => !revealed && setPartnerAPick(idx)}
+                        disabled={revealed}
                         style={{
-                          fontSize: '11px',
-                          fontFamily: 'var(--font-mono)',
-                          fontWeight: 800,
-                          color: '#FF4D80',
-                          textTransform: 'uppercase',
-                          marginBottom: '2px',
+                          textAlign: 'left',
+                          padding: '11px 14px',
+                          borderRadius: '8px',
+                          border:
+                            partnerAPick === idx ? '2px solid var(--pink)' : '1px solid #FFD6E8',
+                          background: partnerAPick === idx ? '#FFF' : 'rgba(255,255,255,0.65)',
+                          fontSize: '13.5px',
+                          fontWeight: partnerAPick === idx ? 700 : 500,
+                          cursor: revealed ? 'default' : 'pointer',
+                          lineHeight: 1.4,
                         }}
                       >
-                        CUPIDOT&apos;S OBSERVATION
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Player B */}
+                <div
+                  style={{
+                    background: '#F0F7FF',
+                    border: '1.5px solid #D6E8FF',
+                    borderRadius: '16px',
+                    padding: '20px',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '12px',
+                    }}
+                  >
+                    <span style={{ fontWeight: 800, fontSize: '14px', color: 'var(--blue)' }}>
+                      💙 {partnerB}&apos;s Choice
+                    </span>
+                    <span
+                      style={{
+                        fontSize: '12px',
+                        fontFamily: 'var(--font-mono)',
+                        color: partnerBPick !== null ? '#0A7D4D' : 'var(--ink-soft)',
+                        fontWeight: 700,
+                      }}
+                    >
+                      {partnerBPick !== null ? '✓ Locked In' : 'Pick one...'}
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'grid', gap: '8px' }}>
+                    {scenario.options.map((opt, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => !revealed && setPartnerBPick(idx)}
+                        disabled={revealed}
+                        style={{
+                          textAlign: 'left',
+                          padding: '11px 14px',
+                          borderRadius: '8px',
+                          border:
+                            partnerBPick === idx ? '2px solid var(--blue)' : '1px solid #D6E8FF',
+                          background: partnerBPick === idx ? '#FFF' : 'rgba(255,255,255,0.65)',
+                          fontSize: '13.5px',
+                          fontWeight: partnerBPick === idx ? 700 : 500,
+                          cursor: revealed ? 'default' : 'pointer',
+                          lineHeight: 1.4,
+                        }}
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Reveal / Next Controls */}
+              <div style={{ textAlign: 'center' }}>
+                {!revealed ? (
+                  <button
+                    onClick={handleReveal}
+                    disabled={partnerAPick === null || partnerBPick === null}
+                    className="btn btn-primary"
+                    style={{
+                      padding: '12px 36px',
+                      fontSize: '15px',
+                      opacity: partnerAPick !== null && partnerBPick !== null ? 1 : 0.5,
+                    }}
+                  >
+                    Reveal Both Strategies 🔍
+                  </button>
+                ) : (
+                  <div style={{ animation: 'gl-rise 0.25s ease' }}>
+                    <div
+                      style={{
+                        padding: '16px 20px',
+                        borderRadius: '12px',
+                        marginBottom: '16px',
+                        background: partnerAPick === partnerBPick ? '#E6F9F0' : '#FFF0F5',
+                        color: partnerAPick === partnerBPick ? '#0A7D4D' : 'var(--pink)',
+                        fontWeight: 800,
+                        fontSize: '15.5px',
+                      }}
+                    >
+                      {partnerAPick === partnerBPick
+                        ? '✨ Unanimous Frequency! You both picked the exact same adventure!'
+                        : `⚡ Different angles! ${partnerA} picked "${scenario.options[partnerAPick!]}" while ${partnerB} chose "${scenario.options[partnerBPick!]}".`}
+                    </div>
+
+                    {(hostCommentary || scenario.commentary) && (
+                      <div
+                        style={{
+                          padding: '14px 20px',
+                          borderRadius: '16px',
+                          background: 'linear-gradient(135deg, #FFF5F8 0%, #FFFFFF 100%)',
+                          border: '1.5px solid rgba(255, 77, 128, 0.25)',
+                          fontSize: '14px',
+                          color: 'var(--ink)',
+                          marginBottom: '22px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '12px',
+                          boxShadow: '0 4px 16px rgba(255, 77, 128, 0.08)',
+                          textAlign: 'left',
+                          maxWidth: '580px',
+                        }}
+                      >
+                        <span style={{ fontSize: '24px' }}>ʚ🤖💘ɞ</span>
+                        <div>
+                          <div
+                            style={{
+                              fontSize: '11px',
+                              fontFamily: 'var(--font-mono)',
+                              fontWeight: 800,
+                              color: '#FF4D80',
+                              textTransform: 'uppercase',
+                              marginBottom: '2px',
+                            }}
+                          >
+                            HOST CUPIDOT&apos;S COMMENTARY
+                          </div>
+                          <span style={{ fontStyle: 'italic', fontWeight: 600 }}>
+                            &ldquo;{hostCommentary || scenario.commentary}&rdquo;
+                          </span>
+                        </div>
                       </div>
-                      <span style={{ fontStyle: 'italic', fontWeight: 600 }}>
-                        &ldquo;{hostCommentary}&rdquo;
-                      </span>
+                    )}
+                    <br />
+
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: '12px',
+                        justifyContent: 'center',
+                        flexWrap: 'wrap',
+                      }}
+                    >
+                      <button
+                        onClick={handleNext}
+                        className="btn btn-grad"
+                        style={{ padding: '12px 28px', fontSize: '15px' }}
+                      >
+                        {currentIdx + 1 < scenarios.length ? 'Next Dilemma ▷' : 'Wrap Up Date & Print Receipt 🧾'}
+                      </button>
+                      <button
+                        onClick={() => setActStage('closing')}
+                        className="btn btn-ghost"
+                        style={{ padding: '12px 20px', fontSize: '14px' }}
+                      >
+                        Conclude Evening Early
+                      </button>
                     </div>
                   </div>
                 )}
-                <br />
+              </div>
+            </div>
+          </div>
+        )}
 
-                <div
-                  style={{
-                    display: 'flex',
-                    gap: '12px',
-                    justifyContent: 'center',
-                    flexWrap: 'wrap',
-                  }}
-                >
-                  <button
-                    onClick={handleNext}
-                    className="btn btn-grad"
-                    style={{ padding: '12px 28px', fontSize: '15px' }}
-                  >
-                    Next Adaptive Dilemma ▷
-                  </button>
-                  <button
-                    onClick={() => {
-                      sounds.playPop();
-                      setReceiptModalData({
-                        roomCode: roomCode || 'PRIVATE',
-                        date: new Date().toLocaleDateString([], {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                        }),
-                        partnerA,
-                        partnerB,
-                        items: scenarios
-                          .slice(0, currentIdx + 1)
-                          .map((sc, i) => ({
-                            number: `0${i + 1}`,
-                            topic: sc.question.slice(0, 26),
-                            answerA: sc.options[partnerAPick || 0],
-                            answerB: sc.options[partnerBPick || 0],
-                            syncPercent:
-                              partnerAPick === partnerBPick ? 100 : 60,
-                          })),
-                        overallSync: partnerAPick === partnerBPick ? 95 : 75,
-                        hostVerdict:
-                          hostCommentary ||
-                          'Observing spontaneous couple travel instincts!',
-                      });
-                    }}
-                    className="btn btn-primary"
-                    style={{ padding: '12px 24px', fontSize: '14px' }}
-                  >
-                    Print Date Receipt 🧾
-                  </button>
-                  <Link
-                    href="/photobooth"
-                    className="btn btn-ghost"
-                    style={{ padding: '12px 20px', fontSize: '14px' }}
-                  >
-                    Snap Milestone 📸
-                  </Link>
+        {/* ACT III: CLOSING RITUAL & DATE RECEIPT */}
+        {actStage === 'closing' && (
+          <div
+            style={{
+              background: 'var(--paper-raised)',
+              border: '1px solid var(--line)',
+              borderRadius: '20px',
+              padding: '36px 32px',
+              boxShadow: 'var(--shadow-lg)',
+              textAlign: 'center',
+              animation: 'gl-rise 0.3s ease',
+            }}
+          >
+            <span className="badge hot" style={{ marginBottom: '12px' }}>
+              ACT III · CLOSING RITUAL
+            </span>
+            <h2 style={{ fontSize: '26px', fontWeight: 800, margin: '10px 0 8px' }}>
+              Evening Wrap-Up &amp; Date Receipt
+            </h2>
+            <p style={{ color: 'var(--ink-soft)', fontSize: '15px', maxWidth: '50ch', margin: '0 auto 28px' }}>
+              You navigated {totalRounds} dilemmas tonight with a shared synergy score of {calculateSyncPercent()}%.
+            </p>
+
+            {/* Stats Overview */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                gap: '16px',
+                maxWidth: '600px',
+                margin: '0 auto 32px',
+              }}
+            >
+              <div
+                style={{
+                  background: 'var(--paper)',
+                  padding: '16px',
+                  borderRadius: '12px',
+                  border: '1px solid var(--line)',
+                }}
+              >
+                <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--ink-soft)' }}>
+                  TOTAL DILEMMAS
+                </div>
+                <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--ink)', marginTop: '4px' }}>
+                  {totalRounds}
                 </div>
               </div>
-            )}
-          </div>
-        </div>
+              <div
+                style={{
+                  background: 'var(--paper)',
+                  padding: '16px',
+                  borderRadius: '12px',
+                  border: '1px solid var(--line)',
+                }}
+              >
+                <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--ink-soft)' }}>
+                  SYNERGY RATE
+                </div>
+                <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--pink)', marginTop: '4px' }}>
+                  {calculateSyncPercent()}%
+                </div>
+              </div>
+              <div
+                style={{
+                  background: 'var(--paper)',
+                  padding: '16px',
+                  borderRadius: '12px',
+                  border: '1px solid var(--line)',
+                }}
+              >
+                <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--ink-soft)' }}>
+                  CHOSEN VIBE
+                </div>
+                <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--ink)', marginTop: '8px' }}>
+                  {selectedTone.toUpperCase()}
+                </div>
+              </div>
+            </div>
 
-        {/* Thermal Receipt Date Lore Modal with Paper Tear Audio */}
+            {/* Action Buttons */}
+            <div
+              style={{
+                display: 'flex',
+                gap: '14px',
+                justifyContent: 'center',
+                flexWrap: 'wrap',
+              }}
+            >
+              <button
+                onClick={() => {
+                  sounds.playPop();
+                  setReceiptModalData({
+                    roomCode: roomCode || 'PRIVATE',
+                    date: new Date().toLocaleDateString([], {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    }),
+                    partnerA,
+                    partnerB,
+                    items: scenarios.slice(0, currentIdx + 1).map((sc, i) => ({
+                      number: `0${i + 1}`,
+                      topic: sc.question.slice(0, 26),
+                      answerA: sc.options[partnerAPick || 0] || 'Voted',
+                      answerB: sc.options[partnerBPick || 0] || 'Voted',
+                      syncPercent: partnerAPick === partnerBPick ? 100 : 60,
+                    })),
+                    overallSync: calculateSyncPercent(),
+                    hostVerdict:
+                      hostCommentary ||
+                      `${partnerA} & ${partnerB} navigated the evening with playful devotion and memorable chemistry!`,
+                  });
+                }}
+                className="btn btn-primary"
+                style={{ padding: '13px 28px', fontSize: '14.5px' }}
+              >
+                Inspect &amp; Print Date Receipt 🧾
+              </button>
+
+              <button
+                onClick={handleSaveDateReceipt}
+                disabled={keepsakeSaved || keepsakeSaving}
+                className="btn btn-grad"
+                style={{ padding: '13px 28px', fontSize: '14.5px' }}
+              >
+                {keepsakeSaved ? '✓ Saved to Our Space Keepsakes' : keepsakeSaving ? 'Archiving...' : 'Save to Our Space 🏡'}
+              </button>
+
+              <Link
+                href="/photobooth"
+                className="btn btn-ghost"
+                style={{ padding: '13px 24px', fontSize: '14px' }}
+              >
+                Snap Date Milestone 📸
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Thermal Receipt Modal */}
         {receiptModalData && (
           <ThermalReceiptModal
             isOpen={Boolean(receiptModalData)}
@@ -574,7 +956,7 @@ export default function DateHostPage() {
             data={receiptModalData}
           />
         )}
-      </main>
-    </div>
+      </div>
+    </ActivityShell>
   );
 }

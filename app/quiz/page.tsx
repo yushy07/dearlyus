@@ -12,6 +12,7 @@ import {
   AiConsentToggle,
   SecretAnswerSeal,
   CupidotActivityGuidance,
+  ActivityShell,
 } from '@/components/shared';
 import { sounds } from '@/lib/sound';
 import { downloadReceiptPNG, DateReceiptData } from '@/lib/receipt-canvas';
@@ -39,12 +40,12 @@ export default function QuizPage() {
   } = useActivitySession();
   const { saveKeepsake, saving: keepsakeSaving } = useKeepsakeWriter();
   const localRuntime = useActivityRuntime({
-    sessionId: sessionId || `mock-quiz-${roomCode || 'local'}`,
+    sessionId: sessionId || (roomCode ? `room-${roomCode}-quiz` : 'local-quiz'),
     activityType: 'quiz',
     userId: user?.id,
     roomId: roomCode || 'local',
-    transportMode: 'mock',
-    enabled: !sessionId,
+    transportMode: 'auto',
+    enabled: true,
     initialOptions: {
       packId: QUIZ_PACKS[0].id,
       packTitle: QUIZ_PACKS[0].name,
@@ -53,6 +54,8 @@ export default function QuizPage() {
     },
   });
   const activitySendEvent = sessionId ? sendEvent : localRuntime.sendEvent;
+  const [reactionNote, setReactionNote] = useState<string | null>(null);
+  const [whyText, setWhyText] = useState('');
 
   const [allPacks, setAllPacks] = useState<QuizPack[]>(QUIZ_PACKS);
   const [selectedPack, setSelectedPack] = useState<QuizPack>(QUIZ_PACKS[0]);
@@ -331,52 +334,29 @@ export default function QuizPage() {
   };
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: 'var(--paper)',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
+    <ActivityShell
+      activityKey="quiz"
+      title="Know Me Quiz"
+      subtitle="You know their coffee order. What about their secret dream?"
+      stage={currentQIndex === 0 && !isLocked ? 'ready' : finished ? 'remember' : 'play'}
+      roomCode={roomCode || undefined}
+      isSoloDemo={!sessionId && (!roomCode || roomCode === 'local')}
+      partnerName={partnerB || 'Partner'}
+      partnerPresence={bothLocked ? 'locked' : partnerLocked ? 'locked' : isLocked ? 'choosing' : 'online'}
+      recoveryState={localRuntime.recoveryState}
+      onRetryRecovery={() => localRuntime.requestRecovery()}
     >
-      <Ribbon />
-      <Navbar />
-      <CoupleNameBar />
       <Confetti active={confettiActive} />
 
-      <main
+      <div
         style={{
-          flex: 1,
           maxWidth: '860px',
           margin: '0 auto',
           width: '100%',
-          padding: '32px 16px 80px',
+          padding: '24px 16px 80px',
         }}
       >
-        {/* Navigation Breadcrumb */}
-        <div
-          style={{
-            marginBottom: '20px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <Link
-            href="/arcade"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              color: 'var(--ink-soft)',
-              fontSize: '13.5px',
-              fontWeight: 600,
-              textDecoration: 'none',
-            }}
-          >
-            ‹ Back to Date Arcade
-          </Link>
-
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
           <button
             onClick={() => setCreatorOpen(true)}
             className="btn btn-outline"
@@ -643,6 +623,61 @@ export default function QuizPage() {
               </div>
             </SecretAnswerSeal>
 
+            {/* Post-reveal reactions & reflection */}
+            {revealed && (
+              <div
+                style={{
+                  marginTop: '20px',
+                  padding: '16px 20px',
+                  borderRadius: '16px',
+                  background: 'rgba(255, 255, 255, 0.9)',
+                  border: '1px solid rgba(185, 120, 131, 0.25)',
+                  boxShadow: '0 4px 14px rgba(121, 76, 88, 0.05)',
+                }}
+              >
+                <div style={{ fontSize: '13px', fontWeight: 600, color: '#794c58', marginBottom: '8px' }}>
+                  React to your partner&apos;s answer:
+                </div>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
+                  {['✨ Same wavelength!', '😮 Surprised me!', '💬 Tell me more', '🥺 So sweet'].map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => setReactionNote(r)}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '999px',
+                        border: reactionNote === r ? '1.5px solid #794c58' : '1px solid rgba(185, 120, 131, 0.25)',
+                        background: reactionNote === r ? '#fff0f3' : '#ffffff',
+                        color: '#4a2835',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      {r}
+                    </button>
+                  ))}
+                </div>
+                <input
+                  type="text"
+                  value={whyText}
+                  onChange={(e) => setWhyText(e.target.value)}
+                  placeholder="Share a short 'why' or memory behind this..."
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(185, 120, 131, 0.25)',
+                    fontSize: '13px',
+                    background: '#fff',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+            )}
+
             {/* Next Question Navigation Bar */}
             {(revealed || isSkipped) && (
               <div
@@ -821,7 +856,6 @@ export default function QuizPage() {
         <div style={{ textAlign: 'center', marginTop: '36px' }}>
           <AiConsentToggle />
         </div>
-      </main>
 
       {/* Custom Pack Builder Modal */}
       {creatorOpen && (
@@ -932,6 +966,7 @@ export default function QuizPage() {
           onClose={() => setReceiptModalData(null)}
         />
       )}
-    </div>
+      </div>
+    </ActivityShell>
   );
 }

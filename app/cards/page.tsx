@@ -8,6 +8,7 @@ import {
   CoupleNameBar,
   AiConsentToggle,
   CupidotActivityGuidance,
+  ActivityShell,
 } from '@/components/shared';
 import { sounds } from '@/lib/sound';
 import {
@@ -21,6 +22,7 @@ import { useCoupleProfile } from '@/lib/couple';
 import { useAiConsent } from '@/lib/ai-consent';
 import { generateAdaptiveQuestion } from '@/lib/gemini';
 import { useActivityRuntime } from '@/hooks/useActivityRuntime';
+import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
 
 interface Card {
   tier: string;
@@ -28,65 +30,99 @@ interface Card {
   category: string;
 }
 
-const INITIAL_DECK: Card[] = [
-  {
-    tier: 'Level 1 · Warm Up',
-    category: 'Playful',
-    prompt:
-      'What is a small detail about me that you noticed recently and never said aloud?',
+const DECK_COLLECTIONS: Record<string, { name: string; icon: string; cards: Card[] }> = {
+  everyday: {
+    name: 'Everyday Us',
+    icon: '☕',
+    cards: [
+      { tier: 'Warm Up', category: 'Playful', prompt: 'What is a small detail about me that you noticed recently and never said aloud?' },
+      { tier: 'Warm Up', category: 'Habits', prompt: 'What is our funniest inside joke that nobody else in our lives would ever understand?' },
+      { tier: 'Warm Up', category: 'Comfort', prompt: 'What ordinary morning or evening routine together do you miss the most?' },
+    ],
   },
-  {
-    tier: 'Level 1 · Warm Up',
-    category: 'Habits',
-    prompt:
-      'What is our funniest inside joke that nobody else in our lives would ever understand?',
+  appreciation: {
+    name: 'Appreciation',
+    icon: '🌸',
+    cards: [
+      { tier: 'Gratitude', category: 'Kindness', prompt: 'When was a moment recently where I made you feel deeply supported?' },
+      { tier: 'Gratitude', category: 'Admiration', prompt: 'What is a quality in you that I have learned to love even more over time?' },
+      { tier: 'Gratitude', category: 'Presence', prompt: 'What is something I do without thinking that instantly calms your mind?' },
+    ],
   },
-  {
-    tier: 'Level 2 · Deep Water',
-    category: 'Feelings',
-    prompt:
-      'When is a moment during the distance when you felt closest to me, even miles apart?',
+  repair: {
+    name: 'Repair & Safety',
+    icon: '🕊️',
+    cards: [
+      { tier: 'Gentle Repair', category: 'Feelings', prompt: 'Is there a small misunderstanding between us that still lingers and needs a hug?' },
+      { tier: 'Gentle Repair', category: 'Safety', prompt: 'How can I best show up for you on days when you feel overwhelmed or quiet?' },
+      { tier: 'Gentle Repair', category: 'Reassurance', prompt: 'What reassurance helps your heart most when distance feels heavy?' },
+    ],
   },
-  {
-    tier: 'Level 2 · Deep Water',
-    category: 'Vulnerability',
-    prompt:
-      'What is a fear or worry you’ve had about our future that you haven’t fully shared yet?',
+  distance: {
+    name: 'Across the Miles',
+    icon: '✈️',
+    cards: [
+      { tier: 'Distance', category: 'Connection', prompt: 'When is a moment during the distance when you felt closest to me, even miles apart?' },
+      { tier: 'Distance', category: 'Longing', prompt: 'What is the very first thing you want us to do the moment we see each other next?' },
+      { tier: 'Distance', category: 'Trust', prompt: 'What makes you confident that every single mile of this distance will be worth it?' },
+    ],
   },
-  {
-    tier: 'Level 3 · Raw Truth',
-    category: 'Devotion',
-    prompt:
-      'What makes you confident that every single mile of this distance will be worth it?',
+  dreams: {
+    name: 'Someday & Dreams',
+    icon: '✨',
+    cards: [
+      { tier: 'Future', category: 'Adventures', prompt: 'What is one dream trip or quiet hideaway you want us to experience together?' },
+      { tier: 'Future', category: 'Home', prompt: 'What does your ideal Sunday morning in our future shared home feel like?' },
+      { tier: 'Future', category: 'Growth', prompt: 'How do you hope our relationship evolves over the next five years?' },
+    ],
   },
-  {
-    tier: 'Level 3 · Raw Truth',
-    category: 'Love',
-    prompt: 'How have you changed as a person since we fell in love?',
+  intimacy: {
+    name: 'Deep Intimacy',
+    icon: '🤍',
+    cards: [
+      { tier: 'Vulnerability', category: 'Heart', prompt: 'What is a fear or worry about our future that you haven’t fully voiced yet?' },
+      { tier: 'Devotion', category: 'Love', prompt: 'How have you changed as a person since we fell in love?' },
+      { tier: 'Tender Truth', category: 'Desire', prompt: 'What is an unspoken romantic gesture you secretly crave from me?' },
+    ],
   },
-];
+};
 
 export default function CardsPage() {
   const { partnerA, partnerB, roomCode } = useCoupleProfile();
   const { hasAiConsent } = useAiConsent();
-  const [deck, setDeck] = useState<Card[]>(INITIAL_DECK);
+  const { saveKeepsake, saving: keepsakeSaving } = useKeepsakeWriter();
+  const [selectedDeckKey, setSelectedDeckKey] = useState<string>('everyday');
+  const [deck, setDeck] = useState<Card[]>(DECK_COLLECTIONS.everyday.cards);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [scratchMode, setScratchMode] = useState(true);
   const [myAnswer, setMyAnswer] = useState('');
   const [partnerAnswer, setPartnerAnswer] = useState('');
   const [revealed, setRevealed] = useState(false);
+  const [reactionChoice, setReactionChoice] = useState<string | null>(null);
+  const [keepsakeSaved, setKeepsakeSaved] = useState(false);
   const [hostNote, setHostNote] = useState<string | null>(null);
   const [sessionHistory, setSessionHistory] = useState<
     Array<{ question: string; answerA: string; answerB: string }>
   >([]);
+
   const runtime = useActivityRuntime({
-    sessionId: `mock-cards-${roomCode || 'local'}`,
+    sessionId: roomCode ? `room-${roomCode}-cards` : 'local-cards',
     activityType: 'cards',
     roomId: roomCode || 'local',
-    transportMode: 'mock',
-    initialOptions: { deckId: 'honest-cards', totalCards: INITIAL_DECK.length },
+    transportMode: 'auto',
+    initialOptions: { deckId: selectedDeckKey, totalCards: deck.length },
   });
+
+  const selectDeck = (key: string) => {
+    setSelectedDeckKey(key);
+    setDeck(DECK_COLLECTIONS[key]?.cards || DECK_COLLECTIONS.everyday.cards);
+    setCurrentIdx(0);
+    setMyAnswer('');
+    setPartnerAnswer('');
+    setRevealed(false);
+    setReactionChoice(null);
+  };
 
   useEffect(() => {
     const snapshot = runtime.snapshot as {
@@ -106,7 +142,37 @@ export default function CardsPage() {
     setMyAnswer('');
     setPartnerAnswer('');
     setRevealed(false);
+    setReactionChoice(null);
     setHostNote(null);
+  };
+
+  const handleJustListen = () => {
+    setMyAnswer('(Listening to you tenderly 🎧)');
+    sounds.playTick();
+  };
+
+  const handleSaveKeepsake = async () => {
+    if (keepsakeSaved || keepsakeSaving) return;
+    try {
+      await saveKeepsake({
+        kind: 'activity',
+        title: `Honest Cards Reflection · ${DECK_COLLECTIONS[selectedDeckKey]?.name || 'Card'}`,
+        activityPath: '/cards',
+        caption: `Card prompt: "${card.prompt.slice(0, 45)}..."`,
+        metadata: {
+          activityType: 'cards',
+          deckId: selectedDeckKey,
+          cardPrompt: card.prompt,
+          myAnswer,
+          partnerAnswer,
+          reaction: reactionChoice,
+        },
+      });
+      setKeepsakeSaved(true);
+      sounds.playCelebration();
+    } catch (err) {
+      console.error('Failed to save reflection keepsake:', err);
+    }
   };
 
   const handleReveal = () => {
@@ -122,18 +188,11 @@ export default function CardsPage() {
     const updatedHistory = [...sessionHistory, currentRoundData];
     setSessionHistory(updatedHistory);
 
-    // Fetch dynamic adaptive follow-up card only if both real answers are present and AI consent is granted
     if (!hasAiConsent || !myAnswer.trim() || !partnerAnswer.trim()) return;
 
     void generateAdaptiveQuestion({
-      partnerA: {
-        name: partnerA,
-        answer: myAnswer.trim(),
-      },
-      partnerB: {
-        name: partnerB,
-        answer: partnerAnswer.trim(),
-      },
+      partnerA: { name: partnerA, answer: myAnswer.trim() },
+      partnerB: { name: partnerB, answer: partnerAnswer.trim() },
       mode: 'cards',
       mood: 'deep',
       aiConsent: true,
@@ -142,7 +201,7 @@ export default function CardsPage() {
       .then((data: any) => {
         if (data?.question) {
           const newCard: Card = {
-            tier: 'Level 4 · Deep Lore',
+            tier: 'Deep Lore',
             category: 'Adaptive',
             prompt: data.question,
           };
@@ -158,56 +217,56 @@ export default function CardsPage() {
   };
 
   return (
-    <div
-      style={{
-        background: 'var(--paper)',
-        minHeight: '100vh',
-        paddingBottom: '80px',
-        color: 'var(--ink)',
-      }}
+    <ActivityShell
+      activityKey="cards"
+      title="Honest Cards"
+      subtitle="Make room for the conversations you rarely get to have."
+      stage={currentIdx === 0 && !revealed ? 'ready' : revealed ? 'remember' : 'play'}
+      roomCode={roomCode || undefined}
+      isSoloDemo={!roomCode || roomCode === 'local'}
+      partnerName={partnerB || 'Partner'}
+      partnerPresence={revealed ? 'ready' : partnerAnswer ? 'writing' : 'online'}
+      recoveryState={runtime.recoveryState}
+      onRetryRecovery={() => runtime.requestRecovery()}
     >
-      <Ribbon
-        text={
-          <>
-            🎴 Honest Cards · <b>Vulnerable Conversations for Two Screens</b>
-          </>
-        }
-      />
-
-      <Navbar
-        rightAction={
-          <span
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '12px',
-              background: 'var(--paper-raised)',
-              padding: '4px 10px',
-              borderRadius: '6px',
-              border: '1px solid var(--line)',
-            }}
-          >
-            Card{' '}
-            <b>
-              {currentIdx + 1} / {deck.length}
-            </b>
-          </span>
-        }
-      />
-
-      <main className="wrap" style={{ paddingTop: '36px', maxWidth: '720px' }}>
-        <div style={{ marginBottom: '18px' }}>
-          <AiConsentToggle />
+      <main className="wrap" style={{ paddingTop: '24px', maxWidth: '720px', margin: '0 auto', width: '100%' }}>
+        {/* Deck Selector Chips */}
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '24px' }}>
+          {Object.entries(DECK_COLLECTIONS).map(([key, d]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => selectDeck(key)}
+              style={{
+                padding: '6px 14px',
+                borderRadius: '999px',
+                border: selectedDeckKey === key ? '2px solid #794c58' : '1px solid rgba(185, 120, 131, 0.25)',
+                background: selectedDeckKey === key ? '#fff0f3' : '#ffffff',
+                color: '#4a2835',
+                fontSize: '12px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                boxShadow: selectedDeckKey === key ? '0 2px 8px rgba(121, 76, 88, 0.15)' : 'none',
+              }}
+            >
+              <span>{d.icon}</span>
+              <span>{d.name}</span>
+            </button>
+          ))}
         </div>
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <CoupleNameBar />
           <h1
-            style={{ fontSize: 'clamp(28px, 4vw, 42px)', marginBottom: '10px' }}
+            style={{ fontSize: 'clamp(26px, 3.8vw, 36px)', marginBottom: '8px', fontFamily: 'Georgia, serif', color: '#4a2835' }}
           >
-            The questions you <span className="grad">keep avoiding</span>.
+            {DECK_COLLECTIONS[selectedDeckKey]?.name}
           </h1>
-          <p style={{ color: 'var(--ink-soft)', fontSize: '16px' }}>
-            You both answer privately on your screens — then the card flips open
-            at once.
+          <p style={{ color: '#8c6a75', fontSize: '15px' }}>
+            Answer privately on your screens. The card turns once both are locked in.
           </p>
         </div>
 
@@ -443,6 +502,24 @@ export default function CardsPage() {
                     fontSize: '14.5px',
                   }}
                 />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
+                  <button
+                    type="button"
+                    onClick={handleJustListen}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#794c58',
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                      textDecoration: 'underline',
+                      fontWeight: 600,
+                      padding: 0,
+                    }}
+                  >
+                    🎧 Prefer to just listen to your partner on this one?
+                  </button>
+                </div>
               </div>
               <div>
                 <label
@@ -484,7 +561,7 @@ export default function CardsPage() {
               </button>
             </div>
           ) : (
-            <div style={{ display: 'grid', gap: '16px' }}>
+            <div style={{ display: 'grid', gap: '16px', animation: 'unfoldIn 0.3s ease' }}>
               <div
                 style={{
                   background: 'var(--paper)',
@@ -545,6 +622,51 @@ export default function CardsPage() {
                 </p>
               </div>
 
+              {/* Shared Reactions Bar */}
+              <div style={{ padding: '14px 18px', borderRadius: '14px', background: 'rgba(255,255,255,0.9)', border: '1px solid rgba(185,120,131,0.2)' }}>
+                <div style={{ fontSize: '12px', fontWeight: 600, color: '#794c58', marginBottom: '8px' }}>
+                  Mutual Reflection Reaction:
+                </div>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                  {['✨ Tell me more', '🕊️ Hold this gently', '🤍 Keep this memory'].map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => setReactionChoice(r)}
+                      style={{
+                        padding: '6px 14px',
+                        borderRadius: '999px',
+                        border: reactionChoice === r ? '1.5px solid #794c58' : '1px solid rgba(185,120,131,0.25)',
+                        background: reactionChoice === r ? '#fff0f3' : '#fff',
+                        color: '#4a2835',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {r}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSaveKeepsake}
+                  disabled={keepsakeSaved}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: keepsakeSaved ? '#7d917b' : '#794c58',
+                    color: '#fff',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: keepsakeSaved ? 'default' : 'pointer',
+                  }}
+                >
+                  {keepsakeSaved ? '✓ Saved to Our Space' : '💌 Save to Our Space Keepsakes'}
+                </button>
+              </div>
+
               {hostNote && (
                 <div
                   style={{
@@ -597,6 +719,6 @@ export default function CardsPage() {
           )}
         </div>
       </main>
-    </div>
+    </ActivityShell>
   );
 }

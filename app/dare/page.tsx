@@ -6,7 +6,9 @@ import Link from 'next/link';
 import { sounds } from '@/lib/sound';
 import { useCoupleProfile } from '@/lib/couple';
 import { useActivityRuntime } from '@/hooks/useActivityRuntime';
+import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
 import { Confetti } from '@/components/shared/Confetti';
+import { ActivityShell } from '@/components/shared/ActivityShell';
 
 const MINIGAMES = [
   {
@@ -41,23 +43,94 @@ const MINIGAMES = [
   },
 ];
 
-const TRUTHS = [
-  'What is the most embarrassing photo in your camera roll right now? (Show it to the camera!)',
-  'What was your honest first impression of me the very first day we talked?',
-  'What is one secret cheesy romantic thought you had about me recently?',
-  'If we had 24 hours together with no budget anywhere on earth, what would you plan?',
-  'What is a silly habit of mine that you secretly find adorable?',
-  'What is one song that always makes you think of me no matter where you are?',
-];
+export const THEMED_DECKS: Record<
+  string,
+  { name: string; icon: string; truths: string[]; dares: string[] }
+> = {
+  playful: {
+    name: 'Playful',
+    icon: '🎈',
+    truths: [
+      'What was your honest first impression of me the very first day we talked?',
+      'What is a silly habit of mine that you secretly find adorable?',
+      'What is the funniest photo in your camera roll right now? (Show it!)',
+      'What is our most chaotic memory together that still makes you laugh?',
+    ],
+    dares: [
+      'Sing a 15-second love song in your most dramatic opera voice on camera!',
+      'Do your best, most hilarious impression of me when I am hungry.',
+      'Show the last 3 items you searched for on your phone without cropping.',
+      'Text a silly romantic pun to me right now with zero context.',
+    ],
+  },
+  romantic: {
+    name: 'Romantic',
+    icon: '💖',
+    truths: [
+      'What is one secret cheesy romantic thought you had about me recently?',
+      'What is one song that always makes you think of me no matter where you are?',
+      'When did you first realize you were falling in love with me?',
+      'What is your favorite quiet moment we have ever shared together?',
+    ],
+    dares: [
+      'Send a 10-second voice memo whispering the sweetest thing you can think of.',
+      'Describe our dream reunion date in vivid detail in under 30 seconds.',
+      'Take a cute selfie right now making a heart with your hands toward the screen.',
+      'Read our very first text message conversation out loud in a dramatic narrator voice.',
+    ],
+  },
+  deep: {
+    name: 'Deep Talk',
+    icon: '🌊',
+    truths: [
+      'What is a worry about the distance or our future that you haven’t fully shared?',
+      'In what ways has loving each other helped you heal or grow as a person?',
+      'What makes you feel most safely understood when you are having a tough day?',
+      'What is a promise you want us to make to each other for the upcoming year?',
+    ],
+    dares: [
+      'Look into the camera for 20 uninterrupted seconds without speaking, just smiling.',
+      'Write down 3 promises for our future and read them aloud with eye contact.',
+      'Tell me the exact moment you felt most grateful to have me in your life.',
+      'Give a sincere 30-second speech on what you love most about who I am becoming.',
+    ],
+  },
+  chaotic: {
+    name: 'Chaotic Fun',
+    icon: '⚡',
+    truths: [
+      'What is the weirdest food combination you secretly enjoy when alone?',
+      'If you were forced to dye our hair a matching neon color, what would you pick?',
+      'What is the dumbest argument we have ever had that you still giggle about?',
+      'What is an embarrassing fashion choice from your past you hoped I’d never see?',
+    ],
+    dares: [
+      'Let me pick a ridiculous filter that you have to keep on for the next 2 rounds.',
+      'Speak in a royal British accent until the next minigame ends.',
+      'Balance a spoon on your nose for 10 seconds without dropping it on camera.',
+      'Do 10 jumping jacks while enthusiastically declaring your love for me.',
+    ],
+  },
+  spicy: {
+    name: 'Spicy Consent',
+    icon: '🌶️',
+    truths: [
+      'What is an unspoken romantic fantasy you have thought about lately?',
+      'Where is your favorite place on your body to be kissed softly?',
+      'What outfit of mine drives you the wildest when we are together in person?',
+      'What is your favorite memory of our physical closeness so far?',
+    ],
+    dares: [
+      'Give me your best sultry slow-motion gaze for 15 seconds.',
+      'Send a photo showing just your lips or collarbone with warm lighting.',
+      'Whisper what you want us to do the first night we are back in each other’s arms.',
+      'Describe your favorite way to wake up beside me in bed.',
+    ],
+  },
+};
 
-const DARES = [
-  'Sing a 15-second love song to me in your most dramatic opera voice on FaceTime!',
-  'Do your best, most hilarious impression of me when I am hungry or tired.',
-  'Send a voice memo saying the sweetest thing you can think of in 10 seconds without pausing.',
-  'Let me pick a funny filter and you have to keep it on your camera for the next 3 rounds.',
-  'Text me a screenshot of your screen time today without cropping!',
-  'Post a cute candid photo of us or of me on your story with a funny caption.',
-];
+const TRUTHS = THEMED_DECKS.playful.truths;
+const DARES = THEMED_DECKS.playful.dares;
 
 // Helper to render authentic dice pips
 function DiceFace({ val }: { val: number }) {
@@ -104,12 +177,17 @@ function DiceFace({ val }: { val: number }) {
 
 export default function DarePage() {
   const { partnerA, partnerB, roomCode } = useCoupleProfile();
+  const { saveKeepsake, saving: keepsakeSaving } = useKeepsakeWriter();
   const runtime = useActivityRuntime({
-    sessionId: `mock-dare-${roomCode || 'local'}`,
+    sessionId: roomCode ? `room-${roomCode}-dare` : 'local-dare',
     activityType: 'dare',
     roomId: roomCode || 'local',
-    transportMode: 'mock',
+    transportMode: 'auto',
   });
+  const [currentDeckKey, setCurrentDeckKey] = useState<string>('playful');
+  const [completedDares, setCompletedDares] = useState<number>(0);
+  const [completedTruths, setCompletedTruths] = useState<number>(0);
+  const [keepsakeSaved, setKeepsakeSaved] = useState(false);
   const [selectedGame, setSelectedGame] = useState(MINIGAMES[0]);
   const [gameState, setGameState] = useState<'idle' | 'playing' | 'result'>(
     'idle',
@@ -190,7 +268,6 @@ export default function DarePage() {
       setReactionStage('red');
       setReactionMs(null);
 
-      // Transition to yellow after 1.2s, then to green after 1.5 - 3.2s
       reactionTimeout1Ref.current = setTimeout(() => {
         setReactionStage('yellow');
         sounds.playCountdownBeep(false);
@@ -312,7 +389,9 @@ export default function DarePage() {
   const pickTruth = () => {
     sounds.playPop();
     setActiveCardType('truth');
-    const random = TRUTHS[Math.floor(Math.random() * TRUTHS.length)];
+    const truths =
+      THEMED_DECKS[currentDeckKey]?.truths || THEMED_DECKS.playful.truths;
+    const random = truths[Math.floor(Math.random() * truths.length)];
     setCardPrompt(random);
     setConfettiActive(true);
     setTimeout(() => setConfettiActive(false), 3000);
@@ -321,76 +400,102 @@ export default function DarePage() {
   const pickDare = () => {
     sounds.playPop();
     setActiveCardType('dare');
-    const random = DARES[Math.floor(Math.random() * DARES.length)];
+    const dares =
+      THEMED_DECKS[currentDeckKey]?.dares || THEMED_DECKS.playful.dares;
+    const random = dares[Math.floor(Math.random() * dares.length)];
     setCardPrompt(random);
     setConfettiActive(true);
     setTimeout(() => setConfettiActive(false), 3000);
   };
 
+  const handleComfortSkip = () => {
+    sounds.playPop();
+    setGameState('idle');
+    setActiveCardType(null);
+  };
+
+  const handleCompleteChallenge = () => {
+    sounds.playPop();
+    if (activeCardType === 'truth') {
+      setCompletedTruths((c) => c + 1);
+    } else {
+      setCompletedDares((c) => c + 1);
+    }
+    setGameState('idle');
+    setActiveCardType(null);
+  };
+
+  const handleSavePassport = async () => {
+    if (keepsakeSaved || keepsakeSaving) return;
+    try {
+      await saveKeepsake({
+        kind: 'activity',
+        title: `Challenge Passport · ${completedTruths + completedDares} Completed`,
+        activityPath: '/dare',
+        caption: `${completedTruths} Truths & ${completedDares} Dares completed together`,
+        metadata: {
+          activityType: 'dare',
+          deck: currentDeckKey,
+          truths: completedTruths,
+          dares: completedDares,
+        },
+      });
+      setKeepsakeSaved(true);
+      sounds.playCelebration();
+    } catch (err) {
+      console.error('Failed to save challenge passport:', err);
+    }
+  };
+
   const currentCps = (tapCount / Math.max(0.2, 5 - timeLeft)).toFixed(1);
 
   return (
-    <div
-      style={{
-        background: 'var(--paper)',
-        minHeight: '100vh',
-        paddingBottom: '80px',
-        color: 'var(--ink)',
-      }}
+    <ActivityShell
+      activityKey="dare"
+      title="Truth or Dare"
+      subtitle="A brave answer or a playful dare. Your move."
+      stage={gameState === 'idle' ? 'ready' : gameState === 'playing' ? 'play' : 'remember'}
+      roomCode={roomCode || undefined}
+      isSoloDemo={!roomCode || roomCode === 'local'}
+      partnerName={partnerB || 'Partner'}
+      partnerPresence={gameState === 'playing' ? 'choosing' : 'online'}
+      recoveryState={runtime.recoveryState}
+      onRetryRecovery={() => runtime.requestRecovery()}
     >
       <Confetti active={confettiActive} />
 
-      <header className="bar">
-        <div
-          className="wrap"
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <Link
-              className="brand"
-              href="/"
-              onClick={() => sounds.playPop()}
-              aria-label="Dearly Us Home"
-            >
-              <BrandLogo tone="light" />
-            </Link>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span
+      <main className="wrap" style={{ paddingTop: '24px', maxWidth: '800px', margin: '0 auto', width: '100%' }}>
+        {/* Deck Selection Bar */}
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '24px' }}>
+          {Object.entries(THEMED_DECKS).map(([key, d]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => {
+                setCurrentDeckKey(key);
+                sounds.playTick();
+              }}
               style={{
-                fontFamily: 'var(--font-mono)',
+                padding: '6px 14px',
+                borderRadius: '999px',
+                border: currentDeckKey === key ? '2px solid #794c58' : '1px solid rgba(185, 120, 131, 0.25)',
+                background: currentDeckKey === key ? '#fff0f3' : '#ffffff',
+                color: '#4a2835',
                 fontSize: '12px',
-                background: 'var(--paper-raised)',
-                padding: '4px 12px',
-                borderRadius: '20px',
-                border: '1px solid var(--line)',
+                fontWeight: 700,
+                cursor: 'pointer',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '6px',
+                gap: '5px',
+                boxShadow: currentDeckKey === key ? '0 2px 8px rgba(121, 76, 88, 0.15)' : 'none',
               }}
             >
-              <span>
-                {partnerA} vs {partnerB}
-              </span>
-            </span>
-
-            <Link
-              className="btn btn-ghost"
-              href="/activity"
-              onClick={() => sounds.playPop()}
-            >
-              Activities ▷
-            </Link>
-          </div>
+              <span>{d.icon}</span>
+              <span>{d.name}</span>
+            </button>
+          ))}
         </div>
-      </header>
 
-      <main className="wrap" style={{ paddingTop: '36px', maxWidth: '760px' }}>
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
           <span className="eyebrow">Truth or Dare · 6 Interactive Arenas</span>
           <h1
@@ -1060,26 +1165,60 @@ export default function DarePage() {
               <div
                 style={{
                   display: 'flex',
-                  gap: '10px',
+                  gap: '12px',
                   justifyContent: 'center',
+                  flexWrap: 'wrap',
                 }}
               >
                 <button
+                  type="button"
                   className="btn btn-grad"
-                  onClick={() => {
-                    sounds.playPop();
-                    setGameState('idle');
-                    setActiveCardType(null);
-                  }}
+                  onClick={handleCompleteChallenge}
                   style={{ padding: '10px 24px', fontSize: '15px' }}
                 >
-                  Dare Completed! Next Game ▷
+                  Challenge Done! Next Round ▷
+                </button>
+                <button
+                  type="button"
+                  onClick={handleComfortSkip}
+                  style={{
+                    padding: '10px 18px',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(185, 120, 131, 0.3)',
+                    background: '#fff',
+                    color: '#794c58',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  🕊️ Pass (Comfort Skip)
+                </button>
+              </div>
+
+              <div style={{ marginTop: '20px', textAlign: 'center' }}>
+                <button
+                  type="button"
+                  onClick={handleSavePassport}
+                  disabled={keepsakeSaved}
+                  style={{
+                    padding: '8px 18px',
+                    borderRadius: '999px',
+                    border: 'none',
+                    background: keepsakeSaved ? '#7d917b' : '#794c58',
+                    color: '#fff',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: keepsakeSaved ? 'default' : 'pointer',
+                  }}
+                >
+                  {keepsakeSaved ? '✓ Saved to Passport' : `💌 Save Passport (${completedTruths + completedDares} Challenges)`}
                 </button>
               </div>
             </div>
           )}
         </div>
       </main>
-    </div>
+    </ActivityShell>
   );
 }
