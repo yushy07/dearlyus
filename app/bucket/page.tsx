@@ -2,596 +2,501 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import {
-  Ribbon,
-  Navbar,
-  Confetti,
-  CupidotActivityGuidance,
-} from '@/components/shared';
+import { ActivityShell } from '@/components/shared';
 import { sounds } from '@/lib/sound';
-import { ScrollProgress, ScrollReveal } from '@/components/ui';
-import type { BotState } from '@/components/bot/CupidotBot';
-import { Cupidot2D } from '@/components/bot/Cupidot2D';
+import { useCoupleProfile } from '@/lib/couple';
+import { useActivityRuntime } from '@/hooks/useActivityRuntime';
+import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
 import { generateBucketDate, GeneratedBucketIdea } from '@/lib/cupidot';
 
-interface BucketDate {
-  id: number;
+export interface BucketDateItem {
+  id: string;
   title: string;
-  category: 'Virtual' | 'Reunion' | 'Adventure' | 'Food';
+  category: 'At Home' | 'Online' | 'Outside' | 'Creative' | 'Food' | 'Travel' | 'Reunion' | 'Low Energy';
   icon: string;
-  completed: boolean;
+  status: 'wishlist' | 'planned' | 'done';
+  isFavourited?: boolean;
+  isRevealed?: boolean;
+  note?: string;
   completedDate?: string;
 }
 
+const INITIAL_100_DATES: BucketDateItem[] = [
+  { id: '1', title: 'Take a vintage 4-cut 인생네컷 photostrip on Dearly Us', category: 'Online', icon: '📸', status: 'done', isRevealed: true, completedDate: 'Aug 14, 2026', note: 'We put on our matching hats!' },
+  { id: '2', title: 'Cook the exact same carbonara recipe in two kitchens', category: 'Food', icon: '🍝', status: 'done', isRevealed: true, completedDate: 'Aug 20, 2026', note: 'Both smelled like garlic heaven.' },
+  { id: '3', title: 'Sleep on FaceTime the entire night until the sun comes up', category: 'Online', icon: '😴', status: 'done', isRevealed: true, completedDate: 'Aug 28, 2026' },
+  { id: '4', title: 'Airport sprint hug at the arrival terminal gate', category: 'Reunion', icon: '✈️', status: 'planned', isRevealed: true },
+  { id: '5', title: 'Explore a foreign night market and eat street skewers at 1am', category: 'Travel', icon: '🍢', status: 'wishlist', isRevealed: false },
+  { id: '6', title: 'Watch a golden hour sunset holding hands in person', category: 'Outside', icon: '🌅', status: 'planned', isRevealed: true },
+  { id: '7', title: 'Build our 3-year future apartment vision board', category: 'Creative', icon: '🏡', status: 'done', isRevealed: true, completedDate: 'Sep 02, 2026' },
+  { id: '8', title: 'Wear our matching DIY twin couple shirts outside', category: 'Reunion', icon: '👕', status: 'wishlist', isRevealed: false },
+  { id: '9', title: 'Rent a quiet forest cabin with a hot tub and starry night', category: 'Travel', icon: '🏔️', status: 'wishlist', isRevealed: false },
+  { id: '10', title: 'Seal a 5-year wax-sealed time capsule letter to open later', category: 'Creative', icon: '💌', status: 'planned', isRevealed: true },
+  { id: '11', title: 'Walk 20,000 steps together exploring hidden alleyways', category: 'Outside', icon: '👟', status: 'wishlist', isRevealed: false },
+  { id: '12', title: 'Grocery shop together on a sleepy Tuesday afternoon', category: 'Reunion', icon: '🛒', status: 'planned', isRevealed: true },
+  { id: '13', title: 'Silent co-reading date with tea and gentle jazz music', category: 'Low Energy', icon: '📖', status: 'wishlist', isRevealed: true },
+  { id: '14', title: 'Bake cookies from scratch on camera and taste test together', category: 'At Home', icon: '🍪', status: 'wishlist', isRevealed: false },
+  { id: '15', title: 'Send surprise care packages that can only be opened on call', category: 'Online', icon: '📦', status: 'done', isRevealed: true, completedDate: 'Sep 05, 2026' },
+  { id: '16', title: 'Spend an entire rainy afternoon doing absolutely nothing in bed', category: 'Low Energy', icon: '🌧️', status: 'wishlist', isRevealed: false },
+];
+
 export default function BucketListPage() {
-  const [dates, setDates] = useState<BucketDate[]>([
-    {
-      id: 1,
-      title: 'Take a 4-cut 인생네컷 photostrip on Dearly Us',
-      category: 'Virtual',
-      icon: '📸',
-      completed: true,
-      completedDate: 'Aug 14, 2026',
-    },
-    {
-      id: 2,
-      title: 'Cook the exact same recipe in two kitchens',
-      category: 'Food',
-      icon: '🍝',
-      completed: true,
-      completedDate: 'Aug 20, 2026',
-    },
-    {
-      id: 3,
-      title: 'Sleep on FaceTime the entire night until sunrise',
-      category: 'Virtual',
-      icon: '😴',
-      completed: true,
-      completedDate: 'Aug 28, 2026',
-    },
-    {
-      id: 4,
-      title: 'Airport sprint hug at the arrival terminal gate',
-      category: 'Reunion',
-      icon: '✈️',
-      completed: false,
-    },
-    {
-      id: 5,
-      title: 'Walk 25,000 steps together exploring Tokyo/Seoul',
-      category: 'Adventure',
-      icon: '⛩️',
-      completed: false,
-    },
-    {
-      id: 6,
-      title: 'Watch a sunset in person holding hands',
-      category: 'Reunion',
-      icon: '🌅',
-      completed: false,
-    },
-    {
-      id: 7,
-      title: 'Build our 3-year future home vision board',
-      category: 'Virtual',
-      icon: '🏡',
-      completed: false,
-    },
-    {
-      id: 8,
-      title: 'Wear our matching twin-pack couple shirts',
-      category: 'Reunion',
-      icon: '👕',
-      completed: false,
-    },
-    {
-      id: 9,
-      title: 'Eat street food at 2am in a foreign city',
-      category: 'Food',
-      icon: '🍢',
-      completed: false,
-    },
-    {
-      id: 10,
-      title: 'Seal a 5-year time capsule letter to open later',
-      category: 'Virtual',
-      icon: '💌',
-      completed: false,
-    },
-    {
-      id: 11,
-      title: 'Rent a cozy mountain cabin with a private hot tub',
-      category: 'Adventure',
-      icon: '🏔️',
-      completed: false,
-    },
-    {
-      id: 12,
-      title: 'Grocery shop together holding hands on a Tuesday',
-      category: 'Reunion',
-      icon: '🛒',
-      completed: false,
-    },
-  ]);
+  const { partnerA, partnerB } = useCoupleProfile();
+  const [dates, setDates] = useState<BucketDateItem[]>(INITIAL_100_DATES);
+  const [selectedFilter, setSelectedFilter] = useState<string>('All');
+  const [currentStage, setCurrentStage] = useState<'ready' | 'play' | 'remember'>('play');
+  const [newTitle, setNewTitle] = useState('');
+  const [newCategory, setNewCategory] = useState<BucketDateItem['category']>('At Home');
+  const [ideaModalOpen, setIdeaModalOpen] = useState(false);
+  const [cupidotIdea, setCupidotIdea] = useState<GeneratedBucketIdea | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
-  // Load from localStorage
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('dearly_bucket_dates');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setDates(parsed);
+  const { saveKeepsake, isSaving } = useKeepsakeWriter();
+  const runtime = useActivityRuntime({
+    activityType: 'bucket',
+    transportMode: 'auto',
+  });
+
+  const completedCount = dates.filter((d) => d.status === 'done').length;
+  const plannedCount = dates.filter((d) => d.status === 'planned').length;
+
+  const toggleStatus = (id: string) => {
+    sounds.playCelebration();
+    setDates((prev) =>
+      prev.map((d) => {
+        if (d.id === id) {
+          const nextStatus = d.status === 'done' ? 'wishlist' : 'done';
+          return {
+            ...d,
+            status: nextStatus,
+            completedDate: nextStatus === 'done' ? new Date().toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) : undefined,
+          };
         }
-      }
-    } catch {}
-  }, []);
-
-  const saveDates = (items: BucketDate[]) => {
-    try {
-      localStorage.setItem('dearly_bucket_dates', JSON.stringify(items));
-    } catch {}
+        return d;
+      }),
+    );
+    runtime.dispatch({
+      type: 'bucket_status_change',
+      payload: { id, isCompleted: true },
+    });
   };
 
-  const [selectedFilter, setSelectedFilter] = useState<
-    'All' | 'Virtual' | 'Reunion' | 'Adventure' | 'Food'
-  >('All');
-  const [confettiActive, setConfettiActive] = useState(false);
-  const [ideaModalOpen, setIdeaModalOpen] = useState(false);
-  const [cupidotIdea, setCupidotIdea] = useState<GeneratedBucketIdea | null>(
-    null,
-  );
-  const [botState, setBotState] = useState<BotState>('idle');
+  const togglePlanned = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    sounds.playPop();
+    setDates((prev) =>
+      prev.map((d) => (d.id === id ? { ...d, status: d.status === 'planned' ? 'wishlist' : 'planned' } : d)),
+    );
+  };
 
-  const toggleDate = (id: number) => {
-    const updated = dates.map((d) => {
-      if (d.id === id) {
-        const nextState = !d.completed;
-        if (nextState) {
-          sounds.playCelebration();
-          setConfettiActive(true);
-          setTimeout(() => setConfettiActive(false), 2500);
-        }
-        return {
-          ...d,
-          completed: nextState,
-          completedDate: nextState
-            ? new Date().toLocaleDateString([], {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-              })
-            : undefined,
-        };
-      }
-      return d;
+  const toggleFavourite = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    sounds.playPop();
+    setDates((prev) =>
+      prev.map((d) => (d.id === id ? { ...d, isFavourited: !d.isFavourited } : d)),
+    );
+  };
+
+  const revealScratch = (id: string) => {
+    sounds.playPop();
+    setDates((prev) =>
+      prev.map((d) => (d.id === id ? { ...d, isRevealed: true } : d)),
+    );
+    runtime.dispatch({
+      type: 'bucket_scratch_reveal',
+      payload: { id },
     });
-    setDates(updated);
-    saveDates(updated);
   };
 
   const handleAskCupidot = () => {
     sounds.playPop();
     const idea = generateBucketDate(dates.map((d) => d.title));
     setCupidotIdea(idea);
-    setBotState('love');
     setIdeaModalOpen(true);
   };
 
-  const handleAddIdea = () => {
+  const handleAddCupidotIdea = () => {
     if (!cupidotIdea) return;
     sounds.playCelebration();
-    setConfettiActive(true);
-    setTimeout(() => setConfettiActive(false), 2500);
-
-    const newDate: BucketDate = {
-      id: Date.now(),
+    const newItem: BucketDateItem = {
+      id: Date.now().toString(),
       title: cupidotIdea.title,
-      category: cupidotIdea.category,
+      category: cupidotIdea.category as any,
       icon: cupidotIdea.icon,
-      completed: false,
+      status: 'wishlist',
+      isRevealed: true,
     };
-
-    const updated = [newDate, ...dates];
-    setDates(updated);
-    saveDates(updated);
+    setDates([newItem, ...dates]);
     setIdeaModalOpen(false);
   };
 
-  const filtered =
-    selectedFilter === 'All'
-      ? dates
-      : dates.filter((d) => d.category === selectedFilter);
-  const completedCount = dates.filter((d) => d.completed).length;
-  const progressPercent = Math.round((completedCount / dates.length) * 100);
+  const handleAddCustomDate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTitle.trim()) return;
+    sounds.playPop();
+    const newItem: BucketDateItem = {
+      id: Date.now().toString(),
+      title: newTitle.trim(),
+      category: newCategory,
+      icon: '✨',
+      status: 'wishlist',
+      isRevealed: true,
+    };
+    setDates([newItem, ...dates]);
+    setNewTitle('');
+  };
+
+  const handleSaveCertificate = async () => {
+    sounds.playCelebration();
+    const success = await saveKeepsake({
+      kind: 'activity',
+      title: `100 Dates Bucket Passport · ${completedCount} Dates Fulfilled`,
+      subtitle: `${partnerA} & ${partnerB} · ${plannedCount} upcoming planned dates`,
+      metadata: {
+        activityType: 'bucket',
+        completedCount,
+        totalDates: dates.length,
+        partnerA,
+        partnerB,
+        completedList: dates.filter((d) => d.status === 'done').map((d) => ({ title: d.title, date: d.completedDate, note: d.note })),
+      },
+    });
+    if (success) {
+      setSaveSuccess(true);
+      setCurrentStage('remember');
+      setTimeout(() => setSaveSuccess(false), 3500);
+    }
+  };
+
+  const filtered = selectedFilter === 'All' ? dates : dates.filter((d) => d.category === selectedFilter);
 
   return (
-    <div
-      style={{
-        background: 'var(--paper)',
-        minHeight: '100vh',
-        paddingBottom: '80px',
-        color: 'var(--ink)',
+    <ActivityShell
+      activityTitle="100 Dates Bucket List"
+      activitySubtitle={`Dream, shortlist, and scratch off dates for ${partnerA} & ${partnerB}`}
+      currentStage={currentStage}
+      partnerPresence={runtime.partnerPresence}
+      roomCode={runtime.roomId}
+      isHost={runtime.isHost}
+      stageIndicator="Discover → Scratch & Plan → Fulfill → Passport Keepsake"
+      guidancePhase="browsing"
+      guidancePrivacyNote="Your bucket list and completed dates are synced privately between you two."
+      keepsakeSummary={{
+        kind: 'activity',
+        title: '100 Dates Bucket Passport',
+        subtitle: `${completedCount} of ${dates.length} dreams fulfilled`,
+        badge: 'Bucket List',
       }}
     >
-      <ScrollProgress />
-      <Ribbon
-        text={
-          <>
-            🎯 100 Dates Bucket List ·{' '}
-            <b>Scratch Off Virtual &amp; In-Person Milestones</b>
-          </>
-        }
-      />
-      <Confetti active={confettiActive} />
-
-      <Navbar
-        rightAction={
-          <span
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '12px',
-              background: 'var(--paper-raised)',
-              padding: '4px 10px',
-              borderRadius: '6px',
-              border: '1px solid var(--line)',
-            }}
-          >
-            Completed:{' '}
-            <b>
-              {completedCount} / {dates.length}
-            </b>
-          </span>
-        }
-      />
-
-      <main className="wrap" style={{ paddingTop: '36px', maxWidth: '960px' }}>
-        <ScrollReveal animation="fade-up">
-          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-            <span className="eyebrow">Our Shared Journey</span>
-            <h1
-              style={{
-                fontSize: 'clamp(28px, 4.5vw, 42px)',
-                fontWeight: 800,
-                margin: '8px 0',
-              }}
-            >
-              100 Dates <span className="grad">Scratch-Off Checklist</span>
-            </h1>
-            <p
-              style={{
-                color: 'var(--ink-soft)',
-                fontSize: '16px',
-                maxWidth: '52ch',
-                margin: '0 auto 16px',
-              }}
-            >
-              From late-night video dates across the ocean to the first grocery
-              run together after closing the distance.
+      <div style={{ maxWidth: '960px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+        
+        {/* Progress & Milestone Header Card */}
+        <div
+          style={{
+            background: 'var(--paper-raised)',
+            border: '1px solid var(--line)',
+            borderRadius: '24px',
+            padding: '28px 32px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '20px',
+            boxShadow: 'var(--shadow-sm)',
+          }}
+        >
+          <div>
+            <span className="badge hot" style={{ fontSize: '11.5px' }}>
+              Couple Memories Tracker
+            </span>
+            <h2 style={{ fontSize: '24px', fontWeight: 800, margin: '6px 0 4px' }}>
+              {completedCount} of {dates.length} Adventures Fulfilled
+            </h2>
+            <p style={{ margin: 0, fontSize: '13.5px', color: 'var(--ink-soft)' }}>
+              {plannedCount} dates currently shortlisted for our next date night or reunion.
             </p>
+          </div>
+
+          <div style={{ display: 'flex', gap: '10px' }}>
             <button
               onClick={handleAskCupidot}
-              className="btn btn-grad"
-              style={{
-                padding: '10px 24px',
-                fontSize: '14px',
-                borderRadius: '999px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-              }}
+              className="btn btn-ghost"
+              style={{ padding: '8px 16px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
             >
-              <span>ʚ🤖💘ɞ</span>
-              <span>Ask Cupidot to Invent a Date Idea</span>
+              <span>✨</span>
+              Cupidot Date Generator
             </button>
-          </div>
-        </ScrollReveal>
-
-        {/* Cupidot Standard Activity Lifecycle Guidance */}
-        <CupidotActivityGuidance
-          activityName="100 Dates Bucket List"
-          phase={completedCount === dates.length ? 'completed' : 'ready'}
-          privacyNote="Checked milestones are part of your mutual couple bucket list. Tap any item to toggle together."
-        />
-
-        {/* Progress Bar Card */}
-        <div
-          className="booth-box"
-          style={{ padding: '24px 28px', marginBottom: '28px' }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '10px',
-            }}
-          >
-            <span style={{ fontWeight: 800, fontSize: '15px' }}>
-              Couple Bucket List Progress
-            </span>
-            <span
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontWeight: 900,
-                color: 'var(--pink)',
-                fontSize: '16px',
-              }}
+            <button
+              onClick={handleSaveCertificate}
+              disabled={isSaving}
+              className="btn btn-primary"
+              style={{ padding: '8px 18px', fontSize: '13px' }}
             >
-              {progressPercent}% Complete
-            </span>
-          </div>
-          <div
-            style={{
-              width: '100%',
-              height: '12px',
-              background: 'var(--paper)',
-              borderRadius: '6px',
-              overflow: 'hidden',
-              border: '1px solid var(--line)',
-            }}
-          >
-            <div
-              style={{
-                width: `${progressPercent}%`,
-                height: '100%',
-                background: 'var(--grad-primary)',
-                borderRadius: '6px',
-                transition: 'width 0.4s ease',
-              }}
-            />
+              {isSaving ? 'Saving...' : saveSuccess ? 'Saved to Our Space! 💖' : 'Save Passport to Our Space'}
+            </button>
           </div>
         </div>
 
-        {/* Filter Pills */}
-        <div
-          style={{
-            display: 'flex',
-            gap: '8px',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            marginBottom: '28px',
-          }}
-        >
-          {['All', 'Virtual', 'Reunion', 'Adventure', 'Food'].map((cat) => (
+        {/* Category Filters */}
+        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+          {['All', 'Online', 'Food', 'Outside', 'Creative', 'Travel', 'Reunion', 'Low Energy'].map((cat) => (
             <button
               key={cat}
-              onClick={() => setSelectedFilter(cat as any)}
+              onClick={() => setSelectedFilter(cat)}
               className={`btn ${selectedFilter === cat ? 'btn-primary' : 'btn-ghost'}`}
-              style={{ padding: '6px 16px', fontSize: '13px' }}
+              style={{ padding: '6px 14px', fontSize: '12.5px', whiteSpace: 'nowrap', borderRadius: '20px' }}
             >
-              {cat === 'Virtual'
-                ? '💻 Virtual Dates'
-                : cat === 'Reunion'
-                  ? '✈️ Reunion Milestones'
-                  : cat === 'Adventure'
-                    ? '🌲 Outdoor Adventures'
-                    : cat === 'Food'
-                      ? '🍜 Cooking & Food'
-                      : '✨ All Dates'}
+              {cat}
             </button>
           ))}
         </div>
 
-        {/* Dates Grid */}
-        <ScrollReveal stagger animation="fade-up">
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-              gap: '16px',
-            }}
-          >
-            {filtered.map((d) => (
+        {/* Date Ticket Cards Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '18px' }}>
+          {filtered.map((item) => {
+            const isDone = item.status === 'done';
+            const isPlanned = item.status === 'planned';
+            const isRevealed = item.isRevealed ?? true;
+
+            return (
               <div
-                key={d.id}
-                onClick={() => toggleDate(d.id)}
+                key={item.id}
                 style={{
-                  background: d.completed ? '#FFF5F8' : '#FFFFFF',
-                  border: d.completed
-                    ? '2px solid var(--pink)'
-                    : '1px solid var(--line)',
+                  background: isDone ? 'rgba(72,187,120,0.06)' : 'var(--paper-raised)',
+                  border: isDone ? '1px solid #48BB78' : isPlanned ? '2px solid var(--pink)' : '1px solid var(--line)',
                   borderRadius: '16px',
                   padding: '20px',
-                  cursor: 'pointer',
-                  boxShadow: 'var(--shadow)',
                   display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '14px',
+                  flexDirection: 'column',
+                  gap: '12px',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  boxShadow: 'var(--shadow-sm)',
                   transition: 'all 0.15s ease',
                 }}
               >
-                <span style={{ fontSize: '32px', flexShrink: 0 }}>
-                  {d.icon}
-                </span>
-                <div style={{ flex: 1 }}>
+                {/* Scratch foil overlay if hidden */}
+                {!isRevealed && (
                   <div
+                    onClick={() => revealScratch(item.id)}
                     style={{
+                      position: 'absolute',
+                      inset: 0,
+                      background: 'linear-gradient(135deg, #D4AF37 0%, #F3E5AB 50%, #AA771C 100%)',
                       display: 'flex',
-                      justifyContent: 'space-between',
+                      flexDirection: 'column',
                       alignItems: 'center',
-                      marginBottom: '4px',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      zIndex: 2,
+                      color: '#4A3B05',
+                      fontWeight: 800,
+                      padding: '16px',
+                      textAlign: 'center',
                     }}
                   >
-                    <span
+                    <div style={{ fontSize: '24px', marginBottom: '6px' }}>✨</div>
+                    <div style={{ fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                      Scratch to Reveal
+                    </div>
+                    <div style={{ fontSize: '11px', opacity: 0.8, marginTop: '2px' }}>
+                      Click to unlock date challenge
+                    </div>
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '26px' }}>{item.icon}</span>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button
+                      onClick={(e) => toggleFavourite(item.id, e)}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px' }}
+                      title="Favorite date"
+                    >
+                      {item.isFavourited ? '⭐' : '☆'}
+                    </button>
+                    <button
+                      onClick={(e) => togglePlanned(item.id, e)}
                       className="badge"
                       style={{
-                        fontSize: '10px',
-                        background: 'var(--paper)',
-                        color: 'var(--ink-soft)',
+                        background: isPlanned ? '#FFF0F5' : 'var(--paper)',
+                        color: isPlanned ? 'var(--pink)' : 'var(--ink-soft)',
+                        border: '1px solid var(--line)',
+                        cursor: 'pointer',
+                        fontSize: '11px',
+                        fontWeight: 700,
                       }}
+                      title="Toggle Planned for upcoming date"
                     >
-                      {d.category}
-                    </span>
-                    {d.completed && (
-                      <span
-                        style={{
-                          fontSize: '11px',
-                          fontFamily: 'var(--font-mono)',
-                          color: 'var(--pink)',
-                          fontWeight: 800,
-                        }}
-                      >
-                        ✓ {d.completedDate}
-                      </span>
-                    )}
+                      {isPlanned ? '📌 Planned' : '+ Plan'}
+                    </button>
                   </div>
+                </div>
+
+                <div style={{ flex: 1 }}>
+                  <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--ink-soft)' }}>
+                    {item.category}
+                  </span>
                   <h4
                     style={{
                       fontSize: '15px',
                       fontWeight: 700,
-                      margin: '6px 0 0',
+                      margin: '4px 0 0',
+                      textDecoration: isDone ? 'line-through' : 'none',
+                      color: isDone ? 'var(--ink-soft)' : 'var(--ink)',
                       lineHeight: 1.35,
-                      textDecoration: d.completed ? 'line-through' : 'none',
-                      color: d.completed ? 'var(--pink)' : 'var(--ink)',
                     }}
                   >
-                    {d.title}
+                    {item.title}
                   </h4>
+                  {item.note && (
+                    <p style={{ fontSize: '12px', fontStyle: 'italic', color: 'var(--ink-soft)', margin: '6px 0 0' }}>
+                      &ldquo;{item.note}&rdquo;
+                    </p>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '10px', borderTop: '1px solid var(--line)' }}>
+                  {item.completedDate ? (
+                    <span style={{ fontSize: '11px', color: '#276749', fontWeight: 600 }}>
+                      ✓ Fulfilled {item.completedDate}
+                    </span>
+                  ) : (
+                    <span style={{ fontSize: '11px', color: 'var(--ink-soft)' }}>
+                      Not completed yet
+                    </span>
+                  )}
+
+                  <button
+                    onClick={() => toggleStatus(item.id)}
+                    className="btn btn-ghost"
+                    style={{
+                      padding: '4px 10px',
+                      fontSize: '11.5px',
+                      color: isDone ? '#276749' : 'var(--ink)',
+                      borderColor: isDone ? '#48BB78' : 'var(--line)',
+                    }}
+                  >
+                    {isDone ? 'Completed ✓' : 'Mark Done'}
+                  </button>
                 </div>
               </div>
-            ))}
-          </div>
-        </ScrollReveal>
-      </main>
+            );
+          })}
+        </div>
 
-      {/* Cupidot Date Architect Modal */}
-      {ideaModalOpen && cupidotIdea && (
+        {/* Add Custom Date Form */}
         <div
           style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.5)',
-            backdropFilter: 'blur(6px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 9999,
-            padding: '20px',
+            background: 'var(--paper-raised)',
+            border: '1px solid var(--line)',
+            borderRadius: '20px',
+            padding: '24px',
+            boxShadow: 'var(--shadow-sm)',
           }}
         >
+          <h4 style={{ fontSize: '16px', fontWeight: 800, margin: '0 0 12px' }}>
+            + Propose a Custom Date for Our Deck
+          </h4>
+          <form onSubmit={handleAddCustomDate} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <input
+              type="text"
+              placeholder="e.g. Try making homemade matcha boba together..."
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              style={{
+                flex: 1,
+                minWidth: '220px',
+                padding: '10px 14px',
+                borderRadius: '8px',
+                border: '1px solid var(--line)',
+                background: 'var(--paper)',
+                color: 'var(--ink)',
+                fontSize: '13.5px',
+              }}
+            />
+            <select
+              value={newCategory}
+              onChange={(e) => setNewCategory(e.target.value as any)}
+              style={{
+                padding: '10px 12px',
+                borderRadius: '8px',
+                border: '1px solid var(--line)',
+                background: 'var(--paper)',
+                color: 'var(--ink)',
+                fontSize: '13px',
+              }}
+            >
+              <option value="At Home">At Home</option>
+              <option value="Online">Online</option>
+              <option value="Outside">Outside</option>
+              <option value="Creative">Creative</option>
+              <option value="Food">Food</option>
+              <option value="Travel">Travel</option>
+              <option value="Reunion">Reunion</option>
+              <option value="Low Energy">Low Energy</option>
+            </select>
+            <button type="submit" className="btn btn-primary" style={{ padding: '10px 20px', fontSize: '13px' }}>
+              Add to Deck
+            </button>
+          </form>
+        </div>
+
+        {/* Cupidot Idea Modal */}
+        {ideaModalOpen && cupidotIdea && (
           <div
             style={{
-              background: 'var(--paper-raised)',
-              borderRadius: '24px',
-              padding: '32px 28px',
-              maxWidth: '480px',
-              width: '100%',
-              textAlign: 'center',
-              boxShadow: '0 24px 64px rgba(0,0,0,0.2)',
-              position: 'relative',
-              animation: 'gl-rise 0.3s ease',
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0,0,0,0.6)',
+              display: 'grid',
+              placeItems: 'center',
+              zIndex: 999,
+              padding: '20px',
             }}
           >
-            <button
-              onClick={() => setIdeaModalOpen(false)}
-              style={{
-                position: 'absolute',
-                top: '16px',
-                right: '16px',
-                border: 'none',
-                background: 'transparent',
-                fontSize: '20px',
-                cursor: 'pointer',
-              }}
-            >
-              ✕
-            </button>
-
             <div
               style={{
-                width: '130px',
-                height: '130px',
-                margin: '0 auto -10px',
-              }}
-            >
-              <Cupidot2D state={botState} size={220} roam />
-            </div>
-
-            <div
-              style={{
-                fontSize: '11px',
-                fontFamily: 'var(--font-mono)',
-                fontWeight: 800,
-                color: '#FF4D80',
-                textTransform: 'uppercase',
-                marginBottom: '8px',
-              }}
-            >
-              ʚ🤖💘ɞ CUPIDOT DATE ARCHITECT
-            </div>
-
-            <div style={{ fontSize: '44px', margin: '10px 0' }}>
-              {cupidotIdea.icon}
-            </div>
-
-            <span
-              className="badge"
-              style={{
-                background: '#FFF0F5',
-                color: '#FF4D80',
-                fontWeight: 800,
-                marginBottom: '12px',
-              }}
-            >
-              {cupidotIdea.category} Category
-            </span>
-
-            <h3
-              style={{
-                fontSize: '20px',
-                fontWeight: 800,
-                margin: '8px 0 12px',
-                lineHeight: 1.35,
-              }}
-            >
-              {cupidotIdea.title}
-            </h3>
-
-            <p
-              style={{
-                fontSize: '13.5px',
-                color: 'var(--ink-soft)',
-                lineHeight: 1.5,
-                marginBottom: '24px',
-                fontStyle: 'italic',
                 background: 'var(--paper)',
-                padding: '12px 16px',
-                borderRadius: '12px',
+                border: '1px solid var(--line)',
+                borderRadius: '24px',
+                padding: '32px',
+                maxWidth: '460px',
+                width: '100%',
+                boxShadow: 'var(--shadow-lg)',
+                textAlign: 'center',
               }}
             >
-              &ldquo;{cupidotIdea.whyCupidotLovesIt}&rdquo;
-            </p>
-
-            <div
-              style={{
-                display: 'flex',
-                gap: '10px',
-                justifyContent: 'center',
-                flexWrap: 'wrap',
-              }}
-            >
-              <button
-                onClick={handleAddIdea}
-                className="btn btn-grad"
-                style={{ padding: '12px 24px', fontSize: '14px' }}
-              >
-                Add to Our Bucket List 🎯
-              </button>
-              <button
-                onClick={() => {
-                  sounds.playPop();
-                  setCupidotIdea(generateBucketDate(dates.map((d) => d.title)));
-                }}
-                className="btn btn-ghost"
-                style={{ padding: '12px 18px', fontSize: '14px' }}
-              >
-                Roll Another 🎲
-              </button>
+              <div style={{ fontSize: '48px', marginBottom: '8px' }}>{cupidotIdea.icon}</div>
+              <span className="badge hot" style={{ fontSize: '11px', marginBottom: '8px' }}>
+                Cupidot Spark Idea
+              </span>
+              <h3 style={{ fontSize: '20px', fontWeight: 800, margin: '8px 0' }}>
+                {cupidotIdea.title}
+              </h3>
+              <p style={{ fontSize: '14px', color: 'var(--ink-soft)', marginBottom: '20px' }}>
+                Category: <b>{cupidotIdea.category}</b>
+              </p>
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                <button
+                  onClick={() => setIdeaModalOpen(false)}
+                  className="btn btn-ghost"
+                  style={{ padding: '10px 20px' }}
+                >
+                  Pass
+                </button>
+                <button
+                  onClick={handleAddCupidotIdea}
+                  className="btn btn-primary"
+                  style={{ padding: '10px 20px' }}
+                >
+                  Add to Our 100 Dates
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </ActivityShell>
   );
 }
