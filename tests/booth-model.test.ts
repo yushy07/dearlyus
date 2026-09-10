@@ -6,8 +6,44 @@ import {
   frameRects,
   logicalSize,
   DEFAULT_CROP,
+  INITIAL_DESIGN,
+  approvalKey,
 } from '../lib/booth/model';
 describe('paired photobooth composition', () => {
+  it('invalidates approval when a crop, caption or shot order changes', () => {
+    const shots = [
+      {
+        id: 's',
+        left: {
+          id: 'a',
+          shotId: 's',
+          side: 'left' as const,
+          src: 'a',
+          crop: DEFAULT_CROP,
+        },
+      },
+      { id: 'second' },
+    ];
+    const original = approvalKey(shots, INITIAL_DESIGN);
+    expect(
+      approvalKey(shots, { ...INITIAL_DESIGN, caption: 'new caption' }),
+    ).not.toBe(original);
+    expect(approvalKey([...shots].reverse(), INITIAL_DESIGN)).not.toBe(
+      original,
+    );
+    expect(
+      approvalKey(
+        putPhoto(shots, {
+          ...shots[0].left!,
+          crop: { ...DEFAULT_CROP, mirror: true },
+        }),
+        INITIAL_DESIGN,
+      ),
+    ).not.toBe(original);
+    expect(
+      approvalKey(structuredClone(shots), structuredClone(INITIAL_DESIGN)),
+    ).toBe(original);
+  });
   it('requires both people before a shared shot is complete', () => {
     const left = {
       id: 'a',

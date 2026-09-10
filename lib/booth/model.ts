@@ -56,6 +56,18 @@ export const POSES = [
 export function completeShot(shot: Shot, solo = false) {
   return Boolean(shot.left && (solo || shot.right));
 }
+/** Approval belongs to the exact photos, crops and decorations being reviewed. */
+export function approvalKey(shots: Shot[], design: BoothDesign) {
+  return JSON.stringify({
+    shots: shots.map((shot) => ({
+      id: shot.id,
+      photos: [shot.left, shot.right].map((photo) =>
+        photo ? { id: photo.id, crop: clampCrop(photo.crop) } : null,
+      ),
+    })),
+    design,
+  });
+}
 export function putPhoto(shots: Shot[], photo: Photo): Shot[] {
   return shots.map((shot) =>
     shot.id === photo.shotId ? { ...shot, [photo.side]: photo } : shot,

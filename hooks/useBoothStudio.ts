@@ -12,6 +12,7 @@ import {
   clampCrop,
   putPhoto,
   completeShot,
+  approvalKey,
   type Shot,
   type Side,
   type Photo,
@@ -207,6 +208,11 @@ export function useBoothStudio() {
   }
   function enterSolo() {
     shutdown();
+    history.current = [];
+    setEditor('left');
+    setRevision(0);
+    state.current.editor = 'left';
+    state.current.revision = 0;
     setRoom(null);
     setSolo(true);
     setSide('left');
@@ -267,8 +273,14 @@ export function useBoothStudio() {
         return;
       }
       if (!media.current) throw new Error('Enable your camera first.');
+      const targetStream = media.current;
+      const session = generation.current;
       const audio = await navigator.mediaDevices.getUserMedia({ audio: true });
-      audio.getTracks().forEach((t) => media.current!.addTrack(t));
+      if (session !== generation.current || media.current !== targetStream) {
+        audio.getTracks().forEach((track) => track.stop());
+        return;
+      }
+      audio.getTracks().forEach((t) => targetStream.addTrack(t));
       setMic(true);
       await connection.current?.setStream(media.current);
     } catch (e) {
@@ -552,13 +564,18 @@ export function useBoothStudio() {
     }).catch(fail);
   }
   async function approve() {
+    if (
+      state.current.shots.length !== 4 ||
+      !state.current.shots.every((shot) =>
+        completeShot(shot, state.current.solo),
+      )
+    )
+      return;
     setApproved((prev) => [...new Set([...prev, state.current.side])]);
     await send({
       type: 'approve',
       revision: state.current.revision,
-      photoIds: state.current.shots
-        .flatMap((s) => [s.left?.id, s.right?.id])
-        .filter(Boolean),
+      reviewKey: approvalKey(state.current.shots, state.current.design),
     }).catch(fail);
   }
   messageHandler.current = async (m) => {
@@ -667,10 +684,11 @@ export function useBoothStudio() {
         editor: 'left',
       });
     } else if (m.type === 'approve' && m.revision === state.current.revision) {
-      const ids = state.current.shots
-        .flatMap((s) => [s.left?.id, s.right?.id])
-        .filter(Boolean);
-      if (JSON.stringify(ids) === JSON.stringify(m.photoIds))
+      if (
+        state.current.shots.length === 4 &&
+        state.current.shots.every((shot) => completeShot(shot)) &&
+        approvalKey(state.current.shots, state.current.design) === m.reviewKey
+      )
         setApproved((prev) => [...new Set([...prev, other])]);
     }
   };
