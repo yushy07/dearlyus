@@ -3,13 +3,25 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { FASHION_ROUNDS as ROUNDS, FASHION_ITEMS as ITEMS } from '@/data';
-import { Ribbon, Navbar, Confetti, CoupleNameBar } from '@/components/shared';
+import { Confetti, CoupleNameBar, ActivityShell } from '@/components/shared';
 import { sounds } from '@/lib/sound';
 import { useCoupleProfile } from '@/lib/couple';
+import { useActivityRuntime } from '@/hooks/useActivityRuntime';
+import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
 
 export default function FashionShowPage() {
-  const { partnerA, partnerB } = useCoupleProfile();
+  const { partnerA, partnerB, roomCode } = useCoupleProfile();
+  const { saveKeepsake, saving: keepsakeSaving } = useKeepsakeWriter();
+  const [keepsakeSaved, setKeepsakeSaved] = useState(false);
   const [currentRoundIdx, setCurrentRoundIdx] = useState(0);
+
+  const runtime = useActivityRuntime({
+    sessionId: roomCode ? `room-${roomCode}-fashion` : 'local-fashion',
+    activityType: 'fashion',
+    roomId: roomCode || 'local',
+    transportMode: 'auto',
+    initialOptions: { round: currentRoundIdx },
+  });
   const [stage, setStage] = useState<'STYLE' | 'RUNWAY' | 'JUDGE' | 'VERDICT'>(
     'STYLE',
   );
@@ -81,42 +93,45 @@ export default function FashionShowPage() {
     }
   };
 
+  const handleSaveFashionKeepsake = async () => {
+    if (keepsakeSaved || keepsakeSaving) return;
+    sounds.playCelebration();
+    try {
+      await saveKeepsake({
+        kind: 'activity',
+        title: `Fashion Runway Editorial · Round ${currentRoundIdx + 1}`,
+        activityPath: '/fashion',
+        caption: `${partnerA}: ${myScore} PTS vs ${partnerB}: ${partnerScore} PTS on theme "${currentRound.theme}".`,
+        metadata: {
+          activityType: 'fashion',
+          theme: currentRound.theme,
+          round: currentRoundIdx + 1,
+          scoreA: myScore,
+          scoreB: partnerScore,
+          date: new Date().toISOString(),
+        },
+      });
+      setKeepsakeSaved(true);
+    } catch {}
+  };
+
   return (
-    <div
-      style={{
-        background: 'var(--paper)',
-        minHeight: '100vh',
-        paddingBottom: '80px',
-        color: 'var(--ink)',
+    <ActivityShell
+      activityTitle="Fashion Stylist & Runway Challenge"
+      activitySubtitle="Head-to-Head Styling · Secret Wardrobe Curation & Runway Peer Review"
+      currentStage={stage === 'VERDICT' ? 'remember' : stage === 'STYLE' ? 'ready' : 'play'}
+      keepsakeSummary={{
+        kind: 'activity',
+        title: `Runway Editorial · ${currentRound.theme.slice(0, 24)}`,
+        subtitle: `Round ${currentRoundIdx + 1}/3 · ${myScore} vs ${partnerScore} PTS`,
+        badge: '👗 LOOKS RATED',
       }}
+      guidancePhase={stage === 'VERDICT' ? 'revealed' : stage === 'STYLE' ? 'private' : 'ready'}
+      guidancePrivacyNote="Styling selections are private until both models take the runway for peer ratings."
     >
-      <Ribbon
-        text={
-          <>
-            👗 Fashion Show · <b>Player-vs-Player Styling Game for Two</b>
-          </>
-        }
-      />
       <Confetti active={confettiActive} />
 
-      <Navbar
-        rightAction={
-          <span
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '12px',
-              background: 'var(--paper-raised)',
-              padding: '4px 10px',
-              borderRadius: '6px',
-              border: '1px solid var(--line)',
-            }}
-          >
-            RUNWAY: <b>ROUND {currentRoundIdx + 1} / 3</b>
-          </span>
-        }
-      />
-
-      <main className="wrap" style={{ paddingTop: '36px', maxWidth: '980px' }}>
+      <main className="wrap" style={{ paddingTop: '16px', maxWidth: '980px' }}>
         {/* Stage Header */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <CoupleNameBar />
@@ -724,6 +739,14 @@ export default function FashionShowPage() {
               ) : (
                 <>
                   <button
+                    onClick={handleSaveFashionKeepsake}
+                    disabled={keepsakeSaved || keepsakeSaving}
+                    className="btn btn-primary"
+                    style={{ padding: '12px 24px' }}
+                  >
+                    {keepsakeSaved ? '✓ Saved to Keepsakes!' : keepsakeSaving ? 'Archiving...' : 'Save Editorial 💾'}
+                  </button>
+                  <button
                     onClick={() => {
                       sounds.playPop();
                       setCurrentRoundIdx(0);
@@ -748,6 +771,6 @@ export default function FashionShowPage() {
           </div>
         )}
       </main>
-    </div>
+    </ActivityShell>
   );
 }

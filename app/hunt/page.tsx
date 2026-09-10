@@ -1,29 +1,38 @@
 'use client';
 
-import { BrandLogo } from '@/components/shared/BrandLogo';
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { sounds } from '@/lib/sound';
 import { useCoupleProfile } from '@/lib/couple';
-import { Confetti } from '@/components/shared/Confetti';
+import { Confetti, CoupleNameBar, ActivityShell } from '@/components/shared';
+import { useActivityRuntime } from '@/hooks/useActivityRuntime';
+import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
 
 export default function HuntPage() {
-  const { partnerA, partnerB } = useCoupleProfile();
+  const { partnerA, partnerB, roomCode } = useCoupleProfile();
+  const { saveKeepsake, saving: keepsakeSaving } = useKeepsakeWriter();
+
   const [promptIdx, setPromptIdx] = useState(0);
   const [seconds, setSeconds] = useState(60);
   const [hunting, setHunting] = useState(false);
   const [snapped, setSnapped] = useState(false);
-  const [scores, setScores] = useState<{ a: number; b: number }>({
-    a: 0,
-    b: 0,
-  });
+  const [scores, setScores] = useState<{ a: number; b: number }>({ a: 0, b: 0 });
   const [confettiActive, setConfettiActive] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [keepsakeSaved, setKeepsakeSaved] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+
+  const runtime = useActivityRuntime({
+    sessionId: roomCode ? `room-${roomCode}-hunt` : 'local-hunt',
+    activityType: 'hunt',
+    roomId: roomCode || 'local',
+    transportMode: 'auto',
+    initialOptions: { promptIdx },
+  });
 
   const prompts = [
     `Find: Something pink or heart-shaped in your room! 💖`,
@@ -32,7 +41,7 @@ export default function HuntPage() {
     `Find: The sweetest midnight snack in your kitchen! 🍪`,
     `Find: A souvenir or photo that reminds you of ${partnerB}! 💌`,
     `Find: An item that matches ${partnerA}'s favorite color! 🎨`,
-    `Find: Something you bought together during your favorite memory! ✨`,
+    `Find: Something you bought together during your favorite trip! ✨`,
   ];
 
   const stopCamera = () => {
@@ -114,7 +123,6 @@ export default function HuntPage() {
       const ctx = canvas.getContext('2d');
       if (!ctx) return null;
 
-      // Mirror horizontally
       ctx.translate(canvas.width, 0);
       ctx.scale(-1, 1);
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
@@ -145,83 +153,74 @@ export default function HuntPage() {
     setSnapped(false);
     setCapturedPhoto(null);
     setSeconds(60);
+    setKeepsakeSaved(false);
+  };
+
+  const handleSaveToKeepsakes = async () => {
+    if (keepsakeSaved || keepsakeSaving) return;
+    sounds.playCelebration();
+    try {
+      let file: File | undefined;
+      if (capturedPhoto) {
+        const res = await fetch(capturedPhoto);
+        const blob = await res.blob();
+        file = new File([blob], `scavenger-hunt-${Date.now()}.jpg`, { type: 'image/jpeg' });
+      }
+
+      await saveKeepsake({
+        kind: 'activity',
+        title: `Scavenger Hunt Discovery · Clue #${promptIdx + 1}`,
+        file,
+        activityPath: '/hunt',
+        caption: `Found in ${60 - seconds}s: "${prompts[promptIdx]}". Score: ${scores.a} - ${scores.b}.`,
+        metadata: {
+          activityType: 'hunt',
+          prompt: prompts[promptIdx],
+          scores,
+          date: new Date().toISOString(),
+        },
+      });
+      setKeepsakeSaved(true);
+    } catch (err) {
+      console.error('Failed to save hunt keepsake:', err);
+    }
   };
 
   return (
-    <div
-      style={{
-        background: 'var(--paper)',
-        minHeight: '100vh',
-        paddingBottom: '80px',
-        color: 'var(--ink)',
+    <ActivityShell
+      activityTitle="Room Scavenger Hunt"
+      activitySubtitle="60-Second Real World Sprint · WebCam Capture & Room Trophy Passport"
+      currentStage={snapped ? 'remember' : hunting ? 'play' : 'ready'}
+      keepsakeSummary={{
+        kind: 'activity',
+        title: `Scavenger Hunt · Clue #${promptIdx + 1}`,
+        subtitle: `${partnerA}: ${scores.a} · ${partnerB}: ${scores.b} PTS`,
+        badge: '🔍 HUNT LOGGED',
       }}
+      guidancePhase={snapped ? 'completed' : hunting ? 'locked' : 'ready'}
+      guidancePrivacyNote="Camera photos stay strictly local unless you explicitly tap Save to Keepsakes to preserve them in Our Space."
     >
       <Confetti active={confettiActive} />
 
-      <header className="bar">
-        <div
-          className="wrap"
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <Link
-              className="brand"
-              href="/"
-              onClick={() => sounds.playPop()}
-              aria-label="Dearly Us Home"
-            >
-              <BrandLogo tone="light" />
-            </Link>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: '12px',
-                background: 'var(--paper-raised)',
-                padding: '4px 12px',
-                borderRadius: '20px',
-                border: '1px solid var(--line)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-              }}
-            >
-              <span>{partnerA}:</span>{' '}
-              <b style={{ color: 'var(--pink)' }}>{scores.a} PTS</b> ·{' '}
-              <span>{partnerB}:</span>{' '}
-              <b style={{ color: 'var(--blue)' }}>{scores.b} PTS</b>
-            </span>
-
-            <Link
-              className="btn btn-ghost"
-              href="/activity"
-              onClick={() => sounds.playPop()}
-            >
-              Activities ▷
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      <main className="wrap" style={{ paddingTop: '36px', maxWidth: '720px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-          <span className="eyebrow">Snap Hunt · 60s Room Scavenger</span>
+      <div style={{ maxWidth: '780px', margin: '0 auto', padding: '16px 0 40px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <CoupleNameBar />
           <h1
-            style={{ fontSize: 'clamp(28px, 4vw, 40px)', marginBottom: '8px' }}
+            style={{
+              fontSize: 'clamp(26px, 4.5vw, 40px)',
+              fontWeight: 800,
+              margin: '8px 0',
+              fontFamily: 'var(--font-serif, Georgia, serif)',
+            }}
           >
             Race to find it, <span className="grad">snap it</span>.
           </h1>
-          <p style={{ color: 'var(--ink-soft)', fontSize: '15px' }}>
+          <p style={{ color: 'var(--ink-soft)', fontSize: '15px', maxWidth: '52ch', margin: '0 auto' }}>
             Hold the secret room item to your screen before time runs out!
           </p>
         </div>
 
+        {/* Hunt Arena Card */}
         <div
           style={{
             background: 'var(--paper-raised)',
@@ -232,171 +231,108 @@ export default function HuntPage() {
             boxShadow: 'var(--shadow-lg)',
           }}
         >
-          {/* Prompt Banner */}
           <div style={{ fontSize: '42px', marginBottom: '8px' }}>🔍</div>
           <h2
             style={{
-              fontSize: '22px',
+              fontSize: '21px',
               fontWeight: 800,
-              marginBottom: '14px',
               maxWidth: '520px',
-              margin: '0 auto 14px',
-              lineHeight: 1.35,
+              margin: '0 auto 16px',
+              lineHeight: 1.4,
             }}
           >
             {prompts[promptIdx]}
           </h2>
 
+          {/* Countdown Clock */}
           <div
             style={{
+              fontSize: '48px',
               fontFamily: 'var(--font-mono)',
-              fontSize: '44px',
               fontWeight: 900,
-              color: 'var(--pink)',
+              color: seconds <= 10 && hunting ? '#DC2626' : 'var(--ink)',
               marginBottom: '20px',
             }}
           >
-            {hunting ? `00:${String(seconds).padStart(2, '0')}` : '60 Seconds'}
+            00:{seconds < 10 ? `0${seconds}` : seconds}
           </div>
 
-          {/* Camera Viewport (Optional Live Snap) */}
-          <div
-            style={{
-              maxWidth: '420px',
-              margin: '0 auto 20px',
-              position: 'relative',
-            }}
-          >
-            {cameraActive ? (
-              <div
-                style={{
-                  borderRadius: '16px',
-                  overflow: 'hidden',
-                  border: '2px solid var(--line)',
-                  background: '#000',
-                  position: 'relative',
-                }}
-              >
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  style={{
-                    width: '100%',
-                    height: '240px',
-                    objectFit: 'cover',
-                    transform: 'scaleX(-1)',
-                  }}
-                />
-                <button
-                  onClick={stopCamera}
-                  style={{
-                    position: 'absolute',
-                    top: '8px',
-                    right: '8px',
-                    background: 'rgba(0,0,0,0.6)',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '8px',
-                    padding: '4px 8px',
-                    fontSize: '11px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Turn Off 📷
-                </button>
-              </div>
+          {/* Live WebCam Box */}
+          {cameraActive && (
+            <div style={{ maxWidth: '400px', margin: '0 auto 20px', borderRadius: '16px', overflow: 'hidden', border: '2px solid var(--line)' }}>
+              <video
+                ref={videoRef}
+                playsInline
+                muted
+                style={{ width: '100%', height: 'auto', display: 'block', transform: 'scaleX(-1)' }}
+              />
+            </div>
+          )}
+
+          {cameraError && (
+            <div style={{ color: '#B45309', fontSize: '12.5px', marginBottom: '16px' }}>
+              {cameraError}
+            </div>
+          )}
+
+          {/* Controls */}
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '24px' }}>
+            {!cameraActive ? (
+              <button onClick={startCamera} className="btn btn-ghost" style={{ fontSize: '13px' }}>
+                📸 Enable Camera
+              </button>
             ) : (
-              <button
-                onClick={startCamera}
-                className="btn btn-ghost"
-                style={{
-                  fontSize: '13px',
-                  padding: '8px 16px',
-                  borderRadius: '10px',
-                }}
-              >
-                📹 Turn On Webcam for Live Snaps
+              <button onClick={stopCamera} className="btn btn-ghost" style={{ fontSize: '13px' }}>
+                Turn Off Camera
               </button>
             )}
 
-            {cameraError && (
-              <p
-                style={{ color: '#EF4444', fontSize: '12px', marginTop: '6px' }}
-              >
-                {cameraError}
-              </p>
-            )}
-          </div>
-
-          {/* Action Buttons */}
-          <div
-            style={{
-              display: 'flex',
-              gap: '12px',
-              justifyContent: 'center',
-              flexWrap: 'wrap',
-            }}
-          >
             {!hunting ? (
-              <button
-                className="btn btn-grad"
-                onClick={startHunt}
-                style={{ padding: '12px 32px', fontSize: '16px' }}
-              >
-                Start Scavenger Hunt ▷
+              <button onClick={startHunt} className="btn btn-grad" style={{ padding: '12px 32px', fontSize: '15px' }}>
+                Start 60s Countdown ⏱️
               </button>
             ) : (
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button
-                  className="btn btn-primary"
                   onClick={() => handleFound('a')}
-                  style={{ padding: '12px 20px', fontSize: '15px' }}
+                  className="btn btn-primary"
+                  style={{ padding: '12px 24px', fontSize: '14px', background: 'var(--pink)' }}
                 >
-                  📸 {partnerA} Found It! (+1)
+                  🌸 {partnerA} Found It!
                 </button>
                 <button
-                  className="btn btn-secondary"
                   onClick={() => handleFound('b')}
-                  style={{ padding: '12px 20px', fontSize: '15px' }}
+                  className="btn btn-primary"
+                  style={{ padding: '12px 24px', fontSize: '14px', background: 'var(--blue)' }}
                 >
-                  📸 {partnerB} Found It! (+1)
+                  💙 {partnerB} Found It!
                 </button>
               </div>
             )}
-
-            <button
-              className="btn btn-ghost"
-              onClick={handleNextClue}
-              style={{ padding: '12px 20px', fontSize: '15px' }}
-            >
-              Next Clue ▷
-            </button>
           </div>
 
-          {/* Souvenir Polaroid Snapshot */}
+          {/* Captured Polaroid Review */}
           {snapped && (
             <div
               style={{
-                marginTop: '28px',
-                padding: '20px',
+                marginTop: '20px',
+                padding: '24px',
                 borderRadius: '16px',
-                background: 'var(--paper-raised)',
+                background: 'var(--paper)',
                 border: '1.5px solid var(--line)',
                 display: 'inline-block',
                 textAlign: 'center',
-                boxShadow: 'var(--shadow-md)',
+                animation: 'gl-rise 0.25s ease',
               }}
             >
               {capturedPhoto && (
                 <div
                   style={{
-                    background: 'var(--paper-raised)',
+                    background: '#FFF',
                     padding: '12px 12px 24px',
                     borderRadius: '8px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                    marginBottom: '14px',
+                    boxShadow: '0 6px 16px rgba(0,0,0,0.1)',
+                    marginBottom: '16px',
                   }}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -404,34 +340,41 @@ export default function HuntPage() {
                     src={capturedPhoto}
                     alt="Scavenger Snap"
                     style={{
-                      width: '240px',
-                      height: '180px',
+                      width: '260px',
+                      height: '190px',
                       objectFit: 'cover',
                       borderRadius: '4px',
+                      display: 'block',
+                      margin: '0 auto',
                     }}
                   />
-                  <div
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: '12px',
-                      color: 'var(--ink-soft)',
-                      marginTop: '8px',
-                    }}
-                  >
+                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--ink-soft)', marginTop: '8px' }}>
                     Captured in {60 - seconds}s · {partnerA} &amp; {partnerB}
                   </div>
                 </div>
               )}
 
-              <div
-                style={{ color: '#0a7d4d', fontWeight: 800, fontSize: '15px' }}
-              >
-                🎉 Round Captured! Point saved on couple scoreboard.
+              <div style={{ color: '#0A7D4D', fontWeight: 800, fontSize: '15px', marginBottom: '16px' }}>
+                🎉 Clue Solved! Score logged on couple scoreboard.
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                <button
+                  onClick={handleSaveToKeepsakes}
+                  disabled={keepsakeSaved || keepsakeSaving}
+                  className="btn btn-primary"
+                  style={{ padding: '8px 20px', fontSize: '13px' }}
+                >
+                  {keepsakeSaved ? '✓ Saved to Keepsakes!' : keepsakeSaving ? 'Archiving...' : 'Save Discovery 💾'}
+                </button>
+                <button onClick={handleNextClue} className="btn btn-grad" style={{ padding: '8px 22px', fontSize: '13px' }}>
+                  Next Room Clue ▷
+                </button>
               </div>
             </div>
           )}
         </div>
-      </main>
-    </div>
+      </div>
+    </ActivityShell>
   );
 }

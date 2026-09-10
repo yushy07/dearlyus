@@ -5,7 +5,9 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { sounds } from '@/lib/sound';
 import { useCoupleProfile } from '@/lib/couple';
-import { Confetti } from '@/components/shared/Confetti';
+import { Confetti, ActivityShell } from '@/components/shared';
+import { useActivityRuntime } from '@/hooks/useActivityRuntime';
+import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
 
 type GameMode = 'jump' | 'dodge' | 'catch';
 
@@ -30,10 +32,42 @@ interface FloatingText {
 }
 
 export default function ArcadePage() {
-  const { partnerA, partnerB } = useCoupleProfile();
+  const { partnerA, partnerB, roomCode } = useCoupleProfile();
+  const { saveKeepsake, saving: keepsakeSaving } = useKeepsakeWriter();
+  const [keepsakeSaved, setKeepsakeSaved] = useState(false);
   const [activePlayer, setActivePlayer] = useState<'a' | 'b'>('a');
   const [activeGame, setActiveGame] = useState<GameMode>('jump');
   const [score, setScore] = useState(0);
+
+  const runtime = useActivityRuntime({
+    sessionId: roomCode ? `room-${roomCode}-arcade` : 'local-arcade',
+    activityType: 'arcade',
+    roomId: roomCode || 'local',
+    transportMode: 'auto',
+    initialOptions: { activeGame },
+  });
+
+  const handleSaveArcadeKeepsake = async () => {
+    if (keepsakeSaved || keepsakeSaving) return;
+    sounds.playCelebration();
+    try {
+      await saveKeepsake({
+        kind: 'activity',
+        title: `Arcade Record · ${activeGame.toUpperCase()} (${scoreRef.current} PTS)`,
+        activityPath: '/arcade',
+        caption: `Achieved by ${activePlayer === 'a' ? partnerA : partnerB} in retro dual cabinet.`,
+        metadata: {
+          activityType: 'arcade',
+          game: activeGame,
+          score: scoreRef.current,
+          partner: activePlayer === 'a' ? partnerA : partnerB,
+          highScores,
+          date: new Date().toISOString(),
+        },
+      });
+      setKeepsakeSaved(true);
+    } catch {}
+  };
   const [combo, setCombo] = useState(0);
   const [lives, setLives] = useState(3);
   const [gameState, setGameState] = useState<
@@ -948,77 +982,22 @@ export default function ArcadePage() {
   const currentPlayerName = activePlayer === 'a' ? partnerA : partnerB;
 
   return (
-    <div
-      style={{
-        background: 'var(--paper-raised)',
-        minHeight: '100vh',
-        paddingBottom: '80px',
-        color: '#F8FAFC',
+    <ActivityShell
+      activityTitle="Date Night Retro Arcade"
+      activitySubtitle="Neo-Retro 2-Player Dual Cabinet · 60 FPS Physics, Combos & Particle Bursts"
+      currentStage={gameState === 'gameover' ? 'remember' : gameState === 'playing' ? 'play' : 'ready'}
+      keepsakeSummary={{
+        kind: 'activity',
+        title: `Arcade High Score · ${activeGame.toUpperCase()}`,
+        subtitle: `${partnerA}: ${highScores.a} PTS · ${partnerB}: ${highScores.b} PTS`,
+        badge: '🕹️ RETRO HIGHSCORE',
       }}
+      guidancePhase={gameState === 'gameover' ? 'completed' : gameState === 'playing' ? 'locked' : 'ready'}
+      guidancePrivacyNote="Play head-to-head or alternate turns on the dual retro cabinet. High scores are automatically logged to your shared space."
     >
       <Confetti active={confettiActive} />
 
-      {/* Top Bar with Neon Glow */}
-      <header
-        className="bar"
-        style={{
-          background: 'var(--paper-raised)',
-          borderBottom: '1px solid #282C3F',
-        }}
-      >
-        <div
-          className="wrap"
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <Link
-              className="brand"
-              href="/"
-              onClick={() => sounds.playPop()}
-              aria-label="Dearly Us Home"
-            >
-              <BrandLogo tone="light" />
-            </Link>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: '12px',
-                background: 'var(--paper-raised)',
-                color: '#E2E8F0',
-                padding: '5px 14px',
-                borderRadius: '20px',
-                border: '1px solid #333952',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-              }}
-            >
-              <span>{partnerA}:</span>{' '}
-              <b style={{ color: 'var(--pink)' }}>{highScores.a} PTS</b> ·{' '}
-              <span>{partnerB}:</span>{' '}
-              <b style={{ color: 'var(--blue)' }}>{highScores.b} PTS</b>
-            </span>
-
-            <Link
-              className="btn btn-ghost"
-              href="/activity"
-              onClick={() => sounds.playPop()}
-              style={{ color: '#E2E8F0', borderColor: '#333952' }}
-            >
-              Activities ▷
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      <main className="wrap" style={{ paddingTop: '28px', maxWidth: '760px' }}>
+      <main className="wrap" style={{ paddingTop: '16px', maxWidth: '760px' }}>
         {/* Cabinet Marquee Header */}
         <div style={{ textAlign: 'center', marginBottom: '18px' }}>
           <div
@@ -1491,13 +1470,21 @@ export default function ArcadePage() {
                     ? `🔥 ${currentPlayerName} holds the crown over their partner!`
                     : `Partner record: ${highScores[activePlayer === 'a' ? 'b' : 'a']} PTS. Think you can top it?`}
                 </p>
-                <div style={{ display: 'flex', gap: '10px' }}>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
                   <button
                     className="btn btn-grad"
                     onClick={startGame}
                     style={{ padding: '10px 24px', fontSize: '14px' }}
                   >
                     Play Again ↺
+                  </button>
+                  <button
+                    className="btn btn-primary"
+                    onClick={handleSaveArcadeKeepsake}
+                    disabled={keepsakeSaved || keepsakeSaving}
+                    style={{ padding: '10px 20px', fontSize: '14px' }}
+                  >
+                    {keepsakeSaved ? '✓ Logged to Keepsakes!' : keepsakeSaving ? 'Archiving...' : 'Save High Score 💾'}
                   </button>
                   <button
                     className="btn btn-ghost"
@@ -1657,6 +1644,6 @@ export default function ArcadePage() {
           </div>
         </div>
       </main>
-    </div>
+    </ActivityShell>
   );
 }

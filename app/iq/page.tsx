@@ -1,165 +1,197 @@
 'use client';
 
-import { BrandLogo } from '@/components/shared/BrandLogo';
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { sounds } from '@/lib/sound';
 import { useCoupleProfile } from '@/lib/couple';
-import { Confetti } from '@/components/shared/Confetti';
+import { Confetti, CoupleNameBar, ActivityShell } from '@/components/shared';
+import { useActivityRuntime } from '@/hooks/useActivityRuntime';
+import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
 
 interface IQQuestion {
   title: string;
+  category: string;
   pattern: string[];
   options: string[];
   correctIndex: number;
+  explanation: string;
 }
 
 const IQ_PUZZLES: IQQuestion[] = [
   {
-    title: 'Pattern Sequence: What comes next in the geometric progression?',
+    title: 'Pattern Progression: Which geometric symbol completes the sequence?',
+    category: 'Spatial Logic',
     pattern: ['🟢 🔷', '🔷 🔺', '🔺 🟨', '🟨 ❓'],
     options: ['⭐', '🟢', '🔷', '🔺'],
     correctIndex: 1,
+    explanation: 'The cycle rotates through Circle → Diamond → Triangle → Square → Circle.',
   },
   {
-    title:
-      'Logical Deduction: If all Roses are Flowers, and some Flowers fade quickly, then:',
+    title: 'Logical Deduction: What statement must be unequivocally true?',
+    category: 'Formal Deduction',
     pattern: [
       '🌹 Premise 1: All Roses are Flowers',
-      '🥀 Premise 2: Some Flowers fade quickly',
-      '❓ Deduction: What must be true?',
+      '🥀 Premise 2: Some Flowers fade quickly in winter',
+      '❓ Deduction: Which conclusion follows?',
     ],
     options: [
       'All roses fade quickly',
       'No roses fade quickly',
       'Some roses may fade quickly',
-      'None of the above',
+      'Winter causes all flowers to perish',
     ],
     correctIndex: 2,
+    explanation: 'Since some flowers fade quickly and roses are flowers, some roses may belong to that subset.',
   },
   {
-    title: 'Number Matrix: 2, 4, 8, 16, 32, [ ? ]',
-    pattern: ['2 → 4 (+2)', '4 → 8 (x2)', '8 → 16 (x2)', '32 → ?'],
+    title: 'Number Matrix: What is the missing number in the doubling leap?',
+    category: 'Numerical Pattern',
+    pattern: ['2 → 4 (+2)', '4 → 8 (x2)', '8 → 16 (x2)', '16 → 32 (x2)', '32 → [ ? ] (x2)'],
     options: ['48', '64', '56', '72'],
     correctIndex: 1,
+    explanation: 'Each step continuously doubles the preceding value (32 x 2 = 64).',
+  },
+  {
+    title: 'Anagram Puzzle: Unscramble the letters to form a couple sanctuary.',
+    category: 'Verbal Telepathy',
+    pattern: ['Letters: [ E - M - O - H - T - E - E - W - S ]', 'Hint: A quiet place just for the two of us.'],
+    options: ['SWEET HOME', 'THE MEADOW', 'SHOW ME THE', 'SOMEWHERE'],
+    correctIndex: 0,
+    explanation: 'The letters spell out SWEET HOME perfectly.',
+  },
+  {
+    title: 'Synergy Instinct: What is the golden rule of couple dispute resolution?',
+    category: 'Emotional Synergy',
+    pattern: [
+      'Scenario: Disagreement at 11 PM about weekend plans.',
+      'Goal: Maximum intimacy and zero lingering resentment.',
+    ],
+    options: [
+      'Fight until 4 AM to prove absolute factual correctness',
+      'Us vs. The Problem (Hold hands and find the third way)',
+      'Pretend it never happened and eat in cold silence',
+      'Flip a coin and hold a grudge for 3 weeks',
+    ],
+    correctIndex: 1,
+    explanation: 'High emotional IQ couples reframe disputes as "Us vs. The Problem", never partner vs. partner.',
   },
 ];
 
 export default function IQPage() {
-  const { partnerA, partnerB } = useCoupleProfile();
+  const { partnerA, partnerB, roomCode } = useCoupleProfile();
+  const { saveKeepsake, saving: keepsakeSaving } = useKeepsakeWriter();
+
   const [qIndex, setQIndex] = useState(0);
-  const [selectedOpt, setSelectedOpt] = useState<number | null>(null);
-  const [score, setScore] = useState(0);
+  const [pickA, setPickA] = useState<number | null>(null);
+  const [pickB, setPickB] = useState<number | null>(null);
+  const [revealed, setRevealed] = useState(false);
+  const [scoreA, setScoreA] = useState(0);
+  const [scoreB, setScoreB] = useState(0);
   const [finished, setFinished] = useState(false);
   const [confettiActive, setConfettiActive] = useState(false);
+  const [keepsakeSaved, setKeepsakeSaved] = useState(false);
+
+  const runtime = useActivityRuntime({
+    sessionId: roomCode ? `room-${roomCode}-iq` : 'local-iq',
+    activityType: 'iq',
+    roomId: roomCode || 'local',
+    transportMode: 'auto',
+    initialOptions: { totalQuestions: IQ_PUZZLES.length },
+  });
 
   const puzzle = IQ_PUZZLES[qIndex];
 
-  const handlePick = (index: number) => {
-    if (selectedOpt !== null) return;
-    setSelectedOpt(index);
-    sounds.playPop();
+  const handleReveal = () => {
+    if (pickA === null || pickB === null) return;
+    setRevealed(true);
 
-    if (index === puzzle.correctIndex) {
-      setScore((p) => p + 1);
+    const isCorrectA = pickA === puzzle.correctIndex;
+    const isCorrectB = pickB === puzzle.correctIndex;
+
+    if (isCorrectA) setScoreA((s) => s + 1);
+    if (isCorrectB) setScoreB((s) => s + 1);
+
+    if (isCorrectA && isCorrectB) {
+      sounds.playCelebration();
+      setConfettiActive(true);
+      setTimeout(() => setConfettiActive(false), 2500);
+    } else {
       sounds.playCountdownBeep(true);
     }
-    setTimeout(() => {
-      if (qIndex + 1 < IQ_PUZZLES.length) {
-        setQIndex(qIndex + 1);
-        setSelectedOpt(null);
-      } else {
-        setFinished(true);
-        sounds.playCelebration();
-        setConfettiActive(true);
-        setTimeout(() => setConfettiActive(false), 3500);
-      }
-    }, 600);
   };
 
-  const handlePlayAgain = () => {
+  const handleNext = () => {
     sounds.playPop();
-    setQIndex(0);
-    setSelectedOpt(null);
-    setScore(0);
-    setFinished(false);
+    if (qIndex + 1 < IQ_PUZZLES.length) {
+      setQIndex((prev) => prev + 1);
+      setPickA(null);
+      setPickB(null);
+      setRevealed(false);
+    } else {
+      setFinished(true);
+      sounds.playCelebration();
+      setConfettiActive(true);
+      setTimeout(() => setConfettiActive(false), 3500);
+    }
+  };
+
+  const handleSaveCertificate = async () => {
+    if (keepsakeSaved || keepsakeSaving) return;
+    sounds.playCelebration();
+    try {
+      const jointScore = scoreA + scoreB;
+      const synergyRating = jointScore >= 8 ? 'Genius Chemistry 🧠✨' : 'Playful Telepathy 💫';
+      await saveKeepsake({
+        kind: 'activity',
+        title: `Couple IQ Certificate · ${synergyRating}`,
+        activityPath: '/iq',
+        caption: `Completed 5 logic and synergy puzzles with ${jointScore}/10 combined score.`,
+        metadata: {
+          activityType: 'iq',
+          scoreA,
+          scoreB,
+          jointScore,
+          synergyRating,
+          date: new Date().toISOString(),
+        },
+      });
+      setKeepsakeSaved(true);
+    } catch (err) {
+      console.error('Failed to save IQ keepsake:', err);
+    }
   };
 
   return (
-    <div
-      style={{
-        background: 'var(--paper)',
-        minHeight: '100vh',
-        paddingBottom: '80px',
-        color: 'var(--ink)',
+    <ActivityShell
+      activityTitle="Couple IQ & Synergy Test"
+      activitySubtitle="Head-to-Head Logic Puzzles · Double-Blind Submission & Synergy Scoring"
+      currentStage={finished ? 'remember' : 'play'}
+      keepsakeSummary={{
+        kind: 'activity',
+        title: `Synergy Test · Q${qIndex + 1}/${IQ_PUZZLES.length}`,
+        subtitle: `${partnerA}: ${scoreA} · ${partnerB}: ${scoreB}`,
+        badge: '🧠 IQ LOGGED',
       }}
+      guidancePhase={finished ? 'completed' : revealed ? 'revealed' : pickA !== null || pickB !== null ? 'locked' : 'ready'}
+      guidancePrivacyNote="Both partners select their deduction privately. Answers and explanations reveal simultaneously."
     >
       <Confetti active={confettiActive} />
 
-      <header className="bar">
-        <div
-          className="wrap"
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <Link
-              className="brand"
-              href="/"
-              onClick={() => sounds.playPop()}
-              aria-label="Dearly Us Home"
-            >
-              <BrandLogo tone="light" />
-            </Link>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: '12px',
-                background: 'var(--paper-raised)',
-                padding: '4px 12px',
-                borderRadius: '20px',
-                border: '1px solid var(--line)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-              }}
-            >
-              <span>
-                {partnerA} vs {partnerB}
-              </span>{' '}
-              ·{' '}
-              <b style={{ color: 'var(--pink)' }}>
-                {finished ? 'Finished' : `Q${qIndex + 1}/${IQ_PUZZLES.length}`}
-              </b>
-            </span>
-
-            <Link
-              className="btn btn-ghost"
-              href="/activity"
-              onClick={() => sounds.playPop()}
-            >
-              Activities ▷
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      <main className="wrap" style={{ paddingTop: '36px', maxWidth: '720px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <span className="eyebrow">IQ Duel · Head to Head Puzzles</span>
+      <div style={{ maxWidth: '820px', margin: '0 auto', padding: '16px 0 40px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <CoupleNameBar />
           <h1
-            style={{ fontSize: 'clamp(28px, 4vw, 42px)', marginBottom: '10px' }}
+            style={{
+              fontSize: 'clamp(26px, 4.5vw, 40px)',
+              fontWeight: 800,
+              margin: '8px 0',
+              fontFamily: 'var(--font-serif, Georgia, serif)',
+            }}
           >
-            Same puzzles, <span className="grad">against the clock</span>.
+            Couple IQ &amp; <span className="grad">Synergy Test</span>
           </h1>
-          <p style={{ color: 'var(--ink-soft)', fontSize: '16px' }}>
-            Test your logic and spatial intelligence in real time together.
+          <p style={{ color: 'var(--ink-soft)', fontSize: '15px', maxWidth: '52ch', margin: '0 auto' }}>
+            Test your collective logic, spatial deduction, and emotional telepathy through 5 brainteasers.
           </p>
         </div>
 
@@ -168,144 +200,237 @@ export default function IQPage() {
             style={{
               background: 'var(--paper-raised)',
               border: '1px solid var(--line)',
-              borderRadius: '16px',
-              padding: '36px 28px',
+              borderRadius: '20px',
+              padding: '36px 32px',
               boxShadow: 'var(--shadow-lg)',
             }}
           >
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                marginBottom: '16px',
-              }}
-            >
-              <span
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '12px',
-                  color: 'var(--ink-soft)',
-                }}
-              >
-                Puzzle {qIndex + 1} of {IQ_PUZZLES.length}
-              </span>
-              <span
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '12px',
-                  color: 'var(--blue)',
-                  fontWeight: 700,
-                }}
-              >
-                Score: {score} Points
+            {/* Header / Category */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+              <span className="badge hot">{puzzle.category}</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--ink-soft)' }}>
+                Puzzle <b>{qIndex + 1}</b> of {IQ_PUZZLES.length}
               </span>
             </div>
 
-            <h2
-              style={{
-                fontSize: '20px',
-                fontWeight: 800,
-                marginBottom: '20px',
-              }}
-            >
+            <h2 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '20px', lineHeight: 1.4 }}>
               {puzzle.title}
             </h2>
 
+            {/* Pattern / Question Canvas */}
             <div
               style={{
                 background: 'var(--paper)',
-                padding: '24px',
-                borderRadius: '12px',
-                textAlign: 'center',
-                fontSize: '22px',
-                marginBottom: '24px',
-                border: '1px solid var(--line)',
-                display: 'grid',
-                gap: '8px',
+                border: '1px dashed var(--line)',
+                borderRadius: '14px',
+                padding: '18px 22px',
+                marginBottom: '28px',
               }}
             >
-              {puzzle.pattern.map((p, i) => (
-                <div key={i}>{p}</div>
+              {puzzle.pattern.map((pat, i) => (
+                <div
+                  key={i}
+                  style={{
+                    fontSize: '15px',
+                    fontFamily: 'var(--font-mono)',
+                    fontWeight: 700,
+                    margin: '4px 0',
+                    color: '#17181C',
+                  }}
+                >
+                  {pat}
+                </div>
               ))}
             </div>
+
+            {/* Two-Player Choice Lock-in Grid */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                gap: '20px',
+                marginBottom: '28px',
+              }}
+            >
+              {/* Partner A */}
+              <div
+                style={{
+                  background: '#FFF5F8',
+                  border: '1.5px solid #FFD6E8',
+                  borderRadius: '16px',
+                  padding: '20px',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <span style={{ fontWeight: 800, fontSize: '14px', color: 'var(--pink)' }}>
+                    🌸 {partnerA}&apos;s Deduction
+                  </span>
+                  <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 700, color: pickA !== null ? '#0A7D4D' : 'var(--ink-soft)' }}>
+                    {pickA !== null ? '✓ Locked In' : 'Select one...'}
+                  </span>
+                </div>
+                <div style={{ display: 'grid', gap: '8px' }}>
+                  {puzzle.options.map((opt, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => !revealed && setPickA(idx)}
+                      disabled={revealed}
+                      style={{
+                        textAlign: 'left',
+                        padding: '10px 14px',
+                        borderRadius: '8px',
+                        border: pickA === idx ? '2px solid var(--pink)' : '1px solid #FFD6E8',
+                        background: pickA === idx ? '#FFF' : 'rgba(255,255,255,0.65)',
+                        fontSize: '13px',
+                        fontWeight: pickA === idx ? 700 : 500,
+                        cursor: revealed ? 'default' : 'pointer',
+                      }}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Partner B */}
+              <div
+                style={{
+                  background: '#F0F7FF',
+                  border: '1.5px solid #D6E8FF',
+                  borderRadius: '16px',
+                  padding: '20px',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <span style={{ fontWeight: 800, fontSize: '14px', color: 'var(--blue)' }}>
+                    💙 {partnerB}&apos;s Deduction
+                  </span>
+                  <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 700, color: pickB !== null ? '#0A7D4D' : 'var(--ink-soft)' }}>
+                    {pickB !== null ? '✓ Locked In' : 'Select one...'}
+                  </span>
+                </div>
+                <div style={{ display: 'grid', gap: '8px' }}>
+                  {puzzle.options.map((opt, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => !revealed && setPickB(idx)}
+                      disabled={revealed}
+                      style={{
+                        textAlign: 'left',
+                        padding: '10px 14px',
+                        borderRadius: '8px',
+                        border: pickB === idx ? '2px solid var(--blue)' : '1px solid #D6E8FF',
+                        background: pickB === idx ? '#FFF' : 'rgba(255,255,255,0.65)',
+                        fontSize: '13px',
+                        fontWeight: pickB === idx ? 700 : 500,
+                        cursor: revealed ? 'default' : 'pointer',
+                      }}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Action Bar */}
+            <div style={{ textAlign: 'center' }}>
+              {!revealed ? (
+                <button
+                  onClick={handleReveal}
+                  disabled={pickA === null || pickB === null}
+                  className="btn btn-primary"
+                  style={{
+                    padding: '12px 36px',
+                    fontSize: '15px',
+                    opacity: pickA !== null && pickB !== null ? 1 : 0.5,
+                  }}
+                >
+                  Reveal Deductions &amp; Check Solution 🔍
+                </button>
+              ) : (
+                <div style={{ animation: 'gl-rise 0.25s ease' }}>
+                  <div
+                    style={{
+                      padding: '16px',
+                      borderRadius: '12px',
+                      background: pickA === puzzle.correctIndex && pickB === puzzle.correctIndex ? '#E6F9F0' : '#FFF0F5',
+                      color: pickA === puzzle.correctIndex && pickB === puzzle.correctIndex ? '#0A7D4D' : '#BE123C',
+                      fontWeight: 800,
+                      fontSize: '15px',
+                      marginBottom: '16px',
+                    }}
+                  >
+                    Correct Answer: &ldquo;{puzzle.options[puzzle.correctIndex]}&rdquo; · {puzzle.explanation}
+                  </div>
+
+                  <button
+                    onClick={handleNext}
+                    className="btn btn-grad"
+                    style={{ padding: '12px 32px', fontSize: '15px' }}
+                  >
+                    {qIndex + 1 < IQ_PUZZLES.length ? 'Next Brainteaser ▷' : 'View Final Synergy Certificate 🏆'}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          /* FINAL CERTIFICATE */
+          <div
+            style={{
+              background: 'var(--paper-raised)',
+              border: '2px solid var(--line)',
+              borderRadius: '24px',
+              padding: '44px 32px',
+              boxShadow: 'var(--shadow-lg)',
+              textAlign: 'center',
+              animation: 'gl-rise 0.3s ease',
+            }}
+          >
+            <div style={{ fontSize: '56px', marginBottom: '12px' }}>🏆✨🧠</div>
+            <h2 style={{ fontSize: '28px', fontWeight: 800, margin: '8px 0', fontFamily: 'var(--font-serif, Georgia, serif)' }}>
+              Couple IQ &amp; Synergy Certificate
+            </h2>
+            <p style={{ color: 'var(--ink-soft)', fontSize: '15px', maxWidth: '48ch', margin: '0 auto 28px' }}>
+              Certified synergy score for {partnerA} &amp; {partnerB}.
+            </p>
 
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '12px',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '16px',
+                maxWidth: '520px',
+                margin: '0 auto 32px',
               }}
             >
-              {puzzle.options.map((opt, i) => (
-                <button
-                  key={i}
-                  onClick={() => handlePick(i)}
-                  className="btn btn-ghost"
-                  style={{
-                    padding: '16px',
-                    fontSize: '16px',
-                    fontWeight: 700,
-                    justifyContent: 'center',
-                    background: selectedOpt === i ? 'var(--blue-tint)' : '#fff',
-                    borderColor:
-                      selectedOpt === i ? 'var(--blue)' : 'var(--line)',
-                  }}
-                >
-                  {opt}
-                </button>
-              ))}
+              <div style={{ background: '#FFF5F8', padding: '18px', borderRadius: '14px', border: '1px solid #FFD6E8' }}>
+                <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--pink)' }}>🌸 {partnerA}</div>
+                <div style={{ fontSize: '32px', fontWeight: 900, marginTop: '4px' }}>{scoreA} / 5</div>
+              </div>
+              <div style={{ background: '#F0F7FF', padding: '18px', borderRadius: '14px', border: '1px solid #D6E8FF' }}>
+                <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--blue)' }}>💙 {partnerB}</div>
+                <div style={{ fontSize: '32px', fontWeight: 900, marginTop: '4px' }}>{scoreB} / 5</div>
+              </div>
             </div>
-          </div>
-        ) : (
-          <div
-            style={{
-              background: 'var(--paper-raised)',
-              border: '1px solid var(--line)',
-              borderRadius: '16px',
-              padding: '40px 28px',
-              textAlign: 'center',
-              boxShadow: 'var(--shadow-lg)',
-            }}
-          >
-            <div style={{ fontSize: '48px', marginBottom: '8px' }}>🧠</div>
-            <h2 style={{ fontSize: '28px', fontWeight: 800 }}>
-              IQ Duel Completed!
-            </h2>
-            <div
-              style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: '56px',
-                fontWeight: 900,
-                color: 'var(--blue)',
-                margin: '10px 0',
-              }}
-            >
-              IQ {100 + score * 12} ·{' '}
-              {score === 3
-                ? 'Genius Synergy 🌟'
-                : score === 2
-                  ? 'Brilliant Minds 💡'
-                  : score === 1
-                    ? 'Sharp Duo ⚡'
-                    : 'Playful Cadets 💌'}
-            </div>
-            <p style={{ color: 'var(--ink-soft)', marginBottom: '24px' }}>
-              You solved {score} out of {IQ_PUZZLES.length} puzzles correctly
-              with lightning speed.
-            </p>
-            <div
-              style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}
-            >
-              <button className="btn btn-grad" onClick={handlePlayAgain}>
-                Play Again ↺
+
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button
+                onClick={handleSaveCertificate}
+                disabled={keepsakeSaved || keepsakeSaving}
+                className="btn btn-grad"
+                style={{ padding: '12px 28px', fontSize: '14.5px' }}
+              >
+                {keepsakeSaved ? '✓ Saved Certificate to Keepsakes' : keepsakeSaving ? 'Archiving...' : 'Save Certificate to Our Space 📜'}
               </button>
-              <Link className="btn btn-ghost" href="/activity">
-                Back to Activities
+              <Link href="/arcade" className="btn btn-ghost" style={{ padding: '12px 22px', fontSize: '14px' }}>
+                Return to Arcade 🕹️
               </Link>
             </div>
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </ActivityShell>
   );
 }
