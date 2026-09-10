@@ -37,7 +37,7 @@ Long distance dates often default to muted video calls or passive movie streamin
 - **100% Free & Open Sanctuary**: No subscription fees, paywalls, or premium tiers. Every activity, photostrip, keepsake, and feature is completely free for all couples.
 - **Bespoke Sanctuary Editorial Identity**: Elevated visual craftsmanship blending warm candlelight alabaster surfaces, tactile paper textures, and refined serif typography with the unified Dearly Us ribbon-heart brand mark.
 - **Shared Rooms & Instant PINs**: Enter an instant 5-letter room code or connect via Google Sign-In to meet in an intimate, couple-authorized date-night sanctuary from any device.
-- **Physical & Digital Keepsakes**: Export high-resolution 300 DPI _인생네컷_ photostrips, printable thermal receipts of your quiz lore, 9:16 vertical Instagram Story cards, wax-sealed time capsule letters, and digital memory corkboards.
+- **Physical & Digital Keepsakes**: Export 1200 × 3600 _인생네컷_ photostrips, 2400 × 1800 postcards, 4 × 6 print sheets, printable thermal receipts of your quiz lore, 9:16 story cards, wax-sealed time capsule letters, and digital memory corkboards.
 - **Curated Date Night Journeys**: Move seamlessly through a thoughtful 7-step couple date night sequence—from sanctuary door to distance flight globe, photo booth, intimate quiz lock-in, and bedtime vows.
 - **Privacy by Design**: Camera feeds stay on the device. Shared activity events and deliberately saved keepsakes are protected by Supabase row-level security and private Storage policies.
 - **Zero-Guilt Architecture**: No punishment streaks, no decay counters, and decay-free relationship milestones designed to bring comfort, warmth, and joy.
@@ -57,7 +57,7 @@ Long distance dates often default to muted video calls or passive movie streamin
       <td width="50%" align="center">
         <img src="docs/screenshots/04-photobooth-studio.png" alt="Korean Life4Cuts Photobooth Studio" width="100%" style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);" />
         <br/><b>Korean Life4Cuts (인생네컷) Studio</b>
-        <br/><sub>Synchronized countdown, webcam feeds, AR FX, pose coach &amp; live printable strips</sub>
+        <br/><sub>Private paired capture, shared-background portraits, synchronized drawing &amp; printable strips</sub>
       </td>
     </tr>
     <tr>
@@ -123,10 +123,16 @@ Long distance dates often default to muted video calls or passive movie streamin
 
 ### 📸 2. Synchronized Korean Life4Cuts Photobooth (`/photobooth`)
 
-- **Realtime Flash & Countdown**: Synchronized 3..2..1 photo countdown across both partner screens with camera flash simulation.
-- **Bespoke Editorial Frames**: Choose from _Dearly Us Rose & Alabaster_, _Retro Vintage Vinyl_, _Tokyo Midnight Cafe_, _Pastel Sakura_, and _Korean Minimalist_.
-- **Animated Video Strips**: Exports looping animated `.webm` live strips directly from client canvas capture.
-- **Pose Coach & AR FX**: Integrated companion pose suggestions and real-time canvas filters (Soft, Natural, Floating Hearts, Retro Grain).
+- **Private Two-Person Booths**: Two signed-in people join with a 20-character invitation. Booth membership, expiry, closure, and shared revisions are enforced in Supabase.
+- **Synchronized Capture**: A shared 3..2..1 countdown, readiness handshake, four guided poses, retakes, crop controls, and reconnect recovery keep both sides on the same frame.
+- **Free Network Fallback**: WebRTC tries direct peer-to-peer video with a free STUN service. If a restrictive network blocks video, the private room stays active and both people can use synchronized photo uploads without a paid TURN relay.
+- **Together in One Photo**: Free on-device person segmentation removes each background and composes both people onto a shared linen, rose, sage, or midnight backdrop. Original split backgrounds remain available.
+- **Shared Finishing Desk**: Choose a strip or postcard, restrained paper themes and filters, captions, stickers, individual crops, and synchronized pen drawing with colour, width, eraser, clear, and undo controls.
+- **Exact Approval & Recovery**: Any photo, crop, layout, filter, backdrop, caption, sticker, or drawing change invalidates approval. Both people approve the same revision before export, and room/editor state survives refresh or reconnect.
+- **Print-Ready Exports**: Download a 1200 × 3600 strip, 2400 × 1800 postcard, or 1200 × 1800 4 × 6 print sheet. Couples with an Our Space can also save a private shared copy.
+- **Resilient Photo Delivery**: Chunk retries, duplicate suppression, stale-shot rejection, manual resend, and per-frame transfer states protect paired sessions from temporary disconnects.
+
+The booth never requires a paid service. Camera streams stay peer-to-peer and in memory; snapshots contain design and photo metadata without embedded image data. Photos enter private Storage only when someone deliberately saves the finished keepsake to Our Space.
 
 ### 💌 3. Tangible Keepsake Artwork System (`components/home/KeepsakeArtwork.tsx`)
 
@@ -237,7 +243,7 @@ Long distance dates often default to muted video calls or passive movie streamin
 | **`/match`**         | 16-dimension romance personality compatibility test.                                                                                       |
 | **`/our-space`**     | **Our Space Sanctuary**: Cupidot home area, decor shelf, shared rituals, relationship constellation, date night capsules & memory weather. |
 | **`/passport`**      | Official Love Passport with souvenir stamps and dual-city boarding pass.                                                                   |
-| **`/photobooth`**    | Korean Life4Cuts (_인생네컷_) 4-shot synchronized photobooth studio.                                                                       |
+| **`/photobooth`**    | Korean Life4Cuts (_인생네컷_) paired studio with live capture, upload fallback, shared-background composition, drawing, approval, and print exports. |
 | **`/privacy`**       | Transparent privacy policy and shared-room data disclosure.                                                                                |
 | **`/profile`**       | Partner settings, romance spectrum consent controls, voice preferences & private room code.                                                |
 | **`/quiz`**          | Know Me Quiz with secret lock-in, match scoring & Printable Thermal Receipt.                                                               |
@@ -354,11 +360,17 @@ cd dearlyus
 # 2. Install dependencies
 npm install
 
-# 3. Start development server
+# 3. Add Supabase public client settings to .env.local
+# NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+# NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
+
+# 4. Start development server
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+The solo photobooth works without Supabase. Private paired booths require Google sign-in plus the live photobooth room/state RPCs, private Realtime channel policies, and the private `couple-photostrips` Storage bucket. No TURN credentials are required; blocked peer video falls back to synchronized uploads.
 
 ### Testing & Verification
 
