@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { FASHION_ROUNDS as ROUNDS, FASHION_ITEMS as ITEMS } from '@/data';
 import { Confetti, CoupleNameBar, ActivityShell } from '@/components/shared';
@@ -8,6 +8,7 @@ import { sounds } from '@/lib/sound';
 import { useCoupleProfile } from '@/lib/couple';
 import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
+import { usePrivateAnswers } from '@/hooks/usePrivateAnswers';
 
 export default function FashionShowPage() {
   const { partnerA, partnerB, roomCode } = useCoupleProfile();
@@ -22,6 +23,9 @@ export default function FashionShowPage() {
     transportMode: 'auto',
     initialOptions: { round: currentRoundIdx },
   });
+  const livePair = runtime.transportName !== 'mock';
+  const privateLook = usePrivateAnswers({ roundNumber: currentRoundIdx * 2, localRuntime: runtime });
+  const privateRating = usePrivateAnswers({ roundNumber: currentRoundIdx * 2 + 1, localRuntime: runtime });
   const [stage, setStage] = useState<'STYLE' | 'RUNWAY' | 'JUDGE' | 'VERDICT'>(
     'STYLE',
   );
@@ -56,7 +60,52 @@ export default function FashionShowPage() {
 
   const currentRound = ROUNDS[currentRoundIdx];
 
-  const submitLook = () => {
+  useEffect(() => {
+    const answers = privateLook.revealedAnswers;
+    if (!answers || answers.length < 2) return;
+    const partnerLook = answers.find((answer) => answer.userId !== runtime.currentUserId)?.answer as {
+      top: string; bottom: string; shoes: string; accessory: string;
+    };
+    setPartnerTop(partnerLook.top);
+    setPartnerBottom(partnerLook.bottom);
+    setPartnerShoes(partnerLook.shoes);
+    setPartnerAccessory(partnerLook.accessory);
+    setStage('RUNWAY');
+    sounds.playShutter();
+    setTimeout(() => setStage('JUDGE'), 2400);
+  }, [privateLook.revealedAnswers, runtime.currentUserId]);
+
+  useEffect(() => {
+    const answers = privateRating.revealedAnswers;
+    if (!answers || answers.length < 2) return;
+    const mine = Number(answers.find((answer) => answer.userId === runtime.currentUserId)?.answer || 0);
+    const theirs = Number(answers.find((answer) => answer.userId !== runtime.currentUserId)?.answer || 0);
+    const scoreA = runtime.isHost ? theirs : mine;
+    const scoreB = runtime.isHost ? mine : theirs;
+    setMyScore(scoreA);
+    setPartnerScore(scoreB);
+    setTotalRoundsWon((previous) => scoreA >= scoreB
+      ? { ...previous, me: previous.me + 1 }
+      : { ...previous, partner: previous.partner + 1 });
+    setStage('VERDICT');
+    sounds.playCelebration();
+    setConfettiActive(true);
+    setTimeout(() => setConfettiActive(false), 3000);
+  }, [privateRating.revealedAnswers, runtime.currentUserId, runtime.isHost]);
+
+  const submitLook = async () => {
+    if (livePair) {
+      try {
+        if (!privateLook.isLocked) {
+          const result = await privateLook.lock({ top: myTop, bottom: myBottom, shoes: myShoes, accessory: myAccessory, note: myNote });
+          if (!result.bothLocked) return;
+        }
+        await privateLook.reveal();
+      } catch (error) {
+        console.error('Failed to seal runway look:', error);
+      }
+      return;
+    }
     setStage('RUNWAY');
     sounds.playShutter();
 
@@ -66,10 +115,22 @@ export default function FashionShowPage() {
     }, 2400);
   };
 
-  const submitPeerRating = (e: React.FormEvent) => {
+  const submitPeerRating = async (e: React.FormEvent) => {
     e.preventDefault();
     const partnerTotal = ratingCreativity + ratingTheme + ratingDrama;
-    const myTotal = 28; // Simulated reciprocal rating from partner
+    if (livePair) {
+      try {
+        if (!privateRating.isLocked) {
+          const result = await privateRating.lock(partnerTotal);
+          if (!result.bothLocked) return;
+        }
+        await privateRating.reveal();
+      } catch (error) {
+        console.error('Failed to seal runway rating:', error);
+      }
+      return;
+    }
+    const myTotal = partnerTotal;
 
     setMyScore(myTotal);
     setPartnerScore(partnerTotal);
@@ -407,7 +468,8 @@ export default function FashionShowPage() {
 
               <button
                 className="btn btn-primary"
-                onClick={submitLook}
+                onClick={() => void submitLook()}
+                disabled={privateLook.loading || (livePair && privateLook.isLocked && !privateLook.bothLocked)}
                 style={{
                   width: '100%',
                   marginTop: '20px',
@@ -415,7 +477,7 @@ export default function FashionShowPage() {
                   fontSize: '15px',
                 }}
               >
-                Walk the Runway 🚶‍♀️▷
+                {livePair ? (privateLook.bothLocked ? 'Reveal Both Looks on the Runway' : privateLook.isLocked ? 'Look Sealed · Waiting for Partner…' : 'Seal My Look & Walk the Runway') : 'Walk the Runway 🚶‍♀️▷'}
               </button>
             </div>
 
@@ -615,6 +677,7 @@ export default function FashionShowPage() {
 
               <button
                 type="submit"
+                disabled={privateRating.loading || (livePair && privateRating.isLocked && !privateRating.bothLocked)}
                 className="btn btn-primary"
                 style={{
                   padding: '14px',
@@ -622,7 +685,7 @@ export default function FashionShowPage() {
                   justifyContent: 'center',
                 }}
               >
-                Lock In Rating &amp; Reveal Crown 👑
+                {livePair ? (privateRating.bothLocked ? 'Reveal Both Ratings & Crown 👑' : privateRating.isLocked ? 'Rating Sealed · Waiting…' : 'Seal My Private Rating') : 'Lock In Rating & Reveal Crown 👑'}
               </button>
             </form>
           </div>

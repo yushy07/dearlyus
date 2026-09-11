@@ -7,6 +7,9 @@ import { sounds } from '@/lib/sound';
 import { useCoupleProfile } from '@/lib/couple';
 import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
+import { usePrivateAnswers } from '@/hooks/usePrivateAnswers';
+import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
+import { upsertActivityRecord } from '@/lib/activity-records';
 
 interface ConstellationQuestion {
   dimension: string;
@@ -84,14 +87,57 @@ export default function MatchPage() {
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   const { saveKeepsake, isSaving } = useKeepsakeWriter();
+  const { space } = useCoupleSpace();
   const runtime = useActivityRuntime({
     activityType: 'match',
     transportMode: 'auto',
     initialOptions: { totalPairs: CONSTELLATION_QUESTIONS.length },
   });
+  const livePair = runtime.transportName !== 'mock';
+  const privateMatch = usePrivateAnswers({ roundNumber: 1, localRuntime: runtime });
 
-  const handleSelectOption = (idx: number) => {
+  useEffect(() => {
+    const answers = privateMatch.revealedAnswers;
+    if (!answers || answers.length < 2) return;
+    const mine = answers.find((answer) => answer.userId === runtime.currentUserId)?.answer as number[];
+    const theirs = answers.find((answer) => answer.userId !== runtime.currentUserId)?.answer as number[];
+    const picksA = runtime.isHost ? mine : theirs;
+    const picksB = runtime.isHost ? theirs : mine;
+    setPartner1Picks(picksA);
+    setPartner2Picks(picksB);
+    const matches = picksA.filter((pick, index) => pick === picksB[index]).length;
+    setMatchCount(matches);
+    setCurrentStage('remember');
+    void runtime.sendEvent('match_reveal', { isMatch: matches > 0, matchCount: matches });
+    if (space?.id) void upsertActivityRecord({
+      coupleId: space.id,
+      kind: 'love_match',
+      key: new Date().toISOString().slice(0, 10),
+      title: 'Love Constellation Map',
+      payload: { score: matches, total: CONSTELLATION_QUESTIONS.length },
+      status: 'completed',
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [privateMatch.revealedAnswers]);
+
+  const handleSelectOption = async (idx: number) => {
     sounds.playPop();
+    if (livePair) {
+      const current = runtime.isHost ? partner1Picks : partner2Picks;
+      const next = [...current, idx];
+      if (runtime.isHost) setPartner1Picks(next);
+      else setPartner2Picks(next);
+      if (qIndex + 1 < CONSTELLATION_QUESTIONS.length) setQIndex(qIndex + 1);
+      else {
+        try {
+          const result = await privateMatch.lock(next);
+          if (result.bothLocked) await privateMatch.reveal();
+        } catch (error) {
+          console.error('Failed to seal Love Match answers:', error);
+        }
+      }
+      return;
+    }
     if (activePartner === 1) {
       const nextPicks = [...partner1Picks, idx];
       setPartner1Picks(nextPicks);
@@ -195,7 +241,7 @@ export default function MatchPage() {
                   fontSize: '12px',
                 }}
               >
-                {activePartner === 1 ? `🌸 ${partnerA} Locking Star Coordinates` : `💙 ${partnerB} Locking Star Coordinates`}
+                {livePair ? `🔒 ${runtime.isHost ? partnerA : partnerB} · Private Star Coordinates` : activePartner === 1 ? `🌸 ${partnerA} Locking Star Coordinates` : `💙 ${partnerB} Locking Star Coordinates`}
               </span>
               <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--ink-soft)' }}>
                 Dimension {qIndex + 1} of {CONSTELLATION_QUESTIONS.length}
@@ -219,7 +265,8 @@ export default function MatchPage() {
               {currentQ.options.map((opt, idx) => (
                 <button
                   key={idx}
-                  onClick={() => handleSelectOption(idx)}
+                  onClick={() => void handleSelectOption(idx)}
+                  disabled={privateMatch.isLocked}
                   className="btn btn-ghost"
                   style={{
                     display: 'flex',

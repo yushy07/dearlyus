@@ -11,6 +11,7 @@ import { useCoupleProfile } from '@/lib/couple';
 import { speakCupidot, stopCupidotSpeech } from '@/lib/voice';
 import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
+import { usePrivateAnswers } from '@/hooks/usePrivateAnswers';
 
 interface DebateTopicItem {
   topic: string;
@@ -76,6 +77,8 @@ export default function DebatePage() {
     transportMode: 'auto',
     initialOptions: { topicIndex },
   });
+  const livePair = runtime.transportName !== 'mock';
+  const privateArguments = usePrivateAnswers({ roundNumber: topicIndex, localRuntime: runtime });
 
   useEffect(() => {
     setActiveSpeaker(partnerA);
@@ -88,6 +91,34 @@ export default function DebatePage() {
   }, []);
 
   const current = DEBATE_TOPICS[topicIndex];
+
+  const finishJudging = (finalA: string, finalB: string) => {
+    setBotState('thinking');
+    setTimeout(() => {
+      const result = judgeDebate(current.topic, finalA, finalB, partnerA, partnerB);
+      setVerdict(result);
+      void runtime.sendEvent('debate_finish', { winner: result.winner, topicIndex });
+      sounds.playCelebration();
+      setConfettiActive(true);
+      setTimeout(() => setConfettiActive(false), 2500);
+      speakCupidot(`Debate Winner: ${result.winner}. ${result.analysis} Joint decree: ${result.penalty}`, {
+        mood: 'sassy', onStart: () => setBotState('sassy'), onEnd: () => setBotState('celebration'),
+      });
+    }, 500);
+  };
+
+  useEffect(() => {
+    const answers = privateArguments.revealedAnswers;
+    if (!answers || answers.length < 2) return;
+    const mine = String(answers.find((answer) => answer.userId === runtime.currentUserId)?.answer || '');
+    const theirs = String(answers.find((answer) => answer.userId !== runtime.currentUserId)?.answer || '');
+    const finalA = runtime.isHost ? mine : theirs;
+    const finalB = runtime.isHost ? theirs : mine;
+    setArgA(finalA);
+    setArgB(finalB);
+    finishJudging(finalA || current.pro(partnerA, partnerB), finalB || current.con(partnerA, partnerB));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [privateArguments.revealedAnswers]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -116,35 +147,22 @@ export default function DebatePage() {
     setBotState('talking');
   };
 
-  const handleJudge = () => {
+  const handleJudge = async () => {
     sounds.playPop();
-    setBotState('thinking');
-
-    setTimeout(() => {
-      const finalA = argA || current.pro(partnerA, partnerB);
-      const finalB = argB || current.con(partnerA, partnerB);
-      const result = judgeDebate(
-        current.topic,
-        finalA,
-        finalB,
-        partnerA,
-        partnerB,
-      );
-
-      setVerdict(result);
-      sounds.playCelebration();
-      setConfettiActive(true);
-      setTimeout(() => setConfettiActive(false), 2500);
-
-      speakCupidot(
-        `Debate Winner: ${result.winner}. ${result.analysis} Joint decree: ${result.penalty}`,
-        {
-          mood: 'sassy',
-          onStart: () => setBotState('sassy'),
-          onEnd: () => setBotState('celebration'),
-        },
-      );
-    }, 500);
+    if (livePair) {
+      const ownArgument = runtime.isHost ? argA : argB;
+      try {
+        if (!privateArguments.isLocked) {
+          const result = await privateArguments.lock(ownArgument);
+          if (!result.bothLocked) return;
+        }
+        await privateArguments.reveal();
+      } catch (error) {
+        console.error('Failed to seal debate argument:', error);
+      }
+      return;
+    }
+    finishJudging(argA || current.pro(partnerA, partnerB), argB || current.con(partnerA, partnerB));
   };
 
   const nextTopic = () => {
@@ -324,6 +342,7 @@ export default function DebatePage() {
                 rows={2}
                 value={argA}
                 onChange={(e) => setArgA(e.target.value)}
+                disabled={livePair && !runtime.isHost}
                 placeholder="Optional extra testimony..."
                 style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--line)', fontSize: '12.5px' }}
               />
@@ -340,6 +359,7 @@ export default function DebatePage() {
                 rows={2}
                 value={argB}
                 onChange={(e) => setArgB(e.target.value)}
+                disabled={livePair && runtime.isHost}
                 placeholder="Optional extra testimony..."
                 style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--line)', fontSize: '12.5px' }}
               />
@@ -350,10 +370,11 @@ export default function DebatePage() {
           <div style={{ textAlign: 'center' }}>
             <button
               className="btn btn-grad"
-              onClick={handleJudge}
+              onClick={() => void handleJudge()}
+              disabled={privateArguments.loading || (livePair && privateArguments.isLocked && !privateArguments.bothLocked)}
               style={{ padding: '12px 36px', fontSize: '15px' }}
             >
-              Call for Cupidot&apos;s Verdict ⚖️
+              {livePair ? (privateArguments.bothLocked ? 'Open Both Arguments for Verdict ⚖️' : privateArguments.isLocked ? 'Argument Sealed · Waiting…' : 'Seal My Argument') : `Call for Cupidot's Verdict ⚖️`}
             </button>
             <button
               className="btn btn-ghost"

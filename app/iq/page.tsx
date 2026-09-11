@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { sounds } from '@/lib/sound';
 import { useCoupleProfile } from '@/lib/couple';
 import { Confetti, CoupleNameBar, ActivityShell } from '@/components/shared';
 import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
+import { usePrivateAnswers } from '@/hooks/usePrivateAnswers';
 
 interface IQQuestion {
   title: string;
@@ -98,15 +99,35 @@ export default function IQPage() {
     transportMode: 'auto',
     initialOptions: { totalQuestions: IQ_PUZZLES.length },
   });
+  const livePair = runtime.transportName !== 'mock';
+  const privateAnswers = usePrivateAnswers({ roundNumber: qIndex, localRuntime: runtime });
+  const myPick = runtime.isHost ? pickA : pickB;
+
+  useEffect(() => {
+    if (!privateAnswers.revealedAnswers) return;
+    const mine = Number(privateAnswers.revealedAnswers.find((a) => a.userId === runtime.currentUserId)?.answer);
+    const theirs = Number(privateAnswers.revealedAnswers.find((a) => a.userId !== runtime.currentUserId)?.answer);
+    if (runtime.isHost) {
+      setPickA(mine);
+      setPickB(theirs);
+    } else {
+      setPickB(mine);
+      setPickA(theirs);
+    }
+    revealRound(mine, theirs, runtime.isHost);
+  // revealRound is intentionally driven only by a new sealed-answer result.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [privateAnswers.revealedAnswers]);
 
   const puzzle = IQ_PUZZLES[qIndex];
 
-  const handleReveal = () => {
-    if (pickA === null || pickB === null) return;
+  const revealRound = (first: number, second: number, mineIsA = true) => {
+    const answerA = mineIsA ? first : second;
+    const answerB = mineIsA ? second : first;
     setRevealed(true);
 
-    const isCorrectA = pickA === puzzle.correctIndex;
-    const isCorrectB = pickB === puzzle.correctIndex;
+    const isCorrectA = answerA === puzzle.correctIndex;
+    const isCorrectB = answerB === puzzle.correctIndex;
 
     if (isCorrectA) setScoreA((s) => s + 1);
     if (isCorrectB) setScoreB((s) => s + 1);
@@ -118,6 +139,24 @@ export default function IQPage() {
     } else {
       sounds.playCountdownBeep(true);
     }
+  };
+
+  const handleReveal = async () => {
+    if (livePair) {
+      if (myPick === null) return;
+      try {
+        if (!privateAnswers.isLocked) {
+          const result = await privateAnswers.lock(myPick);
+          if (!result.bothLocked) return;
+        }
+        await privateAnswers.reveal();
+      } catch (error) {
+        console.error('Failed to seal IQ answer:', error);
+      }
+      return;
+    }
+    if (pickA === null || pickB === null) return;
+    revealRound(pickA, pickB);
   };
 
   const handleNext = () => {
@@ -263,7 +302,7 @@ export default function IQPage() {
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
                   <span style={{ fontWeight: 800, fontSize: '14px', color: 'var(--pink)' }}>
-                    🌸 {partnerA}&apos;s Deduction
+                    🌸 {livePair ? (runtime.isHost ? partnerA : partnerB) : partnerA}&apos;s Deduction
                   </span>
                   <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 700, color: pickA !== null ? '#0A7D4D' : 'var(--ink-soft)' }}>
                     {pickA !== null ? '✓ Locked In' : 'Select one...'}
@@ -273,16 +312,16 @@ export default function IQPage() {
                   {puzzle.options.map((opt, idx) => (
                     <button
                       key={idx}
-                      onClick={() => !revealed && setPickA(idx)}
+                      onClick={() => !revealed && (livePair && !runtime.isHost ? setPickB(idx) : setPickA(idx))}
                       disabled={revealed}
                       style={{
                         textAlign: 'left',
                         padding: '10px 14px',
                         borderRadius: '8px',
-                        border: pickA === idx ? '2px solid var(--pink)' : '1px solid #FFD6E8',
-                        background: pickA === idx ? '#FFF' : 'rgba(255,255,255,0.65)',
+                        border: myPick === idx ? '2px solid var(--pink)' : '1px solid #FFD6E8',
+                        background: myPick === idx ? '#FFF' : 'rgba(255,255,255,0.65)',
                         fontSize: '13px',
-                        fontWeight: pickA === idx ? 700 : 500,
+                        fontWeight: myPick === idx ? 700 : 500,
                         cursor: revealed ? 'default' : 'pointer',
                       }}
                     >
@@ -293,7 +332,7 @@ export default function IQPage() {
               </div>
 
               {/* Partner B */}
-              <div
+              {!livePair && <div
                 style={{
                   background: '#F0F7FF',
                   border: '1.5px solid #D6E8FF',
@@ -330,23 +369,23 @@ export default function IQPage() {
                     </button>
                   ))}
                 </div>
-              </div>
+              </div>}
             </div>
 
             {/* Action Bar */}
             <div style={{ textAlign: 'center' }}>
               {!revealed ? (
                 <button
-                  onClick={handleReveal}
-                  disabled={pickA === null || pickB === null}
+                  onClick={() => void handleReveal()}
+                  disabled={livePair ? myPick === null || privateAnswers.loading || (privateAnswers.isLocked && !privateAnswers.bothLocked) : pickA === null || pickB === null}
                   className="btn btn-primary"
                   style={{
                     padding: '12px 36px',
                     fontSize: '15px',
-                    opacity: pickA !== null && pickB !== null ? 1 : 0.5,
+                    opacity: (livePair ? myPick !== null : pickA !== null && pickB !== null) ? 1 : 0.5,
                   }}
                 >
-                  Reveal Deductions &amp; Check Solution 🔍
+                  {livePair ? (privateAnswers.bothLocked ? 'Reveal Both Deductions 🔍' : privateAnswers.isLocked ? 'Waiting for Partner…' : 'Seal My Deduction') : 'Reveal Deductions & Check Solution 🔍'}
                 </button>
               ) : (
                 <div style={{ animation: 'gl-rise 0.25s ease' }}>

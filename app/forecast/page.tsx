@@ -8,6 +8,9 @@ import { speakCupidot, stopCupidotSpeech } from '@/lib/voice';
 import { useCoupleProfile } from '@/lib/couple';
 import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
+import { usePrivateAnswers } from '@/hooks/usePrivateAnswers';
+import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
+import { upsertActivityRecord } from '@/lib/activity-records';
 
 interface CheckinMetrics {
   energy: number; // 1-5
@@ -88,10 +91,46 @@ export default function ForecastPage() {
   const [activeConditionKey, setActiveConditionKey] = useState<string>('soft');
 
   const { saveKeepsake, isSaving } = useKeepsakeWriter();
+  const { space } = useCoupleSpace();
   const runtime = useActivityRuntime({
     activityType: 'forecast',
     transportMode: 'auto',
   });
+  const livePair = runtime.transportName !== 'mock';
+  const privateCheckin = usePrivateAnswers({
+    roundNumber: Number(new Date().toISOString().slice(0, 10).replaceAll('-', '')),
+    localRuntime: runtime,
+  });
+
+  useEffect(() => {
+    const answers = privateCheckin.revealedAnswers;
+    if (!answers || answers.length < 2) return;
+    const values = answers.map((entry) => entry.answer as CheckinMetrics);
+    const shared = values.reduce<CheckinMetrics>(
+      (total, value) => ({
+        energy: total.energy + value.energy / values.length,
+        affection: total.affection + value.affection / values.length,
+        stress: total.stress + value.stress / values.length,
+        availability: total.availability + value.availability / values.length,
+      }),
+      { energy: 0, affection: 0, stress: 0, availability: 0 },
+    );
+    const condition = calculateCondition(shared);
+    setActiveConditionKey(condition);
+    setHasSubmittedCheckin(true);
+    setCurrentStage('play');
+    void runtime.sendEvent('forecast_reveal', { condition: CONDITIONS[condition].name });
+    if (space?.id) void upsertActivityRecord({
+      coupleId: space.id,
+      kind: 'forecast',
+      key: new Date().toISOString().slice(0, 10),
+      title: 'Daily Love Forecast',
+      payload: { condition, sharedMetrics: shared },
+      status: 'completed',
+    });
+  // Runs only when a new sealed pair is revealed.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [privateCheckin.revealedAnswers]);
 
   useEffect(() => {
     return () => {
@@ -106,7 +145,19 @@ export default function ForecastPage() {
     return 'soft';
   };
 
-  const handleSubmitCheckin = () => {
+  const handleSubmitCheckin = async () => {
+    if (livePair) {
+      try {
+        if (!privateCheckin.isLocked) {
+          const result = await privateCheckin.lock(metrics);
+          if (!result.bothLocked) return;
+        }
+        await privateCheckin.reveal();
+      } catch (error) {
+        console.error('Failed to seal forecast check-in:', error);
+      }
+      return;
+    }
     sounds.playCelebration();
     const cond = calculateCondition(metrics);
     setActiveConditionKey(cond);
@@ -394,11 +445,12 @@ export default function ForecastPage() {
 
             <div style={{ textAlign: 'center' }}>
               <button
-                onClick={handleSubmitCheckin}
+                onClick={() => void handleSubmitCheckin()}
+                disabled={privateCheckin.loading || (livePair && privateCheckin.isLocked && !privateCheckin.bothLocked)}
                 className="btn btn-primary"
                 style={{ padding: '12px 32px', fontSize: '14.5px', fontWeight: 700 }}
               >
-                Reveal Our Shared Forecast 🌤️
+                {livePair ? (privateCheckin.bothLocked ? 'Reveal Our Shared Forecast 🌤️' : privateCheckin.isLocked ? 'Check-in Sealed · Waiting…' : 'Seal My Private Check-in') : 'Reveal Our Shared Forecast 🌤️'}
               </button>
             </div>
           </div>
