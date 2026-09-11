@@ -127,3 +127,78 @@ export async function uploadTemporaryActivityAsset(input: {
   if (signedError) throw signedError;
   return { ...registered, signedUrl: signed.signedUrl };
 }
+
+export interface BirthdayGiftPayload {
+  theme: string;
+  recipient: 'A' | 'B';
+  message: string;
+  voucher: string;
+  photoPath?: string | null;
+  audioPath?: string | null;
+}
+
+export async function uploadBirthdayAsset(input: {
+  coupleId: string;
+  file: File;
+  mediaKind: 'image' | 'audio';
+}) {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Supabase is not configured.');
+  if (input.file.size > 12 * 1024 * 1024) throw new Error('File must be 12 MB or smaller.');
+  const { data: auth, error: authError } = await supabase.auth.getUser();
+  if (authError || !auth.user) throw authError || new Error('Sign in to upload birthday media.');
+  const extension = input.file.type.split('/')[1]?.replace('mpeg', 'mp3') || 'bin';
+  const path = `${input.coupleId}/${auth.user.id}/${crypto.randomUUID()}.${extension}`;
+  const { error } = await supabase.storage.from('birthday-assets').upload(path, input.file, {
+    contentType: input.file.type,
+    upsert: false,
+  });
+  if (error) throw error;
+  const { data: signed, error: signedError } = await supabase.storage.from('birthday-assets').createSignedUrl(path, 3600);
+  if (signedError) throw signedError;
+  return { path, signedUrl: signed.signedUrl };
+}
+
+export async function loadBirthdayGift(coupleId: string) {
+  const supabase = getSupabase();
+  if (!supabase) return null;
+  const { data, error } = await supabase.from('birthday_gifts')
+    .select('id,title,payload,status,target_at,created_by,updated_at')
+    .eq('couple_id', coupleId).eq('record_key', 'current-gift').maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
+  const payload = data.payload as BirthdayGiftPayload;
+  const sign = async (path?: string | null) => path
+    ? (await supabase.storage.from('birthday-assets').createSignedUrl(path, 3600)).data?.signedUrl || null
+    : null;
+  return {
+    ...data,
+    payload,
+    photoUrl: await sign(payload.photoPath),
+    audioUrl: await sign(payload.audioPath),
+  };
+}
+
+export async function saveBirthdayGift(input: {
+  coupleId: string;
+  title: string;
+  payload: BirthdayGiftPayload;
+  status: 'draft' | 'ready' | 'revealed' | 'revoked';
+  targetAt?: string | null;
+}) {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Supabase is not configured.');
+  const { data: auth, error: authError } = await supabase.auth.getUser();
+  if (authError || !auth.user) throw authError || new Error('Sign in to save the birthday gift.');
+  const { error } = await supabase.from('birthday_gifts').upsert({
+    couple_id: input.coupleId,
+    record_key: 'current-gift',
+    created_by: auth.user.id,
+    title: input.title.slice(0, 120),
+    payload: input.payload,
+    status: input.status,
+    target_at: input.targetAt || null,
+    updated_at: new Date().toISOString(),
+  }, { onConflict: 'couple_id,record_key' });
+  if (error) throw error;
+}

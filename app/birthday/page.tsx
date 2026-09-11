@@ -6,10 +6,10 @@ import { useCoupleProfile } from '@/lib/couple';
 import { CoupleNameBar, ActivityShell, Confetti } from '@/components/shared';
 import { QRCodeSVG } from '@/lib/qrcode';
 import { sounds } from '@/lib/sound';
-import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
 import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
-import { loadActivityRecords, upsertActivityRecord, uploadTemporaryActivityAsset } from '@/lib/activity-records';
+import { loadBirthdayGift, saveBirthdayGift, uploadBirthdayAsset } from '@/lib/activity-records';
+import { useSupabaseSession } from '@/contexts/SupabaseSessionContext';
 
 interface ThemeConfig {
   id: string;
@@ -56,9 +56,10 @@ const BIRTHDAY_THEMES: ThemeConfig[] = [
 ];
 
 export default function BirthdayPage() {
-  const { partnerA, partnerB, roomCode } = useCoupleProfile();
+  const { partnerA, partnerB } = useCoupleProfile();
   const { saveKeepsake, saving: keepsakeSaving } = useKeepsakeWriter();
   const { space } = useCoupleSpace();
+  const { user } = useSupabaseSession();
 
   const [selectedTheme, setSelectedTheme] = useState<ThemeConfig>(BIRTHDAY_THEMES[0]);
   const [recipient, setRecipient] = useState<'A' | 'B'>('B');
@@ -73,62 +74,61 @@ export default function BirthdayPage() {
   const [keepsakeSaved, setKeepsakeSaved] = useState(false);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [photoPath, setPhotoPath] = useState<string | null>(null);
+  const [audioPath, setAudioPath] = useState<string | null>(null);
   const [revealAt, setRevealAt] = useState('');
   const [revoked, setRevoked] = useState(false);
   const [mediaStatus, setMediaStatus] = useState<'idle' | 'uploading' | 'ready' | 'failed'>('idle');
-
-  const runtime = useActivityRuntime({
-    sessionId: roomCode ? `room-${roomCode}-birthday` : 'local-birthday',
-    activityType: 'birthday',
-    roomId: roomCode || 'local',
-    transportMode: 'auto',
-    initialOptions: { theme: selectedTheme.id },
-  });
+  const [giftLoaded, setGiftLoaded] = useState(false);
+  const [giftAuthorId, setGiftAuthorId] = useState<string | null>(null);
+  const [giftTouched, setGiftTouched] = useState(false);
 
   const birthdayPersonName = recipient === 'B' ? partnerB : partnerA;
   const authorName = recipient === 'B' ? partnerA : partnerB;
 
   useEffect(() => {
     if (!space?.id) return;
-    void loadActivityRecords<{
-      theme?: string; recipient?: 'A' | 'B'; message?: string; voucher?: string;
-      photoUrl?: string | null; audioUrl?: string | null; revoked?: boolean;
-    }>(space.id, 'birthday_gift').then((records) => {
-      const draft = records.find((record) => record.key === 'current-gift');
-      if (!draft) return;
+    setGiftLoaded(false);
+    void loadBirthdayGift(space.id).then((draft) => {
+      if (!draft) { setGiftLoaded(true); return; }
       const payload = draft.payload;
+      setGiftAuthorId(draft.created_by);
       setSelectedTheme(BIRTHDAY_THEMES.find((theme) => theme.id === payload.theme) || BIRTHDAY_THEMES[0]);
       if (payload.recipient) setRecipient(payload.recipient);
       if (payload.message) setCustomMsg(payload.message);
       if (payload.voucher) setGiftVoucher(payload.voucher);
-      setPhotoUrl(payload.photoUrl || null);
-      setAudioUrl(payload.audioUrl || null);
-      setRevealAt(draft.targetAt ? new Date(draft.targetAt).toISOString().slice(0, 16) : '');
-      setRevoked(Boolean(payload.revoked));
-    }).catch((error) => console.error('Failed to restore birthday draft:', error));
+      setPhotoPath(payload.photoPath || null);
+      setAudioPath(payload.audioPath || null);
+      setPhotoUrl(draft.photoUrl);
+      setAudioUrl(draft.audioUrl);
+      setRevealAt(draft.target_at ? new Date(draft.target_at).toISOString().slice(0, 16) : '');
+      setRevoked(draft.status === 'revoked');
+      setRevealed(draft.status === 'revealed' || (draft.status === 'ready' && (!draft.target_at || new Date(draft.target_at).getTime() <= Date.now())));
+      setGiftLoaded(true);
+    }).catch((error) => { setGiftLoaded(true); console.error('Failed to restore birthday gift:', error); });
   }, [space?.id]);
 
   useEffect(() => {
-    if (!space?.id) return;
-    const timer = setTimeout(() => void upsertActivityRecord({
+    if (!space?.id || !giftLoaded || (!giftTouched && giftAuthorId !== user?.id) || (giftAuthorId && giftAuthorId !== user?.id)) return;
+    const timer = setTimeout(() => void saveBirthdayGift({
       coupleId: space.id,
-      kind: 'birthday_gift',
-      key: 'current-gift',
       title: `Birthday surprise for ${birthdayPersonName}`,
-      payload: { theme: selectedTheme.id, recipient, message: customMsg, voucher: giftVoucher, photoUrl, audioUrl, revoked },
-      status: revoked ? 'archived' : revealed ? 'completed' : 'draft',
+      payload: { theme: selectedTheme.id, recipient, message: customMsg, voucher: giftVoucher, photoPath, audioPath },
+      status: revoked ? 'revoked' : revealed ? 'revealed' : revealAt ? 'ready' : 'draft',
       targetAt: revealAt ? new Date(revealAt).toISOString() : null,
     }).catch((error) => console.error('Failed to autosave birthday gift:', error)), 700);
     return () => clearTimeout(timer);
-  }, [space?.id, selectedTheme.id, recipient, customMsg, giftVoucher, photoUrl, audioUrl, revealAt, revoked, revealed, birthdayPersonName]);
+  }, [space?.id, selectedTheme.id, recipient, customMsg, giftVoucher, photoPath, audioPath, revealAt, revoked, revealed, birthdayPersonName, giftLoaded, giftAuthorId, giftTouched, user?.id]);
 
   const uploadGiftMedia = async (event: React.ChangeEvent<HTMLInputElement>, mediaKind: 'image' | 'audio') => {
     const file = event.target.files?.[0];
     if (!file || !space?.id) return;
     setMediaStatus('uploading');
+    setGiftTouched(true);
     try {
-      const asset = await uploadTemporaryActivityAsset({ coupleId: space.id, sessionId: runtime.sessionId, file, mediaKind });
-      if (mediaKind === 'image') setPhotoUrl(asset.signedUrl); else setAudioUrl(asset.signedUrl);
+      const asset = await uploadBirthdayAsset({ coupleId: space.id, file, mediaKind });
+      if (mediaKind === 'image') { setPhotoPath(asset.path); setPhotoUrl(asset.signedUrl); }
+      else { setAudioPath(asset.path); setAudioUrl(asset.signedUrl); }
       setMediaStatus('ready');
     } catch (error) {
       setMediaStatus('failed');
@@ -233,6 +233,7 @@ export default function BirthdayPage() {
               key={th.id}
               onClick={() => {
                 setSelectedTheme(th);
+                setGiftTouched(true);
                 sounds.playTick();
               }}
               style={{
@@ -281,7 +282,7 @@ export default function BirthdayPage() {
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button
                     type="button"
-                    onClick={() => setRecipient('B')}
+                    onClick={() => { setRecipient('B'); setGiftTouched(true); }}
                     style={{
                       flex: 1,
                       padding: '10px',
@@ -297,7 +298,7 @@ export default function BirthdayPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setRecipient('A')}
+                    onClick={() => { setRecipient('A'); setGiftTouched(true); }}
                     style={{
                       flex: 1,
                       padding: '10px',
@@ -331,7 +332,7 @@ export default function BirthdayPage() {
                 <input
                   type="text"
                   value={giftVoucher}
-                  onChange={(e) => setGiftVoucher(e.target.value)}
+                  onChange={(e) => { setGiftVoucher(e.target.value); setGiftTouched(true); }}
                   placeholder="e.g. Good for 1 dinner date & 100 kisses..."
                   style={{
                     width: '100%',
@@ -361,7 +362,7 @@ export default function BirthdayPage() {
               <textarea
                 rows={4}
                 value={customMsg}
-                onChange={(e) => setCustomMsg(e.target.value)}
+                onChange={(e) => { setCustomMsg(e.target.value); setGiftTouched(true); }}
                 style={{
                   width: '100%',
                   padding: '12px 14px',
@@ -386,14 +387,14 @@ export default function BirthdayPage() {
               <input
                 type="datetime-local"
                 value={revealAt}
-                onChange={(event) => setRevealAt(event.target.value)}
+                onChange={(event) => { setRevealAt(event.target.value); setGiftTouched(true); }}
                 aria-label="Scheduled reveal time"
                 style={{ border: '1px solid var(--line)', borderRadius: '10px', padding: '10px' }}
               />
             </div>
             {mediaStatus === 'uploading' && <p style={{ margin: 0, fontSize: '12px' }}>Uploading privately…</p>}
             {mediaStatus === 'failed' && <p style={{ margin: 0, color: '#B45309', fontSize: '12px' }}>Media upload failed. Choose the file again to retry.</p>}
-            <button type="button" className="btn btn-ghost" onClick={() => setRevoked((value) => !value)}>
+            <button type="button" className="btn btn-ghost" onClick={() => { setRevoked((value) => !value); setGiftTouched(true); }}>
               {revoked ? 'Restore this surprise' : 'Revoke this surprise'}
             </button>
 
