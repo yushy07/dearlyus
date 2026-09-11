@@ -136,6 +136,20 @@ export default function LetterPage() {
     } catch {}
   };
 
+  const isCapsuleUnlocked = (capsule: SealedCapsule) =>
+    Boolean(capsule.content) && new Date(`${capsule.unlockDate}T00:00:00`).getTime() <= Date.now();
+
+  const downloadLetter = (capsule: SealedCapsule) => {
+    if (!isCapsuleUnlocked(capsule) || !capsule.content) return;
+    const text = `${capsule.title}\n\n${capsule.content}\n\n— ${capsule.author}\nUnlocked ${capsule.unlockDate}`;
+    const url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `dearly-us-letter-${capsule.unlockDate}.txt`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
   const startVoiceRecording = async () => {
     try {
       sounds.playPop();
@@ -665,7 +679,7 @@ export default function LetterPage() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                   <span style={{ fontSize: '22px' }}>{cap.stamp}</span>
                   <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--ink-soft)' }}>
-                    🔒 UNLOCKS: {cap.unlockDate}
+                    {isCapsuleUnlocked(cap) ? '♡ OPENED' : `🔒 UNLOCKS: ${cap.unlockDate}`}
                   </span>
                 </div>
                 <div style={{ fontWeight: 800, fontSize: '15px', color: 'var(--ink)', marginBottom: '4px' }}>
@@ -674,10 +688,34 @@ export default function LetterPage() {
                 <div style={{ fontSize: '12px', color: 'var(--ink-soft)' }}>
                   By {cap.author}
                 </div>
+                {isCapsuleUnlocked(cap) && (
+                  <button type="button" className="btn btn-ghost" onClick={() => setActiveCapsule(cap)} style={{ marginTop: '14px', width: '100%' }}>
+                    Read the letter
+                  </button>
+                )}
               </div>
             ))}
           </div>
         </div>
+
+        {activeCapsule && isCapsuleUnlocked(activeCapsule) && (
+          <div role="dialog" aria-modal="true" aria-label="Unlocked future letter" style={{ position: 'fixed', inset: 0, zIndex: 80, display: 'grid', placeItems: 'center', padding: '24px', background: 'rgba(43,27,31,.58)' }}>
+            <article style={{ width: 'min(620px, 100%)', maxHeight: '82vh', overflow: 'auto', padding: '34px', borderRadius: '22px', background: '#fffaf2', boxShadow: '0 28px 80px rgba(28,14,18,.3)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '20px' }}>
+                <span style={{ fontSize: '30px' }}>{activeCapsule.stamp}</span>
+                <button type="button" className="btn btn-ghost" onClick={() => setActiveCapsule(null)} aria-label="Close unlocked letter">Close</button>
+              </div>
+              <p style={{ fontSize: '11px', letterSpacing: '.13em', color: '#8b6570' }}>OPENED · {activeCapsule.unlockDate}</p>
+              <h2 style={{ fontFamily: 'var(--font-serif, Georgia, serif)' }}>{activeCapsule.title}</h2>
+              <p style={{ whiteSpace: 'pre-wrap', fontFamily: 'var(--font-serif, Georgia, serif)', fontSize: '17px', lineHeight: 1.75 }}>{activeCapsule.content}</p>
+              {activeCapsule.voiceNoteUrl && <audio controls src={activeCapsule.voiceNoteUrl} style={{ width: '100%', marginTop: '12px' }} />}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', marginTop: '24px' }}>
+                <small>From {activeCapsule.author}</small>
+                <button type="button" className="btn btn-primary" onClick={() => downloadLetter(activeCapsule)}>Download keepsake</button>
+              </div>
+            </article>
+          </div>
+        )}
       </div>
     </ActivityShell>
   );
