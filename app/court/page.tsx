@@ -1,937 +1,995 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import type { BotState } from '@/components/bot/CupidotBot';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  Check,
+  Download,
+  Gavel,
+  Heart,
+  RotateCcw,
+  Sparkles,
+} from 'lucide-react';
+import { ActivityShell } from '@/components/shared';
 import { Cupidot2D } from '@/components/bot/Cupidot2D';
-import { judgeCourtCase, CourtVerdict } from '@/lib/cupidot';
-import { sounds } from '@/lib/sound';
-import { CoupleNameBar, ActivityShell } from '@/components/shared';
-import { useCoupleProfile } from '@/lib/couple';
-import { speakCupidot, stopCupidotSpeech } from '@/lib/voice';
 import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
+import { useCoupleProfile } from '@/lib/couple';
+import { sounds } from '@/lib/sound';
+import {
+  COURT_TOPICS,
+  OBJECTIONS,
+  courtBotState,
+  initialCourt,
+  localReaction,
+  localVerdict,
+  normalizeCourt,
+  objectionResponse,
+  pickCourtTwist,
+  reduceCourt,
+  seriousTopic,
+  type CourtReaction,
+  type CourtSnapshot,
+  type CourtStage,
+  type CourtVerdict,
+} from '@/lib/court';
+import { askCourtJudge, submitCourtAction } from '@/lib/court-client';
+import { createCourtRuling, downloadCourtRuling } from '@/lib/court-keepsake';
+import './court.css';
 
-interface CaseExample {
-  title: string;
-  category: string;
-  claim1: (nameA: string, nameB: string) => string;
-  claim2: (nameA: string, nameB: string) => string;
-}
-
-const PRESET_CASES: CaseExample[] = [
-  {
-    title: 'The Oversized Vintage Hoodie Territorial Dispute',
-    category: 'Wardrobe Annexation',
-    claim1: (a, b) =>
-      `${a}: "${b}'s favorite cozy hoodie was legitimately confiscated under couple adverse possession laws. It smells like ${b} and looks 200% better on me!"`,
-    claim2: (a, b) =>
-      `${b}: "I have not seen that hoodie in four months. I had to freeze during a thunderstorm while ${a} posted selfies wearing it!"`,
-  },
-  {
-    title: 'The French Fry Grand Larceny & Communal Food Conflict',
-    category: 'Dining Maritime Law',
-    claim1: (a, b) =>
-      `${b}: "${a} explicitly said 'I'm not hungry, I'll just have water', and then proceeded to consume 45% of my curly fries!"`,
-    claim2: (a, b) =>
-      `${a}: "Food ordered by one partner automatically enters joint couple trust custody upon hitting the table. It is science!"`,
-  },
-  {
-    title: 'The 18-Second Playlist Monopoly Incident',
-    category: 'Road Trip Sovereignty',
-    claim1: (a, b) =>
-      `${b}: "${a} demands AUX cord control, plays the first 18 seconds of a song, and skips it right when the bridge starts!"`,
-    claim2: (a, b) =>
-      `${a}: "I am curating the atmospheric emotional vibe of the drive! You were about to play aggressive techno at 8 AM!"`,
-  },
-  {
-    title: 'The Unanswered FaceTime & Kitchen Detour Mystery',
-    category: 'Communication Protocols',
-    claim1: (a, b) =>
-      `${a}: "${b} texted 'calling you right back, just grabbing a glass of water' and disappeared into the ether for two hours!"`,
-    claim2: (a, b) =>
-      `${b}: "I sat on the sofa for three seconds, pet the cat, and entered a sudden involuntary 90-minute coma!"`,
-  },
-];
-
-const OBJECTION_PRESETS = [
-  { text: 'Objection: Too Cute! 🌸', icon: '🌸' },
-  { text: 'Objection: Slander! 🚨', icon: '🚨' },
-  { text: 'Objection: Hearsay from the Cat! 🐱', icon: '🐱' },
-  { text: 'Objection: Irresistible Charm! 💖', icon: '💖' },
-];
+const STEPS = ['Topic', 'Your sides', 'Judge asks', 'Tiny twist', 'Ruling'];
 
 export default function CourtPage() {
-  const { partnerA, partnerB, roomCode } = useCoupleProfile();
-  const { saveKeepsake, saving: keepsakeSaving } = useKeepsakeWriter();
-
-  const [courtStage, setCourtStage] = useState<'filing' | 'consent' | 'arguments' | 'verdict' | 'closed'>('filing');
-  const [caseIdx, setCaseIdx] = useState(0);
-  const [customTitle, setCustomTitle] = useState('');
-  const [customClaimA, setCustomClaimA] = useState('');
-  const [customClaimB, setCustomClaimB] = useState('');
-  const [useCustom, setUseCustom] = useState(false);
-
-  const [consentA, setConsentA] = useState(false);
-  const [consentB, setConsentB] = useState(false);
-
-  const [verdict, setVerdict] = useState<CourtVerdict | null>(null);
-  const [botState, setBotState] = useState<BotState>('idle');
-  const [deliberating, setDeliberating] = useState(false);
-  const [objections, setObjections] = useState<Array<{ id: number; text: string; sender: string }>>([]);
-  const [keepsakeSaved, setKeepsakeSaved] = useState(false);
-
-  const runtime = useActivityRuntime({
-    sessionId: roomCode ? `room-${roomCode}-court` : 'local-court',
+  const { partnerA, partnerB } = useCoupleProfile();
+  const keepsakes = useKeepsakeWriter();
+  const runtime = useActivityRuntime<CourtSnapshot>({
     activityType: 'court',
-    roomId: roomCode || 'local',
     transportMode: 'auto',
-    initialOptions: {
-      caseTitle: PRESET_CASES[0].title,
-      plaintiff: partnerA,
-      defendant: partnerB,
-    },
   });
+  const live =
+    runtime.transportName === 'supabase' && Boolean(runtime.sessionId);
+  const [local, setLocal] = useState<CourtSnapshot>(() => initialCourt());
+  const court = live ? normalizeCourt(runtime.snapshot) : local;
+  const [introDismissed, setIntroDismissed] = useState(false);
+  const [customTopic, setCustomTopic] = useState('');
+  const [statementOne, setStatementOne] = useState('');
+  const [statementTwo, setStatementTwo] = useState('');
+  const [followupOne, setFollowupOne] = useState('');
+  const [followupTwo, setFollowupTwo] = useState('');
+  const [softened, setSoftened] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    return () => {
-      stopCupidotSpeech();
-    };
-  }, []);
+    if (live) setIntroDismissed(true);
+  }, [live]);
 
-  const currentPreset = PRESET_CASES[caseIdx];
-  const isLivePair = runtime.transportName !== 'mock';
+  const names = useMemo(() => {
+    if (!live) return { first: partnerA, second: partnerB };
+    return court.firstSpeakerId === runtime.currentUserId
+      ? { first: partnerA, second: partnerB }
+      : { first: partnerB, second: partnerA };
+  }, [court.firstSpeakerId, live, partnerA, partnerB, runtime.currentUserId]);
 
-  useEffect(() => {
-    const snapshot = runtime.snapshot as {
-      caseTitle?: string;
-      consentA?: boolean;
-      consentB?: boolean;
-      stage?: typeof courtStage;
-      verdict?: string | null;
-      penalty?: string | null;
-      reasoning?: string | null;
-      guiltyParty?: string | null;
-    };
-    setConsentA(Boolean(snapshot.consentA));
-    setConsentB(Boolean(snapshot.consentB));
-    if (snapshot.stage) setCourtStage(snapshot.stage);
-    const presetIndex = PRESET_CASES.findIndex((item) => item.title === snapshot.caseTitle);
-    if (presetIndex >= 0) setCaseIdx(presetIndex);
-    if (snapshot.verdict && snapshot.penalty) {
-      setVerdict({
-        verdictTitle: snapshot.verdict,
-        sentence: snapshot.penalty,
-        reasoning: snapshot.reasoning || 'Judge Cupidot found a gentle compromise for both partners.',
-        guiltyParty: snapshot.guiltyParty || 'Neither — Mutual Play',
-      });
-    }
-  }, [runtime.snapshot]);
+  const step =
+    court.stage === 'welcome' || court.stage === 'choose_topic'
+      ? 0
+      : ['statement_one', 'statement_two', 'reveal'].includes(court.stage)
+        ? 1
+        : court.stage === 'judge_question'
+          ? 2
+          : ['judge_twist', 'deliberating'].includes(court.stage)
+            ? 3
+            : 4;
 
-  const handleConsent = (partner: 'A' | 'B') => {
-    const activePartner = isLivePair ? (runtime.isHost ? 'A' : 'B') : partner;
-    sounds.playTick();
-    if (activePartner === 'A') setConsentA(true);
-    if (activePartner === 'B') setConsentB(true);
+  async function serverAction(
+    action: string,
+    payload: Record<string, unknown> = {},
+  ) {
+    if (!runtime.sessionId || !runtime.runtime)
+      throw new Error('The shared Court room is not ready yet.');
+    const result = await submitCourtAction(
+      runtime.sessionId,
+      runtime.runtime.getRevision(),
+      action,
+      payload,
+    );
+    await runtime.requestRecovery();
+    return result;
+  }
 
-    void runtime.sendEvent('court_consent', { partner: activePartner });
+  function localEvent(
+    type: string,
+    payload: Record<string, unknown> = {},
+    senderId = runtime.currentUserId,
+  ) {
+    setLocal((value) =>
+      reduceCourt(value, {
+        id: crypto.randomUUID(),
+        sequence: Date.now(),
+        schemaVersion: 2,
+        senderId,
+        createdAt: new Date().toISOString(),
+        activityType: 'court',
+        type,
+        payload,
+      }),
+    );
+  }
 
-    const nextA = activePartner === 'A' ? true : consentA;
-    const nextB = activePartner === 'B' ? true : consentB;
-    if (nextA && nextB) {
-      sounds.playCelebration();
-      setCourtStage('arguments');
-      setBotState('talking');
-      setTimeout(() => setBotState('idle'), 2000);
-    }
-  };
-
-  const handleTriggerObjection = (presetText: string, sender: string) => {
-    sounds.playPop();
-    const newObjection = { id: Date.now(), text: presetText, sender };
-    setObjections((prev) => [...prev.slice(-3), newObjection]);
-    void runtime.sendEvent('court_objection', { objection: presetText, senderName: sender });
-    setBotState('sassy');
-    setTimeout(() => setBotState('idle'), 1800);
-  };
-
-  const handleJudge = () => {
-    if (isLivePair && !runtime.isHost) return;
-    sounds.playPop();
-    setDeliberating(true);
-    setBotState('thinking');
-
-    setTimeout(() => {
-      let result: CourtVerdict;
-      if (useCustom && customTitle) {
-        result = judgeCourtCase(
-          customTitle,
-          customClaimA || `${partnerA} pleads innocent on all counts`,
-          customClaimB || `${partnerB} stands by innocence`,
-          partnerA,
-          partnerB,
-        );
-      } else {
-        result = judgeCourtCase(
-          currentPreset.title,
-          currentPreset.claim1(partnerA, partnerB),
-          currentPreset.claim2(partnerA, partnerB),
-          partnerA,
-          partnerB,
-        );
-      }
-
-      setVerdict(result);
-      setCourtStage('verdict');
-      void runtime.sendEvent('court_verdict', {
-        verdict: result.verdictTitle,
-        penalty: result.sentence,
-        reasoning: result.reasoning,
-        guiltyParty: result.guiltyParty,
-      });
-      setDeliberating(false);
-      sounds.playCelebration();
-
-      const courtMood = result.guiltyParty === 'Both' ? 'sassy' : 'angry';
-      setBotState(courtMood);
-
-      speakCupidot(
-        `Order in the court! ${result.verdictTitle}. The court finds: ${result.guiltyParty} guilty! ${result.reasoning} Mandatory joint sentence: ${result.sentence}`,
-        {
-          mood: courtMood,
-          onStart: () => setBotState(courtMood),
-          onEnd: () => setTimeout(() => setBotState('sassy'), 2200),
-        },
-      );
-    }, 600);
-  };
-
-  const handleNextPreset = () => {
-    stopCupidotSpeech();
-    sounds.playPop();
-    setUseCustom(false);
-    const nextIdx = (caseIdx + 1) % PRESET_CASES.length;
-    setCaseIdx(nextIdx);
-    setVerdict(null);
-    setConsentA(false);
-    setConsentB(false);
-    setCourtStage('filing');
-    setObjections([]);
-    setBotState('idle');
-    void runtime.sendEvent('court_case_change', {
-      caseTitle: PRESET_CASES[nextIdx].title,
-      plaintiff: partnerA,
-      defendant: partnerB,
-    });
-  };
-
-  const handleSaveHouseRule = async () => {
-    if (!verdict || keepsakeSaved || keepsakeSaving) return;
+  async function guarded(task: () => Promise<void>) {
+    setBusy(true);
+    setError(null);
     try {
-      await saveKeepsake({
-        kind: 'activity',
-        title: `Court Ruling & House Rule · ${verdict.verdictTitle}`,
-        activityPath: '/court',
-        caption: `Agreed joint court repair proposal: "${verdict.sentence}" (Zero real blame, 100% affection).`,
-        metadata: {
-          activityType: 'court',
-          caseTitle: useCustom ? customTitle : currentPreset.title,
-          verdictTitle: verdict.verdictTitle,
-          ruling: verdict.sentence,
-          guiltyParty: verdict.guiltyParty,
-          date: new Date().toISOString(),
-        },
-      });
-      setKeepsakeSaved(true);
-      sounds.playCelebration();
-    } catch {
-      // Handled by writer
+      await task();
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : 'Judge Cupidot dropped a page. Please try again.',
+      );
+    } finally {
+      setBusy(false);
     }
-  };
+  }
 
-  const currentShellStage =
-    courtStage === 'filing' || courtStage === 'consent'
-      ? 'ready'
-      : courtStage === 'arguments'
-        ? 'play'
-        : 'remember';
+  function startTopic(topicKey: string, topic: string) {
+    if (!topic.trim()) return;
+    if (seriousTopic(topic)) {
+      setError(
+        'This one deserves a real conversation without my tiny gavel. Let’s choose a lighter disagreement for Court.',
+      );
+      return;
+    }
+    sounds.playPop();
+    void guarded(async () => {
+      if (live)
+        await serverAction('court_topic_selected', {
+          topicKey,
+          topic: topic.trim(),
+        });
+      else
+        localEvent('court_topic_selected', {
+          topicKey,
+          topic: topic.trim(),
+          firstSpeakerId: 'partner-a',
+          secondSpeakerId: 'partner-b',
+        });
+    });
+  }
+
+  async function lockStatement(slot: 1 | 2) {
+    const answer = (slot === 1 ? statementOne : statementTwo).trim();
+    if (!answer) return;
+    await guarded(async () => {
+      if (live) {
+        const round = 2001 + court.rematchCount * 10;
+        const lock = await runtime.privateVault.lockAnswer(round, {
+          statement: answer,
+          slot,
+        });
+        await serverAction('court_statement_locked', { slot });
+        if (slot === 2 && lock.bothLocked) {
+          const revealed = await runtime.privateVault.revealAnswers(round);
+          const first = revealed.answers.find(
+            (entry) => (entry.answer as { slot?: number })?.slot === 1,
+          );
+          const second = revealed.answers.find(
+            (entry) => (entry.answer as { slot?: number })?.slot === 2,
+          );
+          await serverAction('court_statements_revealed', {
+            statementOne: String(
+              (first?.answer as { statement?: string })?.statement || '',
+            ),
+            statementTwo: String(
+              (second?.answer as { statement?: string })?.statement || '',
+            ),
+          });
+        }
+      } else {
+        localEvent(
+          'court_statement_locked',
+          { slot },
+          slot === 1 ? 'partner-a' : 'partner-b',
+        );
+        if (slot === 2)
+          localEvent(
+            'court_statements_revealed',
+            { statementOne, statementTwo },
+            'partner-b',
+          );
+      }
+      sounds.playPop();
+    });
+  }
+
+  async function askReaction() {
+    await guarded(async () => {
+      if (live && runtime.sessionId && runtime.runtime) {
+        await askCourtJudge(
+          runtime.sessionId,
+          runtime.runtime.getRevision(),
+          'reaction',
+        );
+        await runtime.requestRecovery();
+      } else
+        localEvent(
+          'court_question_created',
+          localReaction(court) as unknown as Record<string, unknown>,
+        );
+      sounds.playPop();
+    });
+  }
+
+  async function lockFollowups() {
+    if (!followupOne.trim() || (!live && !followupTwo.trim())) return;
+    await guarded(async () => {
+      const twist = pickCourtTwist(court.topicKey);
+      if (live) {
+        const round = 2003 + court.rematchCount * 10;
+        const lock = await runtime.privateVault.lockAnswer(round, {
+          followup: followupOne.trim(),
+        });
+        await serverAction('court_followup_locked');
+        if (lock.bothLocked) {
+          const revealed = await runtime.privateVault.revealAnswers(round);
+          await serverAction('court_followups_revealed', {
+            answers: revealed.answers,
+            hasTwist: Boolean(twist),
+          });
+        } else
+          setError(
+            'Your answer is sealed. Your partner can answer privately on their screen.',
+          );
+        return;
+      }
+      localEvent('court_followup_locked', {}, 'partner-a');
+      localEvent('court_followup_locked', {}, 'partner-b');
+      localEvent('court_followups_revealed', {
+        answers: [
+          { userId: 'partner-a', answer: followupOne },
+          { userId: 'partner-b', answer: followupTwo },
+        ],
+        hasTwist: Boolean(twist),
+      });
+      if (twist)
+        localEvent(
+          'court_twist_started',
+          twist as unknown as Record<string, unknown>,
+        );
+      sounds.playPop();
+    });
+  }
+
+  async function object(label: string) {
+    await guarded(async () => {
+      const payload = { label, response: objectionResponse(label) };
+      if (live) await serverAction('court_objection_used', payload);
+      else
+        localEvent(
+          'court_objection_used',
+          payload,
+          court.objectionsUsed.includes('partner-a')
+            ? 'partner-b'
+            : 'partner-a',
+        );
+      sounds.playPop();
+    });
+  }
+
+  async function deliverVerdict() {
+    if (live && runtime.sessionId && runtime.runtime) {
+      await serverAction('court_deliberation_started');
+      await askCourtJudge(
+        runtime.sessionId,
+        runtime.runtime.getRevision(),
+        'verdict',
+      );
+      await runtime.requestRecovery();
+    } else {
+      localEvent('court_deliberation_started');
+      await new Promise((resolve) => setTimeout(resolve, 650));
+      localEvent(
+        'court_verdict_created',
+        localVerdict(court) as unknown as Record<string, unknown>,
+      );
+    }
+    sounds.playCelebration();
+  }
+
+  async function finishTwist(choice: string) {
+    await guarded(async () => {
+      if (live) await serverAction('court_twist_completed', { choice });
+      else localEvent('court_twist_completed', { choice });
+      if (!live || runtime.isHost) await deliverVerdict();
+    });
+  }
+
+  async function soften() {
+    if (softened || !court.verdict) return;
+    await guarded(async () => {
+      if (live && runtime.sessionId && runtime.runtime) {
+        await askCourtJudge(
+          runtime.sessionId,
+          runtime.runtime.getRevision(),
+          'soften',
+        );
+        await runtime.requestRecovery();
+      } else
+        localEvent('court_sentence_softened', {
+          playfulSentence:
+            'Share one cosy moment today and let the person who smiles first choose the snack.',
+          judgeClosingLine:
+            'A softer ruling, sealed with one extremely tiny heart.',
+        });
+      setSoftened(true);
+      sounds.playPop();
+    });
+  }
+
+  async function accept() {
+    await guarded(async () => {
+      if (live) await serverAction('court_verdict_accepted');
+      else {
+        localEvent('court_verdict_accepted', {}, 'partner-a');
+        localEvent('court_round_finished', {}, 'partner-b');
+      }
+      sounds.playCelebration();
+    });
+  }
+
+  async function makeRuling(download: boolean) {
+    if (!court.verdict) return;
+    await guarded(async () => {
+      const blob = await createCourtRuling(court, partnerA, partnerB);
+      if (download) downloadCourtRuling(blob);
+      else {
+        await keepsakes.saveKeepsake({
+          kind: 'activity',
+          title: `Official Tiny Court Ruling · ${court.verdict!.title}`,
+          file: blob,
+          activityPath: '/court',
+          caption: court.verdict!.playfulSentence,
+          metadata: {
+            activityType: 'court',
+            topic: court.topic,
+            statements: court.statements,
+            verdict: court.verdict,
+          },
+        });
+        setSaved(true);
+      }
+    });
+  }
+
+  async function rematch() {
+    await guarded(async () => {
+      if (live) await serverAction('court_rematch_started');
+      else localEvent('court_rematch_started');
+      setStatementOne('');
+      setStatementTwo('');
+      setFollowupOne('');
+      setFollowupTwo('');
+      setSaved(false);
+      setSoftened(false);
+    });
+  }
+
+  const myTurn =
+    !live ||
+    (court.stage === 'statement_one'
+      ? court.firstSpeakerId
+      : court.secondSpeakerId) === runtime.currentUserId;
+  const shellStage = step === 0 ? 'ready' : step === 4 ? 'remember' : 'play';
 
   return (
     <ActivityShell
-      activityTitle="Theatrical Couples Court"
-      activitySubtitle="Fictional Courtroom Game · Zero Blame & Silly Petitions"
-      currentStage={currentShellStage}
-      keepsakeSummary={
-        verdict
-          ? {
-              kind: 'activity',
-              title: `House Rule · ${verdict.verdictTitle}`,
-              subtitle: verdict.sentence.slice(0, 45) + '...',
-              badge: '🔨 RULING LOGGED',
-            }
-          : undefined
-      }
-      guidancePhase={verdict ? 'revealed' : deliberating ? 'locked' : 'ready'}
-      guidancePrivacyNote="100% playful theatrical roleplay. Both partners must confirm mutual consent before trials proceed."
+      activityKey="court"
+      activityTitle="Couples Court"
+      activitySubtitle="Tiny disagreements. Enormous drama. Affectionate rulings."
+      currentStage={shellStage}
+      isSoloDemo={!live}
+      roomCode={runtime.roomCode || undefined}
+      partnerName={partnerB}
+      partnerPresence={runtime.partnerOnline ? 'online' : 'offline'}
+      recoveryState={runtime.recoveryState}
+      onRetryRecovery={() => void runtime.requestRecovery()}
+      guidancePhase={court.stage === 'verdict' ? 'revealed' : 'private'}
+      guidancePrivacyNote="Your draft stays private. Only locked answers are revealed together."
     >
-      <div style={{ maxWidth: '820px', margin: '0 auto', padding: '16px 0 40px' }}>
-        {/* Judge Podium */}
-        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <div style={{ width: '180px', height: '180px', margin: '0 auto -10px' }}>
-            <Cupidot2D state={botState} size={220} roam />
+      <div className="tiny-court">
+        <nav className="court-progress" aria-label="Court progress">
+          {STEPS.map((label, index) => (
+            <span
+              key={label}
+              className={index === step ? 'active' : index < step ? 'done' : ''}
+            >
+              <b>{index + 1}</b>
+              {label}
+            </span>
+          ))}
+        </nav>
+        <section
+          className={`courtroom stage-${court.stage}`}
+          aria-live="polite"
+        >
+          <div className="velvet-curtain curtain-left" aria-hidden="true" />
+          <div className="velvet-curtain curtain-right" aria-hidden="true" />
+          <div className="court-crest" aria-hidden="true">
+            ♡
           </div>
-          <CoupleNameBar />
-          <h1
-            style={{
-              fontSize: 'clamp(26px, 4.5vw, 40px)',
-              fontWeight: 800,
-              margin: '8px 0 8px',
-              fontFamily: 'var(--font-serif, Georgia, serif)',
-            }}
-          >
-            Theatrical <span className="grad">Couples Court</span>
-          </h1>
-          <p
-            style={{
-              color: 'var(--ink-soft)',
-              fontSize: '15px',
-              maxWidth: '54ch',
-              margin: '0 auto 12px',
-              lineHeight: 1.5,
-            }}
-          >
-            A 100% fictional, lighthearted courtroom game for pretend couple debates (stolen hoodies, playlist monopolies, extra fries). Pure play, zero real blame.
-          </p>
-        </div>
-
-        {/* Live Objections Stream */}
-        {objections.length > 0 && (
-          <div
-            style={{
-              display: 'flex',
-              gap: '10px',
-              justifyContent: 'center',
-              flexWrap: 'wrap',
-              marginBottom: '16px',
-            }}
-          >
-            {objections.map((obj) => (
-              <div
-                key={obj.id}
-                style={{
-                  background: 'linear-gradient(135deg, #FFF0F5 0%, #FFFFFF 100%)',
-                  border: '1.5px solid #FF4D80',
-                  borderRadius: '999px',
-                  padding: '6px 14px',
-                  fontSize: '13px',
-                  fontWeight: 800,
-                  color: '#FF4D80',
-                  boxShadow: '0 4px 12px rgba(255, 77, 128, 0.15)',
-                  animation: 'gl-rise 0.25s ease',
+          <Judge
+            reaction={court.judgeReaction?.reaction || court.verdict?.reaction}
+            stage={court.stage}
+          />
+          <Desk
+            side="left"
+            name={names.first}
+            active={court.stage === 'statement_one'}
+          />
+          <Desk
+            side="right"
+            name={names.second}
+            active={court.stage === 'statement_two'}
+          />
+          <main className="court-center">
+            {!introDismissed && court.stage === 'welcome' && (
+              <Welcome
+                onStart={() => {
+                  sounds.playPop();
+                  setIntroDismissed(true);
                 }}
-              >
-                {obj.sender}: {obj.text}
-              </div>
-            ))}
+              />
+            )}
+            {introDismissed &&
+              (court.stage === 'welcome' || court.stage === 'choose_topic') && (
+                <TopicPicker
+                  custom={customTopic}
+                  setCustom={setCustomTopic}
+                  onPick={startTopic}
+                  busy={busy}
+                />
+              )}
+            {court.stage === 'statement_one' && (
+              <StatementTurn
+                name={names.first}
+                value={statementOne}
+                setValue={setStatementOne}
+                onLock={() => void lockStatement(1)}
+                canWrite={myTurn}
+                busy={busy}
+              />
+            )}
+            {court.stage === 'statement_two' && (
+              <StatementTurn
+                name={names.second}
+                value={statementTwo}
+                setValue={setStatementTwo}
+                onLock={() => void lockStatement(2)}
+                canWrite={myTurn}
+                busy={busy}
+              />
+            )}
+            {court.stage === 'reveal' && (
+              <Reveal
+                court={court}
+                names={names}
+                onContinue={() => void askReaction()}
+                busy={busy}
+              />
+            )}
+            {court.stage === 'judge_question' && (
+              <JudgeQuestion
+                reaction={court.judgeReaction}
+                first={followupOne}
+                second={followupTwo}
+                setFirst={setFollowupOne}
+                setSecond={setFollowupTwo}
+                names={names}
+                live={live}
+                onLock={() => void lockFollowups()}
+                busy={busy}
+              />
+            )}
+            {court.stage === 'judge_twist' && (
+              <JudgeTwist
+                court={court}
+                onChoose={(choice) => void finishTwist(choice)}
+                busy={busy}
+              />
+            )}
+            {court.stage === 'deliberating' && (
+              <Deliberating
+                onVerdict={() => void guarded(deliverVerdict)}
+                busy={busy}
+                live={live}
+              />
+            )}
+            {(court.stage === 'verdict' || court.stage === 'finished') &&
+              court.verdict && (
+                <VerdictCard
+                  verdict={court.verdict}
+                  finished={court.stage === 'finished'}
+                  accepted={court.acceptedBy.length}
+                  live={live}
+                  softened={softened}
+                  onSoften={() => void soften()}
+                  onAccept={() => void accept()}
+                  onDownload={() => void makeRuling(true)}
+                  onSave={() => void makeRuling(false)}
+                  saving={busy || keepsakes.saving}
+                  saved={saved}
+                  onRematch={() => void rematch()}
+                />
+              )}
+          </main>
+          {['reveal', 'judge_question', 'judge_twist'].includes(
+            court.stage,
+          ) && (
+            <ObjectionBar
+              used={court.objectionsUsed.length}
+              response={court.objection?.response}
+              onObject={(label) => void object(label)}
+              busy={busy}
+            />
+          )}
+        </section>
+        {error && (
+          <div className="court-error" role="alert">
+            {error}
+            <button onClick={() => setError(null)}>Dismiss</button>
           </div>
         )}
-
-        {/* COURT MAIN CONTAINER */}
-        <div
-          style={{
-            background: 'var(--paper-raised)',
-            border: '1px solid var(--line)',
-            borderRadius: '20px',
-            padding: '36px 32px',
-            boxShadow: 'var(--shadow-lg)',
-            marginBottom: '32px',
-          }}
-        >
-          {/* ACT I: FILING & BOUNDARIES */}
-          {courtStage === 'filing' && (
-            <div>
-              {/* Mode Switcher */}
-              <div
-                style={{
-                  display: 'flex',
-                  gap: '8px',
-                  justifyContent: 'center',
-                  marginBottom: '24px',
-                }}
-              >
-                <button
-                  onClick={() => {
-                    setUseCustom(false);
-                    setVerdict(null);
-                  }}
-                  style={{
-                    padding: '8px 18px',
-                    borderRadius: '999px',
-                    border: '1px solid var(--line)',
-                    background: !useCustom ? '#17181C' : '#FFFFFF',
-                    color: !useCustom ? '#FFFFFF' : 'var(--ink)',
-                    fontWeight: 700,
-                    fontSize: '13px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Preset Playful Cases 📜
-                </button>
-                <button
-                  onClick={() => {
-                    setUseCustom(true);
-                    setVerdict(null);
-                  }}
-                  style={{
-                    padding: '8px 18px',
-                    borderRadius: '999px',
-                    border: '1px solid var(--line)',
-                    background: useCustom ? '#17181C' : '#FFFFFF',
-                    color: useCustom ? '#FFFFFF' : 'var(--ink)',
-                    fontWeight: 700,
-                    fontSize: '13px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Custom Whimsical Charge ✍️
-                </button>
-              </div>
-
-              {!useCustom ? (
-                <div>
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      marginBottom: '16px',
-                    }}
-                  >
-                    <span className="badge hot">Case #{caseIdx + 1} on Docket</span>
-                    <span
-                      style={{
-                        fontFamily: 'var(--font-mono)',
-                        fontSize: '12px',
-                        color: 'var(--ink-soft)',
-                      }}
-                    >
-                      {currentPreset.category}
-                    </span>
-                  </div>
-
-                  <h2
-                    style={{
-                      fontSize: '22px',
-                      fontWeight: 800,
-                      textAlign: 'center',
-                      marginBottom: '24px',
-                    }}
-                  >
-                    &ldquo;{currentPreset.title}&rdquo;
-                  </h2>
-
-                  {/* Claims Grid Preview */}
-                  <div
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-                      gap: '16px',
-                      marginBottom: '28px',
-                    }}
-                  >
-                    <div
-                      style={{
-                        background: '#FFF5F8',
-                        padding: '18px',
-                        borderRadius: '14px',
-                        border: '1px solid rgba(255, 77, 128, 0.2)',
-                      }}
-                    >
-                      <div
-                        style={{
-                          fontSize: '11px',
-                          fontFamily: 'var(--font-mono)',
-                          fontWeight: 800,
-                          color: '#FF4D80',
-                          textTransform: 'uppercase',
-                          marginBottom: '6px',
-                        }}
-                      >
-                        🌸 Plaintiff Claim ({partnerA})
-                      </div>
-                      <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.5, color: '#17181C' }}>
-                        {currentPreset.claim1(partnerA, partnerB)}
-                      </p>
-                    </div>
-
-                    <div
-                      style={{
-                        background: '#F0F6FF',
-                        padding: '18px',
-                        borderRadius: '14px',
-                        border: '1px solid rgba(80, 140, 255, 0.2)',
-                      }}
-                    >
-                      <div
-                        style={{
-                          fontSize: '11px',
-                          fontFamily: 'var(--font-mono)',
-                          fontWeight: 800,
-                          color: '#3B82F6',
-                          textTransform: 'uppercase',
-                          marginBottom: '6px',
-                        }}
-                      >
-                        💙 Defendant Defense ({partnerB})
-                      </div>
-                      <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.5, color: '#17181C' }}>
-                        {currentPreset.claim2(partnerA, partnerB)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div style={{ marginBottom: '24px' }}>
-                  <h2 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '16px', textAlign: 'center' }}>
-                    File a Petty Relationship Crime
-                  </h2>
-                  <div style={{ display: 'grid', gap: '14px' }}>
-                    <div>
-                      <label
-                        style={{
-                          display: 'block',
-                          fontSize: '11px',
-                          fontFamily: 'var(--font-mono)',
-                          fontWeight: 800,
-                          color: 'var(--ink-soft)',
-                          textTransform: 'uppercase',
-                          marginBottom: '6px',
-                        }}
-                      >
-                        Case Title / Silly Allegation:
-                      </label>
-                      <input
-                        type="text"
-                        value={customTitle}
-                        onChange={(e) => setCustomTitle(e.target.value)}
-                        placeholder="e.g. The Mysterious Disappearance of the Fluffy Socks..."
-                        style={{
-                          width: '100%',
-                          padding: '12px',
-                          borderRadius: '10px',
-                          border: '1px solid var(--line)',
-                          fontSize: '14px',
-                        }}
-                      />
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '14px' }}>
-                      <div>
-                        <label
-                          style={{
-                            display: 'block',
-                            fontSize: '11px',
-                            fontFamily: 'var(--font-mono)',
-                            fontWeight: 800,
-                            color: '#FF4D80',
-                            textTransform: 'uppercase',
-                            marginBottom: '6px',
-                          }}
-                        >
-                          {partnerA}&apos;s Testimony:
-                        </label>
-                        <textarea
-                          rows={3}
-                          value={customClaimA}
-                          onChange={(e) => setCustomClaimA(e.target.value)}
-                          placeholder={`Explain what ${partnerB} did wrong with receipts...`}
-                          style={{
-                            width: '100%',
-                            padding: '10px 12px',
-                            borderRadius: '10px',
-                            border: '1px solid var(--line)',
-                            fontSize: '13.5px',
-                          }}
-                        />
-                      </div>
-                      <div>
-                        <label
-                          style={{
-                            display: 'block',
-                            fontSize: '11px',
-                            fontFamily: 'var(--font-mono)',
-                            fontWeight: 800,
-                            color: '#3B82F6',
-                            textTransform: 'uppercase',
-                            marginBottom: '6px',
-                          }}
-                        >
-                          {partnerB}&apos;s Defense:
-                        </label>
-                        <textarea
-                          rows={3}
-                          value={customClaimB}
-                          onChange={(e) => setCustomClaimB(e.target.value)}
-                          placeholder={`${partnerB}'s innocent defense or counter-plea...`}
-                          style={{
-                            width: '100%',
-                            padding: '10px 12px',
-                            borderRadius: '10px',
-                            border: '1px solid var(--line)',
-                            fontSize: '13.5px',
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Step to Mutual Consent Gate */}
-              <div style={{ textAlign: 'center', marginTop: '20px' }}>
-                <button
-                  className="btn btn-primary"
-                  onClick={() => {
-                    sounds.playPop();
-                    setCourtStage('consent');
-                  }}
-                  style={{ padding: '12px 36px', fontSize: '15px' }}
-                >
-                  Proceed to Consent Check ⚖️
-                </button>
-                {!useCustom && (
-                  <button
-                    className="btn btn-ghost"
-                    onClick={handleNextPreset}
-                    style={{ marginLeft: '12px', padding: '12px 20px', fontSize: '14px' }}
-                  >
-                    Next Preset Case ▷
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* MUTUAL CONSENT GATE */}
-          {courtStage === 'consent' && (
-            <div style={{ textAlign: 'center', animation: 'gl-rise 0.25s ease' }}>
-              <span className="badge hot" style={{ marginBottom: '10px' }}>
-                MUTUAL CONSENT GATE · SAFETY FIRST
-              </span>
-              <h2 style={{ fontSize: '22px', fontWeight: 800, margin: '8px 0 12px' }}>
-                Confirm Jurisdiction of Play
-              </h2>
-              <p style={{ fontSize: '14.5px', color: 'var(--ink-soft)', maxWidth: '52ch', margin: '0 auto 24px', lineHeight: 1.5 }}>
-                Couples Court is strictly for giggles and pretend crimes. Both of you must accept jurisdiction to confirm you are in good spirits.
-              </p>
-
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-                  gap: '16px',
-                  maxWidth: '560px',
-                  margin: '0 auto 28px',
-                }}
-              >
-                <div
-                  style={{
-                    background: '#FFF5F8',
-                    padding: '20px',
-                    borderRadius: '16px',
-                    border: consentA ? '2px solid #16A34A' : '1px solid #FFD6E8',
-                  }}
-                >
-                  <div style={{ fontWeight: 800, color: '#FF4D80', marginBottom: '8px' }}>
-                    🌸 {partnerA}
-                  </div>
-                  <button
-                    className="btn btn-sm"
-                    onClick={() => handleConsent('A')}
-                    disabled={isLivePair && !runtime.isHost}
-                    style={{
-                      background: consentA ? '#16A34A' : '#FF4D80',
-                      color: '#FFF',
-                      fontSize: '13px',
-                      padding: '8px 18px',
-                    }}
-                  >
-                    {consentA ? '✓ Jurisdiction Accepted' : 'Confirm Consent ⚖️'}
-                  </button>
-                </div>
-
-                <div
-                  style={{
-                    background: '#F0F6FF',
-                    padding: '20px',
-                    borderRadius: '16px',
-                    border: consentB ? '2px solid #16A34A' : '1px solid #D6E8FF',
-                  }}
-                >
-                  <div style={{ fontWeight: 800, color: '#3B82F6', marginBottom: '8px' }}>
-                    💙 {partnerB}
-                  </div>
-                  <button
-                    className="btn btn-sm"
-                    onClick={() => handleConsent('B')}
-                    disabled={isLivePair && runtime.isHost}
-                    style={{
-                      background: consentB ? '#16A34A' : '#3B82F6',
-                      color: '#FFF',
-                      fontSize: '13px',
-                      padding: '8px 18px',
-                    }}
-                  >
-                    {consentB ? '✓ Jurisdiction Accepted' : 'Confirm Consent ⚖️'}
-                  </button>
-                </div>
-              </div>
-
-              <button
-                className="btn btn-ghost"
-                onClick={() => setCourtStage('filing')}
-                style={{ fontSize: '13px' }}
-              >
-                ← Back to Docket Selection
-              </button>
-            </div>
-          )}
-
-          {/* ACT II: ARGUMENTS & OBJECTIONS */}
-          {courtStage === 'arguments' && (
-            <div style={{ animation: 'gl-rise 0.25s ease' }}>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: '16px',
-                }}
-              >
-                <span className="badge hot">ACT II · ARGUMENTS IN SESSION</span>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--ink-soft)' }}>
-                  Active Docket Trial
-                </span>
-              </div>
-
-              <h2 style={{ fontSize: '22px', fontWeight: 800, textAlign: 'center', marginBottom: '20px' }}>
-                &ldquo;{useCustom ? customTitle : currentPreset.title}&rdquo;
-              </h2>
-
-              {/* Objections Tool Belt */}
-              <div
-                style={{
-                  background: 'rgba(255,255,255,0.7)',
-                  border: '1px solid var(--line)',
-                  borderRadius: '14px',
-                  padding: '12px 18px',
-                  marginBottom: '24px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  flexWrap: 'wrap',
-                  gap: '10px',
-                }}
-              >
-                <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', fontWeight: 800, color: 'var(--ink-soft)' }}>
-                  RAISE PLAYFUL OBJECTION:
-                </span>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  {OBJECTION_PRESETS.map((p, i) => (
-                    <button
-                      key={i}
-                      onClick={() => handleTriggerObjection(p.text, partnerA)}
-                      className="btn btn-ghost"
-                      style={{ fontSize: '12px', padding: '5px 12px', borderRadius: '999px' }}
-                    >
-                      {p.text}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Action Buttons: Deliberate */}
-              <div style={{ textAlign: 'center', marginTop: '28px' }}>
-                <button
-                  className="btn btn-grad"
-                  onClick={handleJudge}
-                  disabled={deliberating || (isLivePair && !runtime.isHost)}
-                  style={{ padding: '13px 36px', fontSize: '15.5px' }}
-                >
-                  {deliberating
-                    ? 'Judge Cupidot Deliberating... 💭'
-                    : isLivePair && !runtime.isHost
-                      ? 'Waiting for the host to rule…'
-                      : 'Bang the Gavel & Rule 🔨'}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* ACT III: RENDERED VERDICT & HOUSE RULE */}
-          {courtStage === 'verdict' && verdict && (
-            <div
-              style={{
-                padding: '28px',
-                borderRadius: '16px',
-                background: 'linear-gradient(135deg, #FFF9F5 0%, #FFFFFF 100%)',
-                border: '1.5px solid rgba(255, 120, 80, 0.3)',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
-                animation: 'gl-rise 0.3s ease',
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  marginBottom: '16px',
-                  flexWrap: 'wrap',
-                  gap: '8px',
-                }}
-              >
-                <span
-                  className="badge"
-                  style={{
-                    background: '#17181C',
-                    color: '#FFFFFF',
-                    fontWeight: 800,
-                    fontSize: '11px',
-                  }}
-                >
-                  JUDICIAL RULING
-                </span>
-                <span
-                  style={{
-                    fontSize: '12px',
-                    fontFamily: 'var(--font-mono)',
-                    fontWeight: 800,
-                    padding: '4px 10px',
-                    borderRadius: '999px',
-                    background: '#F0FDF4',
-                    color: '#16A34A',
-                  }}
-                >
-                  Zero Fault · Mutual Play
-                </span>
-              </div>
-
-              <h3
-                style={{
-                  fontSize: '21px',
-                  fontWeight: 800,
-                  margin: '0 0 12px',
-                  color: '#17181C',
-                  fontFamily: 'var(--font-serif, Georgia, serif)',
-                }}
-              >
-                {verdict.verdictTitle}
-              </h3>
-
-              <p
-                style={{
-                  fontSize: '15px',
-                  lineHeight: 1.6,
-                  color: 'var(--ink)',
-                  marginBottom: '20px',
-                }}
-              >
-                {verdict.reasoning}
-              </p>
-
-              {/* Repair Proposal / House Rule Card */}
-              <div
-                style={{
-                  background: '#FFF5F0',
-                  border: '1.5px dashed #FF9E7D',
-                  padding: '18px 22px',
-                  borderRadius: '14px',
-                  marginBottom: '24px',
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: '11px',
-                    fontFamily: 'var(--font-mono)',
-                    fontWeight: 800,
-                    color: '#E04A18',
-                    textTransform: 'uppercase',
-                    marginBottom: '6px',
-                  }}
-                >
-                  ✨ BINDING PLAYFUL REPAIR PROPOSAL:
-                </div>
-                <div
-                  style={{
-                    fontSize: '15px',
-                    fontWeight: 700,
-                    color: '#17181C',
-                    lineHeight: 1.5,
-                  }}
-                >
-                  {verdict.sentence}
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
-                  gap: '12px',
-                }}
-              >
-                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                  <button
-                    onClick={handleSaveHouseRule}
-                    disabled={keepsakeSaved || keepsakeSaving}
-                    className="btn btn-grad"
-                    style={{ padding: '10px 22px', fontSize: '13.5px' }}
-                  >
-                    {keepsakeSaved ? '✓ Saved House Rule to Keepsakes' : keepsakeSaving ? 'Archiving...' : 'Save as Agreed House Rule 📜'}
-                  </button>
-
-                  <button
-                    type="button"
-                    className="btn btn-ghost"
-                    onClick={handleNextPreset}
-                    style={{ fontSize: '13px', padding: '10px 16px' }}
-                  >
-                    Next Case on Docket ▷
-                  </button>
-                </div>
-
-                <button
-                  className="btn btn-sm"
-                  onClick={() => {
-                    sounds.playPop();
-                    const courtMood = 'happy';
-                    setBotState(courtMood);
-                    speakCupidot(
-                      `Court is adjourned! ${verdict.verdictTitle}. ${verdict.reasoning} Mandatory suggestion: ${verdict.sentence}`,
-                      {
-                        mood: courtMood,
-                        onStart: () => setBotState(courtMood),
-                        onEnd: () => setTimeout(() => setBotState('idle'), 2000),
-                      },
-                    );
-                  }}
-                  style={{
-                    background: '#FF4D80',
-                    color: '#FFF',
-                    fontSize: '12.5px',
-                    fontWeight: 800,
-                    padding: '8px 16px',
-                  }}
-                >
-                  🔊 Hear Judge Cupidot Speak
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
       </div>
     </ActivityShell>
+  );
+}
+
+function Judge({
+  reaction,
+  stage,
+}: {
+  reaction?: CourtReaction['reaction'];
+  stage: CourtStage;
+}) {
+  const thinking = stage === 'deliberating';
+  return (
+    <div
+      className={`judge-bench ${thinking ? 'thinking' : ''}`}
+      aria-label="Judge Cupidot"
+    >
+      <div className="judge-label">JUDGE CUPIDOT</div>
+      <div className="judge-cupidot">
+        <Cupidot2D
+          state={thinking ? 'thinking' : courtBotState(reaction)}
+          size={150}
+        />
+        <span className="judge-robe" />
+        <span className="judge-collar">♡</span>
+        {thinking && <span className="judge-glasses">⌁⌁</span>}
+        <span className="tiny-gavel">♥</span>
+      </div>
+    </div>
+  );
+}
+
+function Desk({
+  side,
+  name,
+  active,
+}: {
+  side: 'left' | 'right';
+  name: string;
+  active: boolean;
+}) {
+  return (
+    <div className={`partner-desk desk-${side} ${active ? 'active' : ''}`}>
+      <span className="desk-lamp" />
+      <strong>{name}</strong>
+      <small>{active ? 'Cupidot is listening' : 'Waiting at the desk'}</small>
+    </div>
+  );
+}
+
+function Welcome({ onStart }: { onStart: () => void }) {
+  return (
+    <article className="court-card welcome-card">
+      <span className="eyebrow">TONIGHT’S TINY HEARING</span>
+      <h1>Welcome to Couples Court</h1>
+      <p>
+        Where the charges are tiny, the drama is enormous, and every sentence is
+        payable in affection.
+      </p>
+      <ol>
+        <li>Pick something silly.</li>
+        <li>Tell both sides privately.</li>
+        <li>Answer the Judge.</li>
+        <li>Receive the ruling.</li>
+      </ol>
+      <button className="gavel-button" onClick={onStart}>
+        <Gavel size={20} /> Call our Court to order
+      </button>
+      <small>About 3–5 minutes · one playful round</small>
+    </article>
+  );
+}
+
+function TopicPicker({
+  custom,
+  setCustom,
+  onPick,
+  busy,
+}: {
+  custom: string;
+  setCustom: (v: string) => void;
+  onPick: (id: string, topic: string) => void;
+  busy: boolean;
+}) {
+  return (
+    <article className="court-card topic-card">
+      <span className="eyebrow">A VERY SMALL MATTER</span>
+      <h2>What requires Judge Cupidot’s attention?</h2>
+      <p>Choose an everyday disagreement worth laughing about.</p>
+      <div className="topic-grid">
+        {COURT_TOPICS.map((topic) => (
+          <button
+            key={topic.id}
+            onClick={() => onPick(topic.id, topic.prompt)}
+            disabled={busy}
+          >
+            <span>{topic.icon}</span>
+            <strong>{topic.title}</strong>
+            <small>{topic.prompt}</small>
+          </button>
+        ))}
+      </div>
+      <div className="custom-matter">
+        <label htmlFor="custom-matter">Or bring your own tiny matter</label>
+        <div>
+          <input
+            id="custom-matter"
+            maxLength={180}
+            value={custom}
+            onChange={(e) => setCustom(e.target.value)}
+            placeholder="Who keeps leaving mugs beside the bed?"
+          />
+          <button
+            onClick={() => onPick('custom', custom)}
+            disabled={!custom.trim() || busy}
+          >
+            Bring it in
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function StatementTurn({
+  name,
+  value,
+  setValue,
+  onLock,
+  canWrite,
+  busy,
+}: {
+  name: string;
+  value: string;
+  setValue: (v: string) => void;
+  onLock: () => void;
+  canWrite: boolean;
+  busy: boolean;
+}) {
+  if (!canWrite)
+    return (
+      <article className="court-card waiting-card">
+        <div className="sealed-note">♡</div>
+        <h2>Judge Cupidot is hearing the other side</h2>
+        <p>
+          No whispering to the bench. Their words remain private until both
+          sides are ready.
+        </p>
+      </article>
+    );
+  return (
+    <article className="court-card statement-card">
+      <span className="eyebrow">{name.toUpperCase()}’S TURN</span>
+      <h2>Tell Cupidot your side</h2>
+      <p>Keep it short, honest and delightfully dramatic.</p>
+      <div className="court-paper">
+        <textarea
+          autoFocus
+          maxLength={280}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder="Here is what happened from my highly reliable perspective…"
+        />
+        <small>{value.length} / 280 · private until locked</small>
+      </div>
+      <button
+        className="brass-button"
+        onClick={onLock}
+        disabled={!value.trim() || busy}
+      >
+        That’s my side <span>♡</span>
+      </button>
+    </article>
+  );
+}
+
+function Reveal({
+  court,
+  names,
+  onContinue,
+  busy,
+}: {
+  court: CourtSnapshot;
+  names: { first: string; second: string };
+  onContinue: () => void;
+  busy: boolean;
+}) {
+  return (
+    <article className="court-card reveal-card">
+      <span className="eyebrow">BOTH STORIES, SIDE BY SIDE</span>
+      <h2>The tiny truth has unfolded</h2>
+      <div className="story-pair">
+        <blockquote>
+          <strong>{names.first}</strong>
+          <p>{court.statements?.one}</p>
+          <span>HEARD BY THE JUDGE</span>
+        </blockquote>
+        <blockquote>
+          <strong>{names.second}</strong>
+          <p>{court.statements?.two}</p>
+          <span>HEARD BY THE JUDGE</span>
+        </blockquote>
+      </div>
+      <button className="gavel-button" onClick={onContinue} disabled={busy}>
+        <Sparkles size={18} /> Cupidot, compare our stories
+      </button>
+    </article>
+  );
+}
+
+function JudgeQuestion({
+  reaction,
+  first,
+  second,
+  setFirst,
+  setSecond,
+  names,
+  live,
+  onLock,
+  busy,
+}: {
+  reaction?: CourtReaction;
+  first: string;
+  second: string;
+  setFirst: (v: string) => void;
+  setSecond: (v: string) => void;
+  names: { first: string; second: string };
+  live: boolean;
+  onLock: () => void;
+  busy: boolean;
+}) {
+  return (
+    <article className="court-card question-card">
+      <span className="eyebrow">THE JUDGE LEANS FORWARD</span>
+      <p className="judge-observation">“{reaction?.comparison}”</p>
+      <div className="fair-summary">
+        <p>
+          <b>{names.first}:</b> {reaction?.summaryOne}
+        </p>
+        <p>
+          <b>{names.second}:</b> {reaction?.summaryTwo}
+        </p>
+      </div>
+      <h2>{reaction?.question}</h2>
+      <div className="followup-papers">
+        <label>
+          {live ? 'Your private answer' : names.first}
+          <textarea
+            maxLength={180}
+            value={first}
+            onChange={(e) => setFirst(e.target.value)}
+          />
+        </label>
+        {!live && (
+          <label>
+            {names.second}
+            <textarea
+              maxLength={180}
+              value={second}
+              onChange={(e) => setSecond(e.target.value)}
+            />
+          </label>
+        )}
+      </div>
+      <button
+        className="brass-button"
+        onClick={onLock}
+        disabled={!first.trim() || (!live && !second.trim()) || busy}
+      >
+        {live ? 'Seal my answer' : 'Reveal both answers'}
+      </button>
+    </article>
+  );
+}
+
+function JudgeTwist({
+  court,
+  onChoose,
+  busy,
+}: {
+  court: CourtSnapshot;
+  onChoose: (choice: string) => void;
+  busy: boolean;
+}) {
+  const twist = court.twist || pickCourtTwist(court.topicKey);
+  if (!twist)
+    return (
+      <Deliberating
+        onVerdict={() => onChoose('No twist needed')}
+        busy={busy}
+        live={false}
+      />
+    );
+  return (
+    <article className="court-card twist-card">
+      <span className="eyebrow">JUDGE’S TWIST · 20 SECONDS</span>
+      <h2>{twist.title}</h2>
+      <p>{twist.prompt}</p>
+      <div className="twist-options">
+        {twist.options.map((option) => (
+          <button key={option} onClick={() => onChoose(option)} disabled={busy}>
+            {option}
+          </button>
+        ))}
+      </div>
+    </article>
+  );
+}
+
+function Deliberating({
+  onVerdict,
+  busy,
+  live,
+}: {
+  onVerdict: () => void;
+  busy: boolean;
+  live: boolean;
+}) {
+  return (
+    <article className="court-card deliberating-card">
+      <div className="notebook">
+        ♡<i />
+        <i />
+        <i />
+      </div>
+      <h2>Thinking very seriously about something extremely unserious…</h2>
+      <p>
+        Cupidot is comparing every tiny detail and preparing an affectionate
+        ruling.
+      </p>
+      <button className="gavel-button" onClick={onVerdict} disabled={busy}>
+        {busy
+          ? 'Tiny wheels turning…'
+          : live
+            ? 'Ask for the ruling'
+            : 'Read the ruling'}
+      </button>
+    </article>
+  );
+}
+
+function ObjectionBar({
+  used,
+  response,
+  onObject,
+  busy,
+}: {
+  used: number;
+  response?: string;
+  onObject: (label: string) => void;
+  busy: boolean;
+}) {
+  return (
+    <aside className="objection-bar">
+      <div>
+        <b>One playful objection each</b>
+        <small>{Math.min(used, 2)} of 2 tokens used</small>
+      </div>
+      <div className="objection-options">
+        {OBJECTIONS.map((label) => (
+          <button
+            key={label}
+            onClick={() => onObject(label)}
+            disabled={used >= 2 || busy}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      {response && <p>Judge Cupidot: “{response}”</p>}
+    </aside>
+  );
+}
+
+function VerdictCard({
+  verdict,
+  finished,
+  accepted,
+  live,
+  softened,
+  onSoften,
+  onAccept,
+  onDownload,
+  onSave,
+  saving,
+  saved,
+  onRematch,
+}: {
+  verdict: CourtVerdict;
+  finished: boolean;
+  accepted: number;
+  live: boolean;
+  softened: boolean;
+  onSoften: () => void;
+  onAccept: () => void;
+  onDownload: () => void;
+  onSave: () => void;
+  saving: boolean;
+  saved: boolean;
+  onRematch: () => void;
+}) {
+  return (
+    <article className="court-card verdict-card">
+      <span className="eyebrow">OFFICIAL TINY COURT RULING</span>
+      <div className="verdict-seal">♡</div>
+      <h1>{verdict.title}</h1>
+      <p className="comparison">{verdict.comparison}</p>
+      <p>{verdict.funnyReason}</p>
+      <section className="sentence">
+        <small>THE AFFECTIONATE SENTENCE</small>
+        <strong>{verdict.playfulSentence}</strong>
+      </section>
+      <blockquote>“{verdict.judgeClosingLine}”</blockquote>
+      {!finished ? (
+        <div className="acceptance">
+          <button onClick={onAccept} disabled={saving}>
+            <Check size={17} /> We accept the ruling
+          </button>
+          <button onClick={onSoften} disabled={softened || saving}>
+            <Heart size={17} />{' '}
+            {softened ? 'Sentence softened' : 'Judge, make it gentler'}
+          </button>
+          {live && <small>{accepted}/2 partners accepted</small>}
+        </div>
+      ) : (
+        <div className="print-slot">
+          <span>YOUR RULING IS READY</span>
+          <div className="ruling-ticket">
+            <b>{verdict.title}</b>
+            <small>Sealed by Judge Cupidot ♡</small>
+          </div>
+          <div className="finish-actions">
+            <button onClick={onDownload} disabled={saving}>
+              <Download size={16} /> Download ruling
+            </button>
+            <button onClick={onSave} disabled={saved || saving}>
+              {saved ? <Check size={16} /> : <Heart size={16} />}
+              {saved
+                ? 'Saved in Our Space'
+                : saving
+                  ? 'Saving…'
+                  : 'Save to Our Space'}
+            </button>
+            <button onClick={onRematch} disabled={saving}>
+              <RotateCcw size={16} /> Another tiny matter
+            </button>
+          </div>
+        </div>
+      )}
+    </article>
   );
 }

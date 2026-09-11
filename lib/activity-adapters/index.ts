@@ -29,6 +29,12 @@ import {
   datePlannerActivityAdapter,
 } from './expanded';
 import type { RealtimeActivityAdapter } from './types';
+import { createAdapterFromDefinition } from './template';
+import { courtActivityDefinition } from '../court';
+
+const playfulCourtActivityAdapter = createAdapterFromDefinition(
+  courtActivityDefinition,
+);
 
 export const allActivityAdapters: Record<string, RealtimeActivityAdapter> = {
   quiz: quizActivityAdapter,
@@ -41,7 +47,7 @@ export const allActivityAdapters: Record<string, RealtimeActivityAdapter> = {
   riddle: riddleActivityAdapter,
   lab: labActivityAdapter,
   debate: debateActivityAdapter,
-  court: catalogActivityAdapters.court,
+  court: playfulCourtActivityAdapter,
   hunt: huntActivityAdapter,
   future: futureActivityAdapter,
   birthday: birthdayActivityAdapter,
