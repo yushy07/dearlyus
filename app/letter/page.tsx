@@ -15,8 +15,7 @@ import { sanitizeSafeAudioUrl } from '@/lib/audio-security';
 import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
 import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
-import { loadSealedLetters, sealLetter } from '@/lib/letter-vault';
-import { uploadTemporaryActivityAsset } from '@/lib/activity-records';
+import { loadSealedLetters, sealLetter, uploadSealedLetterAudio } from '@/lib/letter-vault';
 
 export { sanitizeSafeAudioUrl };
 
@@ -201,16 +200,10 @@ export default function LetterPage() {
     if (!letterContent.trim() || !letterTitle.trim()) return;
 
     const currentAuthor = activeWriter === 'A' ? partnerA : partnerB;
-    let privateVoiceUrl: string | undefined;
+    let privateVoicePath: string | undefined;
     if (space?.id && recordedAudioBlobRef.current) {
       try {
-        const voiceAsset = await uploadTemporaryActivityAsset({
-          coupleId: space.id,
-          sessionId: runtime.sessionId,
-          file: recordedAudioBlobRef.current,
-          mediaKind: 'audio',
-        });
-        privateVoiceUrl = voiceAsset.signedUrl;
+        privateVoicePath = await uploadSealedLetterAudio(space.id, recordedAudioBlobRef.current);
       } catch (error) {
         console.error('Failed to upload private voice note:', error);
         return;
@@ -224,7 +217,7 @@ export default function LetterPage() {
       content: letterContent,
       stamp,
       waxColor: selectedWax.hex,
-      voiceNoteUrl: privateVoiceUrl || sanitizeSafeAudioUrl(recordedAudioUrl),
+      voiceNoteUrl: sanitizeSafeAudioUrl(recordedAudioUrl),
       voiceDurationSec: recordSeconds > 0 ? recordSeconds : undefined,
     };
 
@@ -234,7 +227,7 @@ export default function LetterPage() {
           coupleId: space.id, title: letterTitle, author: currentAuthor, unlockDate,
           content: letterContent, stamp, waxColor: selectedWax.hex,
           voiceDurationSec: recordSeconds > 0 ? recordSeconds : undefined,
-          voiceNoteUrl: privateVoiceUrl,
+          voiceNotePath: privateVoicePath,
         });
       } catch (error) {
         console.error('Failed to seal letter in the private vault:', error);
