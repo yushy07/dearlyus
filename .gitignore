@@ -51,6 +51,10 @@ playwright-server.log
 /.wrangler/
 /supabase/.branches/
 /supabase/.temp/
+/supabase/.cache/
+/supabase/.env
+/supabase/.env.*
+!/supabase/.env.example
 next-env.d.ts
 
 # Logs & Dumps
@@ -60,6 +64,8 @@ yarn-error.log*
 .pnpm-debug.log*
 lerna-debug.log*
 *.log
+*.dump
+*.dump.gz
 *.pid
 *.seed
 *.pid.lock
@@ -75,6 +81,8 @@ ehthumbs.db
 ehthumbs_vista.db
 Thumbs.db
 desktop.ini
+$RECYCLE.BIN/
+System Volume Information/
 .idea/
 .vscode/*
 !.vscode/settings.json
@@ -140,5 +148,4 @@ scripts/capture-*.mjs
 scripts/*.tmp.js
 scripts/*.temp.js
 scripts/scratch/
-
 

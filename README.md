@@ -304,9 +304,9 @@ dearlyus/
 │   ├── globals.css               # Base styles and theme configuration
 │   └── home-editorial.css        # Comprehensive editorial styling system & atmospheric backdrops
 ├── data/                         # Curated local prompts, questions, and content packs
-├── docs/                         # Architecture guides, roadmaps, and high-resolution screenshots
+├── docs/                         # Current backend handoffs, QA matrix, and high-resolution screenshots
 │   └── screenshots/              # Authentic live screenshots of website features (10 captures)
-├── supabase/                     # Supabase migrations, storage policies & edge functions
+├── supabase/                     # Linked Supabase CLI configuration and versioned migrations
 ├── tests/
 │   ├── browser/                  # Playwright browser end-to-end specifications
 │   ├── cupidot-moments.test.ts   # Companion moments deck & shuffle tests
@@ -349,6 +349,7 @@ Dearly Us utilizes a curated candlelight alabaster and plum-obsidian editorial p
 
 - Node.js `>=22.13.0`
 - npm, pnpm, or yarn
+- Docker-compatible runtime only when running the optional local Supabase stack
 
 ### Installation
 
@@ -371,6 +372,32 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 The solo photobooth works without Supabase. Private paired booths require Google sign-in plus the live photobooth room/state RPCs, private Realtime channel policies, and the private `couple-photostrips` Storage bucket. No TURN credentials are required; blocked peer video falls back to synchronized uploads.
+
+### Linked Supabase workflow
+
+The official Supabase CLI is installed as a project development dependency. Use it through `npx` so every contributor and coding agent runs the repository-pinned version.
+
+```bash
+# Authenticate once on a new computer
+npx supabase login
+
+# Link this checkout to Dearly Us
+npx supabase link --project-ref rueuosbacmnpowgcygro
+
+# Compare local and production migration history
+npx supabase migration list --linked
+
+# Preview reviewed migrations before applying them
+npx supabase db push --linked --dry-run
+
+# Apply pending reviewed migrations
+npx supabase db push --linked
+
+# Regenerate database types from the linked project
+npx supabase gen types typescript --linked > lib/database.types.ts
+```
+
+Never commit Supabase access tokens, database passwords, service-role keys, or function secrets. Never run `supabase db reset --linked` against the production project. Existing browser-applied activity migrations must be reconciled with remote migration history before the next production `db push`.
 
 ### Testing & Verification
 
