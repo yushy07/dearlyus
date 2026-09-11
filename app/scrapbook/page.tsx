@@ -212,13 +212,91 @@ export default function ScrapbookPage() {
     }
   };
 
+  const renderScrapbook = async () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1800;
+    canvas.height = 1600;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Scrapbook rendering is unavailable in this browser.');
+    const scale = 2.5;
+    ctx.fillStyle = '#D4B895';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = selectedTheme.bg;
+    ctx.fillRect(20, 20, canvas.width - 40, canvas.height - 40);
+    ctx.fillStyle = '#553f38';
+    ctx.font = '700 34px Georgia, serif';
+    ctx.fillText(`${selectedTheme.name} · ${partnerA} & ${partnerB}`, 54, 70);
+
+    const loadImage = (url: string) => new Promise<HTMLImageElement>((resolve, reject) => {
+      const image = new Image();
+      image.crossOrigin = 'anonymous';
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(new Error('A scrapbook photo could not be loaded.'));
+      image.src = url;
+    });
+
+    for (const item of items) {
+      const x = 45 + item.x * scale;
+      const y = 90 + item.y * 2;
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate((item.rotation * Math.PI) / 180);
+      if (item.type === 'sticker') {
+        ctx.font = '72px sans-serif';
+        ctx.fillText(item.content, 0, 70);
+      } else if (item.type === 'polaroid') {
+        ctx.fillStyle = '#fffdf9';
+        ctx.fillRect(0, 0, 430, 410);
+        ctx.fillStyle = '#ece6dc';
+        ctx.fillRect(24, 24, 382, 300);
+        if (item.imageUrl) {
+          try {
+            const image = await loadImage(item.imageUrl);
+            const ratio = Math.max(382 / image.width, 300 / image.height);
+            const width = image.width * ratio;
+            const height = image.height * ratio;
+            ctx.save();
+            ctx.beginPath(); ctx.rect(24, 24, 382, 300); ctx.clip();
+            ctx.drawImage(image, 24 + (382 - width) / 2, 24 + (300 - height) / 2, width, height);
+            ctx.restore();
+          } catch { ctx.fillStyle = '#8a746d'; ctx.font = '50px sans-serif'; ctx.fillText('♡', 190, 185); }
+        }
+        ctx.fillStyle = '#554b45'; ctx.font = '600 22px sans-serif';
+        ctx.fillText((item.sub || item.content).slice(0, 34), 24, 370);
+      } else {
+        ctx.fillStyle = item.type === 'note' ? '#fef9c3' : '#fff9f2';
+        ctx.fillRect(0, 0, item.type === 'note' ? 410 : 520, item.type === 'note' ? 230 : 170);
+        ctx.fillStyle = '#42372e'; ctx.font = '600 24px Georgia, serif';
+        const words = item.content.split(/\s+/); let line = ''; let row = 48;
+        for (const word of words) {
+          const next = `${line}${line ? ' ' : ''}${word}`;
+          if (ctx.measureText(next).width > (item.type === 'note' ? 360 : 470)) { ctx.fillText(line, 24, row); line = word; row += 34; }
+          else line = next;
+        }
+        ctx.fillText(line, 24, row);
+      }
+      ctx.restore();
+    }
+    return new Promise<Blob>((resolve, reject) => canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error('Could not create scrapbook artwork.')), 'image/png'));
+  };
+
+  const downloadScrapbook = async () => {
+    const blob = await renderScrapbook();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url; link.download = `dearly-us-scrapbook-${Date.now()}.png`; link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
   const handleSaveScrapbook = async () => {
     if (keepsakeSaved || keepsakeSaving) return;
     sounds.playCelebration();
     try {
+      const artwork = await renderScrapbook();
       await saveKeepsake({
         kind: 'activity',
         title: `Scrapbook Wall · ${selectedTheme.name}`,
+        file: artwork,
         activityPath: '/scrapbook',
         caption: `Preserved scrapbook collage with ${items.length} keepsake items & notes.`,
         metadata: {
@@ -391,6 +469,14 @@ export default function ScrapbookPage() {
             )}
 
             <button
+              type="button"
+              onClick={() => void downloadScrapbook()}
+              className="btn btn-outline"
+              style={{ padding: '6px 12px', fontSize: '12.5px' }}
+            >
+              Download PNG
+            </button>
+            <button
               onClick={handleSaveScrapbook}
               disabled={keepsakeSaved || keepsakeSaving}
               className="btn btn-primary"
@@ -475,7 +561,9 @@ export default function ScrapbookPage() {
                         fontSize: '36px',
                       }}
                     >
-                      📸
+                      {item.imageUrl ? (
+                        <img src={item.imageUrl} alt={item.content} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : '📸'}
                     </div>
                     <div
                       style={{
