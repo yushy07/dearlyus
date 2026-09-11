@@ -14,6 +14,8 @@ import { useCoupleProfile } from '@/lib/couple';
 import { sanitizeSafeAudioUrl } from '@/lib/audio-security';
 import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
 import { useActivityRuntime } from '@/hooks/useActivityRuntime';
+import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
+import { loadSealedLetters, sealLetter } from '@/lib/letter-vault';
 
 export { sanitizeSafeAudioUrl };
 
@@ -22,7 +24,7 @@ interface SealedCapsule {
   title: string;
   author: string;
   unlockDate: string;
-  content: string;
+  content: string | null;
   stamp: string;
   waxColor: string;
   voiceNoteUrl?: string;
@@ -39,6 +41,7 @@ const WAX_COLORS = [
 export default function LetterPage() {
   const { partnerA, partnerB, roomCode } = useCoupleProfile();
   const { saveKeepsake, saving: keepsakeSaving } = useKeepsakeWriter();
+  const { space } = useCoupleSpace();
 
   const [activeWriter, setActiveWriter] = useState<'A' | 'B'>('A');
   const [unlockDate, setUnlockDate] = useState('2027-08-01');
@@ -96,6 +99,10 @@ export default function LetterPage() {
   });
 
   useEffect(() => {
+    if (space?.id) {
+      void loadSealedLetters(space.id).then(setVault).catch((error) => console.error('Failed to restore letter vault:', error));
+      return;
+    }
     try {
       const saved = localStorage.getItem('dearly_sealed_vault');
       if (saved) {
@@ -119,9 +126,10 @@ export default function LetterPage() {
         }
       }
     } catch {}
-  }, []);
+  }, [space?.id]);
 
   const saveVault = (capsules: SealedCapsule[]) => {
+    if (space?.id) return;
     try {
       localStorage.setItem('dearly_sealed_vault', JSON.stringify(capsules));
     } catch {}
@@ -189,7 +197,7 @@ export default function LetterPage() {
     if (!letterContent.trim() || !letterTitle.trim()) return;
 
     const currentAuthor = activeWriter === 'A' ? partnerA : partnerB;
-    const newCapsule: SealedCapsule = {
+    let newCapsule: SealedCapsule = {
       id: Date.now().toString(),
       title: letterTitle,
       author: `${currentAuthor} (for ${currentAuthor === partnerA ? partnerB : partnerA})`,
@@ -201,6 +209,18 @@ export default function LetterPage() {
       voiceDurationSec: recordSeconds > 0 ? recordSeconds : undefined,
     };
 
+    if (space?.id) {
+      try {
+        newCapsule = await sealLetter({
+          coupleId: space.id, title: letterTitle, author: currentAuthor, unlockDate,
+          content: letterContent, stamp, waxColor: selectedWax.hex,
+          voiceDurationSec: recordSeconds > 0 ? recordSeconds : undefined,
+        });
+      } catch (error) {
+        console.error('Failed to seal letter in the private vault:', error);
+        return;
+      }
+    }
     const updated = [...vault, newCapsule];
     setVault(updated);
     saveVault(updated);
