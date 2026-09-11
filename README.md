@@ -193,6 +193,14 @@ The booth never requires a paid service. Camera streams stay peer-to-peer and in
 - **Relationship Constellation**: Visual map of milestones, keepsakes, and shared memories plotted across your journey.
 - **Date Night Capsules**: Sealed time capsules and shared notes unlocked on custom anniversary dates.
 - **Keepsake Approval Queue**: Mutual review workflow ensuring keepsakes are agreed upon before being saved to the permanent sanctuary album.
+- **Shared Story Timeline**: Completed activity keepsakes and relationship milestones appear together in date order, with direct access to saved artifacts.
+
+### 🎁 11.1 Private Creative Keepsakes
+
+- **Birthday Surprise**: Durable private photo and audio attachments, autosaved drafts, scheduled reveal, and revocation backed by Supabase row and Storage policies.
+- **Letters to the Future**: Locked text and voice notes reveal on their chosen date, with recovered audio playback and a downloadable letter keepsake.
+- **Scrapbook Wall**: Uploaded photos render on the shared board and export as a full-resolution PNG that can also be preserved in Our Space.
+- **Matching Shirts**: The 4500 × 3000 printable artwork is used for both direct download and the private Our Space keepsake.
 
 ### ⚡ 12. Pluggable Activity Runtime & Multiplayer Adapters (`lib/activity-adapters/`, `lib/runtime/`)
 
@@ -397,7 +405,7 @@ npx supabase db push --linked
 npx supabase gen types typescript --linked > lib/database.types.ts
 ```
 
-Never commit Supabase access tokens, database passwords, service-role keys, or function secrets. Never run `supabase db reset --linked` against the production project. Existing browser-applied activity migrations must be reconciled with remote migration history before the next production `db push`.
+Never commit Supabase access tokens, database passwords, service-role keys, or function secrets. Never run `supabase db reset --linked` against the production project. Local and live migration histories are reconciled; use a dry run before every production push.
 
 ### Testing & Verification
 
@@ -423,6 +431,8 @@ npm audit
 # Build production bundle
 npm run build
 ```
+
+The browser suite checks every desktop activity route for horizontal overflow and runs a complete solo Photobooth journey with four photo uploads, strip download, and 4 × 6 print-sheet download. Real paired-room behavior still requires two separate signed-in accounts.
 
 ---
 
