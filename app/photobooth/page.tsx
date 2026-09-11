@@ -73,6 +73,7 @@ export default function PhotoboothPage() {
     [notice, setNotice] = useState(''),
     [stickerId, setStickerId] = useState('');
   const [rendering, setRendering] = useState(false);
+  const [ready, setReady] = useState(false);
   const [drawColor, setDrawColor] = useState('#8f5361'),
     [drawWidth, setDrawWidth] = useState(8),
     [drawing, setDrawing] = useState<DrawPoint[]>([]),
@@ -90,6 +91,7 @@ export default function PhotoboothPage() {
   const syncing = Object.values(booth.transfers).some((transfer) =>
     ['sending', 'retrying', 'receiving'].includes(transfer.state),
   );
+  useEffect(() => setReady(true), []);
   const myPhoto = booth.shots[selected]?.[booth.side];
   const sticker = booth.design.stickers.find((s) => s.id === stickerId);
   useEffect(() => {
@@ -313,7 +315,7 @@ export default function PhotoboothPage() {
               <div className="entrance-actions">
                 <button
                   className="studio-primary"
-                  disabled={booth.busy}
+                  disabled={!ready || booth.busy}
                   onClick={() => void booth.enter()}
                 >
                   <Users size={18} />{' '}
@@ -322,6 +324,7 @@ export default function PhotoboothPage() {
                 </button>
                 <button
                   className="studio-text-button"
+                  disabled={!ready}
                   onClick={() => booth.enterSolo()}
                 >
                   Try the solo booth
