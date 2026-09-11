@@ -8,6 +8,8 @@ import { useCoupleProfile } from '@/lib/couple';
 import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
 import { generateBucketDate, GeneratedBucketIdea } from '@/lib/cupidot';
+import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
+import { loadActivityRecords, upsertActivityRecord } from '@/lib/activity-records';
 
 export interface BucketDateItem {
   id: string;
@@ -42,6 +44,7 @@ const INITIAL_100_DATES: BucketDateItem[] = [
 
 export default function BucketListPage() {
   const { partnerA, partnerB } = useCoupleProfile();
+  const { space } = useCoupleSpace();
   const [dates, setDates] = useState<BucketDateItem[]>(INITIAL_100_DATES);
   const [selectedFilter, setSelectedFilter] = useState<string>('All');
   const [currentStage, setCurrentStage] = useState<'ready' | 'play' | 'remember'>('play');
@@ -56,6 +59,27 @@ export default function BucketListPage() {
     activityType: 'bucket',
     transportMode: 'auto',
   });
+  const [sharedLoaded, setSharedLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!space?.id) return;
+    void loadActivityRecords<{ dates?: BucketDateItem[] }>(space.id, 'bucket_date')
+      .then((records) => {
+        const saved = records.find((record) => record.key === 'shared-list');
+        if (saved?.payload.dates?.length) setDates(saved.payload.dates);
+      })
+      .catch((error) => console.error('Failed to restore shared bucket list:', error))
+      .finally(() => setSharedLoaded(true));
+  }, [space?.id]);
+
+  useEffect(() => {
+    if (!space?.id || !sharedLoaded) return;
+    const timer = setTimeout(() => void upsertActivityRecord({
+      coupleId: space.id, kind: 'bucket_date', key: 'shared-list',
+      title: '100 Dates Bucket List', payload: { dates },
+    }).catch((error) => console.error('Failed to sync bucket list:', error)), 600);
+    return () => clearTimeout(timer);
+  }, [dates, sharedLoaded, space?.id]);
 
   const completedCount = dates.filter((d) => d.status === 'done').length;
   const plannedCount = dates.filter((d) => d.status === 'planned').length;

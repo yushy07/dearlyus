@@ -7,6 +7,8 @@ import { sounds } from '@/lib/sound';
 import { useCoupleProfile } from '@/lib/couple';
 import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
+import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
+import { loadActivityRecords, upsertActivityRecord } from '@/lib/activity-records';
 
 type PresetType = '25/5' | '45/10' | '60/15';
 
@@ -25,6 +27,7 @@ const PRESET_CONFIGS: Record<PresetType, PresetConfig> = {
 
 export default function LabPage() {
   const { partnerA, partnerB, cityA, cityB } = useCoupleProfile();
+  const { space } = useCoupleSpace();
   const [currentStage, setCurrentStage] = useState<'ready' | 'play' | 'remember'>('ready');
   const [selectedPreset, setSelectedPreset] = useState<PresetType>('25/5');
   const [isBreak, setIsBreak] = useState(false);
@@ -48,6 +51,19 @@ export default function LabPage() {
     activityType: 'lab',
     transportMode: 'auto',
   });
+
+  useEffect(() => {
+    if (!space?.id) return;
+    void loadActivityRecords<{ taskA?: string; taskB?: string; preset?: PresetType }>(space.id, 'lab_session')
+      .then((records) => {
+        const latest = records[0];
+        if (latest?.payload.taskA) setTaskA(latest.payload.taskA);
+        if (latest?.payload.taskB) setTaskB(latest.payload.taskB);
+        if (latest?.payload.preset) handleSelectPreset(latest.payload.preset);
+      }).catch((error) => console.error('Failed to restore study setup:', error));
+  // Restore once when a couple space becomes available.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [space?.id]);
 
   // Timer Tick
   useEffect(() => {
@@ -156,6 +172,12 @@ export default function LabPage() {
       },
     });
     if (success) {
+      if (space?.id) await upsertActivityRecord({
+        coupleId: space.id, kind: 'lab_session', key: crypto.randomUUID(),
+        title: `Shared Study Session · ${totalFocusMinutes} Minutes`,
+        payload: { preset: selectedPreset, totalFocusMinutes, completedBlocks, taskA, taskB, reflectionNote },
+        status: 'completed',
+      });
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3500);
     }

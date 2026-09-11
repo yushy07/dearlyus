@@ -7,6 +7,8 @@ import { sounds } from '@/lib/sound';
 import { useCoupleProfile } from '@/lib/couple';
 import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
+import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
+import { upsertActivityRecord } from '@/lib/activity-records';
 
 interface ItineraryStep {
   id: string;
@@ -206,6 +208,7 @@ export default function DateNightPlannerPage() {
   ]);
 
   const { saveKeepsake, isSaving } = useKeepsakeWriter();
+  const { space } = useCoupleSpace();
   const runtime = useActivityRuntime({
     activityType: 'date',
     transportMode: 'auto',
@@ -310,6 +313,12 @@ export default function DateNightPlannerPage() {
       },
     });
     if (success) {
+      if (space?.id) await upsertActivityRecord({
+        coupleId: space.id, kind: 'date_plan', key: crypto.randomUUID(),
+        title: PRESET_PLANS[selectedPlanKey]?.name || 'Custom Date Night',
+        payload: { selectedPlanKey, preferences, itinerary, favoriteHighlight, totalMinutes },
+        status: 'completed',
+      });
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3500);
     }

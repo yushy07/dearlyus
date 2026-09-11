@@ -8,6 +8,8 @@ import { InteractiveGlobe, calculateGreatCircleDistance } from '@/lib/globe';
 import { useCoupleProfile } from '@/lib/couple';
 import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
+import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
+import { loadActivityRecords, upsertActivityRecord } from '@/lib/activity-records';
 
 interface PackingItem {
   id: string;
@@ -31,6 +33,7 @@ const COMMON_TIMEZONES = [
 
 export default function TimezoneHubPage() {
   const { partnerA, partnerB, cityA, cityB } = useCoupleProfile();
+  const { space } = useCoupleSpace();
   const [city1, setCity1] = useState(cityA || 'Calgary');
   const [city2, setCity2] = useState(cityB || 'Jakarta');
   const [tz1, setTz1] = useState('America/Edmonton');
@@ -171,6 +174,36 @@ export default function TimezoneHubPage() {
   const [newItemText, setNewItemText] = useState('');
   const [newItemCat, setNewItemCat] = useState<PackingItem['category']>('Essentials');
   const [newItemOwner, setNewItemOwner] = useState<PackingItem['owner']>('shared');
+  const [sharedLoaded, setSharedLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!space?.id) return;
+    void loadActivityRecords<{
+      city1?: string; city2?: string; tz1?: string; tz2?: string;
+      reunionDate?: string; flightNotes?: string; packingList?: PackingItem[];
+    }>(space.id, 'reunion').then((records) => {
+      const saved = records.find((record) => record.key === 'current-reunion');
+      if (!saved) return;
+      if (saved.payload.city1) setCity1(saved.payload.city1);
+      if (saved.payload.city2) setCity2(saved.payload.city2);
+      if (saved.payload.tz1) setTz1(saved.payload.tz1);
+      if (saved.payload.tz2) setTz2(saved.payload.tz2);
+      if (saved.payload.reunionDate) setReunionDate(saved.payload.reunionDate);
+      if (saved.payload.flightNotes) setFlightNotes(saved.payload.flightNotes);
+      if (saved.payload.packingList) setPackingList(saved.payload.packingList);
+    }).catch((error) => console.error('Failed to restore reunion plan:', error))
+      .finally(() => setSharedLoaded(true));
+  }, [space?.id]);
+
+  useEffect(() => {
+    if (!space?.id || !sharedLoaded) return;
+    const timer = setTimeout(() => void upsertActivityRecord({
+      coupleId: space.id, kind: 'reunion', key: 'current-reunion', title: 'Our Next Reunion',
+      targetAt: Number.isNaN(Date.parse(reunionDate)) ? null : new Date(reunionDate).toISOString(),
+      payload: { city1, city2, tz1, tz2, reunionDate, flightNotes, packingList },
+    }).catch((error) => console.error('Failed to sync reunion plan:', error)), 700);
+    return () => clearTimeout(timer);
+  }, [city1, city2, tz1, tz2, reunionDate, flightNotes, packingList, sharedLoaded, space?.id]);
 
   const togglePacked = (id: string) => {
     sounds.playPop();
