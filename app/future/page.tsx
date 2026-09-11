@@ -87,6 +87,22 @@ export default function FuturePage() {
     } catch {}
   }, [space?.id]);
 
+  useEffect(() => {
+    const snapshot = runtime.snapshot as { dreams?: Array<Record<string, unknown>> };
+    if (!snapshot.dreams?.length) return;
+    setItems((current) => snapshot.dreams!.map((dream) => {
+      const local = current.find((item) => item.id === String(dream.id));
+      return {
+        id: String(dream.id),
+        title: String(dream.title || local?.title || 'Shared dream'),
+        category: String(dream.category || local?.category || 'Dream'),
+        emoji: String(dream.emoji || local?.emoji || '✨'),
+        stage: (dream.column || dream.stage || local?.stage || 'someday') as BoardStage,
+        proposedBy: String(dream.proposedBy || local?.proposedBy || 'Both'),
+      };
+    }));
+  }, [runtime.snapshot]);
+
   const persistItems = (newItems: VisionItem[]) => {
     setItems(newItems);
     if (space?.id) {

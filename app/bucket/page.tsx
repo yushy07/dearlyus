@@ -23,7 +23,7 @@ export interface BucketDateItem {
   completedDate?: string;
 }
 
-const INITIAL_100_DATES: BucketDateItem[] = [
+const CURATED_STARTER_DATES: BucketDateItem[] = [
   { id: '1', title: 'Take a vintage 4-cut 인생네컷 photostrip on Dearly Us', category: 'Online', icon: '📸', status: 'done', isRevealed: true, completedDate: 'Aug 14, 2026', note: 'We put on our matching hats!' },
   { id: '2', title: 'Cook the exact same carbonara recipe in two kitchens', category: 'Food', icon: '🍝', status: 'done', isRevealed: true, completedDate: 'Aug 20, 2026', note: 'Both smelled like garlic heaven.' },
   { id: '3', title: 'Sleep on FaceTime the entire night until the sun comes up', category: 'Online', icon: '😴', status: 'done', isRevealed: true, completedDate: 'Aug 28, 2026' },
@@ -41,6 +41,36 @@ const INITIAL_100_DATES: BucketDateItem[] = [
   { id: '15', title: 'Send surprise care packages that can only be opened on call', category: 'Online', icon: '📦', status: 'done', isRevealed: true, completedDate: 'Sep 05, 2026' },
   { id: '16', title: 'Spend an entire rainy afternoon doing absolutely nothing in bed', category: 'Low Energy', icon: '🌧️', status: 'wishlist', isRevealed: false },
 ];
+
+const DATE_MOMENTS = [
+  ['At Home', '🕯️', 'Plan a candlelit dinner'],
+  ['Online', '🎬', 'Watch a comfort movie together'],
+  ['Outside', '🌿', 'Take a slow sunset walk'],
+  ['Creative', '🎨', 'Make a tiny piece of art for each other'],
+  ['Food', '🥐', 'Taste-test a new recipe'],
+  ['Travel', '🗺️', 'Explore somewhere neither of us knows'],
+  ['Reunion', '🤍', 'Recreate our favorite reunion moment'],
+  ['Low Energy', '☁️', 'Share a quiet no-pressure hour'],
+] as const;
+const DATE_SETTINGS = [
+  'on a rainy morning', 'after a long week', 'under warm fairy lights', 'with a handwritten playlist',
+  'during our next reunion', 'with phones put away', 'while wearing matching colors', 'before sunrise',
+  'on a surprise weekday', 'with a tiny keepsake to remember it', 'using only things we already own',
+] as const;
+
+const INITIAL_100_DATES: BucketDateItem[] = [
+  ...CURATED_STARTER_DATES,
+  ...DATE_MOMENTS.flatMap(([category, icon, action], momentIndex) =>
+    DATE_SETTINGS.map((setting, settingIndex) => ({
+      id: `starter-${momentIndex}-${settingIndex}`,
+      title: `${action} ${setting}`,
+      category,
+      icon,
+      status: 'wishlist' as const,
+      isRevealed: (momentIndex + settingIndex) % 3 === 0,
+    })),
+  ),
+].slice(0, 100);
 
 export default function BucketListPage() {
   const { partnerA, partnerB } = useCoupleProfile();

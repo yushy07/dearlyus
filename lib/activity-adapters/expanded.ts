@@ -934,7 +934,13 @@ export const futureActivityDefinition: ActivityDefinition<FutureSnapshot, Realti
     const p = (event.payload as Record<string, unknown>) || {};
     switch (event.type) {
       case 'future_dream_add':
-        return { ...snapshot, dreams: [...snapshot.dreams, p.dream as any] };
+        return {
+          ...snapshot,
+          dreams: [
+            ...snapshot.dreams.filter((dream) => dream.id !== (p.dream as any)?.id),
+            p.dream as any,
+          ],
+        };
       case 'future_dream_move':
         return {
           ...snapshot,
@@ -942,6 +948,13 @@ export const futureActivityDefinition: ActivityDefinition<FutureSnapshot, Realti
         };
       case 'future_dream_archive':
         return { ...snapshot, dreams: snapshot.dreams.filter((d) => d.id !== p.id) };
+      case 'future_dream_update':
+        return {
+          ...snapshot,
+          dreams: snapshot.dreams.map((dream) =>
+            dream.id === p.id ? { ...dream, ...(p.updates as object) } : dream,
+          ),
+        };
       default:
         return snapshot;
     }
