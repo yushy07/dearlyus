@@ -27,7 +27,7 @@ test('local activity routes render without a backend', async ({ browser }) => {
     '/scrapbook',
   ]) {
     await partnerA.goto(route);
-    await expect(partnerA.getByRole('main')).toBeVisible();
+    await expect(partnerA.getByRole('main').last()).toBeVisible();
   }
   await context.close();
 });
