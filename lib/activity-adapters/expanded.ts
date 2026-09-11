@@ -1188,10 +1188,17 @@ export interface ShirtsSnapshot {
   status: StandardSessionState;
   motifId: string;
   phrase: string;
+  textA: string;
+  textB: string;
+  stickersA: string[];
+  stickersB: string[];
   colorA: string;
   colorB: string;
   view: 'front' | 'back';
   completed: boolean;
+  revision: number;
+  approvedRevisionA: number | null;
+  approvedRevisionB: number | null;
 }
 
 const SHIRTS_EVENTS = [
@@ -1199,6 +1206,8 @@ const SHIRTS_EVENTS = [
   'shirts_text_update',
   'shirts_color_update',
   'shirts_view_switch',
+  'shirts_design_update',
+  'shirts_approve',
 ] as const;
 
 export const shirtsActivityDefinition: ActivityDefinition<ShirtsSnapshot, RealtimeActivityEvent> = {
@@ -1217,10 +1226,17 @@ export const shirtsActivityDefinition: ActivityDefinition<ShirtsSnapshot, Realti
       status: 'active',
       motifId: String(opts.motifId || 'connected-line'),
       phrase: String(opts.phrase || 'Better Together'),
+      textA: String(opts.textA || 'BETTER TOGETHER'),
+      textB: String(opts.textB || 'ALWAYS TOGETHER'),
+      stickersA: [],
+      stickersB: [],
       colorA: '#2d2627',
       colorB: '#faf6ee',
       view: 'front',
       completed: false,
+      revision: 0,
+      approvedRevisionA: null,
+      approvedRevisionB: null,
     };
   },
 
@@ -1243,6 +1259,27 @@ export const shirtsActivityDefinition: ActivityDefinition<ShirtsSnapshot, Realti
         };
       case 'shirts_view_switch':
         return { ...snapshot, view: (p.view as any) || (snapshot.view === 'front' ? 'back' : 'front') };
+      case 'shirts_design_update':
+        return {
+          ...snapshot,
+          ...(p.updates as object),
+          revision: snapshot.revision + 1,
+          approvedRevisionA: null,
+          approvedRevisionB: null,
+          completed: false,
+        };
+      case 'shirts_approve': {
+        const revision = Number(p.revision ?? snapshot.revision);
+        if (revision !== snapshot.revision) return snapshot;
+        const nextA = p.isA ? revision : snapshot.approvedRevisionA;
+        const nextB = !p.isA ? revision : snapshot.approvedRevisionB;
+        return {
+          ...snapshot,
+          approvedRevisionA: nextA,
+          approvedRevisionB: nextB,
+          completed: nextA === revision && nextB === revision,
+        };
+      }
       default:
         return snapshot;
     }

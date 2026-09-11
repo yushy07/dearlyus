@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, type PointerEvent, type CSSProperties } from 'react';
+import { useEffect, useState, type PointerEvent, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { ArrowUpRight, Search, Heart, Sparkles, Clock, Camera, Sparkle } from 'lucide-react';
 import { Navbar } from '@/components/shared';
 import { useCoupleProfile } from '@/lib/couple';
 import './activity-collection.css';
 import { ActivityIllustration } from './ActivityIllustration';
+import { listRecoverableActivitySessions } from '@/lib/activity-session';
 
 type Category = 'all' | 'play' | 'talk' | 'make' | 'distance';
 type FilterTag =
@@ -437,6 +438,13 @@ export default function ActivityPage() {
   const [category, setCategory] = useState<Category>('all');
   const [selectedTag, setSelectedTag] = useState<FilterTag>('all');
   const [query, setQuery] = useState('');
+  const [recoverable, setRecoverable] = useState<{ sessionId: string; activityType: string; updatedAt: string } | null>(null);
+
+  useEffect(() => {
+    void listRecoverableActivitySessions()
+      .then((sessions) => setRecoverable(sessions[0] || null))
+      .catch(() => setRecoverable(null));
+  }, []);
 
   const visible = activities.filter((item) => {
     const matchesCategory = category === 'all' || item.category === category;
@@ -451,6 +459,17 @@ export default function ActivityPage() {
     <div className="activity-collection">
       <Navbar />
       <main className="collection-main">
+        {recoverable && (
+          <section style={{ maxWidth: '1120px', margin: '20px auto 0', padding: '0 24px' }}>
+            <div style={{ background: '#fffaf4', border: '1px solid #d8c5b8', borderRadius: '18px', padding: '18px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '20px', boxShadow: '0 10px 30px rgba(83,49,45,.08)' }}>
+              <div>
+                <strong style={{ display: 'block', fontFamily: 'var(--font-serif, Georgia, serif)', fontSize: '18px' }}>Your date is still waiting</strong>
+                <span style={{ color: 'var(--ink-soft)', fontSize: '13px' }}>Continue {activities.find((item) => item.href === `/${recoverable.activityType}`)?.title || recoverable.activityType} from the shared saved state.</span>
+              </div>
+              <Link className="collection-primary" href={`/${recoverable.activityType}?session=${recoverable.sessionId}`}>Continue <ArrowUpRight size={17} /></Link>
+            </div>
+          </section>
+        )}
         {/* Hero Section */}
         <section className="collection-hero" aria-labelledby="collection-title">
           <div className="collection-intro">

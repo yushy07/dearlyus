@@ -11,6 +11,7 @@ export interface SealedLetterRecord {
   stamp: string;
   waxColor: string;
   voiceDurationSec?: number;
+  voiceNoteUrl?: string;
 }
 
 export async function loadSealedLetters(coupleId: string): Promise<SealedLetterRecord[]> {
@@ -27,6 +28,7 @@ export async function loadSealedLetters(coupleId: string): Promise<SealedLetterR
     stamp: String(row.stamp || '💌'),
     waxColor: String(row.waxColor || '#E11D48'),
     voiceDurationSec: typeof row.voiceDurationSec === 'number' ? row.voiceDurationSec : undefined,
+    voiceNoteUrl: typeof row.voiceNoteUrl === 'string' ? row.voiceNoteUrl : undefined,
   }));
 }
 
@@ -39,6 +41,7 @@ export async function sealLetter(input: {
   stamp: string;
   waxColor: string;
   voiceDurationSec?: number;
+  voiceNoteUrl?: string;
 }): Promise<SealedLetterRecord> {
   const supabase = getSupabase();
   if (!supabase) throw new Error('Supabase is not configured.');
@@ -52,6 +55,7 @@ export async function sealLetter(input: {
       stamp: input.stamp,
       waxColor: input.waxColor,
       voiceDurationSec: input.voiceDurationSec || null,
+      voiceNoteUrl: input.voiceNoteUrl || null,
     },
   });
   if (error) throw error;
@@ -60,5 +64,6 @@ export async function sealLetter(input: {
     unlockDate: String(data.unlockDate), content: null,
     stamp: String(data.stamp || input.stamp), waxColor: String(data.waxColor || input.waxColor),
     voiceDurationSec: input.voiceDurationSec,
+    voiceNoteUrl: input.voiceNoteUrl,
   };
 }

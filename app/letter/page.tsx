@@ -16,6 +16,7 @@ import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
 import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
 import { loadSealedLetters, sealLetter } from '@/lib/letter-vault';
+import { uploadTemporaryActivityAsset } from '@/lib/activity-records';
 
 export { sanitizeSafeAudioUrl };
 
@@ -62,6 +63,7 @@ export default function LetterPage() {
   const [recordSeconds, setRecordSeconds] = useState(0);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const recordedAudioBlobRef = useRef<Blob | null>(null);
   const recordTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Vault state
@@ -156,6 +158,7 @@ export default function LetterPage() {
           type: 'audio/webm',
         });
         const audioUrl = URL.createObjectURL(audioBlob);
+        recordedAudioBlobRef.current = audioBlob;
         setRecordedAudioUrl(audioUrl);
         stream.getTracks().forEach((track) => track.stop());
       };
@@ -189,6 +192,7 @@ export default function LetterPage() {
       } catch {}
     }
     setRecordedAudioUrl(null);
+    recordedAudioBlobRef.current = null;
     setRecordSeconds(0);
   };
 
@@ -197,6 +201,21 @@ export default function LetterPage() {
     if (!letterContent.trim() || !letterTitle.trim()) return;
 
     const currentAuthor = activeWriter === 'A' ? partnerA : partnerB;
+    let privateVoiceUrl: string | undefined;
+    if (space?.id && recordedAudioBlobRef.current) {
+      try {
+        const voiceAsset = await uploadTemporaryActivityAsset({
+          coupleId: space.id,
+          sessionId: runtime.sessionId,
+          file: recordedAudioBlobRef.current,
+          mediaKind: 'audio',
+        });
+        privateVoiceUrl = voiceAsset.signedUrl;
+      } catch (error) {
+        console.error('Failed to upload private voice note:', error);
+        return;
+      }
+    }
     let newCapsule: SealedCapsule = {
       id: Date.now().toString(),
       title: letterTitle,
@@ -205,7 +224,7 @@ export default function LetterPage() {
       content: letterContent,
       stamp,
       waxColor: selectedWax.hex,
-      voiceNoteUrl: sanitizeSafeAudioUrl(recordedAudioUrl),
+      voiceNoteUrl: privateVoiceUrl || sanitizeSafeAudioUrl(recordedAudioUrl),
       voiceDurationSec: recordSeconds > 0 ? recordSeconds : undefined,
     };
 
@@ -215,6 +234,7 @@ export default function LetterPage() {
           coupleId: space.id, title: letterTitle, author: currentAuthor, unlockDate,
           content: letterContent, stamp, waxColor: selectedWax.hex,
           voiceDurationSec: recordSeconds > 0 ? recordSeconds : undefined,
+          voiceNoteUrl: privateVoiceUrl,
         });
       } catch (error) {
         console.error('Failed to seal letter in the private vault:', error);

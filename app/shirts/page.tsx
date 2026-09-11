@@ -47,23 +47,49 @@ export default function ShirtsStudioPage() {
     transportMode: 'auto',
     initialOptions: { viewSide },
   });
+  const isLivePair = runtime.transportName !== 'mock';
+  const shirtSnapshot = runtime.snapshot as {
+    colorA?: string; colorB?: string; textA?: string; textB?: string;
+    stickersA?: string[]; stickersB?: string[]; view?: 'front' | 'back';
+    revision?: number; approvedRevisionA?: number | null; approvedRevisionB?: number | null; completed?: boolean;
+  };
+
+  useEffect(() => {
+    if (shirtSnapshot.colorA) setColorA(SHIRT_COLORS.find((color) => color.hex === shirtSnapshot.colorA) || colorA);
+    if (shirtSnapshot.colorB) setColorB(SHIRT_COLORS.find((color) => color.hex === shirtSnapshot.colorB) || colorB);
+    if (shirtSnapshot.textA) setTextA(shirtSnapshot.textA);
+    if (shirtSnapshot.textB) setTextB(shirtSnapshot.textB);
+    if (shirtSnapshot.stickersA) setStickersA(shirtSnapshot.stickersA);
+    if (shirtSnapshot.stickersB) setStickersB(shirtSnapshot.stickersB);
+    if (shirtSnapshot.view) setViewSide(shirtSnapshot.view.toUpperCase() as 'FRONT' | 'BACK');
+  }, [runtime.snapshot]);
+
+  const updateDesign = (updates: Record<string, unknown>) => {
+    void runtime.sendEvent('shirts_design_update', { updates });
+  };
 
   const applyMotif = (motif: typeof MOTIF_TEMPLATES[0]) => {
+    if (isLivePair) return;
     sounds.playPop();
     setTextA(motif.a);
     setTextB(motif.b);
+    updateDesign({ textA: motif.a, textB: motif.b });
   };
 
   const addStickerToShirt = (shirt: 'A' | 'B', s: string) => {
     sounds.playTick();
-    if (shirt === 'A' && stickersA.length < 5) setStickersA([...stickersA, s]);
-    if (shirt === 'B' && stickersB.length < 5) setStickersB([...stickersB, s]);
+    if (shirt === 'A' && stickersA.length < 5) {
+      const next = [...stickersA, s]; setStickersA(next); updateDesign({ stickersA: next });
+    }
+    if (shirt === 'B' && stickersB.length < 5) {
+      const next = [...stickersB, s]; setStickersB(next); updateDesign({ stickersB: next });
+    }
   };
 
   const removeSticker = (shirt: 'A' | 'B', idx: number) => {
     sounds.playPop();
-    if (shirt === 'A') setStickersA(stickersA.filter((_, i) => i !== idx));
-    if (shirt === 'B') setStickersB(stickersB.filter((_, i) => i !== idx));
+    if (shirt === 'A') { const next = stickersA.filter((_, i) => i !== idx); setStickersA(next); updateDesign({ stickersA: next }); }
+    if (shirt === 'B') { const next = stickersB.filter((_, i) => i !== idx); setStickersB(next); updateDesign({ stickersB: next }); }
   };
 
   const handleExportPNG = () => {
@@ -72,10 +98,11 @@ export default function ShirtsStudioPage() {
 
     if (typeof document !== 'undefined') {
       const canvas = document.createElement('canvas');
-      canvas.width = 1200;
-      canvas.height = 800;
+      canvas.width = 4500;
+      canvas.height = 3000;
       const ctx = canvas.getContext('2d');
       if (ctx) {
+        ctx.scale(3.75, 3.75);
         ctx.fillStyle = '#FAF8F5';
         ctx.fillRect(0, 0, 1200, 800);
 
@@ -234,6 +261,7 @@ export default function ShirtsStudioPage() {
             <button
               key={i}
               onClick={() => applyMotif(m)}
+              disabled={isLivePair}
               style={{
                 padding: '6px 14px',
                 borderRadius: '999px',
@@ -266,7 +294,7 @@ export default function ShirtsStudioPage() {
         >
           <div style={{ display: 'flex', gap: '8px' }}>
             <button
-              onClick={() => setViewSide('FRONT')}
+              onClick={() => { setViewSide('FRONT'); void runtime.sendEvent('shirts_view_switch', { view: 'front' }); }}
               style={{
                 padding: '5px 14px',
                 borderRadius: '8px',
@@ -281,7 +309,7 @@ export default function ShirtsStudioPage() {
               Front View
             </button>
             <button
-              onClick={() => setViewSide('BACK')}
+              onClick={() => { setViewSide('BACK'); void runtime.sendEvent('shirts_view_switch', { view: 'back' }); }}
               style={{
                 padding: '5px 14px',
                 borderRadius: '8px',
@@ -299,7 +327,18 @@ export default function ShirtsStudioPage() {
 
           <div style={{ display: 'flex', gap: '8px' }}>
             <button
+              onClick={() => void runtime.sendEvent('shirts_approve', {
+                revision: shirtSnapshot.revision || 0,
+                isA: runtime.isHost,
+              })}
+              className="btn btn-outline"
+              style={{ padding: '7px 16px', fontSize: '12.5px' }}
+            >
+              {shirtSnapshot.completed ? '✓ Both Approved' : 'Approve My Design'}
+            </button>
+            <button
               onClick={handleExportPNG}
+              disabled={isLivePair && !shirtSnapshot.completed}
               className="btn btn-outline"
               style={{ padding: '7px 16px', fontSize: '12.5px' }}
             >
@@ -349,7 +388,8 @@ export default function ShirtsStudioPage() {
               {SHIRT_COLORS.map((c) => (
                 <button
                   key={c.id}
-                  onClick={() => setColorA(c)}
+                  onClick={() => { setColorA(c); updateDesign({ colorA: c.hex }); }}
+                  disabled={isLivePair && !runtime.isHost}
                   style={{
                     width: '24px',
                     height: '24px',
@@ -367,7 +407,8 @@ export default function ShirtsStudioPage() {
             <input
               type="text"
               value={textA}
-              onChange={(e) => setTextA(e.target.value)}
+              onChange={(e) => { setTextA(e.target.value); updateDesign({ textA: e.target.value }); }}
+              disabled={isLivePair && !runtime.isHost}
               placeholder="Slogan on shirt..."
               style={{
                 width: '100%',
@@ -407,7 +448,8 @@ export default function ShirtsStudioPage() {
                 {stickersA.map((stk, idx) => (
                   <span
                     key={idx}
-                    onClick={() => removeSticker('A', idx)}
+                    onClick={() => (!isLivePair || runtime.isHost) && removeSticker('A', idx)}
+                    aria-disabled={isLivePair && !runtime.isHost}
                     title="Click to remove"
                     style={{ fontSize: '24px', cursor: 'pointer' }}
                   >
@@ -423,6 +465,7 @@ export default function ShirtsStudioPage() {
                 <button
                   key={stk}
                   onClick={() => addStickerToShirt('A', stk)}
+                  disabled={isLivePair && !runtime.isHost}
                   style={{ background: '#FFF', border: '1px solid var(--line)', borderRadius: '6px', padding: '4px 8px', fontSize: '14px', cursor: 'pointer' }}
                 >
                   {stk}
@@ -455,7 +498,8 @@ export default function ShirtsStudioPage() {
               {SHIRT_COLORS.map((c) => (
                 <button
                   key={c.id}
-                  onClick={() => setColorB(c)}
+                  onClick={() => { setColorB(c); updateDesign({ colorB: c.hex }); }}
+                  disabled={isLivePair && runtime.isHost}
                   style={{
                     width: '24px',
                     height: '24px',
@@ -473,7 +517,8 @@ export default function ShirtsStudioPage() {
             <input
               type="text"
               value={textB}
-              onChange={(e) => setTextB(e.target.value)}
+              onChange={(e) => { setTextB(e.target.value); updateDesign({ textB: e.target.value }); }}
+              disabled={isLivePair && runtime.isHost}
               placeholder="Slogan on shirt..."
               style={{
                 width: '100%',
@@ -513,7 +558,7 @@ export default function ShirtsStudioPage() {
                 {stickersB.map((stk, idx) => (
                   <span
                     key={idx}
-                    onClick={() => removeSticker('B', idx)}
+                    onClick={() => (!isLivePair || !runtime.isHost) && removeSticker('B', idx)}
                     title="Click to remove"
                     style={{ fontSize: '24px', cursor: 'pointer' }}
                   >
@@ -529,6 +574,7 @@ export default function ShirtsStudioPage() {
                 <button
                   key={stk}
                   onClick={() => addStickerToShirt('B', stk)}
+                  disabled={isLivePair && runtime.isHost}
                   style={{ background: '#FFF', border: '1px solid var(--line)', borderRadius: '6px', padding: '4px 8px', fontSize: '14px', cursor: 'pointer' }}
                 >
                   {stk}

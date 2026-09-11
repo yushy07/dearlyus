@@ -11,7 +11,8 @@ export type ActivityRecordKind =
   | 'forecast'
   | 'lab_session'
   | 'love_match'
-  | 'date_night_capsule';
+  | 'date_night_capsule'
+  | 'birthday_gift';
 
 export interface CoupleActivityRecord<T = Record<string, unknown>> {
   id: string;

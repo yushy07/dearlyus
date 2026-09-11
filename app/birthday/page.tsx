@@ -8,6 +8,8 @@ import { QRCodeSVG } from '@/lib/qrcode';
 import { sounds } from '@/lib/sound';
 import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
+import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
+import { loadActivityRecords, upsertActivityRecord, uploadTemporaryActivityAsset } from '@/lib/activity-records';
 
 interface ThemeConfig {
   id: string;
@@ -56,6 +58,7 @@ const BIRTHDAY_THEMES: ThemeConfig[] = [
 export default function BirthdayPage() {
   const { partnerA, partnerB, roomCode } = useCoupleProfile();
   const { saveKeepsake, saving: keepsakeSaving } = useKeepsakeWriter();
+  const { space } = useCoupleSpace();
 
   const [selectedTheme, setSelectedTheme] = useState<ThemeConfig>(BIRTHDAY_THEMES[0]);
   const [recipient, setRecipient] = useState<'A' | 'B'>('B');
@@ -68,6 +71,11 @@ export default function BirthdayPage() {
   const [copied, setCopied] = useState(false);
   const [confettiActive, setConfettiActive] = useState(false);
   const [keepsakeSaved, setKeepsakeSaved] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [revealAt, setRevealAt] = useState('');
+  const [revoked, setRevoked] = useState(false);
+  const [mediaStatus, setMediaStatus] = useState<'idle' | 'uploading' | 'ready' | 'failed'>('idle');
 
   const runtime = useActivityRuntime({
     sessionId: roomCode ? `room-${roomCode}-birthday` : 'local-birthday',
@@ -79,6 +87,56 @@ export default function BirthdayPage() {
 
   const birthdayPersonName = recipient === 'B' ? partnerB : partnerA;
   const authorName = recipient === 'B' ? partnerA : partnerB;
+
+  useEffect(() => {
+    if (!space?.id) return;
+    void loadActivityRecords<{
+      theme?: string; recipient?: 'A' | 'B'; message?: string; voucher?: string;
+      photoUrl?: string | null; audioUrl?: string | null; revoked?: boolean;
+    }>(space.id, 'birthday_gift').then((records) => {
+      const draft = records.find((record) => record.key === 'current-gift');
+      if (!draft) return;
+      const payload = draft.payload;
+      setSelectedTheme(BIRTHDAY_THEMES.find((theme) => theme.id === payload.theme) || BIRTHDAY_THEMES[0]);
+      if (payload.recipient) setRecipient(payload.recipient);
+      if (payload.message) setCustomMsg(payload.message);
+      if (payload.voucher) setGiftVoucher(payload.voucher);
+      setPhotoUrl(payload.photoUrl || null);
+      setAudioUrl(payload.audioUrl || null);
+      setRevealAt(draft.targetAt ? new Date(draft.targetAt).toISOString().slice(0, 16) : '');
+      setRevoked(Boolean(payload.revoked));
+    }).catch((error) => console.error('Failed to restore birthday draft:', error));
+  }, [space?.id]);
+
+  useEffect(() => {
+    if (!space?.id) return;
+    const timer = setTimeout(() => void upsertActivityRecord({
+      coupleId: space.id,
+      kind: 'birthday_gift',
+      key: 'current-gift',
+      title: `Birthday surprise for ${birthdayPersonName}`,
+      payload: { theme: selectedTheme.id, recipient, message: customMsg, voucher: giftVoucher, photoUrl, audioUrl, revoked },
+      status: revoked ? 'archived' : revealed ? 'completed' : 'draft',
+      targetAt: revealAt ? new Date(revealAt).toISOString() : null,
+    }).catch((error) => console.error('Failed to autosave birthday gift:', error)), 700);
+    return () => clearTimeout(timer);
+  }, [space?.id, selectedTheme.id, recipient, customMsg, giftVoucher, photoUrl, audioUrl, revealAt, revoked, revealed, birthdayPersonName]);
+
+  const uploadGiftMedia = async (event: React.ChangeEvent<HTMLInputElement>, mediaKind: 'image' | 'audio') => {
+    const file = event.target.files?.[0];
+    if (!file || !space?.id) return;
+    setMediaStatus('uploading');
+    try {
+      const asset = await uploadTemporaryActivityAsset({ coupleId: space.id, sessionId: runtime.sessionId, file, mediaKind });
+      if (mediaKind === 'image') setPhotoUrl(asset.signedUrl); else setAudioUrl(asset.signedUrl);
+      setMediaStatus('ready');
+    } catch (error) {
+      setMediaStatus('failed');
+      console.error('Failed to upload birthday media:', error);
+    } finally {
+      event.target.value = '';
+    }
+  };
 
   const copyLink = async () => {
     try {
@@ -316,16 +374,44 @@ export default function BirthdayPage() {
               />
             </div>
 
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '12px' }}>
+              <label className="btn btn-outline" style={{ justifyContent: 'center', cursor: 'pointer' }}>
+                📷 Add private photo
+                <input type="file" accept="image/*" hidden onChange={(event) => void uploadGiftMedia(event, 'image')} />
+              </label>
+              <label className="btn btn-outline" style={{ justifyContent: 'center', cursor: 'pointer' }}>
+                🎙️ Add private audio
+                <input type="file" accept="audio/*" hidden onChange={(event) => void uploadGiftMedia(event, 'audio')} />
+              </label>
+              <input
+                type="datetime-local"
+                value={revealAt}
+                onChange={(event) => setRevealAt(event.target.value)}
+                aria-label="Scheduled reveal time"
+                style={{ border: '1px solid var(--line)', borderRadius: '10px', padding: '10px' }}
+              />
+            </div>
+            {mediaStatus === 'uploading' && <p style={{ margin: 0, fontSize: '12px' }}>Uploading privately…</p>}
+            {mediaStatus === 'failed' && <p style={{ margin: 0, color: '#B45309', fontSize: '12px' }}>Media upload failed. Choose the file again to retry.</p>}
+            <button type="button" className="btn btn-ghost" onClick={() => setRevoked((value) => !value)}>
+              {revoked ? 'Restore this surprise' : 'Revoke this surprise'}
+            </button>
+
             <button
               className="btn btn-grad"
               onClick={() => {
+                if (revoked || (revealAt && new Date(revealAt).getTime() > Date.now())) return;
                 sounds.playCelebration();
                 setRevealed(true);
                 setCandlesBlown(false);
               }}
               style={{ padding: '14px', fontSize: '15px', justifyContent: 'center' }}
             >
-              Generate Birthday Page &amp; Interactive Candles 🎂
+              {revoked
+                ? 'Gift Revoked'
+                : revealAt && new Date(revealAt).getTime() > Date.now()
+                  ? `Scheduled for ${new Date(revealAt).toLocaleString()}`
+                  : 'Generate Birthday Page & Interactive Candles 🎂'}
             </button>
           </div>
         ) : (
@@ -355,6 +441,11 @@ export default function BirthdayPage() {
             </span>
 
             {/* Interactive Candle Micro-interaction */}
+            {photoUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={photoUrl} alt="Birthday memory" style={{ width: '100%', maxWidth: '420px', borderRadius: '18px', margin: '16px auto', display: 'block' }} />
+            )}
+            {audioUrl && <audio controls src={audioUrl} style={{ width: '100%', maxWidth: '420px', margin: '0 auto 16px' }} />}
             <div
               onClick={blowCandles}
               style={{

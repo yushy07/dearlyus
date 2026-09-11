@@ -146,6 +146,18 @@ export async function recoverActivitySession<
   return data as SessionRecovery<TSnapshot>;
 }
 
+export async function listRecoverableActivitySessions() {
+  const supabase = getSupabase();
+  if (!supabase) return [] as Array<{ sessionId: string; activityType: string; updatedAt: string }>;
+  const { data, error } = await supabase.rpc('list_recoverable_activity_sessions');
+  if (error) throw error;
+  return (Array.isArray(data) ? data : []).map((row: any) => ({
+    sessionId: String(row.sessionId),
+    activityType: String(row.activityType),
+    updatedAt: String(row.updatedAt),
+  }));
+}
+
 export async function appendActivityEvent(
   sessionId: string,
   type: string,
