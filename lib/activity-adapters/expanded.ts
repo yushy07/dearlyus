@@ -253,7 +253,7 @@ export interface ScrapbookSnapshot {
   schemaVersion: number;
   status: StandardSessionState;
   theme: string;
-  elements: Array<{ id: string; type: string; x: number; y: number; content: string; rotation?: number }>;
+  elements: Array<{ id: string; type: string; x: number; y: number; content: string; rotation?: number; imageUrl?: string; sub?: string }>;
   completed: boolean;
 }
 
@@ -297,7 +297,10 @@ export const scrapbookActivityDefinition: ActivityDefinition<ScrapbookSnapshot, 
       case 'scrapbook_element_add':
         return {
           ...snapshot,
-          elements: [...snapshot.elements, p.element as any],
+          elements: [
+            ...snapshot.elements.filter((element) => element.id !== (p.element as any)?.id),
+            p.element as any,
+          ],
         };
       case 'scrapbook_element_update':
         return {
@@ -770,6 +773,9 @@ export interface HuntSnapshot {
   roundIndex: number;
   proofASubmitted: boolean;
   proofBSubmitted: boolean;
+  proofAUrl: string | null;
+  proofBUrl: string | null;
+  deadlineAt: string | null;
   revealed: boolean;
   scoreA: number;
   scoreB: number;
@@ -802,6 +808,9 @@ export const huntActivityDefinition: ActivityDefinition<HuntSnapshot, RealtimeAc
       roundIndex: 0,
       proofASubmitted: false,
       proofBSubmitted: false,
+      proofAUrl: null,
+      proofBUrl: null,
+      deadlineAt: null,
       revealed: false,
       scoreA: 0,
       scoreB: 0,
@@ -816,19 +825,27 @@ export const huntActivityDefinition: ActivityDefinition<HuntSnapshot, RealtimeAc
   reduce(snapshot, event) {
     const p = (event.payload as Record<string, unknown>) || {};
     switch (event.type) {
+      case 'hunt_prompt_start':
+        return {
+          ...snapshot,
+          prompt: String(p.prompt || snapshot.prompt),
+          deadlineAt: String(p.deadlineAt || snapshot.deadlineAt || ''),
+        };
       case 'hunt_proof_submit':
         return {
           ...snapshot,
           proofASubmitted: p.isA ? true : snapshot.proofASubmitted,
           proofBSubmitted: !p.isA ? true : snapshot.proofBSubmitted,
+          proofAUrl: p.isA ? String(p.signedUrl || snapshot.proofAUrl || '') : snapshot.proofAUrl,
+          proofBUrl: !p.isA ? String(p.signedUrl || snapshot.proofBUrl || '') : snapshot.proofBUrl,
         };
       case 'hunt_proof_reveal':
         return { ...snapshot, revealed: true };
       case 'hunt_react':
         return {
           ...snapshot,
-          scoreA: snapshot.scoreA + Number(p.scoreA || 0),
-          scoreB: snapshot.scoreB + Number(p.scoreB || 0),
+          scoreA: Math.max(snapshot.scoreA, Number(p.scoreA ?? snapshot.scoreA)),
+          scoreB: Math.max(snapshot.scoreB, Number(p.scoreB ?? snapshot.scoreB)),
         };
       case 'hunt_next_round':
         return {
@@ -837,6 +854,9 @@ export const huntActivityDefinition: ActivityDefinition<HuntSnapshot, RealtimeAc
           prompt: String(p.prompt || snapshot.prompt),
           proofASubmitted: false,
           proofBSubmitted: false,
+          proofAUrl: null,
+          proofBUrl: null,
+          deadlineAt: String(p.deadlineAt || ''),
           revealed: false,
         };
       default:

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   CoupleNameBar,
@@ -91,6 +91,15 @@ export default function ScrapbookPage() {
   const [newNoteText, setNewNoteText] = useState('');
   const [keepsakeSaved, setKeepsakeSaved] = useState(false);
 
+  useEffect(() => {
+    const snapshot = runtime.snapshot as { theme?: string; elements?: ScrapbookItem[] };
+    if (Array.isArray(snapshot.elements) && snapshot.elements.length > 0) {
+      setItems(snapshot.elements);
+    }
+    const restoredTheme = THEMES.find((theme) => theme.id === snapshot.theme);
+    if (restoredTheme) setSelectedTheme(restoredTheme);
+  }, [runtime.snapshot]);
+
   const handlePointerDown = (e: React.PointerEvent, item: ScrapbookItem) => {
     setActiveItem(item.id);
     setDraggingId(item.id);
@@ -122,11 +131,18 @@ export default function ScrapbookPage() {
 
   const handlePointerUp = (e: React.PointerEvent) => {
     if (draggingId) {
+      const start = dragStartRef.current;
+      const movedId = draggingId;
+      const dx = start ? e.clientX - start.mouseX : 0;
+      const dy = start ? e.clientY - start.mouseY : 0;
+      const updates = start
+        ? {
+            x: Math.max(10, Math.min(680, start.itemX + dx)),
+            y: Math.max(10, Math.min(480, start.itemY + dy)),
+          }
+        : null;
       setDraggingId(null);
-      const moved = items.find((item) => item.id === activeItem);
-      if (moved) void runtime.sendEvent('scrapbook_element_update', {
-        id: moved.id, updates: { x: moved.x, y: moved.y, rotation: moved.rotation },
-      });
+      if (updates) void runtime.sendEvent('scrapbook_element_update', { id: movedId, updates });
       dragStartRef.current = null;
       try {
         (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
@@ -266,6 +282,7 @@ export default function ScrapbookPage() {
               onClick={() => {
                 setSelectedTheme(th);
                 sounds.playTick();
+                void runtime.sendEvent('scrapbook_theme_select', { theme: th.id });
               }}
               style={{
                 padding: '7px 14px',

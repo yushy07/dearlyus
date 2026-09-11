@@ -25,6 +25,9 @@ export default function HuntPage() {
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [keepsakeSaved, setKeepsakeSaved] = useState(false);
+  const [deadlineAt, setDeadlineAt] = useState<string | null>(null);
+  const [uploadState, setUploadState] = useState<'idle' | 'sending' | 'received' | 'failed'>('idle');
+  const [partnerProof, setPartnerProof] = useState<string | null>(null);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -87,26 +90,38 @@ export default function HuntPage() {
   }, []);
 
   useEffect(() => {
+    const snapshot = runtime.snapshot as {
+      roundIndex?: number; scoreA?: number; scoreB?: number; deadlineAt?: string | null;
+      proofAUrl?: string | null; proofBUrl?: string | null;
+    };
+    if (typeof snapshot.roundIndex === 'number') setPromptIdx(snapshot.roundIndex % prompts.length);
+    if (typeof snapshot.scoreA === 'number' && typeof snapshot.scoreB === 'number') {
+      setScores({ a: snapshot.scoreA, b: snapshot.scoreB });
+    }
+    if (snapshot.deadlineAt) {
+      setDeadlineAt(snapshot.deadlineAt);
+      setHunting(new Date(snapshot.deadlineAt).getTime() > Date.now());
+    }
+    const remoteUrl = runtime.isHost ? snapshot.proofBUrl : snapshot.proofAUrl;
+    if (remoteUrl) setPartnerProof(remoteUrl);
+  }, [runtime.snapshot, runtime.isHost]);
+
+  useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
-    if (hunting && seconds > 0) {
+    if (hunting && deadlineAt) {
       interval = setInterval(() => {
-        setSeconds((s) => {
-          if (s <= 1) {
-            setHunting(false);
-            setSnapped(true);
-            sounds.playCelebration();
-            setConfettiActive(true);
-            setTimeout(() => setConfettiActive(false), 3000);
-            return 0;
-          }
-          return s - 1;
-        });
-      }, 1000);
+        const remaining = Math.max(0, Math.ceil((new Date(deadlineAt).getTime() - Date.now()) / 1000));
+        setSeconds(remaining);
+        if (remaining === 0) {
+          setHunting(false);
+          setSnapped(true);
+        }
+      }, 250);
     }
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [hunting, seconds]);
+  }, [hunting, deadlineAt]);
 
   const startHunt = () => {
     sounds.playPop();
@@ -114,6 +129,9 @@ export default function HuntPage() {
     setSnapped(false);
     setCapturedPhoto(null);
     setSeconds(60);
+    const deadline = new Date(Date.now() + 60_000).toISOString();
+    setDeadlineAt(deadline);
+    void runtime.sendEvent('hunt_prompt_start', { prompt: prompts[promptIdx], deadlineAt: deadline });
   };
 
   const captureFrame = () => {
@@ -136,35 +154,60 @@ export default function HuntPage() {
   };
 
   const handleFound = (who: 'a' | 'b') => {
+    const scorer = runtime.transportName === 'mock' ? who : runtime.isHost ? 'a' : 'b';
     sounds.playCelebration();
     setHunting(false);
     setSnapped(true);
-    setScores((prev) => ({ ...prev, [who]: prev[who] + 1 }));
     setConfettiActive(true);
     setTimeout(() => setConfettiActive(false), 3500);
 
     const snap = captureFrame();
     if (snap) {
       setCapturedPhoto(snap);
-      if (space?.id) void fetch(snap).then((response) => response.blob()).then(async (blob) => {
+      if (space?.id) {
+        setUploadState('sending');
+        void fetch(snap).then((response) => response.blob()).then(async (blob) => {
         const asset = await uploadTemporaryActivityAsset({
           coupleId: space.id, sessionId: runtime.sessionId, file: blob, mediaKind: 'image',
         });
         await runtime.sendEvent('hunt_proof_submit', {
-          promptIndex: promptIdx, assetId: asset.id, submittedBy: runtime.currentUserId,
+          promptIndex: promptIdx, assetId: asset.id, signedUrl: asset.signedUrl,
+          submittedBy: runtime.currentUserId, isA: scorer === 'a',
         });
-      }).catch((error) => console.error('Failed to share private hunt proof:', error));
+        await runtime.sendEvent('hunt_react', {
+          scoreA: scorer === 'a' ? scores.a + 1 : scores.a,
+          scoreB: scorer === 'b' ? scores.b + 1 : scores.b,
+        });
+        setUploadState('received');
+      }).catch((error) => {
+        setUploadState('failed');
+        console.error('Failed to share private hunt proof:', error);
+      });
+      }
+    } else {
+      void runtime.sendEvent('hunt_proof_submit', {
+        promptIndex: promptIdx, submittedBy: runtime.currentUserId, isA: scorer === 'a',
+      });
+      void runtime.sendEvent('hunt_react', {
+        scoreA: scorer === 'a' ? scores.a + 1 : scores.a,
+        scoreB: scorer === 'b' ? scores.b + 1 : scores.b,
+      });
     }
   };
 
   const handleNextClue = () => {
     sounds.playPop();
-    setPromptIdx((p) => (p + 1) % prompts.length);
+    const next = (promptIdx + 1) % prompts.length;
+    setPromptIdx(next);
     setHunting(false);
     setSnapped(false);
     setCapturedPhoto(null);
     setSeconds(60);
     setKeepsakeSaved(false);
+    setPartnerProof(null);
+    setUploadState('idle');
+    const nextDeadline = new Date(Date.now() + 60_000).toISOString();
+    void runtime.sendEvent('hunt_next_round', { prompt: prompts[next], deadlineAt: nextDeadline });
   };
 
   const handleSaveToKeepsakes = async () => {
@@ -306,6 +349,7 @@ export default function HuntPage() {
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button
                   onClick={() => handleFound('a')}
+                  disabled={runtime.transportName !== 'mock' && !runtime.isHost}
                   className="btn btn-primary"
                   style={{ padding: '12px 24px', fontSize: '14px', background: 'var(--pink)' }}
                 >
@@ -313,6 +357,7 @@ export default function HuntPage() {
                 </button>
                 <button
                   onClick={() => handleFound('b')}
+                  disabled={runtime.transportName !== 'mock' && runtime.isHost}
                   className="btn btn-primary"
                   style={{ padding: '12px 24px', fontSize: '14px', background: 'var(--blue)' }}
                 >
@@ -362,6 +407,28 @@ export default function HuntPage() {
                   <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--ink-soft)', marginTop: '8px' }}>
                     Captured in {60 - seconds}s · {partnerA} &amp; {partnerB}
                   </div>
+                </div>
+              )}
+
+              {uploadState === 'sending' && (
+                <p style={{ fontSize: '12px' }}>Sending your proof securely…</p>
+              )}
+              {uploadState === 'failed' && (
+                <p style={{ color: '#B45309', fontSize: '12px' }}>
+                  Upload failed. Tap your Found It button to retry.
+                </p>
+              )}
+              {partnerProof && (
+                <div style={{ marginBottom: '16px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 800, marginBottom: '8px' }}>
+                    Your partner&apos;s proof
+                  </div>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={partnerProof}
+                    alt="Partner scavenger hunt proof"
+                    style={{ width: '220px', borderRadius: '10px' }}
+                  />
                 </div>
               )}
 
