@@ -67,6 +67,12 @@
   opacity: 0.45;
   cursor: not-allowed;
 }
+.photo-studio button:focus-visible,
+.photo-studio input:focus-visible,
+.photo-studio select:focus-visible {
+  outline: 3px solid #744653;
+  outline-offset: 3px;
+}
 .photo-studio .studio-primary {
   background: #794c58;
   color: #fff6e9;
@@ -1221,6 +1227,9 @@
   .studio-title h1 {
     font-size: 33px;
   }
+  .studio-machine-status {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 @media (max-width: 720px) {
   .studio-main {
@@ -1241,6 +1250,7 @@
   }
   .studio-workspace {
     grid-template-columns: 1fr;
+    padding: 16px;
   }
   .studio-print {
     position: static;
@@ -1282,6 +1292,16 @@
   }
   .studio-ready .studio-primary {
     margin-left: 0;
+  }
+  .studio-scene-book {
+    grid-template-columns: 1fr;
+  }
+  .studio-composition-heading {
+    display: block;
+  }
+  .studio-removal-switch {
+    width: max-content;
+    margin-top: 10px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
