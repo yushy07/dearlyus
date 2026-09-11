@@ -90,7 +90,7 @@ export async function loadAccount(user: User) {
     const { data: keepsakeData, error: keepsakeError } = await supabase
       .from('keepsakes')
       .select(
-        'id, kind, status, title, preview_url, activity_path, created_at, finalized_at, caption, storage_bucket, storage_path',
+        'id, kind, status, title, preview_url, activity_path, created_at, finalized_at, caption, storage_bucket, storage_path, metadata',
       )
       .eq('couple_id', space.id)
       .order('created_at', { ascending: false })
@@ -117,6 +117,7 @@ export async function loadAccount(user: User) {
           caption: item.caption,
           storageBucket: item.storage_bucket,
           storagePath: item.storage_path,
+          metadata: item.metadata ?? {},
         };
       }),
     );

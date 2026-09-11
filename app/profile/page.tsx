@@ -134,6 +134,37 @@ export default function ProfilePage() {
   const [prefAmbient, setPrefAmbient] = useState(false);
   const [prefReducedMotion, setPrefReducedMotion] = useState(false);
 
+  const memoryTimeline = useMemo(
+    () =>
+      [
+        ...keepsakes.map((item) => ({
+          id: `keepsake-${item.id}`,
+          title: item.title,
+          date: item.finalizedAt || item.createdAt,
+          label: item.activityPath
+            ? item.activityPath.replace('/', '').replaceAll('-', ' ')
+            : item.kind,
+          icon: KEEPSAKE_ICONS[item.kind] || '♡',
+          keepsake: item,
+        })),
+        ...milestones.map((item) => ({
+          id: `milestone-${item.id}`,
+          title: item.title,
+          date: item.occurredAt,
+          label: item.kind.replaceAll('_', ' '),
+          icon: '✦',
+          keepsake: null,
+        })),
+      ]
+        .filter((item) => !Number.isNaN(new Date(item.date).getTime()))
+        .sort(
+          (left, right) =>
+            new Date(right.date).getTime() - new Date(left.date).getTime(),
+        )
+        .slice(0, 12),
+    [keepsakes, milestones],
+  );
+
   // Sync state from context
   useEffect(() => {
     if (profile) {
@@ -1097,6 +1128,37 @@ export default function ProfilePage() {
                   </Link>
                 </div>
               </div>
+
+              {memoryTimeline.length > 0 && (
+                <div className={styles.memoryTimeline}>
+                  <div className={styles.timelineIntro}>
+                    <span>OUR STORY, AS IT HAPPENED</span>
+                    <h3>Your shared timeline</h3>
+                    <p>Finished dates, saved creations, and relationship milestones live together here.</p>
+                  </div>
+                  <div className={styles.timelineTrack}>
+                    {memoryTimeline.map((memory) => {
+                      const content = (
+                        <>
+                          <span className={styles.timelineIcon}>{memory.icon}</span>
+                          <span className={styles.timelineCopy}>
+                            <small>{new Date(memory.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</small>
+                            <strong>{memory.title}</strong>
+                            <em>{memory.label}</em>
+                          </span>
+                        </>
+                      );
+                      return memory.keepsake ? (
+                        <button key={memory.id} className={styles.timelineItem} onClick={() => setSelectedKeepsake(memory.keepsake)}>
+                          {content}
+                        </button>
+                      ) : (
+                        <div key={memory.id} className={styles.timelineItem}>{content}</div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               <div className={styles.shelfGrid}>
                 {keepsakes.length > 0 ? (
