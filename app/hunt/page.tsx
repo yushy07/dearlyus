@@ -7,10 +7,13 @@ import { useCoupleProfile } from '@/lib/couple';
 import { Confetti, CoupleNameBar, ActivityShell } from '@/components/shared';
 import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
+import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
+import { uploadTemporaryActivityAsset } from '@/lib/activity-records';
 
 export default function HuntPage() {
   const { partnerA, partnerB, roomCode } = useCoupleProfile();
   const { saveKeepsake, saving: keepsakeSaving } = useKeepsakeWriter();
+  const { space } = useCoupleSpace();
 
   const [promptIdx, setPromptIdx] = useState(0);
   const [seconds, setSeconds] = useState(60);
@@ -143,6 +146,14 @@ export default function HuntPage() {
     const snap = captureFrame();
     if (snap) {
       setCapturedPhoto(snap);
+      if (space?.id) void fetch(snap).then((response) => response.blob()).then(async (blob) => {
+        const asset = await uploadTemporaryActivityAsset({
+          coupleId: space.id, sessionId: runtime.sessionId, file: blob, mediaKind: 'image',
+        });
+        await runtime.sendEvent('hunt_proof_submit', {
+          promptIndex: promptIdx, assetId: asset.id, submittedBy: runtime.currentUserId,
+        });
+      }).catch((error) => console.error('Failed to share private hunt proof:', error));
     }
   };
 

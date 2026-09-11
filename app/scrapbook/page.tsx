@@ -10,6 +10,8 @@ import { sounds } from '@/lib/sound';
 import { useCoupleProfile } from '@/lib/couple';
 import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
+import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
+import { uploadTemporaryActivityAsset } from '@/lib/activity-records';
 
 interface ScrapbookItem {
   id: string;
@@ -33,6 +35,7 @@ const THEMES = [
 export default function ScrapbookPage() {
   const { partnerA, partnerB, roomCode } = useCoupleProfile();
   const { saveKeepsake, saving: keepsakeSaving } = useKeepsakeWriter();
+  const { space } = useCoupleSpace();
   const [selectedTheme, setSelectedTheme] = useState(THEMES[0]);
 
   const runtime = useActivityRuntime({
@@ -120,7 +123,10 @@ export default function ScrapbookPage() {
   const handlePointerUp = (e: React.PointerEvent) => {
     if (draggingId) {
       setDraggingId(null);
-      void runtime.sendEvent('scrapbook_entry_add', { itemId: activeItem });
+      const moved = items.find((item) => item.id === activeItem);
+      if (moved) void runtime.sendEvent('scrapbook_element_update', {
+        id: moved.id, updates: { x: moved.x, y: moved.y, rotation: moved.rotation },
+      });
       dragStartRef.current = null;
       try {
         (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
@@ -141,6 +147,7 @@ export default function ScrapbookPage() {
       rotation: Math.floor(Math.random() * 12) - 6,
     };
     setItems([...items, newItem]);
+    void runtime.sendEvent('scrapbook_element_add', { element: newItem });
     setNewNoteText('');
     sounds.playShutter();
   };
@@ -155,14 +162,37 @@ export default function ScrapbookPage() {
       rotation: Math.floor(Math.random() * 20) - 10,
     };
     setItems([...items, newItem]);
+    void runtime.sendEvent('scrapbook_element_add', { element: newItem });
     sounds.playCountdownBeep(false);
   };
 
   const removeSelected = () => {
     if (activeItem) {
       setItems(items.filter((i) => i.id !== activeItem));
+      void runtime.sendEvent('scrapbook_element_remove', { id: activeItem });
       setActiveItem(null);
       sounds.playPop();
+    }
+  };
+
+  const addPrivatePhoto = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !space?.id) return;
+    try {
+      const asset = await uploadTemporaryActivityAsset({
+        coupleId: space.id, sessionId: runtime.sessionId, file, mediaKind: 'image',
+      });
+      const item: ScrapbookItem = {
+        id: asset.id, type: 'polaroid', content: file.name, imageUrl: asset.signedUrl,
+        sub: `Private photo by ${runtime.isHost ? partnerA : partnerB}`,
+        x: 180, y: 120, rotation: -2,
+      };
+      setItems((current) => [...current, item]);
+      await runtime.sendEvent('scrapbook_element_add', { element: item });
+    } catch (error) {
+      console.error('Failed to upload scrapbook photo:', error);
+    } finally {
+      event.target.value = '';
     }
   };
 
@@ -326,6 +356,12 @@ export default function ScrapbookPage() {
 
           {/* Action Buttons */}
           <div style={{ display: 'flex', gap: '8px' }}>
+            {space?.id && (
+              <label className="btn btn-outline" style={{ padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>
+                📷 Add Private Photo
+                <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => void addPrivatePhoto(event)} hidden />
+              </label>
+            )}
             {activeItem && (
               <button
                 type="button"

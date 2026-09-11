@@ -119,5 +119,10 @@ export async function uploadTemporaryActivityAsset(input: {
     await supabase.storage.from('activity-assets').remove([path]);
     throw error;
   }
-  return data as { id: string; storage_path: string; expires_at: string };
+  const registered = data as { id: string; storage_path: string; expires_at: string };
+  const { data: signed, error: signedError } = await supabase.storage
+    .from('activity-assets')
+    .createSignedUrl(path, 60 * 60 * 24 * 7);
+  if (signedError) throw signedError;
+  return { ...registered, signedUrl: signed.signedUrl };
 }
