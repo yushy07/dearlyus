@@ -219,7 +219,8 @@ export default function DateNightPlannerPage() {
     let interval: NodeJS.Timeout | null = null;
     if (timerRunning && stepSecondsLeft > 0) {
       interval = setInterval(() => {
-        setStepSecondsLeft((prev) => Math.max(0, prev - 1));
+        const deadlineAt = String((runtime.snapshot as { deadlineAt?: string }).deadlineAt || '');
+        setStepSecondsLeft((prev) => deadlineAt ? Math.max(0, Math.ceil((Date.parse(deadlineAt) - Date.now()) / 1000)) : Math.max(0, prev - 1));
       }, 1000);
     } else if (stepSecondsLeft === 0 && timerRunning) {
       sounds.playCelebration();
@@ -228,7 +229,25 @@ export default function DateNightPlannerPage() {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [timerRunning, stepSecondsLeft]);
+  }, [timerRunning, stepSecondsLeft, runtime.snapshot]);
+
+  useEffect(() => {
+    if (runtime.transportName === 'mock') return;
+    const snapshot = runtime.snapshot as {
+      itinerary?: Array<{ id: string; title: string; duration: number; path: string; done: boolean }>;
+      activeStep?: number; isLive?: boolean; deadlineAt?: string | null; remainingSeconds?: number; completed?: boolean;
+    };
+    if (snapshot.itinerary?.length) {
+      setItinerary((current) => snapshot.itinerary!.map((item, index) => ({
+        ...current[index], ...item, durationMin: item.duration,
+      })));
+    }
+    if (typeof snapshot.activeStep === 'number') setActiveStepIdx(snapshot.activeStep);
+    if (typeof snapshot.isLive === 'boolean') setTimerRunning(snapshot.isLive);
+    if (snapshot.deadlineAt) setStepSecondsLeft(Math.max(0, Math.ceil((Date.parse(snapshot.deadlineAt) - Date.now()) / 1000)));
+    else if (typeof snapshot.remainingSeconds === 'number' && snapshot.remainingSeconds > 0) setStepSecondsLeft(snapshot.remainingSeconds);
+    if (snapshot.completed) setCurrentStage('remember');
+  }, [runtime.snapshot, runtime.transportName]);
 
   // Apply selected preset plan
   const applyPreset = (key: string) => {
@@ -260,7 +279,11 @@ export default function DateNightPlannerPage() {
     setTimerRunning(true);
     runtime.dispatch({
       type: 'date_step_start',
-      payload: { stepIndex: 0 },
+      payload: {
+        stepIndex: 0,
+        deadlineAt: new Date(Date.now() + itinerary[0].durationMin * 60_000).toISOString(),
+        remainingSeconds: itinerary[0].durationMin * 60,
+      },
     });
   };
 
@@ -563,14 +586,26 @@ export default function DateNightPlannerPage() {
                   </div>
                   <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '8px' }}>
                     <button
-                      onClick={() => setTimerRunning((p) => !p)}
+                      onClick={() => {
+                        const next = !timerRunning;
+                        setTimerRunning(next);
+                        void runtime.sendEvent('date_step_start', {
+                          stepIndex: activeStepIdx, isLive: next, remainingSeconds: stepSecondsLeft,
+                          deadlineAt: next ? new Date(Date.now() + stepSecondsLeft * 1000).toISOString() : null,
+                        });
+                      }}
                       className="btn btn-ghost"
                       style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.3)', fontSize: '12px', padding: '6px 14px' }}
                     >
                       {timerRunning ? 'Pause' : 'Resume'}
                     </button>
                     <button
-                      onClick={() => setStepSecondsLeft(itinerary[activeStepIdx]?.durationMin * 60)}
+                      onClick={() => {
+                        const remainingSeconds = itinerary[activeStepIdx]?.durationMin * 60;
+                        setStepSecondsLeft(remainingSeconds);
+                        setTimerRunning(false);
+                        void runtime.sendEvent('date_step_start', { stepIndex: activeStepIdx, isLive: false, remainingSeconds, deadlineAt: null });
+                      }}
                       className="btn btn-ghost"
                       style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.3)', fontSize: '12px', padding: '6px 14px' }}
                     >

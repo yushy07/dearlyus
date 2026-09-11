@@ -557,6 +557,8 @@ export interface LabSnapshot {
   isBreak: boolean;
   isRunning: boolean;
   completedBlocks: number;
+  deadlineAt: string | null;
+  remainingSeconds: number;
   taskA: string;
   taskB: string;
   completed: boolean;
@@ -589,6 +591,8 @@ export const labActivityDefinition: ActivityDefinition<LabSnapshot, RealtimeActi
       isBreak: false,
       isRunning: false,
       completedBlocks: 0,
+      deadlineAt: null,
+      remainingSeconds: Number(opts.remainingSeconds || 25 * 60),
       taskA: '',
       taskB: '',
       completed: false,
@@ -605,11 +609,16 @@ export const labActivityDefinition: ActivityDefinition<LabSnapshot, RealtimeActi
       case 'lab_preset_select':
         return { ...snapshot, preset: (p.preset as any) || snapshot.preset };
       case 'lab_start':
-        return { ...snapshot, isRunning: true };
+        return {
+          ...snapshot,
+          isRunning: true,
+          deadlineAt: String(p.deadlineAt || snapshot.deadlineAt || ''),
+          remainingSeconds: Number(p.remainingSeconds || snapshot.remainingSeconds),
+        };
       case 'lab_pause':
-        return { ...snapshot, isRunning: false };
+        return { ...snapshot, isRunning: false, deadlineAt: null, remainingSeconds: Number(p.remainingSeconds || snapshot.remainingSeconds) };
       case 'lab_resume':
-        return { ...snapshot, isRunning: true };
+        return { ...snapshot, isRunning: true, deadlineAt: String(p.deadlineAt || ''), remainingSeconds: Number(p.remainingSeconds || snapshot.remainingSeconds) };
       case 'lab_task_update':
         return {
           ...snapshot,
@@ -621,6 +630,7 @@ export const labActivityDefinition: ActivityDefinition<LabSnapshot, RealtimeActi
           ...snapshot,
           completedBlocks: snapshot.completedBlocks + 1,
           isBreak: !snapshot.isBreak,
+          deadlineAt: null,
         };
       default:
         return snapshot;
@@ -1512,6 +1522,8 @@ export interface DatePlannerSnapshot {
   itinerary: Array<{ id: string; title: string; duration: number; path: string; done: boolean }>;
   activeStep: number;
   isLive: boolean;
+  deadlineAt: string | null;
+  remainingSeconds: number;
   completed: boolean;
 }
 
@@ -1543,6 +1555,8 @@ export const datePlannerActivityDefinition: ActivityDefinition<DatePlannerSnapsh
       ],
       activeStep: 0,
       isLive: false,
+      deadlineAt: null,
+      remainingSeconds: 0,
       completed: false,
     };
   },
@@ -1557,7 +1571,13 @@ export const datePlannerActivityDefinition: ActivityDefinition<DatePlannerSnapsh
       case 'date_itinerary_build':
         return { ...snapshot, itinerary: (p.itinerary as any) || snapshot.itinerary };
       case 'date_step_start':
-        return { ...snapshot, activeStep: Number(p.stepIndex ?? snapshot.activeStep), isLive: true };
+        return {
+          ...snapshot,
+          activeStep: Number(p.stepIndex ?? snapshot.activeStep),
+          isLive: Boolean(p.isLive ?? true),
+          deadlineAt: p.deadlineAt ? String(p.deadlineAt) : null,
+          remainingSeconds: Number(p.remainingSeconds || snapshot.remainingSeconds),
+        };
       case 'date_step_complete': {
         const idx = Number(p.stepIndex ?? snapshot.activeStep);
         const updated = snapshot.itinerary.map((item, i) => (i === idx ? { ...item, done: true } : item));
@@ -1568,6 +1588,8 @@ export const datePlannerActivityDefinition: ActivityDefinition<DatePlannerSnapsh
           activeStep: Math.min(updated.length - 1, idx + 1),
           status: allDone ? 'completed' : 'active',
           completed: allDone,
+          deadlineAt: null,
+          remainingSeconds: 0,
         };
       }
       case 'date_finish':

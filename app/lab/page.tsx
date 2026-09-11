@@ -70,7 +70,8 @@ export default function LabPage() {
     let interval: NodeJS.Timeout | null = null;
     if (isRunning && secondsLeft > 0) {
       interval = setInterval(() => {
-        setSecondsLeft((s) => Math.max(0, s - 1));
+        const deadlineAt = String((runtime.snapshot as { deadlineAt?: string }).deadlineAt || '');
+        setSecondsLeft((s) => deadlineAt ? Math.max(0, Math.ceil((Date.parse(deadlineAt) - Date.now()) / 1000)) : Math.max(0, s - 1));
       }, 1000);
     } else if (secondsLeft === 0 && isRunning) {
       sounds.playCelebration();
@@ -89,6 +90,22 @@ export default function LabPage() {
       if (interval) clearInterval(interval);
     };
   }, [isRunning, secondsLeft, isBreak, selectedPreset, runtime]);
+
+  useEffect(() => {
+    if (runtime.transportName === 'mock') return;
+    const snapshot = runtime.snapshot as {
+      preset?: PresetType; isBreak?: boolean; isRunning?: boolean; completedBlocks?: number;
+      taskA?: string; taskB?: string; deadlineAt?: string | null; remainingSeconds?: number;
+    };
+    if (snapshot.preset) setSelectedPreset(snapshot.preset);
+    if (typeof snapshot.isBreak === 'boolean') setIsBreak(snapshot.isBreak);
+    if (typeof snapshot.isRunning === 'boolean') setIsRunning(snapshot.isRunning);
+    if (typeof snapshot.completedBlocks === 'number') setCompletedBlocks(snapshot.completedBlocks);
+    if (snapshot.taskA) setTaskA(snapshot.taskA);
+    if (snapshot.taskB) setTaskB(snapshot.taskB);
+    if (snapshot.deadlineAt) setSecondsLeft(Math.max(0, Math.ceil((Date.parse(snapshot.deadlineAt) - Date.now()) / 1000)));
+    else if (typeof snapshot.remainingSeconds === 'number') setSecondsLeft(snapshot.remainingSeconds);
+  }, [runtime.snapshot, runtime.transportName]);
 
   // Audio Ambience
   useEffect(() => {
@@ -127,7 +144,9 @@ export default function LabPage() {
     }
     runtime.dispatch({
       type: next ? 'lab_start' : 'lab_pause',
-      payload: {},
+      payload: next
+        ? { deadlineAt: new Date(Date.now() + secondsLeft * 1000).toISOString(), remainingSeconds: secondsLeft }
+        : { remainingSeconds: secondsLeft },
     });
   };
 
@@ -305,6 +324,7 @@ export default function LabPage() {
               type="text"
               value={taskA}
               onChange={(e) => setTaskA(e.target.value)}
+              onBlur={() => void runtime.sendEvent('lab_task_update', { taskA })}
               placeholder="What are you working on right now?"
               style={{
                 width: '100%',
@@ -357,6 +377,7 @@ export default function LabPage() {
               type="text"
               value={taskB}
               onChange={(e) => setTaskB(e.target.value)}
+              onBlur={() => void runtime.sendEvent('lab_task_update', { taskB })}
               placeholder="What is your partner tackling?"
               style={{
                 width: '100%',
