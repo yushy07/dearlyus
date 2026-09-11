@@ -19,6 +19,7 @@ import {
   putPhoto,
   completeShot,
   approvalKey,
+  normalizeBoothDesign,
   type Shot,
   type Side,
   type Photo,
@@ -154,14 +155,7 @@ export function useBoothStudio() {
             );
         }
       }
-    const nextDesign = {
-      ...INITIAL_DESIGN,
-      ...(value.design && typeof value.design === 'object' ? value.design : {}),
-      stickers: Array.isArray(value.design?.stickers)
-        ? value.design.stickers
-        : [],
-      strokes: Array.isArray(value.design?.strokes) ? value.design.strokes : [],
-    } as BoothDesign;
+    const nextDesign = normalizeBoothDesign(value.design);
     const nextEditor: Side = value.editor === 'right' ? 'right' : 'left';
     const nextApproved = Array.isArray(value.approvals)
       ? value.approvals.filter(
@@ -758,8 +752,9 @@ export function useBoothStudio() {
           (id) => s.find((shot) => shot.id === id) ?? { id },
         ),
       );
-      setDesign(m.design as BoothDesign);
-      state.current.design = m.design as BoothDesign;
+      const incomingDesign = normalizeBoothDesign(m.design);
+      setDesign(incomingDesign);
+      state.current.design = incomingDesign;
       setEditor(m.editor as Side);
       setRevision(Number(m.revision));
       state.current.revision = Number(m.revision);
@@ -814,7 +809,7 @@ export function useBoothStudio() {
       state.current.editor === 'right'
     ) {
       if (m.revision === state.current.revision)
-        applyDesign(m.design as BoothDesign);
+        applyDesign(normalizeBoothDesign(m.design));
       else
         await send({
           type: 'design-state',
@@ -823,7 +818,7 @@ export function useBoothStudio() {
           editor: state.current.editor,
         });
     } else if (m.type === 'design-state' && state.current.side === 'right') {
-      state.current.design = m.design as BoothDesign;
+      state.current.design = normalizeBoothDesign(m.design);
       state.current.editor = m.editor as Side;
       state.current.revision = Number(m.revision);
       setDesign(state.current.design);

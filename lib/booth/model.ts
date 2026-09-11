@@ -24,6 +24,26 @@ export type DrawingStroke = {
   width: number;
   points: DrawPoint[];
 };
+export type BackdropId =
+  | 'ivory-studio'
+  | 'blush-hearts'
+  | 'rose-curtain'
+  | 'tokyo-sakura'
+  | 'paris-sunset'
+  | 'rainy-cafe'
+  | 'moonlit-rooftop'
+  | 'fairy-bedroom'
+  | 'seoul-dessert-cafe'
+  | 'burgundy-velvet';
+export type BackdropScene = {
+  id: BackdropId;
+  name: string;
+  description: string;
+  image: string;
+  thumbnail: string;
+  fallback: string;
+  tone: 'light' | 'dark';
+};
 export type BoothDesign = {
   layout: 'strip' | 'grid';
   theme: 'ivory' | 'rose' | 'ink' | 'sage';
@@ -31,7 +51,7 @@ export type BoothDesign = {
   caption: string;
   date: string;
   composition: 'split' | 'backdrop';
-  backdrop?: 'linen' | 'rose' | 'sage' | 'midnight';
+  backdrop?: BackdropId;
   stickers: Decoration[];
   strokes: DrawingStroke[];
 };
@@ -41,7 +61,8 @@ export const INITIAL_DESIGN: BoothDesign = {
   filter: 'natural',
   caption: 'a little closer.',
   date: '',
-  composition: 'split',
+  composition: 'backdrop',
+  backdrop: 'ivory-studio',
   stickers: [],
   strokes: [],
 };
@@ -51,12 +72,121 @@ export const THEMES = {
   ink: { paper: '#352a31', ink: '#fff2df' },
   sage: { paper: '#dce3d1', ink: '#475547' },
 };
-export const BACKDROPS = {
-  linen: '#e8ded0',
-  rose: '#d9b8ba',
-  sage: '#bac6b5',
-  midnight: '#464350',
+const scene = (
+  id: BackdropId,
+  name: string,
+  description: string,
+  fallback: string,
+  tone: BackdropScene['tone'] = 'light',
+): BackdropScene => ({
+  id,
+  name,
+  description,
+  image: `/photobooth/backgrounds/${id}.webp`,
+  thumbnail: `/photobooth/backgrounds/thumbs/${id}.webp`,
+  fallback,
+  tone,
+});
+
+export const BACKDROPS: Record<BackdropId, BackdropScene> = {
+  'ivory-studio': scene(
+    'ivory-studio',
+    'Ivory Korean Studio',
+    'Quiet plaster, linen curtains and soft studio daylight.',
+    '#e9e0d2',
+  ),
+  'blush-hearts': scene(
+    'blush-hearts',
+    'Blush Paper Hearts',
+    'A handmade blush set with tiny pressed-paper hearts.',
+    '#dfc5c5',
+  ),
+  'rose-curtain': scene(
+    'rose-curtain',
+    'Vintage Rose Curtain',
+    'Old theatre velvet, warm lamps and a little ceremony.',
+    '#a86d70',
+    'dark',
+  ),
+  'tokyo-sakura': scene(
+    'tokyo-sakura',
+    'Tokyo Sakura Evening',
+    'A lantern-lit lane beneath soft evening blossoms.',
+    '#b88b91',
+    'dark',
+  ),
+  'paris-sunset': scene(
+    'paris-sunset',
+    'Paris Balcony Sunset',
+    'Warm stone, ironwork and the last peach light.',
+    '#c48e78',
+  ),
+  'rainy-cafe': scene(
+    'rainy-cafe',
+    'Rainy-night Café',
+    'Window rain, amber tables and a late-night date.',
+    '#4d3d3f',
+    'dark',
+  ),
+  'moonlit-rooftop': scene(
+    'moonlit-rooftop',
+    'Moonlit Rooftop',
+    'A quiet skyline under deep blue evening light.',
+    '#343947',
+    'dark',
+  ),
+  'fairy-bedroom': scene(
+    'fairy-bedroom',
+    'Fairy-light Bedroom',
+    'Soft bedding, warm lamps and an intimate glow.',
+    '#9b786d',
+    'dark',
+  ),
+  'seoul-dessert-cafe': scene(
+    'seoul-dessert-cafe',
+    'Seoul Dessert Café',
+    'Cream tiles, morning sun and a sweet café table.',
+    '#dbc7a8',
+  ),
+  'burgundy-velvet': scene(
+    'burgundy-velvet',
+    'Burgundy Velvet Studio',
+    'A minimal velvet set with a polished editorial mood.',
+    '#5c2636',
+    'dark',
+  ),
 };
+
+const LEGACY_BACKDROPS: Record<string, BackdropId> = {
+  linen: 'ivory-studio',
+  rose: 'rose-curtain',
+  sage: 'seoul-dessert-cafe',
+  midnight: 'moonlit-rooftop',
+};
+
+export function normalizeBackdrop(value: unknown): BackdropId {
+  if (typeof value === 'string' && value in BACKDROPS)
+    return value as BackdropId;
+  return typeof value === 'string' && LEGACY_BACKDROPS[value]
+    ? LEGACY_BACKDROPS[value]
+    : 'ivory-studio';
+}
+
+export function getBackdropScene(value: unknown) {
+  return BACKDROPS[normalizeBackdrop(value)];
+}
+
+export function normalizeBoothDesign(value: unknown): BoothDesign {
+  const saved =
+    value && typeof value === 'object' ? (value as Partial<BoothDesign>) : {};
+  return {
+    ...INITIAL_DESIGN,
+    ...saved,
+    backdrop: normalizeBackdrop(saved.backdrop),
+    stickers: Array.isArray(saved.stickers) ? saved.stickers : [],
+    strokes: Array.isArray(saved.strokes) ? saved.strokes : [],
+  };
+}
 export const FILTERS = {
   natural: 'none',
   mono: 'grayscale(1) contrast(1.08)',

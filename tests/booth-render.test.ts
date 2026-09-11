@@ -3,6 +3,7 @@ import {
   INITIAL_DESIGN,
   DEFAULT_CROP,
   BACKDROPS,
+  normalizeBackdrop,
   type Shot,
 } from '../lib/booth/model';
 import { printSheet, renderBooth } from '../lib/booth/render';
@@ -27,6 +28,8 @@ function fixture() {
     translate: vi.fn(),
     rotate: vi.fn(),
     drawImage: vi.fn(),
+    ellipse: vi.fn(),
+    fill: vi.fn(),
     moveTo: vi.fn(),
     lineTo: vi.fn(),
     quadraticCurveTo: vi.fn(),
@@ -89,32 +92,53 @@ describe('shared-background photo rendering', () => {
     const original = structuredClone(shots);
     const result = await renderBooth(
       shots,
-      { ...INITIAL_DESIGN, composition: 'backdrop', backdrop: 'midnight' },
+      {
+        ...INITIAL_DESIGN,
+        composition: 'backdrop',
+        backdrop: 'moonlit-rooftop',
+      },
       false,
     );
     expect(personCutout).toHaveBeenCalledTimes(2);
-    expect(ctx.drawImage.mock.calls[0][0]).toBe(left);
-    expect(ctx.drawImage.mock.calls[1][0]).toBe(right);
-    expect(ctx.drawImage.mock.calls[0][1]).toBeLessThan(
-      ctx.drawImage.mock.calls[1][1],
+    const subjectCalls = ctx.drawImage.mock.calls.filter(
+      (call) => call[0] === left || call[0] === right,
     );
+    expect(subjectCalls[0][0]).toBe(left);
+    expect(subjectCalls[1][0]).toBe(right);
+    expect(subjectCalls[0][1]).toBeLessThan(subjectCalls[1][1]);
     expect(ctx.rect.mock.calls.slice(0, 2)).toEqual([
       [30, 105, 540, 360],
       [30, 105, 540, 360],
     ]);
     expect(shots).toEqual(original);
     expect([result.width, result.height]).toEqual([1200, 3600]);
-    expect(BACKDROPS.midnight).toBeTruthy();
+    expect(BACKDROPS['moonlit-rooftop'].image).toContain('moonlit-rooftop');
+    expect(ctx.ellipse).toHaveBeenCalledTimes(2);
   });
 
   it('restores original split photos without requesting segmentation', async () => {
     const { ctx, shots } = fixture();
-    await renderBooth(shots, INITIAL_DESIGN, false);
+    await renderBooth(
+      shots,
+      { ...INITIAL_DESIGN, composition: 'split' },
+      false,
+    );
     expect(personCutout).not.toHaveBeenCalled();
     expect(ctx.rect.mock.calls.slice(0, 2)).toEqual([
       [30, 105, 270, 360],
       [300, 105, 270, 360],
     ]);
+  });
+
+  it('ships ten distinct scenes and maps previous snapshot names', () => {
+    const scenes = Object.values(BACKDROPS);
+    expect(scenes).toHaveLength(10);
+    expect(new Set(scenes.map((item) => item.image))).toHaveLength(10);
+    expect(new Set(scenes.map((item) => item.thumbnail))).toHaveLength(10);
+    expect(normalizeBackdrop('linen')).toBe('ivory-studio');
+    expect(normalizeBackdrop('rose')).toBe('rose-curtain');
+    expect(normalizeBackdrop('sage')).toBe('seoul-dessert-cafe');
+    expect(normalizeBackdrop('midnight')).toBe('moonlit-rooftop');
   });
 
   it('rejects a failed cutout rather than exporting an incomplete shared photo', async () => {
@@ -133,6 +157,7 @@ describe('shared-background photo rendering', () => {
       shots,
       {
         ...INITIAL_DESIGN,
+        composition: 'split',
         strokes: [
           {
             id: 'note',

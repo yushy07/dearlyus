@@ -27,6 +27,7 @@ import {
   FILTERS,
   THEMES,
   BACKDROPS,
+  getBackdropScene,
   POSES,
   type BoothDesign,
   type DrawPoint,
@@ -73,6 +74,8 @@ export default function PhotoboothPage() {
     [notice, setNotice] = useState(''),
     [stickerId, setStickerId] = useState('');
   const [rendering, setRendering] = useState(false);
+  const [sceneLoadError, setSceneLoadError] = useState(false),
+    [sceneRetry, setSceneRetry] = useState(0);
   const [ready, setReady] = useState(false);
   const [drawColor, setDrawColor] = useState('#8f5361'),
     [drawWidth, setDrawWidth] = useState(8),
@@ -91,6 +94,7 @@ export default function PhotoboothPage() {
   const syncing = Object.values(booth.transfers).some((transfer) =>
     ['sending', 'retrying', 'receiving'].includes(transfer.state),
   );
+  const selectedScene = getBackdropScene(booth.design.backdrop);
   useEffect(() => setReady(true), []);
   const myPhoto = booth.shots[selected]?.[booth.side];
   const sticker = booth.design.stickers.find((s) => s.id === stickerId);
@@ -145,6 +149,20 @@ export default function PhotoboothPage() {
       clearTimeout(timeout);
     };
   }, [booth.shots, booth.design, booth.solo]);
+  useEffect(() => {
+    if (booth.design.composition !== 'backdrop') {
+      setSceneLoadError(false);
+      return;
+    }
+    let active = true;
+    const image = new Image();
+    image.onload = () => active && setSceneLoadError(false);
+    image.onerror = () => active && setSceneLoadError(true);
+    image.src = `${selectedScene.image}?scene=${sceneRetry}`;
+    return () => {
+      active = false;
+    };
+  }, [booth.design.composition, selectedScene.image, sceneRetry]);
   useEffect(
     () => () => {
       URL.revokeObjectURL(previewUrl.current);
@@ -448,6 +466,44 @@ export default function PhotoboothPage() {
                         </button>
                       </div>
                     )}
+                    <div
+                      className="studio-machine-status"
+                      aria-label="Booth status"
+                    >
+                      <span className={booth.stream ? 'ready' : ''}>
+                        <i /> Camera {booth.stream ? 'ready' : 'waiting'}
+                      </span>
+                      <span
+                        className={booth.solo || booth.online ? 'ready' : ''}
+                      >
+                        <i />{' '}
+                        {booth.solo
+                          ? 'Solo booth'
+                          : booth.online
+                            ? 'Partner present'
+                            : 'Partner waiting'}
+                      </span>
+                      <span
+                        className={
+                          !rendering && !sceneLoadError
+                            ? 'ready'
+                            : sceneLoadError
+                              ? 'warning'
+                              : ''
+                        }
+                      >
+                        <i />{' '}
+                        {sceneLoadError
+                          ? 'Scene fallback'
+                          : rendering
+                            ? 'Processing'
+                            : 'Background ready'}
+                      </span>
+                      <span className={!syncing ? 'ready' : ''}>
+                        <i />{' '}
+                        {syncing ? 'Photos transferring' : 'Transfer ready'}
+                      </span>
+                    </div>
                     <div className="studio-camera-title">
                       <span>
                         {step === 1
@@ -473,6 +529,11 @@ export default function PhotoboothPage() {
                     <div
                       className={`studio-camera ${booth.solo ? 'solo' : ''} ${grid ? 'with-grid' : ''}`}
                     >
+                      <div
+                        className={`studio-camera-lamp ${booth.stream ? 'on' : ''}`}
+                      >
+                        <i /> CAMERA READY
+                      </div>
                       <div className="studio-feed">
                         <video
                           ref={booth.localVideo}
@@ -532,8 +593,9 @@ export default function PhotoboothPage() {
                       )}
                       {booth.flash && <div className="studio-flash" />}
                     </div>
-                    <div className="studio-tools">
+                    <div className="studio-tools studio-switch-bank">
                       <button
+                        className="machine-toggle"
                         disabled={!booth.stream}
                         aria-pressed={booth.mic}
                         onClick={() => void booth.toggleMic()}
@@ -542,12 +604,14 @@ export default function PhotoboothPage() {
                         {booth.mic ? 'Mic on' : 'Mic off'}
                       </button>
                       <button
+                        className="machine-toggle"
                         aria-pressed={grid}
                         onClick={() => setGrid(!grid)}
                       >
                         Framing grid
                       </button>
                       <button
+                        className="machine-control"
                         disabled={booth.cameraBusy || booth.shooting}
                         onClick={() => void booth.enableCamera()}
                       >
@@ -592,18 +656,23 @@ export default function PhotoboothPage() {
                     ) : (
                       <>
                         <div className="studio-shutter-settings">
-                          <label>
-                            Countdown{' '}
-                            <select
-                              value={timer}
-                              disabled={booth.shooting}
-                              onChange={(e) => setTimer(Number(e.target.value))}
-                            >
-                              <option value={3}>3 seconds</option>
-                              <option value={5}>5 seconds</option>
-                              <option value={10}>10 seconds</option>
-                            </select>
-                          </label>
+                          <div
+                            className="studio-timer-dial"
+                            aria-label="Countdown delay"
+                          >
+                            <span>COUNTDOWN</span>
+                            {[3, 5].map((seconds) => (
+                              <button
+                                key={seconds}
+                                disabled={booth.shooting}
+                                aria-pressed={timer === seconds}
+                                onClick={() => setTimer(seconds)}
+                              >
+                                <strong>{seconds}</strong>
+                                <small>SEC</small>
+                              </button>
+                            ))}
+                          </div>
                           <label>
                             <input
                               type="checkbox"
@@ -665,7 +734,7 @@ export default function PhotoboothPage() {
                       {Array.from({ length: 4 }, (_, i) => (
                         <button
                           key={i}
-                          className={selected === i ? 'selected' : ''}
+                          className={`${selected === i ? 'selected' : ''} ${booth.shots[i] && completeShot(booth.shots[i], booth.solo) ? 'developed' : booth.shots[i] ? 'processing' : 'empty'}`}
                           onClick={() => setSelected(i)}
                           aria-label={`Select photo ${i + 1}`}
                         >
@@ -808,56 +877,108 @@ export default function PhotoboothPage() {
                     </fieldset>
                     <fieldset disabled={!mayEdit}>
                       <legend>02 · Pick the feeling</legend>
-                      <div className="studio-options">
-                        <button
-                          aria-pressed={booth.design.composition === 'split'}
-                          onClick={() => patch({ composition: 'split' })}
+                      <div className="studio-composition-heading">
+                        <div>
+                          <strong>Shared scene book</strong>
+                          <p>
+                            We remove both backgrounds on this device and
+                            compose you into one room.
+                          </p>
+                        </div>
+                        <span
+                          className="studio-removal-switch"
+                          aria-label="Background removal status"
                         >
-                          Original backgrounds
-                        </button>
-                        <button
-                          aria-pressed={booth.design.composition === 'backdrop'}
-                          onClick={() => patch({ composition: 'backdrop' })}
-                        >
-                          Together in one photo
-                        </button>
+                          <i
+                            className={
+                              booth.design.composition === 'backdrop'
+                                ? 'on'
+                                : ''
+                            }
+                          />
+                          {booth.design.composition === 'backdrop'
+                            ? 'REMOVAL ON'
+                            : 'ORIGINALS ON'}
+                        </span>
                       </div>
                       {booth.design.composition === 'backdrop' && (
                         <>
-                          <p>
-                            One shared backdrop. Move closer using your framing
-                            controls below. Best with good light and one person
-                            in each photo.
-                          </p>
-                          <div className="studio-swatches">
-                            {Object.entries(BACKDROPS).map(([name, color]) => (
+                          {sceneLoadError && (
+                            <div className="studio-scene-error" role="alert">
+                              <span>
+                                The photograph could not load, so the booth is
+                                using its matching fallback colour.
+                              </span>
                               <button
-                                key={name}
-                                style={{
-                                  background: color,
-                                  color:
-                                    name === 'midnight' ? '#fff8eb' : '#493039',
-                                }}
-                                aria-label={`${name} shared backdrop`}
-                                aria-pressed={
-                                  (booth.design.backdrop ?? 'linen') === name
-                                }
                                 onClick={() =>
-                                  patch({
-                                    backdrop: name as BoothDesign['backdrop'],
-                                  })
+                                  setSceneRetry((value) => value + 1)
                                 }
                               >
-                                {name}
+                                Retry scene
                               </button>
-                            ))}
-                          </div>
-                          <p>
-                            Free, on-device processing. The first use downloads
-                            the photo tool; your original photos are kept.
-                          </p>
+                            </div>
+                          )}
                         </>
                       )}
+                      <div className="studio-scene-book">
+                        {Object.values(BACKDROPS).map((scene, index) => (
+                          <button
+                            key={scene.id}
+                            className="studio-scene-card"
+                            aria-label={`${scene.name} shared background`}
+                            aria-pressed={
+                              booth.design.composition === 'backdrop' &&
+                              selectedScene.id === scene.id
+                            }
+                            onClick={() =>
+                              patch({
+                                composition: 'backdrop',
+                                backdrop: scene.id,
+                              })
+                            }
+                          >
+                            <span className="scene-number">
+                              {String(index + 1).padStart(2, '0')}
+                            </span>
+                            <img src={scene.thumbnail} alt="" loading="lazy" />
+                            <span className="scene-copy">
+                              <strong>{scene.name}</strong>
+                              <small>{scene.description}</small>
+                            </span>
+                            <Check
+                              className="scene-check"
+                              size={16}
+                              aria-hidden="true"
+                            />
+                          </button>
+                        ))}
+                        <button
+                          className="studio-scene-card original"
+                          aria-label="Keep both original photo backgrounds"
+                          aria-pressed={booth.design.composition === 'split'}
+                          onClick={() => patch({ composition: 'split' })}
+                        >
+                          <span className="scene-number">11</span>
+                          <span className="scene-original-preview">
+                            <Users size={28} />
+                          </span>
+                          <span className="scene-copy">
+                            <strong>Original Backgrounds</strong>
+                            <small>
+                              Keep each room exactly as it was photographed.
+                            </small>
+                          </span>
+                          <Check
+                            className="scene-check"
+                            size={16}
+                            aria-hidden="true"
+                          />
+                        </button>
+                      </div>
+                      <p className="studio-processing-note">
+                        Free on-device processing. Cutouts are cached while you
+                        try scenes; originals stay intact.
+                      </p>
                       <div className="studio-options">
                         {Object.keys(FILTERS).map((filter) => (
                           <button
@@ -1303,17 +1424,22 @@ export default function PhotoboothPage() {
               </section>
               <aside className="studio-print">
                 <span className="studio-eyebrow">YOUR LITTLE KEEPSAKE</span>
-                <div
-                  className={`studio-print-paper ${booth.design.layout === 'grid' ? 'postcard' : ''}`}
-                >
-                  {preview ? (
-                    <img
-                      src={preview}
-                      alt="Preview of your finished photobooth keepsake"
-                    />
-                  ) : (
-                    <p>Developing your preview…</p>
-                  )}
+                <div className="studio-output-slot" aria-hidden="true">
+                  <span>PRINT DELIVERY</span>
+                </div>
+                <div className="studio-paper-tray">
+                  <div
+                    className={`studio-print-paper ${booth.design.layout === 'grid' ? 'postcard' : ''}`}
+                  >
+                    {preview ? (
+                      <img
+                        src={preview}
+                        alt="Preview of your finished photobooth keepsake"
+                      />
+                    ) : (
+                      <p>Developing your preview…</p>
+                    )}
+                  </div>
                 </div>
                 <p>
                   {

@@ -4,7 +4,7 @@ import {
   logicalSize,
   THEMES,
   FILTERS,
-  BACKDROPS,
+  getBackdropScene,
   type Shot,
   type BoothDesign,
   type Photo,
@@ -17,6 +17,41 @@ async function load(src: string): Promise<HTMLImageElement> {
   image.src = src;
   await image.decode();
   return image;
+}
+const sceneImages = new Map<string, Promise<HTMLImageElement>>();
+async function loadScene(src: string) {
+  if (!sceneImages.has(src)) {
+    const request = load(src).catch((error) => {
+      sceneImages.delete(src);
+      throw error;
+    });
+    sceneImages.set(src, request);
+  }
+  return sceneImages.get(src)!;
+}
+
+function drawCover(
+  ctx: CanvasRenderingContext2D,
+  image: HTMLImageElement,
+  rect: { x: number; y: number; w: number; h: number },
+) {
+  const scale = Math.max(
+    rect.w / image.naturalWidth,
+    rect.h / image.naturalHeight,
+  );
+  const sourceWidth = rect.w / scale;
+  const sourceHeight = rect.h / scale;
+  ctx.drawImage(
+    image,
+    (image.naturalWidth - sourceWidth) / 2,
+    (image.naturalHeight - sourceHeight) / 2,
+    sourceWidth,
+    sourceHeight,
+    rect.x,
+    rect.y,
+    rect.w,
+    rect.h,
+  );
 }
 /** Preview, PNG and print sheets all use this one renderer. */
 export async function renderBooth(
@@ -44,6 +79,8 @@ export async function renderBooth(
   ctx.fillText('TWO PLACES. ONE LITTLE MEMORY.', size.width / 2, 73);
   const images = new Map<string, HTMLImageElement>();
   const cutouts = new Map<string, HTMLCanvasElement>();
+  const backdrop = getBackdropScene(design.backdrop);
+  let backdropImage: HTMLImageElement | null = null;
   await Promise.all(
     shots
       .flatMap((s) => [s.left, s.right])
@@ -51,6 +88,7 @@ export async function renderBooth(
       .map(async (p) => images.set(p.id, await load(p.src))),
   );
   if (design.composition === 'backdrop') {
+    backdropImage = await loadScene(backdrop.image).catch(() => null);
     for (const [id, image] of images)
       cutouts.set(id, await personCutout(image));
   }
@@ -86,6 +124,24 @@ export async function renderBooth(
         ctx.beginPath();
         ctx.rect(rect.x, rect.y, rect.w, rect.h);
         ctx.clip();
+        ctx.save();
+        ctx.filter = 'blur(6px)';
+        ctx.fillStyle =
+          backdrop.tone === 'dark'
+            ? 'rgba(15, 9, 16, .42)'
+            : 'rgba(55, 36, 39, .22)';
+        ctx.beginPath();
+        ctx.ellipse(
+          px + w / 2,
+          Math.min(rect.y + rect.h - 5, py + h - 2),
+          Math.max(18, w * 0.22),
+          Math.max(5, h * 0.018),
+          0,
+          0,
+          Math.PI * 2,
+        );
+        ctx.fill();
+        ctx.restore();
         ctx.filter = FILTERS[design.filter];
         if (photo.crop.mirror) {
           ctx.translate(px * 2 + w, 0);
@@ -115,8 +171,9 @@ export async function renderBooth(
       ctx.restore();
     };
     if (design.composition === 'backdrop') {
-      ctx.fillStyle = BACKDROPS[design.backdrop ?? 'linen'] ?? BACKDROPS.linen;
+      ctx.fillStyle = backdrop.fallback;
       ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+      if (backdropImage) drawCover(ctx, backdropImage, rect);
     }
     draw(shot?.left, rect.x, solo ? rect.w : rect.w / 2);
     if (!solo) draw(shot?.right, rect.x + rect.w / 2, rect.w / 2);
