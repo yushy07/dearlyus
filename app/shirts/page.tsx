@@ -92,40 +92,45 @@ export default function ShirtsStudioPage() {
     if (shirt === 'B') { const next = stickersB.filter((_, i) => i !== idx); setStickersB(next); updateDesign({ stickersB: next }); }
   };
 
-  const handleExportPNG = () => {
+  const buildShirtsCanvas = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 4500;
+    canvas.height = 3000;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Artwork rendering is unavailable in this browser.');
+    ctx.scale(3.75, 3.75);
+    ctx.fillStyle = '#FAF8F5';
+    ctx.fillRect(0, 0, 1200, 800);
+
+    ctx.fillStyle = '#17181C';
+    ctx.font = 'bold 28px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('DEARLY US · MATCHING COUPLE SHIRTS', 600, 60);
+
+    renderShirtSilhouette(ctx, 320, 420, colorA.hex, colorA.textHex, textA, stickersA, partnerA);
+    renderShirtSilhouette(ctx, 880, 420, colorB.hex, colorB.textHex, textB, stickersB, partnerB);
+
+    ctx.fillStyle = '#8B8E98';
+    ctx.font = '13px monospace';
+    ctx.fillText(`DESIGNED BY ${partnerA.toUpperCase()} & ${partnerB.toUpperCase()} · [${viewSide} VIEW]`, 600, 750);
+    return canvas;
+  };
+
+  const canvasBlob = (canvas: HTMLCanvasElement) =>
+    new Promise<Blob>((resolve, reject) =>
+      canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error('Could not create the shirt artwork.')), 'image/png'),
+    );
+
+  const handleExportPNG = async () => {
     sounds.playCelebration();
     setConfettiActive(true);
-
-    if (typeof document !== 'undefined') {
-      const canvas = document.createElement('canvas');
-      canvas.width = 4500;
-      canvas.height = 3000;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.scale(3.75, 3.75);
-        ctx.fillStyle = '#FAF8F5';
-        ctx.fillRect(0, 0, 1200, 800);
-
-        ctx.fillStyle = '#17181C';
-        ctx.font = 'bold 28px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('DEARLY US · MATCHING COUPLE SHIRTS', 600, 60);
-
-        // Render Shirt A
-        renderShirtSilhouette(ctx, 320, 420, colorA.hex, colorA.textHex, textA, stickersA, partnerA);
-        // Render Shirt B
-        renderShirtSilhouette(ctx, 880, 420, colorB.hex, colorB.textHex, textB, stickersB, partnerB);
-
-        ctx.fillStyle = '#8B8E98';
-        ctx.font = '13px monospace';
-        ctx.fillText(`DESIGNED BY ${partnerA.toUpperCase()} & ${partnerB.toUpperCase()} · [${viewSide} VIEW]`, 600, 750);
-
-        const link = document.createElement('a');
-        link.download = `dearly-us-matching-shirts-${Date.now()}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-      }
-    }
+    const canvas = buildShirtsCanvas();
+    const blob = await canvasBlob(canvas);
+    const link = document.createElement('a');
+    link.download = `dearly-us-matching-shirts-${Date.now()}.png`;
+    link.href = URL.createObjectURL(blob);
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
     setTimeout(() => setConfettiActive(false), 3000);
   };
 
@@ -193,9 +198,11 @@ export default function ShirtsStudioPage() {
     if (keepsakeSaved || keepsakeSaving) return;
     sounds.playCelebration();
     try {
+      const artwork = await canvasBlob(buildShirtsCanvas());
       await saveKeepsake({
         kind: 'activity',
         title: `Matching Couple Shirts · ${textA} / ${textB}`,
+        file: artwork,
         activityPath: '/shirts',
         caption: `Custom DIY shirt designs created in paired mini studio.`,
         metadata: {
