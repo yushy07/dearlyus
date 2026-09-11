@@ -583,9 +583,10 @@ export default function LetterPage() {
           >
             <div style={{ maxWidth: '320px', margin: '0 auto 24px' }}>
               <WaxSealEnvelope
-                stampEmoji={stamp}
-                isUnlocked={false}
-                title={letterTitle}
+                sender={partnerA}
+                recipient={partnerB}
+                sealDate={`Sealed until ${unlockDate}`}
+                letterContent={<p style={{ whiteSpace: 'pre-wrap' }}>{letterContent}</p>}
               />
             </div>
 

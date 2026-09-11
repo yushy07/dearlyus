@@ -238,6 +238,42 @@
   overflow-y: auto;
 }
 
+.keepsakeSummaryCard {
+  display: grid;
+  gap: 0.45rem;
+  padding: 1.1rem;
+  border: 1px solid rgba(121, 76, 88, 0.2);
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(255, 252, 247, 0.98), rgba(246, 232, 228, 0.9));
+  box-shadow: 0 14px 34px rgba(74, 40, 53, 0.1);
+}
+
+.keepsakeSummaryCard > span,
+.keepsakeSummaryCard > small {
+  color: #9b6371;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.keepsakeSummaryCard h3,
+.keepsakeSummaryCard p {
+  margin: 0;
+}
+
+.keepsakeSummaryCard h3 {
+  color: #4a2835;
+  font-family: Georgia, serif;
+  font-size: 1.08rem;
+}
+
+.keepsakeSummaryCard p {
+  color: #846671;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
 @media (min-width: 1280px) {
   .keepsakeRailVisible {
     display: block;

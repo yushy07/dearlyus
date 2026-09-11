@@ -23,12 +23,15 @@ import styles from './ActivityShell.module.css';
 export type ActivityStage = 'invite' | 'ready' | 'play' | 'remember';
 
 export interface ActivityShellProps {
-  activityKey: string;
+  activityKey?: string;
   activitySlug?: string;
-  title: string;
+  title?: string;
   subtitle?: string;
+  activityTitle?: string;
+  activitySubtitle?: string;
   badge?: string;
   stage?: ActivityStage;
+  currentStage?: string;
   roomCode?: string;
   isSoloDemo?: boolean;
   partnerName?: string;
@@ -54,7 +57,17 @@ export interface ActivityShellProps {
   staleWarning?: string | null;
   cupidotPhase?: ActivityLifecyclePhase;
   cupidotNote?: string;
+  guidancePhase?: string;
+  guidancePrivacyNote?: string;
   keepsakeRail?: React.ReactNode;
+  keepsakeSummary?: {
+    kind?: string;
+    title: string;
+    subtitle?: string;
+    badge?: string;
+  };
+  isHost?: boolean;
+  stageIndicator?: string;
   children: React.ReactNode;
   className?: string;
 }
@@ -69,10 +82,13 @@ const STAGES: { id: ActivityStage; label: string; number: number }[] = [
 export function ActivityShell({
   activityKey,
   activitySlug,
-  title,
-  subtitle,
+  title: titleProp,
+  subtitle: subtitleProp,
+  activityTitle,
+  activitySubtitle,
   badge,
-  stage = 'play',
+  stage: stageProp,
+  currentStage,
   roomCode,
   isSoloDemo = false,
   partnerName = 'Partner',
@@ -83,16 +99,37 @@ export function ActivityShell({
   onResume,
   onPause,
   staleWarning,
-  cupidotPhase = 'private',
+  cupidotPhase,
   cupidotNote,
-  keepsakeRail,
+  guidancePhase,
+  guidancePrivacyNote,
+  keepsakeRail: keepsakeRailProp,
+  keepsakeSummary,
   children,
   className = '',
 }: ActivityShellProps) {
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [showCupidot, setShowCupidot] = useState(false);
 
-  const slug = activitySlug || activityKey;
+  const title = titleProp || activityTitle || 'Dearly Us Activity';
+  const subtitle = subtitleProp || activitySubtitle;
+  const key = activityKey || activitySlug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const slug = activitySlug || key;
+  const candidateStage = stageProp || currentStage;
+  const stage: ActivityStage =
+    candidateStage === 'invite' || candidateStage === 'ready' || candidateStage === 'remember'
+      ? candidateStage
+      : 'play';
+  const cupidotPhaseValue = (cupidotPhase || guidancePhase || 'private') as ActivityLifecyclePhase;
+  const cupidotNoteValue = cupidotNote || guidancePrivacyNote;
+  const keepsakeRail = keepsakeRailProp || (keepsakeSummary ? (
+    <div className={styles.keepsakeSummaryCard}>
+      {keepsakeSummary.badge && <span>{keepsakeSummary.badge}</span>}
+      <small>{keepsakeSummary.kind || 'Keepsake'}</small>
+      <h3>{keepsakeSummary.title}</h3>
+      {keepsakeSummary.subtitle && <p>{keepsakeSummary.subtitle}</p>}
+    </div>
+  ) : null);
   const isReconnecting =
     recoveryState === 'reconnecting' ||
     recoveryState === 'replaying_missed_events';
@@ -136,7 +173,7 @@ export function ActivityShell({
   };
 
   return (
-    <div className={`${styles.shell} ${className}`} id={`activity-shell-${activityKey}`}>
+    <div className={`${styles.shell} ${className}`} id={`activity-shell-${key}`}>
       {/* Top Bar */}
       <header className={styles.topBar}>
         <Link href="/activity" className={styles.backLink} title="Return to activities catalogue">
@@ -282,9 +319,9 @@ export function ActivityShell({
         <div style={{ padding: '0.75rem 1.5rem', background: 'rgba(255, 248, 250, 0.9)' }}>
           <CupidotActivityGuidance
             activityName={title}
-            phase={cupidotPhase}
+            phase={cupidotPhaseValue}
             partnerName={partnerName}
-            privacyNote={cupidotNote || 'Your inputs remain completely private until both partner answers are locked in.'}
+            privacyNote={cupidotNoteValue || 'Your inputs remain completely private until both partner answers are locked in.'}
             isDemoMode={isSoloDemo}
           />
         </div>

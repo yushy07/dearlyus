@@ -15,6 +15,10 @@ import type {
   StandardActivityEvent,
 } from '@/lib/activity-adapters';
 import { isSupabaseConfigured } from '@/lib/supabase';
+import { useActiveRoom } from '@/contexts/ActiveRoomContext';
+import { useActivitySession } from '@/contexts/ActivitySessionContext';
+import { useSupabaseSession } from '@/contexts/SupabaseSessionContext';
+import { useRoomPresence } from '@/contexts/PresenceContext';
 
 export interface UseActivityRuntimeOptions<TSnapshot = any> {
   sessionId?: string | null;
@@ -30,6 +34,10 @@ export interface UseActivityRuntimeOptions<TSnapshot = any> {
 export function useActivityRuntime<
   TSnapshot extends Record<string, unknown> = Record<string, unknown>,
 >(options: UseActivityRuntimeOptions<TSnapshot>) {
+  const activeRoom = useActiveRoom();
+  const sharedSession = useActivitySession();
+  const { user } = useSupabaseSession();
+  const presence = useRoomPresence();
   const {
     sessionId: rawSessionId,
     activityType,
@@ -41,12 +49,18 @@ export function useActivityRuntime<
     enabled = true,
   } = options;
 
-  const hasRealRoom = Boolean(
-    roomId && roomId !== 'local' && roomId !== 'mock-room',
-  );
-  const sessionId =
-    rawSessionId ||
-    (hasRealRoom ? `room-${roomId}-${activityType}` : 'local-session');
+  const isUuid = (value?: string | null) =>
+    Boolean(value && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value));
+  const contextSessionMatches =
+    sharedSession.activityType === activityType && isUuid(sharedSession.sessionId);
+  const resolvedRoomId = activeRoom.room?.id || (isUuid(roomId) ? roomId! : null);
+  const resolvedSessionId = contextSessionMatches
+    ? sharedSession.sessionId!
+    : isUuid(rawSessionId)
+      ? rawSessionId!
+      : null;
+  const hasRealRoom = Boolean(resolvedRoomId && resolvedSessionId);
+  const sessionId = resolvedSessionId || rawSessionId || `local-${activityType}`;
   // Activity setup is intentionally captured once. Pages pass inline option objects,
   // and treating those as a runtime dependency would reset a live local session on
   // every render.
@@ -60,7 +74,7 @@ export function useActivityRuntime<
     sessionStorage.setItem(key, created);
     return created;
   });
-  const userId = rawUserId || localUserId;
+  const userId = user?.id || rawUserId || localUserId;
 
   const adapter = (allActivityAdapters[activityType] ||
     allActivityAdapters.quiz) as RealtimeActivityAdapter<TSnapshot>;
@@ -88,13 +102,13 @@ export function useActivityRuntime<
       });
     }
 
-    const sbTransport = new SupabaseActivityTransport(roomId || '');
+    const sbTransport = new SupabaseActivityTransport(resolvedRoomId || '');
     return sbTransport;
   }, [
     customTransport,
     transportMode,
     sessionId,
-    roomId,
+    resolvedRoomId,
     userId,
     activityType,
     hasRealRoom,
@@ -104,7 +118,7 @@ export function useActivityRuntime<
 
   const [snapshot, setSnapshot] = useState<TSnapshot>(() =>
     adapter.createInitialSnapshot({
-      roomCode: roomId || 'room',
+      roomCode: activeRoom.room?.code || roomId || 'room',
       userId,
       options: initialOptionsRef.current,
     }),
@@ -127,7 +141,7 @@ export function useActivityRuntime<
       adapter,
       transport,
       initialInput: {
-        roomCode: roomId || 'room',
+        roomCode: activeRoom.room?.code || roomId || 'room',
         userId,
         options: initialOptionsRef.current,
       },
@@ -156,7 +170,7 @@ export function useActivityRuntime<
       runtime.destroy();
       runtimeRef.current = null;
     };
-  }, [enabled, sessionId, activityType, userId, transport, adapter, roomId]);
+  }, [enabled, sessionId, activityType, userId, transport, adapter, roomId, activeRoom.room?.code]);
 
   const sendEvent = useCallback(async (type: string, payload: unknown) => {
     if (!runtimeRef.current) return null;
@@ -167,6 +181,18 @@ export function useActivityRuntime<
     if (!runtimeRef.current) return;
     runtimeRef.current.sendTransient(event, payload);
   }, []);
+
+  const dispatch = useCallback(
+    (event: { type: string; payload?: unknown }) =>
+      sendEvent(event.type, event.payload ?? {}),
+    [sendEvent],
+  );
+
+  const partnerPresence: 'offline' | 'online' | 'ready' | 'choosing' | 'writing' | 'drawing' | 'locked' = presence.partnerOnline
+    ? presence.partnerInteraction === 'idle'
+      ? 'online'
+      : presence.partnerInteraction
+    : 'offline';
 
   const requestRecovery = useCallback(async (afterSequence?: number) => {
     if (!runtimeRef.current) return;
@@ -204,11 +230,18 @@ export function useActivityRuntime<
     transportName: transport.name,
     currentUserId: userId,
     sendEvent,
+    dispatch,
     sendTransient,
     requestRecovery,
     completeActivity,
     setPaused,
     subscribeTransient,
     privateVault: transport.privateVault,
+    roomId: resolvedRoomId || undefined,
+    roomCode: activeRoom.room?.code || null,
+    sessionId: resolvedSessionId,
+    isHost: activeRoom.isHost,
+    partnerPresence,
+    partnerOnline: presence.partnerOnline,
   };
 }

@@ -147,7 +147,7 @@ export default function DateHostPage() {
   const { saveKeepsake, saving: keepsakeSaving } = useKeepsakeWriter();
 
   const [actStage, setActStage] = useState<'checkin' | 'dilemmas' | 'closing'>('checkin');
-  const [selectedTone, setSelectedTone] = useState<string>('playful');
+  const [selectedTone, setSelectedTone] = useState<'playful' | 'romantic' | 'deep' | 'spicy'>('playful');
   const [scenarios, setScenarios] = useState<HostScenario[]>(CURATED_SCENARIOS.playful);
   const [currentIdx, setCurrentIdx] = useState(0);
 
@@ -182,12 +182,12 @@ export default function DateHostPage() {
       setCurrentIdx(snap.promptIndex);
     }
     if (snap?.theme && CURATED_SCENARIOS[snap.theme] && snap.theme !== selectedTone) {
-      setSelectedTone(snap.theme);
+      setSelectedTone(snap.theme as 'playful' | 'romantic' | 'deep' | 'spicy');
       setScenarios(CURATED_SCENARIOS[snap.theme]);
     }
   }, [runtime.snapshot, scenarios.length, selectedTone]);
 
-  const handleSelectTone = (toneId: string) => {
+  const handleSelectTone = (toneId: 'playful' | 'romantic' | 'deep' | 'spicy') => {
     sounds.playPop();
     setSelectedTone(toneId);
     setScenarios(CURATED_SCENARIOS[toneId] || CURATED_SCENARIOS.playful);
@@ -432,7 +432,7 @@ export default function DateHostPage() {
                 return (
                   <button
                     key={t.id}
-                    onClick={() => handleSelectTone(t.id)}
+                    onClick={() => handleSelectTone(t.id as 'playful' | 'romantic' | 'deep' | 'spicy')}
                     style={{
                       textAlign: 'left',
                       padding: '18px',

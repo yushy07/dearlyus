@@ -16,6 +16,7 @@ export interface SaveKeepsakeInput {
   file?: File | Blob;
   activityPath?: string;
   caption?: string;
+  subtitle?: string;
   metadata?: Record<string, unknown>;
 }
 
@@ -41,7 +42,7 @@ export function useKeepsakeWriter() {
           file: input.file,
           activityPath: input.activityPath,
           sessionId: sessionId || undefined,
-          caption: input.caption,
+          caption: input.caption ?? input.subtitle,
           metadata: input.metadata,
         });
         await refresh();
@@ -104,6 +105,7 @@ export function useKeepsakeWriter() {
     removeKeepsake,
     saveCapsule,
     saving,
+    isSaving: saving,
     deleting,
     error,
     canSaveKeepsake: Boolean(space?.id),
