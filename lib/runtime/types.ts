@@ -52,6 +52,8 @@ export interface ActivityTransport<TSnapshot = any> {
     snapshot: TSnapshot;
     events: StandardActivityEvent[];
     lastSequence?: number;
+    revision?: number;
+    snapshotSequence?: number;
   } | null>;
   /** Local transports may retain the last reduced snapshot for deterministic recovery. */
   updateSnapshot?: (snapshot: TSnapshot, sequence: number) => void;

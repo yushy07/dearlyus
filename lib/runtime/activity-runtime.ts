@@ -144,19 +144,27 @@ export function createActivityRuntime<
       if (recovered) {
         if (recovered.snapshot && afterSequence === 0) {
           currentSnapshot = recovered.snapshot;
-          const recoveredSequence = Number(
-            recovered.lastSequence ??
+          lastSequence = Number(
+            recovered.snapshotSequence ??
               (recovered.snapshot as any).lastSequence ??
               0,
           );
-          lastSequence = Math.max(lastSequence, recoveredSequence);
+          revision = Number(recovered.revision ?? 1);
         }
         if (Array.isArray(recovered.events)) {
           const sorted = [...recovered.events].sort(
             (a, b) => a.sequence - b.sequence,
           );
-          sorted.forEach((evt) => dispatchEvent(evt));
+          sorted.forEach((evt) => {
+            if (evt.type === 'activity_started') {
+              seenEventIds.add(evt.id);
+              lastSequence = Math.max(lastSequence, evt.sequence);
+              return;
+            }
+            dispatchEvent(evt);
+          });
         }
+        listeners.forEach((listener) => listener(currentSnapshot));
       }
       setRecoveryState('recovered');
     } catch (err) {

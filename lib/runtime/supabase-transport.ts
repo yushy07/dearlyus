@@ -172,6 +172,8 @@ export class SupabaseActivityTransport implements ActivityTransport {
     snapshot: any;
     events: StandardActivityEvent[];
     lastSequence?: number;
+    revision?: number;
+    snapshotSequence?: number;
   } | null> {
     if (!this.sessionId) return null;
     this.notifyRecoveryState('loading_snapshot');
@@ -201,6 +203,8 @@ export class SupabaseActivityTransport implements ActivityTransport {
         snapshot: recovery.snapshot,
         events,
         lastSequence: Number(recovery.lastSequence ?? 0),
+        revision: Number(recovery.revision ?? 1),
+        snapshotSequence: 0,
       };
     } catch (err) {
       this.notifyRecoveryState('unrecoverable_error');

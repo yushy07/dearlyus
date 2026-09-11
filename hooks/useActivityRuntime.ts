@@ -161,7 +161,7 @@ export function useActivityRuntime<
       setRecoveryState(state);
     });
 
-    void transport.connect(sessionId, userId);
+    void transport.connect(sessionId, userId).then(() => runtime.requestRecovery(0));
 
     return () => {
       unbindSubscribe();

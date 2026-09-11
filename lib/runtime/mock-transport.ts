@@ -246,6 +246,8 @@ export class MockActivityTransport implements ActivityTransport {
     snapshot: any;
     events: StandardActivityEvent[];
     lastSequence?: number;
+    revision?: number;
+    snapshotSequence?: number;
   } | null> {
     if (!this.sessionId) return null;
     this.notifyRecoveryState('replaying_missed_events');
@@ -267,6 +269,8 @@ export class MockActivityTransport implements ActivityTransport {
       snapshot: bus.snapshot,
       events: missed,
       lastSequence: bus.lastSequence,
+      revision: bus.revision,
+      snapshotSequence: bus.snapshotSequence,
     };
   }
 
