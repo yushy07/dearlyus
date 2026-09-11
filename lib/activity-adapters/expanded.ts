@@ -159,7 +159,7 @@ export const arcadeActivityDefinition: ActivityDefinition<ArcadeSnapshot, Realti
       schemaVersion: 1,
       status: 'active',
       gameId: (opts.gameId as any) || 'heart-jump',
-      roundSeed: Math.floor(Math.random() * 10000),
+      roundSeed: Number(opts.roundSeed || 0),
       playerAScore: 0,
       playerBScore: 0,
       roundNumber: 1,
@@ -176,7 +176,18 @@ export const arcadeActivityDefinition: ActivityDefinition<ArcadeSnapshot, Realti
     const p = (event.payload as Record<string, unknown>) || {};
     switch (event.type) {
       case 'arcade_game_select':
-        return { ...snapshot, gameId: p.gameId as any, roundSeed: Math.floor(Math.random() * 10000) };
+        return { ...snapshot, gameId: p.gameId as any };
+      case 'arcade_round_start':
+        return {
+          ...snapshot,
+          gameId: (p.gameId as ArcadeSnapshot['gameId']) || snapshot.gameId,
+          roundSeed: Number(p.roundSeed || snapshot.roundSeed),
+          playerAScore: 0,
+          playerBScore: 0,
+          winner: null,
+          status: 'active',
+          completed: false,
+        };
       case 'arcade_score_update':
         return {
           ...snapshot,
@@ -194,7 +205,7 @@ export const arcadeActivityDefinition: ActivityDefinition<ArcadeSnapshot, Realti
         return {
           ...snapshot,
           roundNumber: snapshot.roundNumber + 1,
-          roundSeed: Math.floor(Math.random() * 10000),
+          roundSeed: Number(p.roundSeed || snapshot.roundSeed),
           playerAScore: 0,
           playerBScore: 0,
           winner: null,

@@ -7,6 +7,8 @@ import { CoupleNameBar, ActivityShell } from '@/components/shared';
 import { sounds } from '@/lib/sound';
 import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
+import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
+import { loadActivityRecords, upsertActivityRecord } from '@/lib/activity-records';
 
 export type BoardStage = 'someday' | 'exploring' | 'planning' | 'done';
 
@@ -40,6 +42,7 @@ const PRESET_ELEMENTS: Omit<VisionItem, 'stage'>[] = [
 
 export default function FuturePage() {
   const { partnerA, partnerB, roomCode } = useCoupleProfile();
+  const { space } = useCoupleSpace();
   const { saveKeepsake, saving: keepsakeSaving } = useKeepsakeWriter();
 
   const [items, setItems] = useState<VisionItem[]>([
@@ -64,6 +67,15 @@ export default function FuturePage() {
   });
 
   useEffect(() => {
+    if (space?.id) {
+      void loadActivityRecords<{ items?: VisionItem[] }>(space.id, 'future_plan')
+        .then((records) => {
+          const shared = records.find((record) => record.key === 'main-board');
+          if (shared?.payload.items?.length) setItems(shared.payload.items);
+        })
+        .catch((error) => console.error('Failed to restore shared future board:', error));
+      return;
+    }
     try {
       const savedRaw = localStorage.getItem('dearly_future_vision_board');
       if (savedRaw) {
@@ -73,10 +85,20 @@ export default function FuturePage() {
         }
       }
     } catch {}
-  }, []);
+  }, [space?.id]);
 
   const persistItems = (newItems: VisionItem[]) => {
     setItems(newItems);
+    if (space?.id) {
+      void upsertActivityRecord({
+        coupleId: space.id,
+        kind: 'future_plan',
+        key: 'main-board',
+        title: 'Our Future Board',
+        payload: { items: newItems },
+      }).catch((error) => console.error('Failed to sync shared future board:', error));
+      return;
+    }
     try {
       localStorage.setItem('dearly_future_vision_board', JSON.stringify(newItems));
     } catch {}
@@ -86,7 +108,7 @@ export default function FuturePage() {
     sounds.playPop();
     const updated = items.map((it) => (it.id === id ? { ...it, stage: newStage } : it));
     persistItems(updated);
-    void runtime.sendEvent('future_move_stage', { itemId: id, newStage });
+    void runtime.sendEvent('future_dream_move', { id, column: newStage });
   };
 
   const handleAddPreset = (el: Omit<VisionItem, 'stage'>) => {
@@ -100,6 +122,7 @@ export default function FuturePage() {
     };
     const updated = [...items, newItem];
     persistItems(updated);
+    void runtime.sendEvent('future_dream_add', { dream: newItem });
   };
 
   const handleAddCustom = (e: React.FormEvent) => {
@@ -116,6 +139,7 @@ export default function FuturePage() {
     };
     const updated = [...items, newItem];
     persistItems(updated);
+    void runtime.sendEvent('future_dream_add', { dream: newItem });
     setCustomGoal('');
   };
 
@@ -123,6 +147,7 @@ export default function FuturePage() {
     sounds.playPop();
     const updated = items.filter((it) => it.id !== id);
     persistItems(updated);
+    void runtime.sendEvent('future_dream_archive', { id });
   };
 
   const handleSaveBoardKeepsake = async () => {

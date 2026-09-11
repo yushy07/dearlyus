@@ -133,21 +133,35 @@ export default function ArcadePage() {
   const livesRef = useRef(3);
   const shakeRef = useRef(0);
   const flashRef = useRef(0);
+  const randomStateRef = useRef(1);
+  const random = useCallback(() => {
+    randomStateRef.current = (randomStateRef.current * 1664525 + 1013904223) >>> 0;
+    return randomStateRef.current / 4294967296;
+  }, []);
 
   // Load high scores
   useEffect(() => {
+    if (runtime.transportName !== 'mock') return;
     try {
       const saved = localStorage.getItem('dearly_arcade_high_scores');
       if (saved) {
         setHighScores(JSON.parse(saved));
       }
     } catch {}
-  }, []);
+  }, [runtime.transportName]);
+
+  useEffect(() => {
+    if (runtime.transportName === 'mock') return;
+    const snap = runtime.snapshot as { roundSeed?: number; playerAScore?: number; playerBScore?: number };
+    if (snap.roundSeed) randomStateRef.current = snap.roundSeed;
+    setActivePlayer(runtime.isHost ? 'a' : 'b');
+    setHighScores({ a: Number(snap.playerAScore || 0), b: Number(snap.playerBScore || 0) });
+  }, [runtime.snapshot, runtime.transportName, runtime.isHost]);
 
   const spawnParticles = (x: number, y: number, color: string, count = 12) => {
     for (let i = 0; i < count; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = 1.5 + Math.random() * 4.5;
+      const angle = random() * Math.PI * 2;
+      const speed = 1.5 + random() * 4.5;
       particlesRef.current.push({
         x,
         y,
@@ -155,8 +169,8 @@ export default function ArcadePage() {
         vy: Math.sin(angle) * speed,
         color,
         alpha: 1,
-        size: 2.5 + Math.random() * 4,
-        decay: 0.025 + Math.random() * 0.03,
+        size: 2.5 + random() * 4,
+        decay: 0.025 + random() * 0.03,
       });
     }
   };
@@ -182,6 +196,13 @@ export default function ArcadePage() {
     if (soundEnabled) sounds.playCelebration();
     const final = scoreRef.current;
     setScore(final);
+    void runtime.sendEvent('arcade_score_update', {
+      scoreA: activePlayer === 'a' ? final : highScores.a,
+      scoreB: activePlayer === 'b' ? final : highScores.b,
+      player: activePlayer,
+      frameCount: frameCountRef.current,
+      seed: randomStateRef.current,
+    });
 
     setHighScores((prev) => {
       if (final > prev[activePlayer]) {
@@ -189,7 +210,7 @@ export default function ArcadePage() {
         setConfettiActive(true);
         setTimeout(() => setConfettiActive(false), 3500);
         const updated = { ...prev, [activePlayer]: final };
-        try {
+        if (runtime.transportName === 'mock') try {
           localStorage.setItem(
             'dearly_arcade_high_scores',
             JSON.stringify(updated),
@@ -199,7 +220,7 @@ export default function ArcadePage() {
       }
       return prev;
     });
-  }, [activePlayer, soundEnabled]);
+  }, [activePlayer, soundEnabled, highScores.a, highScores.b, runtime]);
 
   // Vector Drawing Helpers for rich game visuals
   const drawHeart = (
@@ -390,8 +411,8 @@ export default function ArcadePage() {
     // Screen shake transform
     ctx.save();
     if (shakeRef.current > 0) {
-      const sx = (Math.random() - 0.5) * shakeRef.current;
-      const sy = (Math.random() - 0.5) * shakeRef.current;
+      const sx = (random() - 0.5) * shakeRef.current;
+      const sy = (random() - 0.5) * shakeRef.current;
       ctx.translate(sx, sy);
       shakeRef.current -= 0.8;
       if (shakeRef.current < 0) shakeRef.current = 0;
@@ -508,7 +529,7 @@ export default function ArcadePage() {
       if (frame % 95 === 0) {
         collectiblesRef.current.push({
           x: canvas.width + 20,
-          y: groundY - 60 - Math.random() * 55,
+          y: groundY - 60 - random() * 55,
           size: 14,
           speed: 5.2,
           rot: 0,
@@ -621,12 +642,12 @@ export default function ArcadePage() {
       // Spawn Meteors
       if (frame % 34 === 0) {
         obstaclesRef.current.push({
-          x: 25 + Math.random() * (canvas.width - 50),
+          x: 25 + random() * (canvas.width - 50),
           y: -30,
           width: 26,
           height: 26,
-          speed: 4.2 + Math.random() * 2.8,
-          rot: Math.random() * Math.PI,
+          speed: 4.2 + random() * 2.8,
+          rot: random() * Math.PI,
           type: 'meteor',
         });
       }
@@ -634,7 +655,7 @@ export default function ArcadePage() {
       // Spawn Floating Energy Hearts
       if (frame % 65 === 0) {
         collectiblesRef.current.push({
-          x: 30 + Math.random() * (canvas.width - 60),
+          x: 30 + random() * (canvas.width - 60),
           y: -25,
           size: 16,
           speed: 3.4,
@@ -739,12 +760,12 @@ export default function ArcadePage() {
 
       // Spawn falling Treats and Spiked Bombs
       if (frame % 30 === 0) {
-        const isHazard = Math.random() < 0.22;
+        const isHazard = random() < 0.22;
         collectiblesRef.current.push({
-          x: 30 + Math.random() * (canvas.width - 60),
+          x: 30 + random() * (canvas.width - 60),
           y: -25,
           size: 16,
-          speed: 3.5 + Math.random() * 2.5,
+          speed: 3.5 + random() * 2.5,
           rot: 0,
           isHazard,
           type: isHazard ? 'bomb' : 'berry',
@@ -911,6 +932,16 @@ export default function ArcadePage() {
     shakeRef.current = 0;
     flashRef.current = 0;
     setIsNewRecord(false);
+
+    const gameId = activeGame === 'jump' ? 'heart-jump' : activeGame === 'dodge' ? 'asteroid' : 'berry-catch';
+    const existingSeed = Number((runtime.snapshot as { roundSeed?: number }).roundSeed || 0);
+    const seed = runtime.transportName !== 'mock' && !runtime.isHost && existingSeed
+      ? existingSeed
+      : crypto.getRandomValues(new Uint32Array(1))[0] || 1;
+    randomStateRef.current = seed;
+    if (runtime.transportName === 'mock' || runtime.isHost || !existingSeed) {
+      void runtime.sendEvent('arcade_round_start', { gameId, roundSeed: seed });
+    }
 
     playerRef.current = {
       x: activeGame === 'jump' ? 70 : 280,
