@@ -18,6 +18,7 @@ import { useAiConsent } from '@/lib/ai-consent';
 import { generateAdaptiveQuestion } from '@/lib/gemini';
 import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
+import { usePrivateAnswers } from '@/hooks/usePrivateAnswers';
 
 interface HostScenario {
   id: number;
@@ -175,6 +176,89 @@ export default function DateHostPage() {
   });
 
   const scenario = scenarios[currentIdx] || scenarios[0];
+  const isLivePair = runtime.transportName !== 'mock';
+  const privateChoices = usePrivateAnswers({
+    roundNumber: currentIdx,
+    localRuntime: runtime,
+  });
+
+  const completeReveal = (pickA: number, pickB: number) => {
+    if (revealed) return;
+    setPartnerAPick(pickA);
+    setPartnerBPick(pickB);
+    setRevealed(true);
+    void runtime.sendEvent('host_speaker_switch', { activeSpeaker: partnerB });
+
+    const isMatch = pickA === pickB;
+    if (isMatch) {
+      sounds.playCelebration();
+      setConfettiActive(true);
+      setBotState('celebration');
+      setTimeout(() => setConfettiActive(false), 2500);
+      setTimeout(() => setBotState('love'), 1800);
+    } else {
+      sounds.playCountdownBeep(true);
+      setBotState('talking');
+      setTimeout(() => setBotState('happy'), 2000);
+    }
+
+    const currentRoundData = {
+      question: scenario.question,
+      answerA: scenario.options[pickA],
+      answerB: scenario.options[pickB],
+      agreement: isMatch,
+    };
+    setSessionHistory((history) =>
+      history.some((entry) => entry.question === currentRoundData.question)
+        ? history
+        : [...history, currentRoundData],
+    );
+    const updatedHistory = sessionHistory.some((entry) => entry.question === currentRoundData.question)
+      ? sessionHistory
+      : [...sessionHistory, currentRoundData];
+    if (hasAiConsent) {
+      void generateAdaptiveQuestion({
+        partnerA: { name: partnerA, answer: scenario.options[pickA] },
+        partnerB: { name: partnerB, answer: scenario.options[pickB] },
+        mode: 'host',
+        mood: selectedTone,
+        aiConsent: true,
+        history: updatedHistory.map((entry) => ({
+          question: entry.question,
+          answerA: entry.answerA,
+          answerB: entry.answerB,
+        })),
+      }).then((data: any) => {
+        if (!data?.question || !Array.isArray(data.options)) return;
+        const nextScenario: HostScenario = {
+          id: Date.now(),
+          category: 'Adaptive Follow-Up',
+          question: data.question,
+          options: data.options,
+          commentary: data.commentary || 'Observing your real-time couple synergy!',
+        };
+        setScenarios((items) => {
+          if (items.some((item) => item.question === nextScenario.question)) return items;
+          const nextList = [...items];
+          nextList.splice(currentIdx + 1, 0, nextScenario);
+          return nextList;
+        });
+        if (data.commentary) setHostCommentary(data.commentary);
+      }).catch(() => {});
+    }
+  };
+
+  useEffect(() => {
+    if (!privateChoices.revealedAnswers || privateChoices.revealedAnswers.length < 2) return;
+    const mine = Number(
+      privateChoices.revealedAnswers.find((answer) => answer.userId === runtime.currentUserId)?.answer,
+    );
+    const theirs = Number(
+      privateChoices.revealedAnswers.find((answer) => answer.userId !== runtime.currentUserId)?.answer,
+    );
+    if (!Number.isInteger(mine) || !Number.isInteger(theirs)) return;
+    completeReveal(runtime.isHost ? mine : theirs, runtime.isHost ? theirs : mine);
+  }, [privateChoices.revealedAnswers]);
 
   useEffect(() => {
     const snap = runtime.snapshot as { promptIndex?: number; theme?: string };
@@ -221,65 +305,18 @@ export default function DateHostPage() {
     }, 3800);
   };
 
-  const handleReveal = () => {
+  const handleReveal = async () => {
+    if (isLivePair) {
+      const myPick = runtime.isHost ? partnerAPick : partnerBPick;
+      if (myPick === null) return;
+      if (!privateChoices.isLocked) await privateChoices.lock(myPick);
+      if (privateChoices.bothLocked || privateChoices.partnerLocked) {
+        await privateChoices.reveal();
+      }
+      return;
+    }
     if (partnerAPick === null || partnerBPick === null) return;
-    setRevealed(true);
-    void runtime.sendEvent('host_speaker_switch', { activeSpeaker: partnerB });
-
-    const isMatch = partnerAPick === partnerBPick;
-    if (isMatch) {
-      sounds.playCelebration();
-      setConfettiActive(true);
-      setBotState('celebration');
-      setTimeout(() => setConfettiActive(false), 2500);
-      setTimeout(() => setBotState('love'), 1800);
-    } else {
-      sounds.playCountdownBeep(true);
-      setBotState('talking');
-      setTimeout(() => setBotState('happy'), 2000);
-    }
-
-    const currentRoundData = {
-      question: scenario.question,
-      answerA: scenario.options[partnerAPick],
-      answerB: scenario.options[partnerBPick],
-      agreement: isMatch,
-    };
-    const updatedHistory = [...sessionHistory, currentRoundData];
-    setSessionHistory(updatedHistory);
-
-    if (hasAiConsent) {
-      void generateAdaptiveQuestion({
-        partnerA: { name: partnerA, answer: scenario.options[partnerAPick] },
-        partnerB: { name: partnerB, answer: scenario.options[partnerBPick] },
-        mode: 'host',
-        mood: selectedTone,
-        aiConsent: true,
-        history: updatedHistory.map((h) => ({
-          question: h.question,
-          answerA: h.answerA,
-          answerB: h.answerB,
-        })),
-      })
-        .then((data: any) => {
-          if (data?.question && Array.isArray(data.options)) {
-            const nextScenario: HostScenario = {
-              id: Date.now(),
-              category: 'Adaptive Follow-Up',
-              question: data.question,
-              options: data.options,
-              commentary: data.commentary || 'Observing your real-time couple synergy!',
-            };
-            const nextList = [...scenarios];
-            nextList.splice(currentIdx + 1, 0, nextScenario);
-            setScenarios(nextList);
-            if (data.commentary) {
-              setHostCommentary(data.commentary);
-            }
-          }
-        })
-        .catch(() => {});
-    }
+    completeReveal(partnerAPick, partnerBPick);
   };
 
   const handleNext = () => {
@@ -626,8 +663,8 @@ export default function DateHostPage() {
                     {scenario.options.map((opt, idx) => (
                       <button
                         key={idx}
-                        onClick={() => !revealed && setPartnerAPick(idx)}
-                        disabled={revealed}
+                        onClick={() => !revealed && (!isLivePair || runtime.isHost) && setPartnerAPick(idx)}
+                        disabled={revealed || (isLivePair && !runtime.isHost)}
                         style={{
                           textAlign: 'left',
                           padding: '11px 14px',
@@ -637,7 +674,7 @@ export default function DateHostPage() {
                           background: partnerAPick === idx ? '#FFF' : 'rgba(255,255,255,0.65)',
                           fontSize: '13.5px',
                           fontWeight: partnerAPick === idx ? 700 : 500,
-                          cursor: revealed ? 'default' : 'pointer',
+                          cursor: revealed || (isLivePair && !runtime.isHost) ? 'default' : 'pointer',
                           lineHeight: 1.4,
                         }}
                       >
@@ -683,8 +720,8 @@ export default function DateHostPage() {
                     {scenario.options.map((opt, idx) => (
                       <button
                         key={idx}
-                        onClick={() => !revealed && setPartnerBPick(idx)}
-                        disabled={revealed}
+                        onClick={() => !revealed && (!isLivePair || !runtime.isHost) && setPartnerBPick(idx)}
+                        disabled={revealed || (isLivePair && runtime.isHost)}
                         style={{
                           textAlign: 'left',
                           padding: '11px 14px',
@@ -694,7 +731,7 @@ export default function DateHostPage() {
                           background: partnerBPick === idx ? '#FFF' : 'rgba(255,255,255,0.65)',
                           fontSize: '13.5px',
                           fontWeight: partnerBPick === idx ? 700 : 500,
-                          cursor: revealed ? 'default' : 'pointer',
+                          cursor: revealed || (isLivePair && runtime.isHost) ? 'default' : 'pointer',
                           lineHeight: 1.4,
                         }}
                       >
@@ -710,15 +747,27 @@ export default function DateHostPage() {
                 {!revealed ? (
                   <button
                     onClick={handleReveal}
-                    disabled={partnerAPick === null || partnerBPick === null}
+                    disabled={
+                      isLivePair
+                        ? (runtime.isHost ? partnerAPick : partnerBPick) === null || privateChoices.loading
+                        : partnerAPick === null || partnerBPick === null
+                    }
                     className="btn btn-primary"
                     style={{
                       padding: '12px 36px',
                       fontSize: '15px',
-                      opacity: partnerAPick !== null && partnerBPick !== null ? 1 : 0.5,
+                      opacity: isLivePair
+                        ? (runtime.isHost ? partnerAPick : partnerBPick) !== null ? 1 : 0.5
+                        : partnerAPick !== null && partnerBPick !== null ? 1 : 0.5,
                     }}
                   >
-                    Reveal Both Strategies 🔍
+                    {isLivePair
+                      ? privateChoices.isLocked
+                        ? privateChoices.partnerLocked
+                          ? 'Reveal Both Strategies 🔍'
+                          : 'Waiting for your partner…'
+                        : 'Lock My Strategy 🔒'
+                      : 'Reveal Both Strategies 🔍'}
                   </button>
                 ) : (
                   <div style={{ animation: 'gl-rise 0.25s ease' }}>

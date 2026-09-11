@@ -100,16 +100,44 @@ export default function CourtPage() {
   }, []);
 
   const currentPreset = PRESET_CASES[caseIdx];
+  const isLivePair = runtime.transportName !== 'mock';
+
+  useEffect(() => {
+    const snapshot = runtime.snapshot as {
+      caseTitle?: string;
+      consentA?: boolean;
+      consentB?: boolean;
+      stage?: typeof courtStage;
+      verdict?: string | null;
+      penalty?: string | null;
+      reasoning?: string | null;
+      guiltyParty?: string | null;
+    };
+    setConsentA(Boolean(snapshot.consentA));
+    setConsentB(Boolean(snapshot.consentB));
+    if (snapshot.stage) setCourtStage(snapshot.stage);
+    const presetIndex = PRESET_CASES.findIndex((item) => item.title === snapshot.caseTitle);
+    if (presetIndex >= 0) setCaseIdx(presetIndex);
+    if (snapshot.verdict && snapshot.penalty) {
+      setVerdict({
+        verdictTitle: snapshot.verdict,
+        sentence: snapshot.penalty,
+        reasoning: snapshot.reasoning || 'Judge Cupidot found a gentle compromise for both partners.',
+        guiltyParty: snapshot.guiltyParty || 'Neither — Mutual Play',
+      });
+    }
+  }, [runtime.snapshot]);
 
   const handleConsent = (partner: 'A' | 'B') => {
+    const activePartner = isLivePair ? (runtime.isHost ? 'A' : 'B') : partner;
     sounds.playTick();
-    if (partner === 'A') setConsentA(true);
-    if (partner === 'B') setConsentB(true);
+    if (activePartner === 'A') setConsentA(true);
+    if (activePartner === 'B') setConsentB(true);
 
-    void runtime.sendEvent('court_consent', { partner });
+    void runtime.sendEvent('court_consent', { partner: activePartner });
 
-    const nextA = partner === 'A' ? true : consentA;
-    const nextB = partner === 'B' ? true : consentB;
+    const nextA = activePartner === 'A' ? true : consentA;
+    const nextB = activePartner === 'B' ? true : consentB;
     if (nextA && nextB) {
       sounds.playCelebration();
       setCourtStage('arguments');
@@ -128,6 +156,7 @@ export default function CourtPage() {
   };
 
   const handleJudge = () => {
+    if (isLivePair && !runtime.isHost) return;
     sounds.playPop();
     setDeliberating(true);
     setBotState('thinking');
@@ -157,6 +186,8 @@ export default function CourtPage() {
       void runtime.sendEvent('court_verdict', {
         verdict: result.verdictTitle,
         penalty: result.sentence,
+        reasoning: result.reasoning,
+        guiltyParty: result.guiltyParty,
       });
       setDeliberating(false);
       sounds.playCelebration();
@@ -616,6 +647,7 @@ export default function CourtPage() {
                   <button
                     className="btn btn-sm"
                     onClick={() => handleConsent('A')}
+                    disabled={isLivePair && !runtime.isHost}
                     style={{
                       background: consentA ? '#16A34A' : '#FF4D80',
                       color: '#FFF',
@@ -641,6 +673,7 @@ export default function CourtPage() {
                   <button
                     className="btn btn-sm"
                     onClick={() => handleConsent('B')}
+                    disabled={isLivePair && runtime.isHost}
                     style={{
                       background: consentB ? '#16A34A' : '#3B82F6',
                       color: '#FFF',
@@ -721,10 +754,14 @@ export default function CourtPage() {
                 <button
                   className="btn btn-grad"
                   onClick={handleJudge}
-                  disabled={deliberating}
+                  disabled={deliberating || (isLivePair && !runtime.isHost)}
                   style={{ padding: '13px 36px', fontSize: '15.5px' }}
                 >
-                  {deliberating ? 'Judge Cupidot Deliberating... 💭' : 'Bang the Gavel & Rule 🔨'}
+                  {deliberating
+                    ? 'Judge Cupidot Deliberating... 💭'
+                    : isLivePair && !runtime.isHost
+                      ? 'Waiting for the host to rule…'
+                      : 'Bang the Gavel & Rule 🔨'}
                 </button>
               </div>
             </div>

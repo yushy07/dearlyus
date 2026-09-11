@@ -397,6 +397,8 @@ export interface CourtSnapshot {
   plea: string;
   verdict: string | null;
   penalty: string | null;
+  reasoning: string | null;
+  guiltyParty: string | null;
   consentA: boolean;
   consentB: boolean;
   objections: string[];
@@ -439,6 +441,8 @@ export const courtActivityDefinition: ActivityDefinition<
       plea: '',
       verdict: null,
       penalty: null,
+      reasoning: null,
+      guiltyParty: null,
       consentA: false,
       consentB: false,
       objections: [],
@@ -505,6 +509,8 @@ export const courtActivityDefinition: ActivityDefinition<
           ...snapshot,
           verdict: String(payload.verdict || 'GUILTY OF BEING ADORABLE'),
           penalty: String(payload.penalty || '30-minute cuddle tax'),
+          reasoning: String(payload.reasoning || ''),
+          guiltyParty: String(payload.guiltyParty || 'Neither — Mutual Play'),
           stage: 'verdict',
         };
       }
