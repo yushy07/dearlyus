@@ -21,6 +21,22 @@ The live Supabase backend is now completed for the reusable foundation needed by
 
 Live verification result: both new tables present, private bucket present, three room recovery columns present, five functions present, twelve related database/Storage policies present, and no anonymous function execution.
 
+### Final lifecycle completion
+
+The follow-up live deployment completed the remaining backend-wide lifecycle requirements:
+
+- all 25 registered site activity types can now start through the shared room contract;
+- 112 durable event names are enforced by server-side activity/event allow-lists;
+- only the room host can start an activity and all active room members must be ready;
+- activity sessions now store their host, lifecycle phase, and expiry time;
+- duplicate event retries are accepted before optimistic-revision conflict handling;
+- session heartbeat, explicit closure, and host-transfer RPCs are installed;
+- `plans_and_milestones` and `temporary_assets` are enabled for Realtime;
+- expired private assets, sessions, and rooms are cleaned hourly by an active `pg_cron` job;
+- the cleanup function is restricted to `service_role`; authenticated and anonymous clients cannot call it.
+
+Final live verification: 25 activity types, 112 event contracts, six lifecycle functions, three added session fields, two added Realtime tables, active hourly cleanup, zero anonymous lifecycle execution, and no authenticated cleanup execution.
+
 ## Foundation gaps that affect nearly every activity
 
 1. **The page/runtime contract is split.** `ActivitySessionContext` knows the real UUID returned by `start_activity`, while most pages bypass it and call `useActivityRuntime` with values such as `room-LOVE123-quiz`. Supabase expects a UUID, so these pages cannot be called live safely.
