@@ -569,6 +569,8 @@ export interface DareSnapshot {
   category: string;
   dareStatus: 'pending' | 'accepted' | 'completed' | 'rerolled';
   completedCount: number;
+  roundSeed: number;
+  roundResult: Record<string, unknown> | null;
   completed: boolean;
 }
 
@@ -603,6 +605,8 @@ export const dareActivityDefinition: ActivityDefinition<
       category: String(opts.category || 'Playful'),
       dareStatus: 'pending',
       completedCount: 0,
+      roundSeed: 0,
+      roundResult: null,
       completed: false,
     };
   },
@@ -620,7 +624,12 @@ export const dareActivityDefinition: ActivityDefinition<
   reduce(snapshot: DareSnapshot, event): DareSnapshot {
     switch (event.type) {
       case 'dare_accept':
-        return { ...snapshot, dareStatus: 'accepted' };
+        return {
+          ...snapshot,
+          dareStatus: 'accepted',
+          roundSeed: Number((event.payload as any)?.seed || snapshot.roundSeed),
+          roundResult: ((event.payload as any)?.result as Record<string, unknown>) || snapshot.roundResult,
+        };
       case 'dare_complete':
         return {
           ...snapshot,
@@ -635,6 +644,8 @@ export const dareActivityDefinition: ActivityDefinition<
             payload.newDare || 'Send a photo making your funniest face 🤪',
           ),
           dareStatus: 'pending',
+          roundSeed: Number(payload.seed || snapshot.roundSeed),
+          roundResult: { cardType: payload.cardType },
         };
       }
       case 'dare_finish':

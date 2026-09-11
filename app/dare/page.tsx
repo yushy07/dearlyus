@@ -227,6 +227,42 @@ export default function DarePage() {
   const reactionStartRef = useRef<number>(0);
   const stopwatchRef = useRef<number>(0);
 
+  const randomSeed = () => crypto.getRandomValues(new Uint32Array(1))[0] || 1;
+  const seededValues = (seed: number, count: number, max: number) => {
+    let value = seed >>> 0;
+    return Array.from({ length: count }, () => {
+      value = (value * 1664525 + 1013904223) >>> 0;
+      return (value % max) + 1;
+    });
+  };
+
+  useEffect(() => {
+    const event = runtime.lastEvent;
+    if (!event || event.senderId === runtime.currentUserId) return;
+    const payload = (event.payload as Record<string, any>) || {};
+    if (event.type === 'dare_reroll' && payload.newDare) {
+      setCardPrompt(String(payload.newDare));
+      setActiveCardType(payload.cardType === 'truth' ? 'truth' : 'dare');
+    }
+    if (event.type !== 'dare_accept' || !payload.result) return;
+    const result = payload.result as Record<string, any>;
+    setSelectedGame(MINIGAMES.find((game) => game.id === result.gameId) || MINIGAMES[0]);
+    if (result.greenAt) {
+      setGameState('playing');
+      setReactionStage('yellow');
+      const delay = Math.max(0, Date.parse(result.greenAt) - Date.now());
+      reactionTimeout2Ref.current = setTimeout(() => {
+        setReactionStage('green');
+        reactionStartRef.current = Date.parse(result.greenAt);
+      }, delay);
+      return;
+    }
+    setGameState('result');
+    if (result.coinSide) setCoinSide(result.coinSide);
+    if (result.diceResults) setDiceResults(result.diceResults);
+    if (result.loser) setPartnerLoser(result.loser);
+  }, [runtime.lastEvent, runtime.currentUserId]);
+
   const clearTimers = () => {
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     if (reactionTimeout1Ref.current) clearTimeout(reactionTimeout1Ref.current);
@@ -272,7 +308,10 @@ export default function DarePage() {
         setReactionStage('yellow');
         sounds.playCountdownBeep(false);
 
-        const greenDelay = 1200 + Math.random() * 2200;
+        const seed = randomSeed();
+        const greenDelay = 1200 + seededValues(seed, 1, 2201)[0] - 1;
+        const greenAt = new Date(Date.now() + greenDelay).toISOString();
+        void runtime.sendEvent('dare_accept', { seed, result: { gameId: 'reaction', greenAt } });
         reactionTimeout2Ref.current = setTimeout(() => {
           setReactionStage('green');
           reactionStartRef.current = Date.now();
@@ -283,26 +322,31 @@ export default function DarePage() {
       setCoinFlipping(true);
       setCoinSide(null);
       setTimeout(() => {
-        const side = Math.random() > 0.5 ? 'Heads' : 'Tails';
+        const seed = randomSeed();
+        const side = seededValues(seed, 1, 2)[0] === 1 ? 'Heads' : 'Tails';
+        const loser = side === 'Heads' ? partnerB : partnerA;
         setCoinSide(side);
         setCoinFlipping(false);
         setGameState('result');
-        setPartnerLoser(side === 'Heads' ? partnerB : partnerA);
+        setPartnerLoser(loser);
+        void runtime.sendEvent('dare_accept', { seed, result: { gameId: 'coin', coinSide: side, loser } });
         sounds.playCelebration();
       }, 1400);
     } else if (selectedGame.id === 'dice') {
       setDiceRolling(true);
       setTimeout(() => {
-        const d1 = Math.floor(Math.random() * 6) + 1;
-        const d2 = Math.floor(Math.random() * 6) + 1;
-        const p1 = Math.floor(Math.random() * 6) + 1;
-        const p2 = Math.floor(Math.random() * 6) + 1;
+        const seed = randomSeed();
+        const [d1, d2, p1, p2] = seededValues(seed, 4, 6);
         setDiceResults({ you: [d1, d2], partner: [p1, p2] });
         setDiceRolling(false);
         setGameState('result');
         const myTotal = d1 + d2;
         const partnerTotal = p1 + p2;
-        setPartnerLoser(myTotal >= partnerTotal ? partnerB : partnerA);
+        const loser = myTotal >= partnerTotal ? partnerB : partnerA;
+        setPartnerLoser(loser);
+        void runtime.sendEvent('dare_accept', {
+          seed, result: { gameId: 'dice', diceResults: { you: [d1, d2], partner: [p1, p2] }, loser },
+        });
         sounds.playCelebration();
       }, 1300);
     } else if (selectedGame.id === 'rps') {
@@ -367,23 +411,27 @@ export default function DarePage() {
       'Paper',
       'Scissors',
     ];
-    const pPick = opts[Math.floor(Math.random() * opts.length)];
+    const seed = randomSeed();
+    const pPick = opts[seededValues(seed, 1, opts.length)[0] - 1];
     setRpsResults({ you: pick, partner: pPick });
     setGameState('result');
     void runtime.sendEvent('dare_complete', {});
     sounds.playCelebration();
 
+    let loser: string;
     if (pick === pPick) {
-      setPartnerLoser(Math.random() > 0.5 ? partnerB : partnerA);
+      loser = seededValues(seed ^ 0x9e3779b9, 1, 2)[0] === 1 ? partnerB : partnerA;
     } else if (
       (pick === 'Rock' && pPick === 'Scissors') ||
       (pick === 'Paper' && pPick === 'Rock') ||
       (pick === 'Scissors' && pPick === 'Paper')
     ) {
-      setPartnerLoser(partnerB);
+      loser = partnerB;
     } else {
-      setPartnerLoser(partnerA);
+      loser = partnerA;
     }
+    setPartnerLoser(loser);
+    void runtime.sendEvent('dare_accept', { seed, result: { gameId: 'rps', you: pick, partner: pPick, loser } });
   };
 
   const pickTruth = () => {
@@ -391,8 +439,10 @@ export default function DarePage() {
     setActiveCardType('truth');
     const truths =
       THEMED_DECKS[currentDeckKey]?.truths || THEMED_DECKS.playful.truths;
-    const random = truths[Math.floor(Math.random() * truths.length)];
+    const seed = randomSeed();
+    const random = truths[seededValues(seed, 1, truths.length)[0] - 1];
     setCardPrompt(random);
+    void runtime.sendEvent('dare_reroll', { newDare: random, cardType: 'truth', seed });
     setConfettiActive(true);
     setTimeout(() => setConfettiActive(false), 3000);
   };
@@ -402,8 +452,10 @@ export default function DarePage() {
     setActiveCardType('dare');
     const dares =
       THEMED_DECKS[currentDeckKey]?.dares || THEMED_DECKS.playful.dares;
-    const random = dares[Math.floor(Math.random() * dares.length)];
+    const seed = randomSeed();
+    const random = dares[seededValues(seed, 1, dares.length)[0] - 1];
     setCardPrompt(random);
+    void runtime.sendEvent('dare_reroll', { newDare: random, cardType: 'dare', seed });
     setConfettiActive(true);
     setTimeout(() => setConfettiActive(false), 3000);
   };

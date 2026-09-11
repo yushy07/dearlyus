@@ -494,6 +494,17 @@ export const riddleActivityDefinition: ActivityDefinition<RiddleSnapshot, Realti
   reduce(snapshot, event) {
     const p = (event.payload as Record<string, unknown>) || {};
     switch (event.type) {
+      case 'riddle_case_select':
+        return {
+          ...snapshot,
+          caseId: String(p.caseId || snapshot.caseId),
+          unlockedClues: [1],
+          notes: [],
+          hintLevel: 0,
+          solved: false,
+          completed: false,
+          status: 'active',
+        };
       case 'riddle_clue_unlock': {
         const id = Number(p.clueId);
         return {
@@ -504,7 +515,7 @@ export const riddleActivityDefinition: ActivityDefinition<RiddleSnapshot, Realti
       case 'riddle_note_add':
         return { ...snapshot, notes: [...snapshot.notes, String(p.note || '')] };
       case 'riddle_hint_request':
-        return { ...snapshot, hintLevel: snapshot.hintLevel + 1 };
+        return { ...snapshot, hintLevel: Math.max(snapshot.hintLevel, Number(p.hintLevel || snapshot.hintLevel + 1)) };
       case 'riddle_answer_submit':
         return { ...snapshot, solved: Boolean(p.correct), status: p.correct ? 'completed' : 'active', completed: Boolean(p.correct) };
       default:

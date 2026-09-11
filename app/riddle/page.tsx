@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { sounds } from '@/lib/sound';
 import { useCoupleProfile } from '@/lib/couple';
@@ -83,6 +83,18 @@ export default function RiddlePage() {
 
   const riddle = RIDDLES[currentIdx];
 
+  useEffect(() => {
+    if (runtime.transportName === 'mock') return;
+    const snapshot = runtime.snapshot as { caseId?: string; hintLevel?: number; solved?: boolean };
+    const index = RIDDLES.findIndex((item) => `riddle-${item.id}` === snapshot.caseId);
+    if (index >= 0) setCurrentIdx(index);
+    if (Number(snapshot.hintLevel || 0) > 0) setShowHint(true);
+    if (snapshot.solved) {
+      setSolved(true);
+      setErrorMsg('');
+    }
+  }, [runtime.snapshot, runtime.transportName]);
+
   const handleCheck = (e: React.FormEvent) => {
     e.preventDefault();
     if (solved) return;
@@ -103,6 +115,7 @@ export default function RiddlePage() {
         (cleanAns.includes('love') && cleanUser.includes('love')));
 
     if (isCorrect) {
+      void runtime.sendEvent('riddle_answer_submit', { answer: cleanUser, correct: true, riddleId: riddle.id });
       setSolved(true);
       setErrorMsg('');
       setScore((p) => p + 1);
@@ -110,6 +123,7 @@ export default function RiddlePage() {
       setConfettiActive(true);
       setTimeout(() => setConfettiActive(false), 3000);
     } else {
+      void runtime.sendEvent('riddle_answer_submit', { answer: cleanUser, correct: false, riddleId: riddle.id });
       setErrorMsg('Not quite! Unlock the gentle hint below and give it another thought 💭');
       setShowHint(true);
       sounds.playCountdownBeep(true);
@@ -117,8 +131,11 @@ export default function RiddlePage() {
   };
 
   const handleNext = () => {
+    if (runtime.transportName !== 'mock' && !runtime.isHost) return;
     sounds.playPop();
-    setCurrentIdx((prev) => (prev + 1) % RIDDLES.length);
+    const nextIndex = (currentIdx + 1) % RIDDLES.length;
+    setCurrentIdx(nextIndex);
+    void runtime.sendEvent('riddle_case_select', { caseId: `riddle-${RIDDLES[nextIndex].id}` });
     setShowHint(false);
     setUserAnswer('');
     setErrorMsg('');
@@ -245,7 +262,10 @@ export default function RiddlePage() {
                 {!showHint ? (
                   <button
                     type="button"
-                    onClick={() => setShowHint(true)}
+                    onClick={() => {
+                      setShowHint(true);
+                      void runtime.sendEvent('riddle_hint_request', { hintLevel: 1, riddleId: riddle.id });
+                    }}
                     className="btn btn-ghost"
                     style={{ fontSize: '12px' }}
                   >

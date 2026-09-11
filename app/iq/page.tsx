@@ -97,7 +97,7 @@ export default function IQPage() {
     activityType: 'iq',
     roomId: roomCode || 'local',
     transportMode: 'auto',
-    initialOptions: { totalQuestions: IQ_PUZZLES.length },
+    initialOptions: { totalRounds: IQ_PUZZLES.length },
   });
   const livePair = runtime.transportName !== 'mock';
   const privateAnswers = usePrivateAnswers({ roundNumber: qIndex, localRuntime: runtime });
@@ -115,9 +115,24 @@ export default function IQPage() {
       setPickA(theirs);
     }
     revealRound(mine, theirs, runtime.isHost);
+    if (runtime.isHost) void runtime.sendEvent('iq_round_reveal', {
+      correctA: (runtime.isHost ? mine : theirs) === puzzle.correctIndex,
+      correctB: (runtime.isHost ? theirs : mine) === puzzle.correctIndex,
+      deadline: new Date().toISOString(),
+    });
   // revealRound is intentionally driven only by a new sealed-answer result.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [privateAnswers.revealedAnswers]);
+
+  useEffect(() => {
+    if (runtime.transportName === 'mock') return;
+    const snapshot = runtime.snapshot as { roundIndex?: number; scoreA?: number; scoreB?: number; revealed?: boolean; completed?: boolean };
+    if (typeof snapshot.roundIndex === 'number') setQIndex(Math.min(snapshot.roundIndex, IQ_PUZZLES.length - 1));
+    if (typeof snapshot.scoreA === 'number') setScoreA(snapshot.scoreA);
+    if (typeof snapshot.scoreB === 'number') setScoreB(snapshot.scoreB);
+    if (snapshot.revealed) setRevealed(true);
+    if (snapshot.completed) setFinished(true);
+  }, [runtime.snapshot, runtime.transportName]);
 
   const puzzle = IQ_PUZZLES[qIndex];
 
@@ -160,7 +175,9 @@ export default function IQPage() {
   };
 
   const handleNext = () => {
+    if (livePair && !runtime.isHost) return;
     sounds.playPop();
+    if (livePair) void runtime.sendEvent('iq_next_question', {});
     if (qIndex + 1 < IQ_PUZZLES.length) {
       setQIndex((prev) => prev + 1);
       setPickA(null);
