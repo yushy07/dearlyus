@@ -10,8 +10,19 @@ import {
 import type { PrivateVault } from '@/lib/runtime';
 import type { StandardActivityEvent } from '@/lib/activity-adapters';
 
+const DEFAULT_PRIVATE_ANSWER_EVENTS = {
+  locked: 'answer_locked',
+  revealed: 'answers_revealed',
+  skipped: 'gentle_skip',
+} as const;
+
 export interface UsePrivateAnswersOptions {
   roundNumber: number;
+  eventNames?: {
+    locked: string;
+    revealed: string;
+    skipped?: string;
+  };
   onBothLocked?: () => void;
   onReveal?: (
     answers: Array<{ userId: string; answer: unknown; lockedAt: string }>,
@@ -34,6 +45,7 @@ export function usePrivateAnswers({
   onReveal,
   onSkip,
   localRuntime = null,
+  eventNames = DEFAULT_PRIVATE_ANSWER_EVENTS,
 }: UsePrivateAnswersOptions) {
   const { sessionId, sendEvent, registerEventHandler } = useActivitySession();
   const { user } = useSupabaseSession();
@@ -57,7 +69,7 @@ export function usePrivateAnswers({
       const payload = (event.payload as Record<string, unknown>) || {};
       if (Number(payload.roundNumber ?? -1) !== roundNumber) return;
       if (
-        event.type === 'answer_locked' &&
+        event.type === eventNames.locked &&
         event.senderId !== localRuntime?.currentUserId
       ) {
         setPartnerLocked(true);
@@ -65,7 +77,7 @@ export function usePrivateAnswers({
           setBothLocked(true);
           onBothLocked?.();
         }
-      } else if (event.type === 'answers_revealed') {
+      } else if (event.type === eventNames.revealed) {
         if (revealed) return;
         void localRuntime?.privateVault
           .revealAnswers(roundNumber)
@@ -75,7 +87,7 @@ export function usePrivateAnswers({
             onReveal?.(result.answers);
           })
           .catch(() => {});
-      } else if (event.type === 'gentle_skip') {
+      } else if (eventNames.skipped && event.type === eventNames.skipped) {
         setIsSkipped(true);
         onSkip?.();
       }
@@ -88,6 +100,7 @@ export function usePrivateAnswers({
       onBothLocked,
       onReveal,
       onSkip,
+      eventNames,
     ],
   );
 
@@ -111,13 +124,13 @@ export function usePrivateAnswers({
       const targetRound = Number(payload.roundNumber ?? -1);
 
       if (targetRound === roundNumber) {
-        if (event.type === 'answer_locked' && event.senderId !== user?.id) {
+        if (event.type === eventNames.locked && event.senderId !== user?.id) {
           setPartnerLocked(true);
           if (isLocked) {
             setBothLocked(true);
             onBothLocked?.();
           }
-        } else if (event.type === 'answers_revealed') {
+        } else if (event.type === eventNames.revealed) {
           // This event is only a signal. Answers never travel through room_events.
           // Each participant retrieves sealed answers from the protected RPC instead.
           if (!sessionId) return;
@@ -130,7 +143,7 @@ export function usePrivateAnswers({
             .catch(() => {
               // A stale or forged signal cannot reveal anything; the server remains authoritative.
             });
-        } else if (event.type === 'gentle_skip') {
+        } else if (eventNames.skipped && event.type === eventNames.skipped) {
           setIsSkipped(true);
           onSkip?.();
         }
@@ -150,6 +163,7 @@ export function usePrivateAnswers({
     onBothLocked,
     onReveal,
     onSkip,
+    eventNames,
   ]);
 
   useEffect(() => {
@@ -182,7 +196,7 @@ export function usePrivateAnswers({
         }
 
         // Notify partner that answer is locked (WITHOUT revealing answer payload)
-        await (localRuntime?.sendEvent ?? sendEvent)('answer_locked', {
+        await (localRuntime?.sendEvent ?? sendEvent)(eventNames.locked, {
           roundNumber,
           locked: true,
         });
@@ -203,6 +217,7 @@ export function usePrivateAnswers({
       onBothLocked,
       sendEvent,
       localRuntime,
+      eventNames.locked,
     ],
   );
 
@@ -225,7 +240,7 @@ export function usePrivateAnswers({
       const answersMatch =
         result.answers.length >= 2 &&
         result.answers[0].answer === result.answers[1].answer;
-      await (localRuntime?.sendEvent ?? sendEvent)('answers_revealed', {
+      await (localRuntime?.sendEvent ?? sendEvent)(eventNames.revealed, {
         roundNumber,
         isMatch: answersMatch,
       });
@@ -238,18 +253,19 @@ export function usePrivateAnswers({
     } finally {
       setLoading(false);
     }
-  }, [sessionId, roundNumber, onReveal, sendEvent, localRuntime]);
+  }, [sessionId, roundNumber, onReveal, sendEvent, localRuntime, eventNames.revealed]);
 
   // Gentle Skip: requires no reason and transitions both people warmly
   const skip = useCallback(async () => {
     if (!localRuntime && !sessionId) return;
     setIsSkipped(true);
-    await (localRuntime?.sendEvent ?? sendEvent)('gentle_skip', {
+    if (!eventNames.skipped) return;
+    await (localRuntime?.sendEvent ?? sendEvent)(eventNames.skipped, {
       roundNumber,
       skippedAt: new Date().toISOString(),
     });
     onSkip?.();
-  }, [sessionId, roundNumber, sendEvent, onSkip, localRuntime]);
+  }, [sessionId, roundNumber, sendEvent, onSkip, localRuntime, eventNames.skipped]);
 
   return {
     isLocked,

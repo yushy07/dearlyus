@@ -115,6 +115,11 @@ export function createAdapterFromDefinition<
     createInitialSnapshot: (input: StartActivityInput) =>
       definition.initialSnapshot(input),
     validateEvent: (event: TEvent): ValidationResult => {
+      // Private-answer values live in the sealed vault. These durable events only
+      // synchronize readiness/reveal and are safe for every paired activity.
+      if (['answer_locked', 'answers_revealed', 'gentle_skip'].includes(event.type)) {
+        return { valid: true };
+      }
       if (definition.validateEvent) {
         return definition.validateEvent(event);
       }

@@ -23,6 +23,7 @@ import { useAiConsent } from '@/lib/ai-consent';
 import { generateAdaptiveQuestion } from '@/lib/gemini';
 import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
+import { usePrivateAnswers } from '@/hooks/usePrivateAnswers';
 
 interface Card {
   tier: string;
@@ -113,6 +114,24 @@ export default function CardsPage() {
     transportMode: 'auto',
     initialOptions: { deckId: selectedDeckKey, totalCards: deck.length },
   });
+  const livePair = runtime.transportName !== 'mock';
+  const privateAnswers = usePrivateAnswers({
+    roundNumber: currentIdx,
+    localRuntime: runtime,
+  });
+
+  useEffect(() => {
+    if (!privateAnswers.revealedAnswers) return;
+    const mine = privateAnswers.revealedAnswers.find(
+      (answer) => answer.userId === runtime.currentUserId,
+    );
+    const theirs = privateAnswers.revealedAnswers.find(
+      (answer) => answer.userId !== runtime.currentUserId,
+    );
+    setMyAnswer(String(mine?.answer ?? ''));
+    setPartnerAnswer(String(theirs?.answer ?? ''));
+    setRevealed(true);
+  }, [privateAnswers.revealedAnswers, runtime.currentUserId]);
 
   const selectDeck = (key: string) => {
     setSelectedDeckKey(key);
@@ -175,8 +194,20 @@ export default function CardsPage() {
     }
   };
 
-  const handleReveal = () => {
+  const handleReveal = async () => {
     if (revealed) return;
+    if (livePair) {
+      try {
+        if (!privateAnswers.isLocked) {
+          const result = await privateAnswers.lock(myAnswer.trim());
+          if (!result.bothLocked) return;
+        }
+        await privateAnswers.reveal();
+      } catch (error) {
+        console.error('Failed to seal or reveal private card answers:', error);
+      }
+      return;
+    }
     setRevealed(true);
     sounds.playCelebration();
 
@@ -521,7 +552,7 @@ export default function CardsPage() {
                   </button>
                 </div>
               </div>
-              <div>
+              {!livePair && <div>
                 <label
                   style={{
                     display: 'block',
@@ -546,10 +577,19 @@ export default function CardsPage() {
                     fontSize: '14.5px',
                   }}
                 />
-              </div>
+              </div>}
+              {livePair && (
+                <p role="status" style={{ margin: 0, color: 'var(--ink-soft)', fontSize: '13px' }}>
+                  {privateAnswers.isLocked
+                    ? privateAnswers.partnerLocked
+                      ? 'Both answers are sealed. Open them together.'
+                      : `Your answer is sealed. Waiting for ${runtime.isHost ? partnerB : partnerA}.`
+                    : 'Your partner cannot read this until both answers are sealed.'}
+                </p>
+              )}
               <button
-                onClick={handleReveal}
-                disabled={!myAnswer.trim() && !partnerAnswer.trim()}
+                onClick={() => void handleReveal()}
+                disabled={!myAnswer.trim() || privateAnswers.loading || (livePair && privateAnswers.isLocked && !privateAnswers.bothLocked)}
                 className="btn btn-primary"
                 style={{
                   padding: '12px',
@@ -557,7 +597,13 @@ export default function CardsPage() {
                   justifyContent: 'center',
                 }}
               >
-                Reveal Shared Answers 🔍
+                {livePair
+                  ? privateAnswers.bothLocked
+                    ? 'Open Both Sealed Answers 🔍'
+                    : privateAnswers.isLocked
+                      ? 'Waiting for Partner…'
+                      : 'Seal My Private Answer'
+                  : 'Reveal Shared Answers 🔍'}
               </button>
             </div>
           ) : (
