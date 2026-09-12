@@ -103,9 +103,11 @@ describe('shared-background photo rendering', () => {
     const subjectCalls = ctx.drawImage.mock.calls.filter(
       (call) => call[0] === left || call[0] === right,
     );
-    expect(subjectCalls[0][0]).toBe(left);
-    expect(subjectCalls[1][0]).toBe(right);
-    expect(subjectCalls[0][1]).toBeLessThan(subjectCalls[1][1]);
+    expect(subjectCalls).toHaveLength(4);
+    const finalSubjects = [subjectCalls[1], subjectCalls[3]];
+    expect(finalSubjects[0][0]).toBe(left);
+    expect(finalSubjects[1][0]).toBe(right);
+    expect(finalSubjects[0][1]).toBeLessThan(finalSubjects[1][1]);
     expect(ctx.rect.mock.calls.slice(0, 2)).toEqual([
       [30, 105, 540, 360],
       [30, 105, 540, 360],

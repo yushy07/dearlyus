@@ -1026,6 +1026,11 @@
 @keyframes studio-status-pulse {
   50% { opacity: 0.38; }
 }
+@media (prefers-reduced-motion: reduce) {
+  .studio-cutout-quality--working .studio-cutout-quality__lamp {
+    animation: none;
+  }
+}
 .studio-removal-switch {
   flex: 0 0 auto;
   display: flex;

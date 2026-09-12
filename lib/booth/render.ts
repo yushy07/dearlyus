@@ -164,7 +164,21 @@ export async function renderBooth(
         );
         ctx.fill();
         ctx.restore();
-        ctx.filter = FILTERS[design.filter];
+        const sceneMatch =
+          backdrop.tone === 'dark'
+            ? 'brightness(1.07) contrast(.97) saturate(.9)'
+            : 'brightness(1.015) contrast(.985) saturate(.94)';
+        const chosenFilter = FILTERS[design.filter];
+        ctx.save();
+        ctx.globalAlpha = backdrop.tone === 'dark' ? 0.2 : 0.13;
+        ctx.filter = 'blur(5px) brightness(0)';
+        if (photo.crop.mirror) {
+          ctx.translate((px + 2) * 2 + w, 0);
+          ctx.scale(-1, 1);
+        }
+        ctx.drawImage(person, px + 2, py + 2, w, h);
+        ctx.restore();
+        ctx.filter = `${chosenFilter === 'none' ? '' : `${chosenFilter} `}${sceneMatch}`;
         if (photo.crop.mirror) {
           ctx.translate(px * 2 + w, 0);
           ctx.scale(-1, 1);
