@@ -1,7 +1,11 @@
 import type { ImageSegmenter } from '@mediapipe/tasks-vision';
+import { cleanEdgeColours, refineConfidenceMask, type MatteQuality } from './matte';
 
 let segmenter: Promise<ImageSegmenter> | undefined;
 const cache = new Map<string, Promise<HTMLCanvasElement>>();
+const CUTOUT_VERSION = 2;
+
+export type RefinedCutout = HTMLCanvasElement & { quality?: MatteQuality };
 
 async function engine() {
   if (!segmenter) {
@@ -32,7 +36,7 @@ async function engine() {
 export function personCutout(
   image: HTMLImageElement,
 ): Promise<HTMLCanvasElement> {
-  const key = image.src;
+  const key = `${CUTOUT_VERSION}:${image.src}`;
   const existing = cache.get(key);
   if (existing) return existing;
   const task = (async () => {
@@ -48,6 +52,7 @@ export function personCutout(
           'Could not separate this portrait. Try a clearer photo.',
         );
       const values = mask.getAsFloat32Array();
+      const refined = refineConfidenceMask(values, mask.width, mask.height);
       const matte = document.createElement('canvas');
       matte.width = mask.width;
       matte.height = mask.height;
@@ -58,10 +63,9 @@ export function personCutout(
         right = 0,
         bottom = 0,
         foreground = 0;
-      for (let i = 0; i < values.length; i++) {
-        const t = Math.max(0, Math.min(1, (values[i] - 0.2) / 0.6));
-        pixels.data[i * 4 + 3] = Math.round(t * t * (3 - 2 * t) * 255);
-        if (values[i] > 0.5) {
+      for (let i = 0; i < refined.alpha.length; i++) {
+        pixels.data[i * 4 + 3] = Math.round(refined.alpha[i] * 255);
+        if (refined.alpha[i] > 0.08) {
           const x = i % mask.width,
             y = Math.floor(i / mask.width);
           left = Math.min(left, x);
@@ -76,29 +80,40 @@ export function personCutout(
           'No clear person found in one photo. Try a well-lit portrait or keep original backgrounds.',
         );
       mc.putImageData(pixels, 0, 0);
-      const full = document.createElement('canvas');
-      full.width = image.naturalWidth;
-      full.height = image.naturalHeight;
-      const ctx = full.getContext('2d')!;
-      ctx.drawImage(image, 0, 0);
-      ctx.globalCompositeOperation = 'destination-in';
-      ctx.drawImage(matte, 0, 0, full.width, full.height);
-      const x = (Math.max(0, left - 4) / mask.width) * full.width;
-      const y = (Math.max(0, top - 4) / mask.height) * full.height;
-      const w = Math.min(
-        full.width - x,
-        ((right - left + 9) / mask.width) * full.width,
-      );
-      const h = Math.min(
-        full.height - y,
-        ((bottom - top + 9) / mask.height) * full.height,
-      );
-      const cutout = document.createElement('canvas');
+      const x = (Math.max(0, left - 3) / mask.width) * image.naturalWidth;
+      const y = (Math.max(0, top - 3) / mask.height) * image.naturalHeight;
+      const w = Math.min(image.naturalWidth - x, ((right - left + 7) / mask.width) * image.naturalWidth);
+      const h = Math.min(image.naturalHeight - y, ((bottom - top + 7) / mask.height) * image.naturalHeight);
+      const cutout = document.createElement('canvas') as RefinedCutout;
       cutout.width = Math.max(1, Math.ceil(w));
       cutout.height = Math.max(1, Math.ceil(h));
-      cutout
-        .getContext('2d')!
-        .drawImage(full, x, y, w, h, 0, 0, cutout.width, cutout.height);
+      const cutoutContext = cutout.getContext('2d', { willReadFrequently: true })!;
+      cutoutContext.drawImage(image, x, y, w, h, 0, 0, cutout.width, cutout.height);
+      const scaledMatte = document.createElement('canvas');
+      scaledMatte.width = cutout.width;
+      scaledMatte.height = cutout.height;
+      const scaledContext = scaledMatte.getContext('2d')!;
+      scaledContext.imageSmoothingEnabled = true;
+      scaledContext.imageSmoothingQuality = 'high';
+      scaledContext.drawImage(
+        matte,
+        (x / image.naturalWidth) * mask.width,
+        (y / image.naturalHeight) * mask.height,
+        (w / image.naturalWidth) * mask.width,
+        (h / image.naturalHeight) * mask.height,
+        0,
+        0,
+        cutout.width,
+        cutout.height,
+      );
+      const subject = cutoutContext.getImageData(0, 0, cutout.width, cutout.height);
+      const scaledPixels = scaledContext.getImageData(0, 0, cutout.width, cutout.height).data;
+      const alpha = new Uint8ClampedArray(cutout.width * cutout.height);
+      for (let index = 0; index < alpha.length; index++) alpha[index] = scaledPixels[index * 4 + 3];
+      cleanEdgeColours(subject.data, alpha, cutout.width, cutout.height);
+      for (let index = 0; index < alpha.length; index++) subject.data[index * 4 + 3] = alpha[index];
+      cutoutContext.putImageData(subject, 0, 0);
+      cutout.quality = refined.quality;
       return cutout;
     } finally {
       result.close();
