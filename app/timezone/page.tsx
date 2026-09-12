@@ -46,14 +46,18 @@ export default function TimezoneHubPage() {
     transportMode: 'auto',
   });
 
-  const [now, setNow] = useState(new Date());
+  // Leave live clock fields blank until mount so the server and browser hydrate
+  // the same view, then start the clock locally.
+  const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
+    setNow(new Date());
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
   // Compute live times using IANA Timezone definitions
-  const getTimeInTz = (date: Date, timeZone: string) => {
+  const getTimeInTz = (date: Date | null, timeZone: string) => {
+    if (!date) return '—';
     try {
       return new Intl.DateTimeFormat('en-US', {
         timeZone,
@@ -67,7 +71,8 @@ export default function TimezoneHubPage() {
     }
   };
 
-  const getDateInTz = (date: Date, timeZone: string) => {
+  const getDateInTz = (date: Date | null, timeZone: string) => {
+    if (!date) return '—';
     try {
       return new Intl.DateTimeFormat('en-US', {
         timeZone,
