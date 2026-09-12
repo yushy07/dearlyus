@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Check,
   Download,
@@ -50,6 +50,7 @@ export default function CourtPage() {
   const [local, setLocal] = useState<CourtSnapshot>(() => initialCourt());
   const court = live ? normalizeCourt(runtime.snapshot) : local;
   const [introDismissed, setIntroDismissed] = useState(false);
+  const [ready, setReady] = useState(false);
   const [customTopic, setCustomTopic] = useState('');
   const [statementOne, setStatementOne] = useState('');
   const [statementTwo, setStatementTwo] = useState('');
@@ -59,10 +60,28 @@ export default function CourtPage() {
   const [saved, setSaved] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const stageCardRef = useRef<HTMLElement>(null);
+  const previousStage = useRef<CourtStage>('welcome');
 
   useEffect(() => {
+    setReady(true);
     if (live) setIntroDismissed(true);
   }, [live]);
+
+  useEffect(() => {
+    if (previousStage.current !== court.stage) {
+      previousStage.current = court.stage;
+      const reducedMotion = window.matchMedia(
+        '(prefers-reduced-motion: reduce)',
+      ).matches;
+      requestAnimationFrame(() =>
+        stageCardRef.current?.querySelector('article')?.scrollIntoView({
+          behavior: reducedMotion ? 'auto' : 'smooth',
+          block: 'start',
+        }),
+      );
+    }
+  }, [court.stage]);
 
   const names = useMemo(() => {
     if (!live) return { first: partnerA, second: partnerB };
@@ -432,9 +451,10 @@ export default function CourtPage() {
             name={names.second}
             active={court.stage === 'statement_two'}
           />
-          <main className="court-center">
+          <main className="court-center" ref={stageCardRef}>
             {!introDismissed && court.stage === 'welcome' && (
               <Welcome
+                ready={ready}
                 onStart={() => {
                   sounds.playPop();
                   setIntroDismissed(true);
@@ -509,6 +529,7 @@ export default function CourtPage() {
               court.verdict && (
                 <VerdictCard
                   verdict={court.verdict}
+                  names={names}
                   finished={court.stage === 'finished'}
                   accepted={court.acceptedBy.length}
                   live={live}
@@ -591,7 +612,7 @@ function Desk({
   );
 }
 
-function Welcome({ onStart }: { onStart: () => void }) {
+function Welcome({ onStart, ready }: { onStart: () => void; ready: boolean }) {
   return (
     <article className="court-card welcome-card">
       <span className="eyebrow">TONIGHT’S TINY HEARING</span>
@@ -600,15 +621,15 @@ function Welcome({ onStart }: { onStart: () => void }) {
         Where the charges are tiny, the drama is enormous, and every sentence is
         payable in affection.
       </p>
+      <button className="gavel-button" onClick={onStart} disabled={!ready}>
+        <Gavel size={20} /> Call our Court to order
+      </button>
       <ol>
         <li>Pick something silly.</li>
         <li>Tell both sides privately.</li>
         <li>Answer the Judge.</li>
         <li>Receive the ruling.</li>
       </ol>
-      <button className="gavel-button" onClick={onStart}>
-        <Gavel size={20} /> Call our Court to order
-      </button>
       <small>About 3–5 minutes · one playful round</small>
     </article>
   );
@@ -917,6 +938,7 @@ function ObjectionBar({
 
 function VerdictCard({
   verdict,
+  names,
   finished,
   accepted,
   live,
@@ -930,6 +952,7 @@ function VerdictCard({
   onRematch,
 }: {
   verdict: CourtVerdict;
+  names: { first: string; second: string };
   finished: boolean;
   accepted: number;
   live: boolean;
@@ -948,6 +971,15 @@ function VerdictCard({
       <div className="verdict-seal">♡</div>
       <h1>{verdict.title}</h1>
       <p className="comparison">{verdict.comparison}</p>
+      <div className="court-winner">
+        {verdict.winner === 'partnerA'
+          ? `♡ ${names.first} wins this round`
+          : verdict.winner === 'partnerB'
+            ? `♡ ${names.second} wins this round`
+            : verdict.winner === 'both'
+              ? '♡ Shared victory, shared responsibility'
+              : '♡ The tiny gavel awards this one to nobody'}
+      </div>
       <p>{verdict.funnyReason}</p>
       <section className="sentence">
         <small>THE AFFECTIONATE SENTENCE</small>

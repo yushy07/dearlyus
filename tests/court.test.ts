@@ -128,15 +128,30 @@ describe('playful Couples Court', () => {
     const verdict = localVerdict({
       ...initialCourt(),
       topic: 'The missing charger',
+      topicKey: 'charger',
     });
     expect(verdict).toMatchObject({
       winner: 'both',
       source: 'fallback',
       reaction: 'amused',
     });
-    expect(verdict.playfulSentence).toContain('Share');
+    expect(verdict.playfulSentence).toContain('video date');
     expect(JSON.stringify(verdict).toLowerCase()).not.toMatch(
       /toxic|manipulative|guilty/,
     );
+  });
+
+  it('chooses a side after a clear admission and assigns a remote sentence', () => {
+    const verdict = localVerdict({
+      ...initialCourt(),
+      topicKey: 'snacks',
+      topic: 'The missing fries',
+      statements: {
+        one: 'I ordered enough for myself.',
+        two: 'I admit I took the crispy fries without asking.',
+      },
+    });
+    expect(verdict.winner).toBe('partnerA');
+    expect(verdict.playfulSentence).toMatch(/voice-note|remote movie date/);
   });
 });

@@ -260,7 +260,8 @@ export function localReaction(snapshot: CourtSnapshot): CourtReaction {
       redirected: true,
     };
   return {
-    comparison: `I have heard two highly committed versions of “${snapshot.topic},” and both contain suspiciously excellent points.`,
+    comparison:
+      'I have heard two highly committed versions of this tiny matter, and both contain suspiciously excellent points.',
     summaryOne:
       'The first story presents a strong case with impressive dramatic timing.',
     summaryTwo:
@@ -272,16 +273,58 @@ export function localReaction(snapshot: CourtSnapshot): CourtReaction {
 }
 
 export function localVerdict(snapshot: CourtSnapshot): CourtVerdict {
+  const admissionScore = (text: string) =>
+    (
+      text.match(
+        /\b(i (?:did|took|forgot|kept|stole|ignored|used|lost|ate|snoozed)|my fault|i admit|i was wrong|sorry|without asking)\b/gi,
+      ) || []
+    ).length;
+  const firstScore = admissionScore(snapshot.statements?.one || '');
+  const secondScore = admissionScore(snapshot.statements?.two || '');
+  const winner: CourtWinner =
+    firstScore > secondScore
+      ? 'partnerB'
+      : secondScore > firstScore
+        ? 'partnerA'
+        : 'both';
+  const topicSentences: Record<string, string> = {
+    hoodie:
+      'The hoodie keeper must send a twenty-second virtual runway video, then grant the other person first-hug priority at the next reunion.',
+    blanket:
+      'The blanket thief must plan the next cosy video call and let their person choose the matching drinks.',
+    snacks:
+      'The snack suspect must send a dramatic voice-note apology and let their person choose the snack for the next remote movie date.',
+    playlist:
+      'The playlist monopolist must make a five-song dedication playlist; their person gets the next shared listening pick with no skips.',
+    replies:
+      'The slow replier owes three tiny check-in messages on the next busy day: arrived, still alive, and home safe.',
+    movie:
+      'The indecisive movie picker must prepare three watch-together options; their person gets the final choice.',
+    alarm:
+      'The snooze champion must send the next good-morning voice note and arrange one punctual virtual breakfast date.',
+    charger:
+      'The charger wanderer must label the cable, send proof of its new home, and plan the next ten-minute video-call treat.',
+    teasing:
+      'The teasing expert must send one sincere compliment for every dramatic joke made today.',
+  };
   return {
-    title: 'Both Stories Are Adorably Suspicious',
+    title:
+      winner === 'both'
+        ? 'Both Stories Are Adorably Suspicious'
+        : 'The Tiny Gavel Has Chosen a Side',
     comparison:
       snapshot.judgeReaction?.comparison ||
       `Both sides made a memorable case about ${snapshot.topic}.`,
-    winner: 'both',
+    winner,
     funnyReason:
-      'The Court detected affection, selective memory, and enough shared responsibility to fill one tiny notebook.',
+      winner === 'both'
+        ? 'The Court detected affection, selective memory, and enough shared responsibility to fill one tiny notebook.'
+        : 'One story contained a suspiciously clear admission, so the tiny gavel is refusing to call this one a draw.',
     playfulSentence:
-      'Share one small treat today and let the person who laughs first choose it.',
+      winner === 'both'
+        ? 'Plan a twenty-minute video date together this week; one person chooses the snack and the other chooses what you watch.'
+        : topicSentences[snapshot.topicKey] ||
+          'The partner responsible must send one charming apology voice note, then let their person choose the next shared online date activity.',
     judgeClosingLine: 'The ruling is final until somebody brings dessert.',
     reaction: 'amused',
     source: 'fallback',

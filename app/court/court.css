@@ -13,6 +13,13 @@
   padding: 22px 18px 54px;
   color: var(--ink);
 }
+body:has(.tiny-court) .specular-glass-dock {
+  transform: scale(0.78);
+  transform-origin: right bottom;
+  border-color: rgba(184, 154, 103, 0.55) !important;
+  background: #33262d !important;
+  box-shadow: 0 10px 22px rgba(51, 38, 45, 0.28) !important;
+}
 
 .court-progress {
   display: flex;
@@ -289,6 +296,7 @@
   box-shadow: 0 16px 40px rgba(68, 49, 55, 0.16);
   text-align: center;
   animation: paperEnter 0.42s cubic-bezier(0.2, 0.8, 0.2, 1);
+  scroll-margin-top: 108px;
 }
 .court-card h1,
 .court-card h2 {
@@ -696,6 +704,16 @@ button:disabled {
     italic 18px/1.55 Georgia,
     serif;
 }
+.court-winner {
+  display: inline-block;
+  margin: 0 0 14px;
+  padding: 7px 13px;
+  color: #fff9ef;
+  border-radius: 999px;
+  background: var(--burgundy);
+  font-size: 12px;
+  font-weight: 800;
+}
 .sentence {
   display: block;
   margin: 24px 0;
@@ -829,9 +847,23 @@ button:disabled {
   }
   .court-center {
     width: calc(100% - 110px);
+    padding-top: 250px;
+  }
+  .courtroom {
+    min-height: 680px;
+  }
+  .court-crest {
+    top: 16px;
+    width: 72px;
+    height: 72px;
+    font-size: 40px;
+  }
+  .judge-bench {
+    top: 54px;
+    transform: translateX(-50%) scale(0.82);
   }
   .partner-desk {
-    top: 232px;
+    top: 157px;
     width: 145px;
   }
   .desk-left {
@@ -847,8 +879,20 @@ button:disabled {
     right: 55px;
     left: 55px;
   }
+  .court-card {
+    padding: 23px 24px;
+  }
+  .court-card h1 {
+    font-size: 34px;
+  }
+  .welcome-card ol {
+    margin: 16px 0;
+  }
+  .topic-grid button {
+    min-height: 98px;
+  }
 }
-@media (max-width: 650px) {
+@media (max-width: 720px) {
   .tiny-court {
     padding: 12px 8px 35px;
   }
@@ -860,25 +904,35 @@ button:disabled {
     font-size: 11px;
   }
   .courtroom {
-    min-height: 850px;
+    min-height: 650px;
   }
   .velvet-curtain {
     width: 22px;
   }
   .court-crest {
-    top: 25px;
-    width: 68px;
-    height: 68px;
-    font-size: 38px;
+    top: 10px;
+    width: 50px;
+    height: 50px;
+    font-size: 29px;
   }
   .judge-bench {
-    top: 70px;
-    transform: translateX(-50%) scale(0.85);
+    top: 12px;
+    transform: translateX(-50%) scale(0.63);
   }
   .partner-desk {
-    top: 218px;
+    top: 82px;
     width: 42%;
-    padding-inline: 9px;
+    min-height: 72px;
+    padding: 31px 9px 9px;
+  }
+  .partner-desk strong {
+    font-size: 14px;
+  }
+  .partner-desk small {
+    font-size: 9px;
+  }
+  .desk-lamp {
+    top: 11px;
   }
   .desk-left {
     left: 5%;
@@ -888,11 +942,21 @@ button:disabled {
   }
   .court-center {
     width: calc(100% - 54px);
-    padding-top: 345px;
+    padding-top: 125px;
     padding-bottom: 170px;
   }
   .court-card {
-    padding: 22px 16px;
+    padding: 18px 15px;
+  }
+  .court-card h1 {
+    font-size: 27px;
+  }
+  .court-card h2 {
+    font-size: 23px;
+  }
+  .court-card > p {
+    margin-bottom: 13px;
+    line-height: 1.45;
   }
   .topic-grid,
   .story-pair,
@@ -901,7 +965,26 @@ button:disabled {
     grid-template-columns: 1fr;
   }
   .welcome-card ol {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    margin: 11px 0;
+  }
+  .welcome-card li {
+    padding: 7px 3px;
+    font-size: 9px;
+  }
+  .welcome-card > small {
+    margin-top: 8px;
+  }
+  .topic-grid button {
+    min-height: 78px;
+    padding: 9px;
+  }
+  .topic-grid span {
+    font-size: 19px;
+  }
+  .topic-grid small {
+    display: none;
   }
   .custom-matter > div {
     display: grid;
