@@ -2,7 +2,17 @@
 
 import { useEffect, useState, type PointerEvent, type CSSProperties } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight, Search, Heart, Sparkles, Clock, Camera, Sparkle } from 'lucide-react';
+import {
+  ArrowUpRight,
+  Search,
+  Heart,
+  Sparkles,
+  MoonStar,
+  Zap,
+  Coffee,
+  Palette,
+  Clock3,
+} from 'lucide-react';
 import { Navbar } from '@/components/shared';
 import { useCoupleProfile } from '@/lib/couple';
 import './activity-collection.css';
@@ -307,14 +317,14 @@ const activities: ActivityItem[] = [
   },
   {
     href: '/timezone',
-    title: 'Timezone & Reunion',
-    description: 'Dual IANA clocks, 24-hr Golden Window ribbon, 3D orbit globe, and airport countdown.',
+    title: 'Across the Distance',
+    description: 'Paired local clocks, a shared-time window, a 3D connection globe, and your next-moment countdown.',
     category: 'distance',
     motif: 'timezone',
     duration: '10m',
     camera: 'none',
     energy: 'low',
-    keepsake: 'Reunion Milestone',
+    keepsake: 'Distance Moment',
     tags: ['10m', 'no-camera', 'low-energy', 'works-solo'],
   },
   {
@@ -343,32 +353,71 @@ const activities: ActivityItem[] = [
   },
 ];
 
-const CURATED_FLIGHTS = [
+const CURATED_ARCS = [
   {
-    title: '🌙 Quiet Night In',
-    subtitle: 'Slow, comforting intimacy with dim lamps',
-    steps: ['Honest Cards (20m)', 'Draw Together (15m)', 'Letters to Tomorrow (20m)'],
+    id: 'quiet-night',
+    number: '01',
+    title: 'Quiet Night In',
+    mood: 'Soft & unhurried',
+    description: 'A slow evening for talking, drawing, and leaving each other something tender.',
+    duration: '55 min',
+    steps: [
+      { title: 'Honest Cards', duration: '20m' },
+      { title: 'Draw Together', duration: '15m' },
+      { title: 'Letters to Tomorrow', duration: '20m' },
+    ],
     path: '/date',
   },
   {
-    title: '⚡ Chaotic Rematch',
-    subtitle: 'Laughter, arcade reflexes, and silly poses',
-    steps: ['The Arcade (15m)', 'Couples Court (15m)', 'Photobooth Strip (10m)'],
+    id: 'chaotic-rematch',
+    number: '02',
+    title: 'Chaotic Rematch',
+    mood: 'Playful & competitive',
+    description: 'Big reactions, tiny rivalries, and a photo strip to remember who won.',
+    duration: '40 min',
+    steps: [
+      { title: 'The Arcade', duration: '15m' },
+      { title: 'Couples Court', duration: '15m' },
+      { title: 'Photobooth Strip', duration: '10m' },
+    ],
     path: '/date',
   },
   {
-    title: '☕ Reconnect After a Hard Week',
-    subtitle: 'Zero pressure, soft check-ins, and mutual grounding',
-    steps: ['Love Forecast (5m)', 'Timezone Horizon (10m)', 'The Lab Co-Work (25m)'],
+    id: 'reconnect',
+    number: '03',
+    title: 'Reconnect After a Hard Week',
+    mood: 'Low energy & close',
+    description: 'Gentle check-ins and shared company when you want closeness without pressure.',
+    duration: '40 min',
+    steps: [
+      { title: 'Love Forecast', duration: '5m' },
+      { title: 'Across the Distance', duration: '10m' },
+      { title: 'The Lab Co-Work', duration: '25m' },
+    ],
     path: '/date',
   },
   {
-    title: '🎨 Make a Keepsake',
-    subtitle: 'Co-design something tangible to print and cherish',
-    steps: ['Matching Shirts (15m)', 'Digital Scrapbook (20m)', 'Photobooth (10m)'],
+    id: 'make-a-keepsake',
+    number: '04',
+    title: 'Make a Keepsake',
+    mood: 'Creative & sentimental',
+    description: 'Make something together that can live beyond tonight on a wall, shirt, or shelf.',
+    duration: '45 min',
+    steps: [
+      { title: 'Matching Shirts', duration: '15m' },
+      { title: 'Digital Scrapbook', duration: '20m' },
+      { title: 'Photobooth', duration: '10m' },
+    ],
     path: '/date',
   },
-];
+] as const;
+
+const ARC_ICONS = {
+  'quiet-night': MoonStar,
+  'chaotic-rematch': Zap,
+  reconnect: Coffee,
+  'make-a-keepsake': Palette,
+};
 
 function tilt(event: PointerEvent<HTMLAnchorElement>) {
   if (
@@ -546,52 +595,59 @@ export default function ActivityPage() {
           </div>
         </section>
 
-        {/* Curated Date Night Flight Sequences */}
-        <section style={{ margin: '0 0 54px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-            <span className="badge hot" style={{ fontSize: '11px' }}>
-              Curated Date Flights
-            </span>
-            <span style={{ fontSize: '12px', color: '#86636a', fontFamily: 'var(--font-mono)' }}>
-              3-ACT EVENING ARCS
-            </span>
+        <section className="collection-concierge" aria-labelledby="concierge-title">
+          <div className="collection-concierge__heading">
+            <div>
+              <span className="collection-concierge__eyebrow">CURATED FOR THE TWO OF YOU · THREE LITTLE ACTS</span>
+              <h2 id="concierge-title">Don&apos;t know what to do tonight?</h2>
+              <p>Choose the feeling. We&apos;ll help you turn it into a whole evening together.</p>
+            </div>
+            <div className="collection-concierge__note" aria-label={`Date ideas for ${partnerA} and ${partnerB}`}>
+              <Heart size={16} />
+              <span>
+                Set aside for
+                <strong>{partnerA} &amp; {partnerB}</strong>
+              </span>
+            </div>
           </div>
-          <h2 style={{ fontSize: '26px', fontWeight: 800, color: '#493039', marginBottom: '18px' }}>
-            Don&apos;t know where to begin? Try a curated arc.
-          </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
-            {CURATED_FLIGHTS.map((flight, idx) => (
-              <Link
-                key={idx}
-                href={flight.path}
-                style={{
-                  textDecoration: 'none',
-                  background: 'var(--paper-raised)',
-                  border: '1px solid var(--line)',
-                  borderRadius: '16px',
-                  padding: '20px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '10px',
-                  boxShadow: 'var(--shadow-sm)',
-                  transition: 'transform 0.15s ease',
-                }}
-              >
-                <h3 style={{ fontSize: '16.5px', fontWeight: 800, color: '#493039', margin: 0 }}>
-                  {flight.title}
-                </h3>
-                <p style={{ fontSize: '13px', color: '#796369', margin: 0, minHeight: '34px' }}>
-                  {flight.subtitle}
-                </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', borderTop: '1px solid var(--line)', paddingTop: '10px' }}>
-                  {flight.steps.map((s, sIdx) => (
-                    <div key={sIdx} style={{ fontSize: '12px', color: '#945663', fontWeight: 600 }}>
-                      Act {sIdx + 1}: {s}
+
+          <div className="collection-concierge__grid">
+            {CURATED_ARCS.map((arc) => {
+              const ArcIcon = ARC_ICONS[arc.id];
+              return (
+                <Link
+                  key={arc.id}
+                  href={arc.path}
+                  className={`collection-arc collection-arc--${arc.id}`}
+                  aria-label={`Build the ${arc.title} date plan`}
+                >
+                  <div className="collection-arc__topline">
+                    <span className="collection-arc__number">ARC {arc.number}</span>
+                    <span className="collection-arc__duration"><Clock3 size={14} /> {arc.duration}</span>
+                  </div>
+                  <div className="collection-arc__intro">
+                    <span className="collection-arc__icon" aria-hidden="true"><ArcIcon size={23} /></span>
+                    <div>
+                      <span className="collection-arc__mood">{arc.mood}</span>
+                      <h3>{arc.title}</h3>
                     </div>
-                  ))}
-                </div>
-              </Link>
-            ))}
+                  </div>
+                  <p className="collection-arc__description">{arc.description}</p>
+                  <ol className="collection-arc__steps" aria-label={`${arc.title} itinerary`}>
+                    {arc.steps.map((step, stepIndex) => (
+                      <li key={step.title}>
+                        <span className="collection-arc__step-number">{stepIndex + 1}</span>
+                        <strong>{step.title}</strong>
+                        <span>{step.duration}</span>
+                      </li>
+                    ))}
+                  </ol>
+                  <span className="collection-arc__cta">
+                    Build this date <ArrowUpRight size={17} />
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         </section>
 
