@@ -9,7 +9,15 @@ import {
   type BoothDesign,
   type Photo,
 } from './model';
-import { personCutout } from './cutout';
+import { cutoutQuality, personCutout, type RefinedCutout } from './cutout';
+
+export type BoothRenderProgress = {
+  stage: 'loading' | 'finding' | 'cleaning' | 'matching' | 'ready';
+  photoId?: string;
+  completed: number;
+  total: number;
+  quality?: RefinedCutout['quality'];
+};
 
 async function load(src: string): Promise<HTMLImageElement> {
   const image = new Image();
@@ -59,7 +67,9 @@ export async function renderBooth(
   design: BoothDesign,
   solo: boolean,
   scale = 2,
+  onProgress?: (progress: BoothRenderProgress) => void,
 ) {
+  onProgress?.({ stage: 'loading', completed: 0, total: 0 });
   await document.fonts.ready;
   const size = logicalSize(design.layout),
     canvas = document.createElement('canvas');
@@ -89,8 +99,20 @@ export async function renderBooth(
   );
   if (design.composition === 'backdrop') {
     backdropImage = await loadScene(backdrop.image).catch(() => null);
-    for (const [id, image] of images)
-      cutouts.set(id, await personCutout(image));
+    let completed = 0;
+    onProgress?.({ stage: 'finding', completed, total: images.size });
+    for (const [id, image] of images) {
+      const cutout = await personCutout(image);
+      completed++;
+      cutouts.set(id, cutout);
+      onProgress?.({
+        stage: completed === images.size ? 'matching' : 'cleaning',
+        photoId: id,
+        completed,
+        total: images.size,
+        quality: cutoutQuality(cutout),
+      });
+    }
   }
   for (const [index, rect] of frameRects(design.layout).entries()) {
     ctx.fillStyle = '#e7ded2';
@@ -233,6 +255,7 @@ export async function renderBooth(
     ctx.stroke();
     ctx.restore();
   }
+  onProgress?.({ stage: 'ready', completed: images.size, total: images.size });
   return canvas;
 }
 export async function canvasBlob(canvas: HTMLCanvasElement) {

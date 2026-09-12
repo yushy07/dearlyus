@@ -7,6 +7,10 @@ const CUTOUT_VERSION = 2;
 
 export type RefinedCutout = HTMLCanvasElement & { quality?: MatteQuality };
 
+export function cutoutQuality(canvas: HTMLCanvasElement) {
+  return (canvas as RefinedCutout).quality;
+}
+
 async function engine() {
   if (!segmenter) {
     segmenter = (async () => {
@@ -78,6 +82,10 @@ export function personCutout(
       if (foreground < values.length * 0.01)
         throw new Error(
           'No clear person found in one photo. Try a well-lit portrait or keep original backgrounds.',
+        );
+      if (refined.quality.foregroundRatio > 0.96)
+        throw new Error(
+          'The background could not be separated from this portrait. Try brighter, more even lighting.',
         );
       mc.putImageData(pixels, 0, 0);
       const x = (Math.max(0, left - 3) / mask.width) * image.naturalWidth;

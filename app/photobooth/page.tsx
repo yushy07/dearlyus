@@ -39,6 +39,7 @@ import {
   canvasBlob,
   downloadBlob,
   printSheet,
+  type BoothRenderProgress,
 } from '@/lib/booth/render';
 import './studio.css';
 import { clearCutouts } from '@/lib/booth/cutout';
@@ -74,6 +75,10 @@ export default function PhotoboothPage() {
     [notice, setNotice] = useState(''),
     [stickerId, setStickerId] = useState('');
   const [rendering, setRendering] = useState(false);
+  const [processing, setProcessing] = useState<BoothRenderProgress>({
+    stage: 'ready', completed: 0, total: 0,
+  });
+  const [cutoutRetry, setCutoutRetry] = useState(0);
   const [sceneLoadError, setSceneLoadError] = useState(false),
     [sceneRetry, setSceneRetry] = useState(0);
   const [ready, setReady] = useState(false);
@@ -122,7 +127,7 @@ export default function PhotoboothPage() {
     let active = true;
     setRendering(true);
     const timeout = setTimeout(() => {
-      void renderBooth(booth.shots, booth.design, booth.solo, 0.6)
+      void renderBooth(booth.shots, booth.design, booth.solo, 0.6, setProcessing)
         .then(canvasBlob)
         .then((blob) => {
           if (!active) return;
@@ -148,7 +153,12 @@ export default function PhotoboothPage() {
       active = false;
       clearTimeout(timeout);
     };
-  }, [booth.shots, booth.design, booth.solo]);
+  }, [booth.shots, booth.design, booth.solo, cutoutRetry]);
+  const retryCutouts = () => {
+    clearCutouts();
+    setRenderError('');
+    setCutoutRetry((value) => value + 1);
+  };
   useEffect(() => {
     if (booth.design.composition !== 'backdrop') {
       setSceneLoadError(false);
@@ -976,9 +986,37 @@ export default function PhotoboothPage() {
                         </button>
                       </div>
                       <p className="studio-processing-note">
-                        Free on-device processing. Cutouts are cached while you
-                        try scenes; originals stay intact.
+                        Free on-device processing. Refined cutouts are cached
+                        while you try scenes; originals stay intact.
                       </p>
+                      {booth.design.composition === 'backdrop' && (
+                        <div className={`studio-cutout-quality studio-cutout-quality--${processing.quality?.status ?? (rendering ? 'working' : 'good')}`} role="status">
+                          <span className="studio-cutout-quality__lamp" aria-hidden="true" />
+                          <div>
+                            <strong>
+                              {rendering
+                                ? processing.stage === 'loading'
+                                  ? 'Loading your photographs'
+                                  : processing.stage === 'finding'
+                                    ? 'Finding both people'
+                                    : processing.stage === 'cleaning'
+                                      ? 'Cleaning portrait edges'
+                                      : 'Matching the selected scene'
+                                : processing.quality?.status === 'fair'
+                                  ? 'Cutout ready — check the edges'
+                                  : 'Refined cutout ready'}
+                            </strong>
+                            <small>
+                              {rendering && processing.total
+                                ? `${processing.completed} of ${processing.total} portraits refined`
+                                : 'Hair, hands and clothing edges have been cleaned for export.'}
+                            </small>
+                          </div>
+                          <button type="button" disabled={rendering} onClick={retryCutouts}>
+                            Refine again
+                          </button>
+                        </div>
+                      )}
                       <div className="studio-options">
                         {Object.keys(FILTERS).map((filter) => (
                           <button
@@ -1457,7 +1495,15 @@ export default function PhotoboothPage() {
                       : 'Updating your preview…'}
                   </p>
                 )}
-                {renderError && <p role="alert">{renderError}</p>}
+                {renderError && (
+                  <div className="studio-render-recovery" role="alert">
+                    <p>{renderError}</p>
+                    <div>
+                      <button onClick={retryCutouts}>Try removal again</button>
+                      <button onClick={() => patch({ composition: 'split' })}>Use original backgrounds</button>
+                    </div>
+                  </div>
+                )}
               </aside>
             </div>
           </>
