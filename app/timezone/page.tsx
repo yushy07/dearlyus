@@ -8,18 +8,67 @@ import { useCoupleProfile } from '@/lib/couple';
 import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
 import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
-import { loadActivityRecords, upsertActivityRecord } from '@/lib/activity-records';
+import {
+  loadActivityRecords,
+  upsertActivityRecord,
+} from '@/lib/activity-records';
+import './timezone.css';
 
 const COMMON_TIMEZONES = [
-  { label: 'Calgary / Edmonton (MT)', tz: 'America/Edmonton', lat: 51.0447, lng: -114.0719 },
-  { label: 'Jakarta / Bangkok (WIB)', tz: 'Asia/Jakarta', lat: -6.2088, lng: 106.8456 },
-  { label: 'Vancouver / Seattle (PT)', tz: 'America/Vancouver', lat: 49.2827, lng: -123.1207 },
-  { label: 'Toronto / New York (ET)', tz: 'America/Toronto', lat: 43.6532, lng: -79.3832 },
-  { label: 'London / Dublin (GMT/BST)', tz: 'Europe/London', lat: 51.5074, lng: -0.1278 },
-  { label: 'Paris / Berlin (CET)', tz: 'Europe/Paris', lat: 48.8566, lng: 2.3522 },
-  { label: 'Tokyo / Seoul (JST/KST)', tz: 'Asia/Tokyo', lat: 35.6762, lng: 139.6503 },
-  { label: 'Sydney / Melbourne (AEST)', tz: 'Australia/Sydney', lat: -33.8688, lng: 151.2093 },
-  { label: 'Singapore / Manila (SGT)', tz: 'Asia/Singapore', lat: 1.3521, lng: 103.8198 },
+  {
+    label: 'Calgary / Edmonton (MT)',
+    tz: 'America/Edmonton',
+    lat: 51.0447,
+    lng: -114.0719,
+  },
+  {
+    label: 'Jakarta / Bangkok (WIB)',
+    tz: 'Asia/Jakarta',
+    lat: -6.2088,
+    lng: 106.8456,
+  },
+  {
+    label: 'Vancouver / Seattle (PT)',
+    tz: 'America/Vancouver',
+    lat: 49.2827,
+    lng: -123.1207,
+  },
+  {
+    label: 'Toronto / New York (ET)',
+    tz: 'America/Toronto',
+    lat: 43.6532,
+    lng: -79.3832,
+  },
+  {
+    label: 'London / Dublin (GMT/BST)',
+    tz: 'Europe/London',
+    lat: 51.5074,
+    lng: -0.1278,
+  },
+  {
+    label: 'Paris / Berlin (CET)',
+    tz: 'Europe/Paris',
+    lat: 48.8566,
+    lng: 2.3522,
+  },
+  {
+    label: 'Tokyo / Seoul (JST/KST)',
+    tz: 'Asia/Tokyo',
+    lat: 35.6762,
+    lng: 139.6503,
+  },
+  {
+    label: 'Sydney / Melbourne (AEST)',
+    tz: 'Australia/Sydney',
+    lat: -33.8688,
+    lng: 151.2093,
+  },
+  {
+    label: 'Singapore / Manila (SGT)',
+    tz: 'Asia/Singapore',
+    lat: 1.3521,
+    lng: 103.8198,
+  },
 ];
 
 export default function TimezoneHubPage() {
@@ -33,7 +82,9 @@ export default function TimezoneHubPage() {
   const [reunionDate, setReunionDate] = useState('2026-11-20T18:00');
   const [momentLabel, setMomentLabel] = useState('Our next moment together');
   const [viewMode, setViewMode] = useState<'globe' | 'accessible'>('globe');
-  const [currentStage, setCurrentStage] = useState<'ready' | 'play' | 'remember'>('play');
+  const [currentStage, setCurrentStage] = useState<
+    'ready' | 'play' | 'remember'
+  >('play');
   const [heartbeatSent, setHeartbeatSent] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
@@ -99,10 +150,35 @@ export default function TimezoneHubPage() {
   };
 
   const offsetHours = getTzHourOffset(tz1, tz2);
+  const overlapHours = Array.from({ length: 24 }, (_, hour) => hour).filter(
+    (hour) => {
+      const partnerHour = (hour + offsetHours + 24) % 24;
+      return hour >= 7 && hour <= 22 && partnerHour >= 7 && partnerHour <= 22;
+    },
+  );
+  const formatHour = (hour: number) => {
+    const normalized = (hour + 24) % 24;
+    const period = normalized >= 12 ? 'PM' : 'AM';
+    const displayHour = normalized % 12 || 12;
+    return `${displayHour}:00 ${period}`;
+  };
+  const overlapRanges = overlapHours.reduce<
+    Array<{ start: number; end: number }>
+  >((ranges, hour) => {
+    const current = ranges[ranges.length - 1];
+    if (current && hour === current.end + 1) current.end = hour;
+    else ranges.push({ start: hour, end: hour });
+    return ranges;
+  }, []);
+  const overlapLabel = overlapRanges.length
+    ? `${overlapRanges.map((range) => `${formatHour(range.start)} – ${formatHour(range.end + 1)}`).join(' & ')} (${city1})`
+    : 'No easy awake-time overlap today';
 
   // Selected cities geo
-  const city1Geo = COMMON_TIMEZONES.find((c) => c.tz === tz1) || COMMON_TIMEZONES[0];
-  const city2Geo = COMMON_TIMEZONES.find((c) => c.tz === tz2) || COMMON_TIMEZONES[1];
+  const city1Geo =
+    COMMON_TIMEZONES.find((c) => c.tz === tz1) || COMMON_TIMEZONES[0];
+  const city2Geo =
+    COMMON_TIMEZONES.find((c) => c.tz === tz2) || COMMON_TIMEZONES[1];
 
   const distanceKm = calculateGreatCircleDistance(
     city1Geo.lat,
@@ -120,13 +196,13 @@ export default function TimezoneHubPage() {
         name: city1,
         lat: city1Geo.lat,
         lng: city1Geo.lng,
-        color: '#437EEB',
+        color: '#C89A9F',
       },
       {
         name: city2,
         lat: city2Geo.lat,
         lng: city2Geo.lng,
-        color: '#FF4E78',
+        color: '#B89A67',
       },
     );
     globe.start();
@@ -135,7 +211,12 @@ export default function TimezoneHubPage() {
   }, [viewMode, city1, city2, city1Geo, city2Geo]);
 
   // Reunion Countdown calculation
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
   useEffect(() => {
     const target = new Date(reunionDate).getTime();
     const updateCountdown = () => {
@@ -161,30 +242,60 @@ export default function TimezoneHubPage() {
   useEffect(() => {
     if (!space?.id) return;
     void loadActivityRecords<{
-      city1?: string; city2?: string; tz1?: string; tz2?: string;
-      reunionDate?: string; momentLabel?: string;
-    }>(space.id, 'reunion').then((records) => {
-      const saved = records.find((record) => record.key === 'current-reunion');
-      if (!saved) return;
-      if (saved.payload.city1) setCity1(saved.payload.city1);
-      if (saved.payload.city2) setCity2(saved.payload.city2);
-      if (saved.payload.tz1) setTz1(saved.payload.tz1);
-      if (saved.payload.tz2) setTz2(saved.payload.tz2);
-      if (saved.payload.reunionDate) setReunionDate(saved.payload.reunionDate);
-      if (saved.payload.momentLabel) setMomentLabel(saved.payload.momentLabel);
-    }).catch((error) => console.error('Failed to restore reunion plan:', error))
+      city1?: string;
+      city2?: string;
+      tz1?: string;
+      tz2?: string;
+      reunionDate?: string;
+      momentLabel?: string;
+    }>(space.id, 'reunion')
+      .then((records) => {
+        const saved = records.find(
+          (record) => record.key === 'current-reunion',
+        );
+        if (!saved) return;
+        if (saved.payload.city1) setCity1(saved.payload.city1);
+        if (saved.payload.city2) setCity2(saved.payload.city2);
+        if (saved.payload.tz1) setTz1(saved.payload.tz1);
+        if (saved.payload.tz2) setTz2(saved.payload.tz2);
+        if (saved.payload.reunionDate)
+          setReunionDate(saved.payload.reunionDate);
+        if (saved.payload.momentLabel)
+          setMomentLabel(saved.payload.momentLabel);
+      })
+      .catch((error) => console.error('Failed to restore reunion plan:', error))
       .finally(() => setSharedLoaded(true));
   }, [space?.id]);
 
   useEffect(() => {
     if (!space?.id || !sharedLoaded) return;
-    const timer = setTimeout(() => void upsertActivityRecord({
-      coupleId: space.id, kind: 'reunion', key: 'current-reunion', title: 'Our Next Moment',
-      targetAt: Number.isNaN(Date.parse(reunionDate)) ? null : new Date(reunionDate).toISOString(),
-      payload: { city1, city2, tz1, tz2, reunionDate, momentLabel },
-    }).catch((error) => console.error('Failed to sync reunion plan:', error)), 700);
+    const timer = setTimeout(
+      () =>
+        void upsertActivityRecord({
+          coupleId: space.id,
+          kind: 'reunion',
+          key: 'current-reunion',
+          title: 'Our Next Moment',
+          targetAt: Number.isNaN(Date.parse(reunionDate))
+            ? null
+            : new Date(reunionDate).toISOString(),
+          payload: { city1, city2, tz1, tz2, reunionDate, momentLabel },
+        }).catch((error) =>
+          console.error('Failed to sync reunion plan:', error),
+        ),
+      700,
+    );
     return () => clearTimeout(timer);
-  }, [city1, city2, tz1, tz2, reunionDate, momentLabel, sharedLoaded, space?.id]);
+  }, [
+    city1,
+    city2,
+    tz1,
+    tz2,
+    reunionDate,
+    momentLabel,
+    sharedLoaded,
+    space?.id,
+  ]);
 
   const sendHeartbeat = () => {
     sounds.playHeartbeat();
@@ -212,7 +323,9 @@ export default function TimezoneHubPage() {
       'END:VCALENDAR',
     ].join('\r\n');
 
-    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const blob = new Blob([icsContent], {
+      type: 'text/calendar;charset=utf-8',
+    });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -263,10 +376,15 @@ export default function TimezoneHubPage() {
         badge: 'Distance',
       }}
     >
-      <div style={{ maxWidth: '980px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '28px' }}>
-        
+      <div className="distance-space">
+        <div className="distance-space__intro" aria-hidden="true">
+          <span>DEARLY US · ACROSS THE DISTANCE</span>
+          <i>Two clocks, one shared rhythm</i>
+        </div>
+
         {/* Top Controls: City & Timezone Selection */}
         <div
+          className="distance-controls"
           style={{
             background: 'var(--paper-raised)',
             border: '1px solid var(--line)',
@@ -280,29 +398,22 @@ export default function TimezoneHubPage() {
             boxShadow: 'var(--shadow-sm)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-            <div>
-              <label style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-soft)' }}>
-                🌸 {partnerA}&apos;s City &amp; Timezone
+          <div className="distance-controls__cities">
+            <div className="distance-city-field">
+              <label>
+                <span className="distance-person-dot distance-person-dot--rose" />{' '}
+                {partnerA}&apos;s place
               </label>
               <select
                 value={tz1}
                 onChange={(e) => {
                   setTz1(e.target.value);
-                  const found = COMMON_TIMEZONES.find((c) => c.tz === e.target.value);
+                  const found = COMMON_TIMEZONES.find(
+                    (c) => c.tz === e.target.value,
+                  );
                   if (found) setCity1(found.label.split(' ')[0]);
                 }}
-                style={{
-                  display: 'block',
-                  marginTop: '4px',
-                  padding: '8px 12px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--line)',
-                  background: 'var(--paper)',
-                  color: 'var(--ink)',
-                  fontWeight: 600,
-                  fontSize: '13.5px',
-                }}
+                className="distance-select"
               >
                 {COMMON_TIMEZONES.map((c) => (
                   <option key={c.tz} value={c.tz}>
@@ -312,32 +423,25 @@ export default function TimezoneHubPage() {
               </select>
             </div>
 
-            <div style={{ fontSize: '20px', color: 'var(--ink-soft)', alignSelf: 'center', marginTop: '14px' }}>
-              ⇄
+            <div className="distance-controls__link" aria-hidden="true">
+              <span>♡</span>
             </div>
 
-            <div>
-              <label style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-soft)' }}>
-                💙 {partnerB}&apos;s City &amp; Timezone
+            <div className="distance-city-field">
+              <label>
+                <span className="distance-person-dot distance-person-dot--brass" />{' '}
+                {partnerB}&apos;s place
               </label>
               <select
                 value={tz2}
                 onChange={(e) => {
                   setTz2(e.target.value);
-                  const found = COMMON_TIMEZONES.find((c) => c.tz === e.target.value);
+                  const found = COMMON_TIMEZONES.find(
+                    (c) => c.tz === e.target.value,
+                  );
                   if (found) setCity2(found.label.split(' ')[0]);
                 }}
-                style={{
-                  display: 'block',
-                  marginTop: '4px',
-                  padding: '8px 12px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--line)',
-                  background: 'var(--paper)',
-                  color: 'var(--ink)',
-                  fontWeight: 600,
-                  fontSize: '13.5px',
-                }}
+                className="distance-select"
               >
                 {COMMON_TIMEZONES.map((c) => (
                   <option key={c.tz} value={c.tz}>
@@ -348,30 +452,31 @@ export default function TimezoneHubPage() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div className="distance-controls__actions">
             <button
-              onClick={() => setViewMode(viewMode === 'globe' ? 'accessible' : 'globe')}
-              className="btn btn-ghost"
-              style={{ fontSize: '12.5px', padding: '8px 14px' }}
+              onClick={() =>
+                setViewMode(viewMode === 'globe' ? 'accessible' : 'globe')
+              }
+              className="distance-button distance-button--quiet"
               title="Toggle between 3D Globe and accessible list representation"
             >
-              {viewMode === 'globe' ? '📋 Horizon List View' : '🌐 3D Orbit Globe'}
+              {viewMode === 'globe' ? 'Read the distance' : 'View the globe'}
             </button>
             <button
               onClick={sendHeartbeat}
-              className="btn btn-primary"
-              style={{ fontSize: '12.5px', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '6px' }}
+              className="distance-button distance-button--heart"
             >
-              <span>💖</span>
-              {heartbeatSent ? 'Heartbeat Sent!' : 'Send Heartbeat Touch'}
+              <span aria-hidden="true">♡</span>
+              {heartbeatSent ? 'Heartbeat sent' : 'Send a heartbeat'}
             </button>
           </div>
         </div>
 
         {/* Dual Live Clock Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+        <div className="distance-clocks">
           {/* Partner A Clock */}
           <div
+            className="distance-clock distance-clock--rose"
             style={{
               background: 'var(--paper-raised)',
               border: '1px solid var(--line)',
@@ -380,24 +485,42 @@ export default function TimezoneHubPage() {
               boxShadow: 'var(--shadow-sm)',
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-              <span className="badge" style={{ background: '#FFF0F5', color: '#B83280', fontWeight: 800 }}>
-                🌸 {partnerA} · {city1}
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '10px',
+              }}
+            >
+              <span className="distance-clock__name">
+                {partnerA} · {city1}
               </span>
-              <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--ink-soft)' }}>
+              <span
+                style={{
+                  fontSize: '11px',
+                  fontFamily: 'var(--font-mono)',
+                  color: 'var(--ink-soft)',
+                }}
+              >
                 {tz1}
               </span>
             </div>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '38px', fontWeight: 900, color: 'var(--pink)' }}>
-              {getTimeInTz(now, tz1)}
-            </div>
-            <div style={{ fontSize: '13px', color: 'var(--ink-soft)', marginTop: '4px' }}>
+            <div className="distance-clock__time">{getTimeInTz(now, tz1)}</div>
+            <div
+              style={{
+                fontSize: '13px',
+                color: 'var(--ink-soft)',
+                marginTop: '4px',
+              }}
+            >
               {getDateInTz(now, tz1)}
             </div>
           </div>
 
           {/* Partner B Clock */}
           <div
+            className="distance-clock distance-clock--brass"
             style={{
               background: 'var(--paper-raised)',
               border: '1px solid var(--line)',
@@ -406,18 +529,38 @@ export default function TimezoneHubPage() {
               boxShadow: 'var(--shadow-sm)',
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-              <span className="badge" style={{ background: '#EBF8FF', color: '#2B6CB0', fontWeight: 800 }}>
-                💙 {partnerB} · {city2}
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '10px',
+              }}
+            >
+              <span className="distance-clock__name">
+                {partnerB} · {city2}
               </span>
-              <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--ink-soft)' }}>
-                {offsetHours >= 0 ? `+${offsetHours} hrs` : `${offsetHours} hrs`} · {tz2}
+              <span
+                style={{
+                  fontSize: '11px',
+                  fontFamily: 'var(--font-mono)',
+                  color: 'var(--ink-soft)',
+                }}
+              >
+                {offsetHours >= 0
+                  ? `+${offsetHours} hrs`
+                  : `${offsetHours} hrs`}{' '}
+                · {tz2}
               </span>
             </div>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '38px', fontWeight: 900, color: '#3182CE' }}>
-              {getTimeInTz(now, tz2)}
-            </div>
-            <div style={{ fontSize: '13px', color: 'var(--ink-soft)', marginTop: '4px' }}>
+            <div className="distance-clock__time">{getTimeInTz(now, tz2)}</div>
+            <div
+              style={{
+                fontSize: '13px',
+                color: 'var(--ink-soft)',
+                marginTop: '4px',
+              }}
+            >
               {getDateInTz(now, tz2)}
             </div>
           </div>
@@ -426,6 +569,7 @@ export default function TimezoneHubPage() {
         {/* Visual Earth Globe or Accessible Representation */}
         {viewMode === 'globe' ? (
           <div
+            className="distance-globe"
             style={{
               background: '#33262D',
               border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -451,32 +595,67 @@ export default function TimezoneHubPage() {
             >
               <div>
                 <span className="badge hot" style={{ fontSize: '11px' }}>
-                  Distance Connection
+                  Between your worlds
                 </span>
-                <div style={{ color: '#FFFFFF', fontSize: '15px', fontWeight: 800, marginTop: '4px' }}>
+                <div
+                  style={{
+                    color: '#FFFFFF',
+                    fontSize: '15px',
+                    fontWeight: 800,
+                    marginTop: '4px',
+                  }}
+                >
                   {city1} ⇄ {city2}
                 </div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ color: '#FFD68A', fontFamily: 'var(--font-mono)', fontSize: '18px', fontWeight: 800 }}>
+                <div
+                  style={{
+                    color: '#FFD68A',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '18px',
+                    fontWeight: 800,
+                  }}
+                >
                   {distanceKm.toLocaleString()} km
                 </div>
-                <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontFamily: 'var(--font-mono)' }}>
-                  Distance Between Hearts
+                <div
+                  style={{
+                    color: 'rgba(255,255,255,0.5)',
+                    fontSize: '11px',
+                    fontFamily: 'var(--font-mono)',
+                  }}
+                >
+                  apart, still connected
                 </div>
               </div>
             </div>
 
-            <canvas ref={canvasRef} width={600} height={300} style={{ maxWidth: '100%', height: 'auto', cursor: 'grab' }} />
+            <canvas
+              ref={canvasRef}
+              width={600}
+              height={300}
+              style={{ maxWidth: '100%', height: 'auto', cursor: 'grab' }}
+            />
 
-            <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginTop: '12px', fontSize: '12px', color: 'rgba(255,255,255,0.6)' }}>
-              <span>🖱️ Drag to rotate globe</span>
+            <div
+              style={{
+                display: 'flex',
+                gap: '16px',
+                alignItems: 'center',
+                marginTop: '12px',
+                fontSize: '12px',
+                color: 'rgba(255,255,255,0.6)',
+              }}
+            >
+              <span>Drag to turn the globe</span>
               <span>·</span>
-              <span>🔴 Live Heartbeat Signal: Active</span>
+              <span>Heartbeat line ready</span>
             </div>
           </div>
         ) : (
           <div
+            className="distance-summary"
             style={{
               background: 'var(--paper-raised)',
               border: '1px solid var(--line)',
@@ -484,21 +663,60 @@ export default function TimezoneHubPage() {
               padding: '28px',
             }}
           >
-            <h3 style={{ fontSize: '18px', fontWeight: 800, marginBottom: '8px' }}>
+            <h3
+              style={{ fontSize: '18px', fontWeight: 800, marginBottom: '8px' }}
+            >
               Accessible Horizon Summary
             </h3>
-            <p style={{ fontSize: '14px', color: 'var(--ink-soft)', marginBottom: '16px' }}>
-              Your great-circle distance is <b>{distanceKm.toLocaleString()} km</b>. 
-              {offsetHours === 0 ? ' You both share the exact same timezone hour!' : ` ${city2} is ${Math.abs(offsetHours)} hours ${offsetHours > 0 ? 'ahead of' : 'behind'} ${city1}.`}
+            <p
+              style={{
+                fontSize: '14px',
+                color: 'var(--ink-soft)',
+                marginBottom: '16px',
+              }}
+            >
+              Your great-circle distance is{' '}
+              <b>{distanceKm.toLocaleString()} km</b>.
+              {offsetHours === 0
+                ? ' You both share the exact same timezone hour!'
+                : ` ${city2} is ${Math.abs(offsetHours)} hours ${offsetHours > 0 ? 'ahead of' : 'behind'} ${city1}.`}
             </p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px' }}>
-              <div style={{ padding: '12px 16px', background: 'var(--paper)', borderRadius: '10px', border: '1px solid var(--line)' }}>
-                <div style={{ fontSize: '12px', color: 'var(--ink-soft)' }}>{partnerA} Coordinates</div>
-                <div style={{ fontWeight: 700, marginTop: '2px' }}>{city1Geo.lat}° N, {city1Geo.lng}° E</div>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '14px',
+              }}
+            >
+              <div
+                style={{
+                  padding: '12px 16px',
+                  background: 'var(--paper)',
+                  borderRadius: '10px',
+                  border: '1px solid var(--line)',
+                }}
+              >
+                <div style={{ fontSize: '12px', color: 'var(--ink-soft)' }}>
+                  {partnerA} Coordinates
+                </div>
+                <div style={{ fontWeight: 700, marginTop: '2px' }}>
+                  {city1Geo.lat}° N, {city1Geo.lng}° E
+                </div>
               </div>
-              <div style={{ padding: '12px 16px', background: 'var(--paper)', borderRadius: '10px', border: '1px solid var(--line)' }}>
-                <div style={{ fontSize: '12px', color: 'var(--ink-soft)' }}>{partnerB} Coordinates</div>
-                <div style={{ fontWeight: 700, marginTop: '2px' }}>{city2Geo.lat}° N, {city2Geo.lng}° E</div>
+              <div
+                style={{
+                  padding: '12px 16px',
+                  background: 'var(--paper)',
+                  borderRadius: '10px',
+                  border: '1px solid var(--line)',
+                }}
+              >
+                <div style={{ fontSize: '12px', color: 'var(--ink-soft)' }}>
+                  {partnerB} Coordinates
+                </div>
+                <div style={{ fontWeight: 700, marginTop: '2px' }}>
+                  {city2Geo.lat}° N, {city2Geo.lng}° E
+                </div>
               </div>
             </div>
           </div>
@@ -506,6 +724,7 @@ export default function TimezoneHubPage() {
 
         {/* Shared time window */}
         <div
+          className="distance-window"
           style={{
             background: 'var(--paper-raised)',
             border: '1px solid var(--line)',
@@ -514,38 +733,56 @@ export default function TimezoneHubPage() {
             boxShadow: 'var(--shadow-sm)',
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '16px' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '10px',
+              marginBottom: '16px',
+            }}
+          >
             <div>
               <h3 style={{ fontSize: '20px', fontWeight: 800, margin: 0 }}>
                 Your shared time window
               </h3>
-              <p style={{ margin: '4px 0 0', fontSize: '13.5px', color: 'var(--ink-soft)' }}>
-                Use this gentle guide to find a time that could work for both of you.
+              <p
+                style={{
+                  margin: '4px 0 0',
+                  fontSize: '13.5px',
+                  color: 'var(--ink-soft)',
+                }}
+              >
+                Use this gentle guide to find a time that could work for both of
+                you.
               </p>
             </div>
-            <span className="badge hot" style={{ padding: '6px 12px', fontSize: '12px' }}>
-              ✨ Possible overlap: 8:00 PM – 10:30 PM ({city1})
+            <span className="distance-window__recommendation">
+              Possible overlap · {overlapLabel}
             </span>
           </div>
 
-          <div style={{ display: 'flex', height: '48px', borderRadius: '10px', overflow: 'hidden', background: '#E2E8F0' }}>
+          <div
+            className="distance-ribbon"
+            aria-label="Twenty-four hour shared availability guide"
+          >
             {Array.from({ length: 24 }).map((_, h) => {
               const partnerBHour = (h + offsetHours + 24) % 24;
-              const isSweetSpot = h >= 19 && h <= 22 && partnerBHour >= 8 && partnerBHour <= 12;
-              const isSleepingA = h >= 0 && h <= 7;
+              const isAwakeA = h >= 7 && h <= 22;
+              const isAwakeB = partnerBHour >= 7 && partnerBHour <= 22;
+              const isSweetSpot = isAwakeA && isAwakeB;
+              const periodClass = isSweetSpot
+                ? 'overlap'
+                : isAwakeA || isAwakeB
+                  ? 'awake'
+                  : 'sleep';
               return (
                 <div
                   key={h}
+                  className={`distance-ribbon__hour distance-ribbon__hour--${periodClass}`}
                   style={{
                     flex: 1,
-                    background: isSweetSpot ? '#48BB78' : isSleepingA ? '#2D3748' : '#ECC94B',
-                    borderRight: '1px solid rgba(255,255,255,0.2)',
-                    display: 'grid',
-                    placeItems: 'center',
-                    color: isSweetSpot || isSleepingA ? '#FFF' : '#1A202C',
-                    fontSize: '11px',
-                    fontFamily: 'var(--font-mono)',
-                    fontWeight: 700,
                   }}
                   title={`${city1}: ${h}:00 | ${city2}: ${partnerBHour}:00`}
                 >
@@ -555,24 +792,52 @@ export default function TimezoneHubPage() {
             })}
           </div>
 
-          <div style={{ display: 'flex', gap: '20px', marginTop: '14px', fontSize: '12.5px', color: 'var(--ink-soft)', flexWrap: 'wrap' }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#48BB78' }} />
+          <div
+            style={{
+              display: 'flex',
+              gap: '20px',
+              marginTop: '14px',
+              fontSize: '12.5px',
+              color: 'var(--ink-soft)',
+              flexWrap: 'wrap',
+            }}
+          >
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
+              <span className="distance-key distance-key--overlap" />
               <b>Possible overlap</b>
             </span>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#ECC94B' }} />
-              One Working / Awake
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
+              <span className="distance-key distance-key--awake" />
+              One may be awake
             </span>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#2D3748' }} />
-              Night / Sleeping Hours
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
+              <span className="distance-key distance-key--sleep" />
+              Likely sleeping
             </span>
           </div>
         </div>
 
         {/* Shared-moment countdown */}
         <div
+          className="distance-countdown"
           style={{
             background: '#33262D',
             color: '#FFFFFF',
@@ -582,90 +847,124 @@ export default function TimezoneHubPage() {
             border: '1px solid rgba(255, 255, 255, 0.1)',
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px', marginBottom: '24px' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '14px',
+              marginBottom: '24px',
+            }}
+          >
             <div>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--pink)', letterSpacing: '0.14em', textTransform: 'uppercase' }}>
+              <span
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '12px',
+                  color: 'var(--pink)',
+                  letterSpacing: '0.14em',
+                  textTransform: 'uppercase',
+                }}
+              >
                 YOUR NEXT SHARED MOMENT
               </span>
-              <h2 style={{ fontSize: '28px', fontWeight: 800, margin: '4px 0 0' }}>
+              <h2
+                style={{ fontSize: '28px', fontWeight: 800, margin: '4px 0 0' }}
+              >
                 A little closer to {momentLabel}
               </h2>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div className="distance-countdown__date">
               <input
                 type="datetime-local"
                 value={reunionDate}
                 onChange={(e) => setReunionDate(e.target.value)}
-                style={{
-                  background: 'rgba(255, 255, 255, 0.12)',
-                  border: '1px solid rgba(255, 255, 255, 0.25)',
-                  color: '#FFFFFF',
-                  borderRadius: '8px',
-                  padding: '8px 14px',
-                  fontSize: '13px',
-                }}
+                className="distance-dark-input"
               />
               <button
                 onClick={downloadCalendarFile}
-                className="btn btn-ghost"
-                style={{ color: '#FFFFFF', borderColor: 'rgba(255,255,255,0.3)', fontSize: '12px', padding: '8px 14px' }}
+                className="distance-button distance-button--dark"
                 title="Download .ics event to sync to Google Calendar / Apple Calendar"
               >
-                📅 Add to Calendar
+                Add to calendar
               </button>
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px', textAlign: 'center', marginBottom: '20px' }}>
-            <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: '14px', padding: '16px' }}>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '42px', fontWeight: 900, color: 'var(--pink)' }}>
-                {timeLeft.days}
+          <div className="distance-countdown__numbers">
+            <div className="distance-countdown__unit">
+              <div>{timeLeft.days}</div>
+              <div
+                style={{
+                  fontSize: '11px',
+                  opacity: 0.8,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                }}
+              >
+                Days
               </div>
-              <div style={{ fontSize: '11px', opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Days</div>
             </div>
-            <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: '14px', padding: '16px' }}>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '42px', fontWeight: 900, color: '#63B3ED' }}>
-                {timeLeft.hours}
+            <div className="distance-countdown__unit">
+              <div>{timeLeft.hours}</div>
+              <div
+                style={{
+                  fontSize: '11px',
+                  opacity: 0.8,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                }}
+              >
+                Hours
               </div>
-              <div style={{ fontSize: '11px', opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Hours</div>
             </div>
-            <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: '14px', padding: '16px' }}>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '42px', fontWeight: 900, color: '#FFD68A' }}>
-                {timeLeft.minutes}
+            <div className="distance-countdown__unit">
+              <div>{timeLeft.minutes}</div>
+              <div
+                style={{
+                  fontSize: '11px',
+                  opacity: 0.8,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                }}
+              >
+                Minutes
               </div>
-              <div style={{ fontSize: '11px', opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Minutes</div>
             </div>
-            <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: '14px', padding: '16px' }}>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '42px', fontWeight: 900, color: '#4ECCA3' }}>
-                {timeLeft.seconds}
+            <div className="distance-countdown__unit">
+              <div>{timeLeft.seconds}</div>
+              <div
+                style={{
+                  fontSize: '11px',
+                  opacity: 0.8,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                }}
+              >
+                Seconds
               </div>
-              <div style={{ fontSize: '11px', opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Seconds</div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="distance-countdown__actions">
             <input
               type="text"
               value={momentLabel}
               onChange={(e) => setMomentLabel(e.target.value)}
               placeholder="e.g. Friday movie call, our next hug"
-              style={{
-                flex: 1,
-                padding: '10px 14px',
-                background: 'rgba(255,255,255,0.08)',
-                border: '1px solid rgba(255,255,255,0.18)',
-                borderRadius: '8px',
-                color: '#fff',
-                fontSize: '13px',
-              }}
+              className="distance-dark-input distance-dark-input--label"
             />
             <button
               onClick={handleSaveToOurSpace}
               disabled={isSaving}
-              className="btn btn-primary"
-              style={{ padding: '10px 20px', fontSize: '13px' }}
+              className="distance-button distance-button--save"
             >
-              {isSaving ? 'Saving...' : saveSuccess ? 'Saved to Our Space! 💖' : 'Save moment to Our Space'}
+              {isSaving
+                ? 'Saving...'
+                : saveSuccess
+                  ? 'Saved to Our Space! 💖'
+                  : 'Save moment to Our Space'}
             </button>
           </div>
         </div>

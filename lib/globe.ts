@@ -153,9 +153,9 @@ export class InteractiveGlobe {
       cy,
       radius,
     );
-    oceanGrad.addColorStop(0, '#1E2433');
-    oceanGrad.addColorStop(0.7, '#13161F');
-    oceanGrad.addColorStop(1, '#0C0E14');
+    oceanGrad.addColorStop(0, '#4B3540');
+    oceanGrad.addColorStop(0.7, '#33262D');
+    oceanGrad.addColorStop(1, '#21181D');
 
     ctx.beginPath();
     ctx.arc(cx, cy, radius, 0, Math.PI * 2);
@@ -163,12 +163,12 @@ export class InteractiveGlobe {
     ctx.fill();
 
     // Atmosphere Rim Glow
-    ctx.strokeStyle = 'rgba(95, 160, 255, 0.4)';
+    ctx.strokeStyle = 'rgba(200, 154, 159, 0.56)';
     ctx.lineWidth = 3;
     ctx.stroke();
 
     // 2. Graticule Lat/Lng Wireframe
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+    ctx.strokeStyle = 'rgba(245, 237, 223, 0.1)';
     ctx.lineWidth = 1;
 
     // Latitude lines
@@ -211,7 +211,7 @@ export class InteractiveGlobe {
       ctx.stroke();
     }
 
-    // 3. Geodesic Flight Arc between City A and City B
+    // 3. Geodesic connection between City A and City B
     const steps = 40;
     ctx.beginPath();
     ctx.strokeStyle = '#FFD68A';
@@ -254,7 +254,7 @@ export class InteractiveGlobe {
           0,
           Math.PI * 2,
         );
-        ctx.fillStyle = 'rgba(255, 123, 163, 0.7)';
+        ctx.fillStyle = 'rgba(200, 154, 159, 0.76)';
         ctx.fill();
       }
 
