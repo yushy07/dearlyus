@@ -5,10 +5,87 @@ let segmenter: Promise<ImageSegmenter> | undefined;
 const cache = new Map<string, Promise<HTMLCanvasElement>>();
 const CUTOUT_VERSION = 2;
 
-export type RefinedCutout = HTMLCanvasElement & { quality?: MatteQuality };
+export type RefinedCutout = HTMLCanvasElement & {
+  quality?: MatteQuality;
+  sourceCanvas?: HTMLCanvasElement;
+  basePixels?: ImageData;
+  undoPixels?: ImageData[];
+};
 
 export function cutoutQuality(canvas: HTMLCanvasElement) {
   return (canvas as RefinedCutout).quality;
+}
+
+type CutoutPoint = { x: number; y: number };
+
+function strokePath(
+  context: CanvasRenderingContext2D,
+  points: CutoutPoint[],
+  width: number,
+  height: number,
+) {
+  context.beginPath();
+  const first = points[0];
+  context.moveTo(first.x * width, first.y * height);
+  for (const point of points.slice(1)) context.lineTo(point.x * width, point.y * height);
+  if (points.length === 1) context.lineTo(first.x * width + 0.01, first.y * height);
+}
+
+export async function editCutout(
+  imageSrc: string,
+  points: CutoutPoint[],
+  mode: 'erase' | 'restore',
+  brushSize: number,
+) {
+  const cutout = (await cache.get(`${CUTOUT_VERSION}:${imageSrc}`)) as RefinedCutout | undefined;
+  if (!cutout || !points.length) throw new Error('Prepare this cutout before refining its edges.');
+  const context = cutout.getContext('2d', { willReadFrequently: true })!;
+  cutout.undoPixels ??= [];
+  cutout.undoPixels.push(context.getImageData(0, 0, cutout.width, cutout.height));
+  if (cutout.undoPixels.length > 8) cutout.undoPixels.shift();
+  const lineWidth = Math.max(6, Math.min(100, brushSize)) * Math.min(cutout.width, cutout.height) / 700;
+  if (mode === 'erase') {
+    context.save();
+    context.globalCompositeOperation = 'destination-out';
+    context.lineCap = 'round';
+    context.lineJoin = 'round';
+    context.lineWidth = lineWidth;
+    context.strokeStyle = '#000';
+    strokePath(context, points, cutout.width, cutout.height);
+    context.stroke();
+    context.restore();
+  } else if (cutout.sourceCanvas) {
+    const restoreMask = document.createElement('canvas');
+    restoreMask.width = cutout.width;
+    restoreMask.height = cutout.height;
+    const restoreContext = restoreMask.getContext('2d')!;
+    restoreContext.lineCap = 'round';
+    restoreContext.lineJoin = 'round';
+    restoreContext.lineWidth = lineWidth;
+    restoreContext.strokeStyle = '#000';
+    strokePath(restoreContext, points, cutout.width, cutout.height);
+    restoreContext.stroke();
+    restoreContext.globalCompositeOperation = 'source-in';
+    restoreContext.drawImage(cutout.sourceCanvas, 0, 0);
+    context.drawImage(restoreMask, 0, 0);
+  }
+  return cutout;
+}
+
+export async function undoCutoutEdit(imageSrc: string) {
+  const cutout = (await cache.get(`${CUTOUT_VERSION}:${imageSrc}`)) as RefinedCutout | undefined;
+  const previous = cutout?.undoPixels?.pop();
+  if (!cutout || !previous) return cutout;
+  cutout.getContext('2d')!.putImageData(previous, 0, 0);
+  return cutout;
+}
+
+export async function resetCutoutEdits(imageSrc: string) {
+  const cutout = (await cache.get(`${CUTOUT_VERSION}:${imageSrc}`)) as RefinedCutout | undefined;
+  if (!cutout?.basePixels) return cutout;
+  cutout.getContext('2d')!.putImageData(cutout.basePixels, 0, 0);
+  cutout.undoPixels = [];
+  return cutout;
 }
 
 async function engine() {
@@ -122,6 +199,12 @@ export function personCutout(
       for (let index = 0; index < alpha.length; index++) subject.data[index * 4 + 3] = alpha[index];
       cutoutContext.putImageData(subject, 0, 0);
       cutout.quality = refined.quality;
+      cutout.sourceCanvas = document.createElement('canvas');
+      cutout.sourceCanvas.width = cutout.width;
+      cutout.sourceCanvas.height = cutout.height;
+      cutout.sourceCanvas.getContext('2d')!.drawImage(image, x, y, w, h, 0, 0, cutout.width, cutout.height);
+      cutout.basePixels = cutoutContext.getImageData(0, 0, cutout.width, cutout.height);
+      cutout.undoPixels = [];
       return cutout;
     } finally {
       result.close();

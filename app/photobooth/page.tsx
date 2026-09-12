@@ -42,7 +42,13 @@ import {
   type BoothRenderProgress,
 } from '@/lib/booth/render';
 import './studio.css';
-import { clearCutouts } from '@/lib/booth/cutout';
+import {
+  clearCutouts,
+  editCutout,
+  personCutout,
+  resetCutoutEdits,
+  undoCutoutEdit,
+} from '@/lib/booth/cutout';
 import { pointsToBezierPath } from '@/lib/photobooth-bezier';
 export { pointsToBezierPath } from '@/lib/photobooth-bezier';
 
@@ -79,6 +85,9 @@ export default function PhotoboothPage() {
     stage: 'ready', completed: 0, total: 0,
   });
   const [cutoutRetry, setCutoutRetry] = useState(0);
+  const [refiningEdges, setRefiningEdges] = useState(false);
+  const [refineMode, setRefineMode] = useState<'erase' | 'restore'>('erase');
+  const [refineBrush, setRefineBrush] = useState(32);
   const [sceneLoadError, setSceneLoadError] = useState(false),
     [sceneRetry, setSceneRetry] = useState(0);
   const [ready, setReady] = useState(false);
@@ -88,7 +97,9 @@ export default function PhotoboothPage() {
     [eraser, setEraser] = useState(false);
   const previewUrl = useRef(''),
     remoteVideo = useRef<HTMLVideoElement | null>(null),
-    uploadInput = useRef<HTMLInputElement | null>(null);
+    uploadInput = useRef<HTMLInputElement | null>(null),
+    refineCanvas = useRef<HTMLCanvasElement | null>(null),
+    refineStroke = useRef<DrawPoint[]>([]);
   const allDone =
     booth.shots.length === 4 &&
     booth.shots.every((s) => completeShot(s, booth.solo));
@@ -154,10 +165,46 @@ export default function PhotoboothPage() {
       clearTimeout(timeout);
     };
   }, [booth.shots, booth.design, booth.solo, cutoutRetry]);
+  useEffect(() => {
+    if (!refiningEdges || !myPhoto || !refineCanvas.current) return;
+    let active = true;
+    const image = new Image();
+    image.src = myPhoto.src;
+    void image.decode().then(() => personCutout(image)).then((cutout) => {
+      if (!active || !refineCanvas.current) return;
+      const canvas = refineCanvas.current;
+      canvas.width = cutout.width;
+      canvas.height = cutout.height;
+      canvas.getContext('2d')!.drawImage(cutout, 0, 0);
+    }).catch((error) => {
+      if (active) booth.setError(error instanceof Error ? error.message : 'Could not open the edge refiner.');
+    });
+    return () => { active = false; };
+  }, [refiningEdges, myPhoto?.id, myPhoto?.src, cutoutRetry]);
   const retryCutouts = () => {
     clearCutouts();
     setRenderError('');
     setCutoutRetry((value) => value + 1);
+  };
+  const refinerPoint = (event: React.PointerEvent<HTMLCanvasElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    return {
+      x: Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width)),
+      y: Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height)),
+    };
+  };
+  const finishRefineStroke = async (event: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!myPhoto || !refineStroke.current.length) return;
+    refineStroke.current.push(refinerPoint(event));
+    try {
+      await editCutout(myPhoto.src, refineStroke.current, refineMode, refineBrush);
+      setCutoutRetry((value) => value + 1);
+    } catch (error) {
+      booth.setError(error instanceof Error ? error.message : 'Could not refine this edge.');
+    } finally {
+      refineStroke.current = [];
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
   };
   useEffect(() => {
     if (booth.design.composition !== 'backdrop') {
@@ -1117,6 +1164,14 @@ export default function PhotoboothPage() {
                             >
                               Reset crop
                             </button>
+                            {booth.design.composition === 'backdrop' && (
+                              <button
+                                aria-expanded={refiningEdges}
+                                onClick={() => setRefiningEdges((value) => !value)}
+                              >
+                                Refine cutout edges
+                              </button>
+                            )}
                             <button
                               onClick={() => {
                                 setAutomatic(false);
@@ -1126,6 +1181,51 @@ export default function PhotoboothPage() {
                               Retake this pair
                             </button>
                           </div>
+                          {refiningEdges && booth.design.composition === 'backdrop' && (
+                            <div className="studio-cutout-refiner">
+                              <div className="studio-cutout-refiner__heading">
+                                <div>
+                                  <strong>Edge correction · Photo {selected + 1}</strong>
+                                  <small>Paint only where the automatic cutout needs help.</small>
+                                </div>
+                                <button onClick={() => setRefiningEdges(false)}>Done</button>
+                              </div>
+                              <div className="studio-cutout-refiner__tools">
+                                <button aria-pressed={refineMode === 'erase'} onClick={() => setRefineMode('erase')}>Erase background</button>
+                                <button aria-pressed={refineMode === 'restore'} onClick={() => setRefineMode('restore')}>Restore person</button>
+                                <label>
+                                  Brush
+                                  <input type="range" min="12" max="72" value={refineBrush} onChange={(event) => setRefineBrush(Number(event.target.value))} />
+                                </label>
+                                <button onClick={async () => {
+                                  if (!myPhoto) return;
+                                  await undoCutoutEdit(myPhoto.src);
+                                  setCutoutRetry((value) => value + 1);
+                                }}><RotateCcw size={13} /> Undo</button>
+                                <button onClick={async () => {
+                                  if (!myPhoto) return;
+                                  await resetCutoutEdits(myPhoto.src);
+                                  setCutoutRetry((value) => value + 1);
+                                }}>Reset automatic cutout</button>
+                              </div>
+                              <div className="studio-cutout-refiner__canvas-wrap">
+                                <canvas
+                                  ref={refineCanvas}
+                                  aria-label={`Refine background removal for photo ${selected + 1}`}
+                                  onPointerDown={(event) => {
+                                    event.currentTarget.setPointerCapture(event.pointerId);
+                                    refineStroke.current = [refinerPoint(event)];
+                                  }}
+                                  onPointerMove={(event) => {
+                                    if (refineStroke.current.length) refineStroke.current.push(refinerPoint(event));
+                                  }}
+                                  onPointerUp={(event) => void finishRefineStroke(event)}
+                                  onPointerCancel={() => { refineStroke.current = []; }}
+                                />
+                              </div>
+                              <p>Tip: use a smaller brush around hair, glasses, fingers and headphones.</p>
+                            </div>
+                          )}
                         </>
                       )}
                     </fieldset>
