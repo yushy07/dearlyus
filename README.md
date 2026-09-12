@@ -38,7 +38,7 @@ Long distance dates often default to muted video calls or passive movie streamin
 - **Bespoke Sanctuary Editorial Identity**: Elevated visual craftsmanship blending warm candlelight alabaster surfaces, tactile paper textures, and refined serif typography with the unified Dearly Us ribbon-heart brand mark.
 - **Shared Rooms & Instant PINs**: Enter an instant 5-letter room code or connect via Google Sign-In to meet in an intimate, couple-authorized date-night sanctuary from any device.
 - **Physical & Digital Keepsakes**: Export 1200 × 3600 _인생네컷_ photostrips, 2400 × 1800 postcards, 4 × 6 print sheets, printable thermal receipts of your quiz lore, 9:16 story cards, wax-sealed time capsule letters, and digital memory corkboards.
-- **Curated Date Night Journeys**: Move seamlessly through a thoughtful 7-step couple date night sequence—from sanctuary door to distance flight globe, photo booth, intimate quiz lock-in, and bedtime vows.
+- **Curated Date Night Journeys**: Move seamlessly through a thoughtful 7-step couple date night sequence—from sanctuary door to a distance globe, photo booth, intimate quiz lock-in, and bedtime vows.
 - **Privacy by Design**: Camera feeds stay on the device. Shared activity events and deliberately saved keepsakes are protected by Supabase row-level security and private Storage policies.
 - **Zero-Guilt Architecture**: No punishment streaks, no decay counters, and decay-free relationship milestones designed to bring comfort, warmth, and joy.
 
@@ -63,8 +63,8 @@ Long distance dates often default to muted video calls or passive movie streamin
     <tr>
       <td width="50%" align="center">
         <img src="docs/screenshots/02-interactive-playground.png" alt="Interactive 3D Distance Globe" width="100%" style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);" />
-        <br/><b>Interactive 3D Distance Globe &amp; Flight Arcs</b>
-        <br/><sub>Orthographic Three.js globe, geodesic flight path between cities, and photostrip printer</sub>
+        <br/><b>Interactive 3D Distance Globe</b>
+        <br/><sub>Orthographic Three.js globe, a geodesic connection between cities, and photostrip printer</sub>
       </td>
       <td width="50%" align="center">
         <img src="docs/screenshots/08-copresence-bridge.png" alt="Realtime Co-Presence Bridge" width="100%" style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);" />
@@ -138,7 +138,7 @@ The booth never requires a paid service. Camera streams stay peer-to-peer and in
 
 - **Physical Paper Craftsmanship**: Custom vector illustration engine rendering authentic physical keepsakes:
   - **Wax-Sealed Letters**: Deckle-edged parchment envelope sealed with warm vintage gold wax, stamped with vows for future dates.
-  - **Memory Corkboard Scrapbooks**: Vintage polaroid snapshots with real tape textures, flight boarding stubs, and dried floral pins.
+  - **Memory Corkboard Scrapbooks**: Vintage polaroid snapshots with real tape textures, postcard layers, and dried floral pins.
   - **Birthday Keepsake Parcels**: Wrapped gift parcel with satin ribbon bows and scannable couple QR code.
 - **Interactive Micro-Interactions**: Hover tilts, soft elevation lifts, and direct routing into the active keepsake creators.
 
@@ -146,7 +146,7 @@ The booth never requires a paid service. Camera streams stay peer-to-peer and in
 
 - **Guided Evening Sequence**: Visual roadmap taking couples through an intimate date night progression:
   1. *Enter the Sanctuary* (`/room/new`) — Generate an intimate 5-letter private room.
-  2. *Cross the Distance* (`/timezone`) — Sync clocks and trace geodesic flight arcs.
+  2. *Cross the Distance* (`/timezone`) — Sync clocks, see the line between your cities, and count down to a shared moment.
   3. *Check Today's Skies* (`/forecast`) — Read cross-city romantic weather and barometric sweetness.
   4. *Life4Cuts Studio* (`/photobooth`) — Take 4 synchronized photostrip memories.
   5. *Lock In Your Lore* (`/quiz`) — Secret answers and thermal receipt printing.
@@ -161,7 +161,7 @@ The booth never requires a paid service. Camera streams stay peer-to-peer and in
 
 ### 🌍 6. Interactive 3D Earth Globe & Clock Sync (`/timezone`)
 
-- **Orthographic 3D Projection**: Great-circle geodesic flight arcs between partner cities with concentric heartbeat pulses.
+- **Orthographic 3D Projection**: A great-circle connection between partner cities with concentric heartbeat pulses.
 - **Dual Local Time Calculator**: Synchronized timezone slider showing overlapping waking hours and golden date windows.
 
 ### 🌉 7. Realtime Co-Presence Bridge (`components/home/CoPresenceBridge.tsx`)
@@ -224,7 +224,7 @@ The booth never requires a paid service. Camera streams stay peer-to-peer and in
 
 | Route                | Feature & Activity                                                                                                                         |
 | :------------------- | :----------------------------------------------------------------------------------------------------------------------------------------- |
-| **`/`**              | Editorial homepage with cinematic video reveal, interactive 3D flight globe, live partner presence, instant room PIN joiner, and photostrip showcase. |
+| **`/`**              | Editorial homepage with cinematic video reveal, interactive 3D distance globe, live partner presence, instant room PIN joiner, and photostrip showcase. |
 | **`/activity`**      | Complete 22+ multiplayer date night activity catalog.                                                                                      |
 | **`/arcade`**        | Face-avatar retro mini-games (_Heart Jump_, _Asteroid Dodge_, _Berry Catch_).                                                              |
 | **`/birthday`**      | Custom Birthday Gift Page generator with heart QR code.                                                                                    |
@@ -257,11 +257,11 @@ The booth never requires a paid service. Camera streams stay peer-to-peer and in
 | **`/quiz`**          | Know Me Quiz with secret lock-in, match scoring & Printable Thermal Receipt.                                                               |
 | **`/riddle`**        | Co-op brain teasers and riddle night puzzles.                                                                                              |
 | **`/room/:code`**    | Couple-authorized date-night lobby with Presence and readiness.                                                                            |
-| **`/scrapbook`**     | Digital Memory Corkboard with 3D polaroids, flight stubs & washi tape.                                                                     |
+| **`/scrapbook`**     | Digital Memory Corkboard with 3D polaroids, postcards & washi tape.                                                                         |
 | **`/shirts`**        | Digital matching outfit designer for date nights.                                                                                          |
 | **`/shop`**          | 100% Free DIY Printable Keepsakes (4×6 photo sheets, wallpapers, fridge magnets).                                                          |
 | **`/terms`**         | Terms of service and user conduct guidelines.                                                                                              |
-| **`/timezone`**      | Interactive 3D Earth Globe, geodesic flight arc, and couple clock sync.                                                                    |
+| **`/timezone`**      | Interactive 3D distance globe, shared clocks, and a next-moment countdown.                                                                 |
 | **`/auth/callback`** | Supabase OAuth callback and automatic profile bootstrap.                                                                                   |
 | **`/api/config`**    | Realtime room config & status API endpoint.                                                                                                |
 | **`/api/stats`**     | Live global stats endpoint.                                                                                                                |
