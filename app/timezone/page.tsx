@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
 import { ActivityShell } from '@/components/shared';
 import { sounds } from '@/lib/sound';
 import { InteractiveGlobe, calculateGreatCircleDistance } from '@/lib/globe';
@@ -10,14 +9,6 @@ import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
 import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
 import { loadActivityRecords, upsertActivityRecord } from '@/lib/activity-records';
-
-interface PackingItem {
-  id: string;
-  text: string;
-  category: 'Essentials' | 'Keepsakes' | 'Electronics' | 'Documents' | 'Gifts' | 'Custom';
-  owner: 'mine' | 'partner' | 'shared';
-  packed: boolean;
-}
 
 const COMMON_TIMEZONES = [
   { label: 'Calgary / Edmonton (MT)', tz: 'America/Edmonton', lat: 51.0447, lng: -114.0719 },
@@ -40,7 +31,7 @@ export default function TimezoneHubPage() {
   const [tz2, setTz2] = useState('Asia/Jakarta');
 
   const [reunionDate, setReunionDate] = useState('2026-11-20T18:00');
-  const [flightNotes, setFlightNotes] = useState('Terminal 3 · Flight AC 840 · Meet by Arrival Carousel 4');
+  const [momentLabel, setMomentLabel] = useState('Our next moment together');
   const [viewMode, setViewMode] = useState<'globe' | 'accessible'>('globe');
   const [currentStage, setCurrentStage] = useState<'ready' | 'play' | 'remember'>('play');
   const [heartbeatSent, setHeartbeatSent] = useState(false);
@@ -160,27 +151,13 @@ export default function TimezoneHubPage() {
     return () => clearInterval(interval);
   }, [reunionDate]);
 
-  // Shared Packing Checklist
-  const [packingList, setPackingList] = useState<PackingItem[]>([
-    { id: '1', text: 'Passport & Travel Visa Documents', category: 'Documents', owner: 'mine', packed: true },
-    { id: '2', text: 'Printed Boarding Passes & Hotel Reservation', category: 'Documents', owner: 'shared', packed: true },
-    { id: '3', text: 'Favorite oversized hoodie sprayed with scent', category: 'Keepsakes', owner: 'partner', packed: true },
-    { id: '4', text: 'Universal dual-voltage power plug adapter', category: 'Electronics', owner: 'shared', packed: false },
-    { id: '5', text: 'Snacks & local treats partner misses', category: 'Gifts', owner: 'mine', packed: false },
-    { id: '6', text: 'Noise-cancelling headphones for long-haul flight', category: 'Electronics', owner: 'mine', packed: false },
-    { id: '7', text: 'Framed Dearly Us photostrip for nightstand', category: 'Keepsakes', owner: 'shared', packed: false },
-  ]);
-
-  const [newItemText, setNewItemText] = useState('');
-  const [newItemCat, setNewItemCat] = useState<PackingItem['category']>('Essentials');
-  const [newItemOwner, setNewItemOwner] = useState<PackingItem['owner']>('shared');
   const [sharedLoaded, setSharedLoaded] = useState(false);
 
   useEffect(() => {
     if (!space?.id) return;
     void loadActivityRecords<{
       city1?: string; city2?: string; tz1?: string; tz2?: string;
-      reunionDate?: string; flightNotes?: string; packingList?: PackingItem[];
+      reunionDate?: string; momentLabel?: string;
     }>(space.id, 'reunion').then((records) => {
       const saved = records.find((record) => record.key === 'current-reunion');
       if (!saved) return;
@@ -189,8 +166,7 @@ export default function TimezoneHubPage() {
       if (saved.payload.tz1) setTz1(saved.payload.tz1);
       if (saved.payload.tz2) setTz2(saved.payload.tz2);
       if (saved.payload.reunionDate) setReunionDate(saved.payload.reunionDate);
-      if (saved.payload.flightNotes) setFlightNotes(saved.payload.flightNotes);
-      if (saved.payload.packingList) setPackingList(saved.payload.packingList);
+      if (saved.payload.momentLabel) setMomentLabel(saved.payload.momentLabel);
     }).catch((error) => console.error('Failed to restore reunion plan:', error))
       .finally(() => setSharedLoaded(true));
   }, [space?.id]);
@@ -198,42 +174,12 @@ export default function TimezoneHubPage() {
   useEffect(() => {
     if (!space?.id || !sharedLoaded) return;
     const timer = setTimeout(() => void upsertActivityRecord({
-      coupleId: space.id, kind: 'reunion', key: 'current-reunion', title: 'Our Next Reunion',
+      coupleId: space.id, kind: 'reunion', key: 'current-reunion', title: 'Our Next Moment',
       targetAt: Number.isNaN(Date.parse(reunionDate)) ? null : new Date(reunionDate).toISOString(),
-      payload: { city1, city2, tz1, tz2, reunionDate, flightNotes, packingList },
+      payload: { city1, city2, tz1, tz2, reunionDate, momentLabel },
     }).catch((error) => console.error('Failed to sync reunion plan:', error)), 700);
     return () => clearTimeout(timer);
-  }, [city1, city2, tz1, tz2, reunionDate, flightNotes, packingList, sharedLoaded, space?.id]);
-
-  const togglePacked = (id: string) => {
-    sounds.playPop();
-    setPackingList((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, packed: !item.packed } : item)),
-    );
-    runtime.dispatch({
-      type: 'timezone_packing_toggle',
-      payload: { id },
-    });
-  };
-
-  const addPackingItem = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newItemText.trim()) return;
-    sounds.playPop();
-    const newItem: PackingItem = {
-      id: Date.now().toString(),
-      text: newItemText.trim(),
-      category: newItemCat,
-      owner: newItemOwner,
-      packed: false,
-    };
-    setPackingList((prev) => [...prev, newItem]);
-    runtime.dispatch({
-      type: 'timezone_packing_add',
-      payload: { text: newItem.text, category: newItem.category },
-    });
-    setNewItemText('');
-  };
+  }, [city1, city2, tz1, tz2, reunionDate, momentLabel, sharedLoaded, space?.id]);
 
   const sendHeartbeat = () => {
     sounds.playHeartbeat();
@@ -250,13 +196,12 @@ export default function TimezoneHubPage() {
     const icsContent = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
-      'PRODID:-//Dearly Us//Timezone Reunion Hub//EN',
+      'PRODID:-//Dearly Us//Across the Distance//EN',
       'BEGIN:VEVENT',
-      `SUMMARY:Airport Reunion · ${partnerA} & ${partnerB}`,
+      `SUMMARY:${momentLabel} · ${partnerA} & ${partnerB}`,
       `DTSTART:${dStr}`,
       `DTEND:${dStr}`,
-      `LOCATION:${city2} International Airport`,
-      `DESCRIPTION:${flightNotes} · Counted down on Dearly Us!`,
+      'DESCRIPTION:A shared moment set on Dearly Us.',
       'STATUS:CONFIRMED',
       'END:VEVENT',
       'END:VCALENDAR',
@@ -266,7 +211,7 @@ export default function TimezoneHubPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `reunion-${partnerA}-${partnerB}.ics`;
+    link.download = `next-moment-${partnerA}-${partnerB}.ics`;
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -275,8 +220,8 @@ export default function TimezoneHubPage() {
     sounds.playCelebration();
     const success = await saveKeepsake({
       kind: 'activity',
-      title: `Airport Reunion Countdown · ${city1} ✈️ ${city2}`,
-      subtitle: `${timeLeft.days} days until we close the distance (${distanceKm.toLocaleString()} km)`,
+      title: `${momentLabel} · ${city1} ⇄ ${city2}`,
+      subtitle: `${timeLeft.days} days to look forward to (${distanceKm.toLocaleString()} km apart)`,
       metadata: {
         activityType: 'timezone',
         cityA: city1,
@@ -285,9 +230,7 @@ export default function TimezoneHubPage() {
         timezoneB: tz2,
         distanceKm,
         reunionDate,
-        flightNotes,
-        totalPacked: packingList.filter((i) => i.packed).length,
-        totalItems: packingList.length,
+        momentLabel,
       },
     });
     if (success) {
@@ -299,19 +242,19 @@ export default function TimezoneHubPage() {
 
   return (
     <ActivityShell
-      activityTitle="Timezone & Reunion Hub"
+      activityTitle="Across the Distance"
       activitySubtitle={`Connecting ${city1} and ${city2} · ${distanceKm.toLocaleString()} km apart`}
       currentStage={currentStage}
       partnerPresence={runtime.partnerPresence}
       roomCode={runtime.roomId}
       isHost={runtime.isHost}
-      stageIndicator="Ready → Horizon → Countdown → Suitcase"
+      stageIndicator="Clocks → Horizon → Shared moment"
       guidancePhase="timezone"
-      guidancePrivacyNote="Times and packing lists are private to your couple room."
+      guidancePrivacyNote="Times and your shared moment are private to your couple room."
       keepsakeSummary={{
         kind: 'activity',
-        title: `Reunion Horizon · ${city1} ⇄ ${city2}`,
-        subtitle: `${timeLeft.days} days remaining · ${packingList.filter((i) => i.packed).length}/${packingList.length} packed`,
+        title: `Distance Between Us · ${city1} ⇄ ${city2}`,
+        subtitle: `${timeLeft.days} days until ${momentLabel}`,
         badge: 'Distance',
       }}
     >
@@ -479,7 +422,7 @@ export default function TimezoneHubPage() {
         {viewMode === 'globe' ? (
           <div
             style={{
-              background: 'linear-gradient(180deg, #161722 0%, #0F1017 100%)',
+              background: '#33262D',
               border: '1px solid rgba(255, 255, 255, 0.1)',
               borderRadius: '24px',
               padding: '24px 20px',
@@ -503,10 +446,10 @@ export default function TimezoneHubPage() {
             >
               <div>
                 <span className="badge hot" style={{ fontSize: '11px' }}>
-                  Great-Circle Flight Arc
+                  Distance Connection
                 </span>
                 <div style={{ color: '#FFFFFF', fontSize: '15px', fontWeight: 800, marginTop: '4px' }}>
-                  {city1} ✈️ {city2}
+                  {city1} ⇄ {city2}
                 </div>
               </div>
               <div style={{ textAlign: 'right' }}>
@@ -556,7 +499,7 @@ export default function TimezoneHubPage() {
           </div>
         )}
 
-        {/* 24-Hour Sweet Spot Calling Window Ribbon */}
+        {/* Shared time window */}
         <div
           style={{
             background: 'var(--paper-raised)',
@@ -569,14 +512,14 @@ export default function TimezoneHubPage() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '16px' }}>
             <div>
               <h3 style={{ fontSize: '20px', fontWeight: 800, margin: 0 }}>
-                24-Hour Mutual Awake &amp; Calling Ribbon
+                Your shared time window
               </h3>
               <p style={{ margin: '4px 0 0', fontSize: '13.5px', color: 'var(--ink-soft)' }}>
-                The green blocks represent your optimal calling window where neither of you is asleep or working.
+                Use this gentle guide to find a time that could work for both of you.
               </p>
             </div>
             <span className="badge hot" style={{ padding: '6px 12px', fontSize: '12px' }}>
-              ✨ Recommended Call: 8:00 PM – 10:30 PM ({city1})
+              ✨ Possible overlap: 8:00 PM – 10:30 PM ({city1})
             </span>
           </div>
 
@@ -610,7 +553,7 @@ export default function TimezoneHubPage() {
           <div style={{ display: 'flex', gap: '20px', marginTop: '14px', fontSize: '12.5px', color: 'var(--ink-soft)', flexWrap: 'wrap' }}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
               <span style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#48BB78' }} />
-              <b>Golden Overlap (Both Awake &amp; Available)</b>
+              <b>Possible overlap</b>
             </span>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
               <span style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#ECC94B' }} />
@@ -623,10 +566,10 @@ export default function TimezoneHubPage() {
           </div>
         </div>
 
-        {/* Airport Reunion Countdown Card */}
+        {/* Shared-moment countdown */}
         <div
           style={{
-            background: 'linear-gradient(135deg, #181A24 0%, #292C3D 100%)',
+            background: '#33262D',
             color: '#FFFFFF',
             borderRadius: '24px',
             padding: '36px',
@@ -637,10 +580,10 @@ export default function TimezoneHubPage() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px', marginBottom: '24px' }}>
             <div>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--pink)', letterSpacing: '0.14em', textTransform: 'uppercase' }}>
-                ✈️ Airport Reunion Milestone
+                YOUR NEXT SHARED MOMENT
               </span>
               <h2 style={{ fontSize: '28px', fontWeight: 800, margin: '4px 0 0' }}>
-                Until We Close the Distance
+                A little closer to {momentLabel}
               </h2>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -695,12 +638,12 @@ export default function TimezoneHubPage() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
             <input
               type="text"
-              value={flightNotes}
-              onChange={(e) => setFlightNotes(e.target.value)}
-              placeholder="Flight details, terminal, arrival baggage gate..."
+              value={momentLabel}
+              onChange={(e) => setMomentLabel(e.target.value)}
+              placeholder="e.g. Friday movie call, our next hug"
               style={{
                 flex: 1,
                 padding: '10px 14px',
@@ -717,151 +660,9 @@ export default function TimezoneHubPage() {
               className="btn btn-primary"
               style={{ padding: '10px 20px', fontSize: '13px' }}
             >
-              {isSaving ? 'Saving...' : saveSuccess ? 'Saved to Our Space! 💖' : 'Save Milestone to Our Space'}
+              {isSaving ? 'Saving...' : saveSuccess ? 'Saved to Our Space! 💖' : 'Save moment to Our Space'}
             </button>
           </div>
-        </div>
-
-        {/* Shared Suitcase & Travel Documents Checklist */}
-        <div
-          style={{
-            background: 'var(--paper-raised)',
-            border: '1px solid var(--line)',
-            borderRadius: '20px',
-            padding: '32px',
-            boxShadow: 'var(--shadow-sm)',
-          }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
-            <div>
-              <h3 style={{ fontSize: '20px', fontWeight: 800, margin: 0 }}>
-                🧳 Shared Suitcase &amp; Travel Checklist
-              </h3>
-              <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--ink-soft)' }}>
-                Coordinate what each of you is packing so neither of you forgets adapters, keepsakes, or surprises.
-              </p>
-            </div>
-            <span className="badge" style={{ background: '#EBF8FF', color: '#2B6CB0', fontWeight: 800 }}>
-              {packingList.filter((i) => i.packed).length} / {packingList.length} Packed
-            </span>
-          </div>
-
-          <div style={{ display: 'grid', gap: '10px', marginBottom: '20px' }}>
-            {packingList.map((item) => (
-              <div
-                key={item.id}
-                onClick={() => togglePacked(item.id)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  padding: '12px 16px',
-                  background: item.packed ? 'rgba(72,187,120,0.08)' : 'var(--paper)',
-                  border: item.packed ? '1px solid #48BB78' : '1px solid var(--line)',
-                  borderRadius: '10px',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                <input type="checkbox" checked={item.packed} onChange={() => {}} style={{ width: '18px', height: '18px' }} />
-                <span
-                  style={{
-                    fontSize: '14.5px',
-                    fontWeight: item.packed ? 600 : 700,
-                    textDecoration: item.packed ? 'line-through' : 'none',
-                    color: item.packed ? 'var(--ink-soft)' : 'var(--ink)',
-                  }}
-                >
-                  {item.text}
-                </span>
-                <div style={{ marginLeft: 'auto', display: 'flex', gap: '6px' }}>
-                  <span
-                    style={{
-                      fontSize: '11px',
-                      fontFamily: 'var(--font-mono)',
-                      background: 'var(--paper-raised)',
-                      padding: '2px 8px',
-                      borderRadius: '4px',
-                      color: 'var(--ink-soft)',
-                    }}
-                  >
-                    {item.category}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: '11px',
-                      fontFamily: 'var(--font-mono)',
-                      background: item.owner === 'mine' ? '#FFF0F5' : item.owner === 'partner' ? '#EBF8FF' : 'var(--paper-raised)',
-                      color: item.owner === 'mine' ? 'var(--pink)' : item.owner === 'partner' ? '#3182CE' : 'var(--ink-soft)',
-                      padding: '2px 8px',
-                      borderRadius: '4px',
-                      fontWeight: 700,
-                    }}
-                  >
-                    {item.owner === 'mine' ? partnerA : item.owner === 'partner' ? partnerB : 'Both'}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Add item form */}
-          <form onSubmit={addPackingItem} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-            <input
-              type="text"
-              placeholder="Add packing item (e.g. Travel adapter, Letter for the plane)..."
-              value={newItemText}
-              onChange={(e) => setNewItemText(e.target.value)}
-              style={{
-                flex: 1,
-                minWidth: '220px',
-                padding: '10px 16px',
-                borderRadius: '8px',
-                border: '1px solid var(--line)',
-                background: 'var(--paper)',
-                fontSize: '13.5px',
-                color: 'var(--ink)',
-              }}
-            />
-            <select
-              value={newItemCat}
-              onChange={(e) => setNewItemCat(e.target.value as PackingItem['category'])}
-              style={{
-                padding: '10px 12px',
-                borderRadius: '8px',
-                border: '1px solid var(--line)',
-                background: 'var(--paper)',
-                color: 'var(--ink)',
-                fontSize: '13px',
-              }}
-            >
-              <option value="Essentials">Essentials</option>
-              <option value="Keepsakes">Keepsakes</option>
-              <option value="Electronics">Electronics</option>
-              <option value="Documents">Documents</option>
-              <option value="Gifts">Gifts</option>
-              <option value="Custom">Custom</option>
-            </select>
-            <select
-              value={newItemOwner}
-              onChange={(e) => setNewItemOwner(e.target.value as PackingItem['owner'])}
-              style={{
-                padding: '10px 12px',
-                borderRadius: '8px',
-                border: '1px solid var(--line)',
-                background: 'var(--paper)',
-                color: 'var(--ink)',
-                fontSize: '13px',
-              }}
-            >
-              <option value="shared">Packed Together</option>
-              <option value="mine">{partnerA}</option>
-              <option value="partner">{partnerB}</option>
-            </select>
-            <button type="submit" className="btn btn-primary" style={{ padding: '10px 20px', fontSize: '13px' }}>
-              + Add Item
-            </button>
-          </form>
         </div>
       </div>
     </ActivityShell>

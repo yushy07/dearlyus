@@ -1396,7 +1396,7 @@ export const forecastActivityAdapter: RealtimeActivityAdapter<ForecastSnapshot> 
   createAdapterFromDefinition(forecastActivityDefinition);
 
 // ==========================================
-// 14. TIMEZONE & REUNION ADAPTER
+// 14. TIMEZONE & SHARED-MOMENT ADAPTER
 // ==========================================
 export interface TimezoneSnapshot {
   [key: string]: unknown;
@@ -1408,20 +1408,17 @@ export interface TimezoneSnapshot {
   cityB: string;
   timezoneB: string;
   reunionDate: string | null;
-  packingItems: Array<{ id: string; text: string; done: boolean }>;
   completed: boolean;
 }
 
 const TIMEZONE_EVENTS = [
   'timezone_city_update',
   'timezone_reunion_set',
-  'timezone_packing_toggle',
-  'timezone_packing_add',
 ] as const;
 
 export const timezoneActivityDefinition: ActivityDefinition<TimezoneSnapshot, RealtimeActivityEvent> = {
   activityType: 'timezone',
-  schemaVersion: 1,
+  schemaVersion: 2,
   durableEvents: TIMEZONE_EVENTS,
   transientEvents: ['timezone_globe_rotate'],
   privateFields: [],
@@ -1431,17 +1428,13 @@ export const timezoneActivityDefinition: ActivityDefinition<TimezoneSnapshot, Re
     const opts = input.options || {};
     return {
       activityType: 'timezone',
-      schemaVersion: 1,
+      schemaVersion: 2,
       status: 'active',
       cityA: String(opts.cityA || 'Tokyo'),
       timezoneA: String(opts.timezoneA || 'Asia/Tokyo'),
       cityB: String(opts.cityB || 'San Francisco'),
       timezoneB: String(opts.timezoneB || 'America/Los_Angeles'),
       reunionDate: String(opts.reunionDate || '2026-10-15'),
-      packingItems: [
-        { id: '1', text: 'Comfortable hoodie for flight', done: true },
-        { id: '2', text: 'Camera charger', done: false },
-      ],
       completed: false,
     };
   },
@@ -1463,16 +1456,6 @@ export const timezoneActivityDefinition: ActivityDefinition<TimezoneSnapshot, Re
         };
       case 'timezone_reunion_set':
         return { ...snapshot, reunionDate: String(p.reunionDate || snapshot.reunionDate) };
-      case 'timezone_packing_toggle':
-        return {
-          ...snapshot,
-          packingItems: snapshot.packingItems.map((item) => (item.id === p.id ? { ...item, done: !item.done } : item)),
-        };
-      case 'timezone_packing_add':
-        return {
-          ...snapshot,
-          packingItems: [...snapshot.packingItems, { id: crypto.randomUUID(), text: String(p.text || ''), done: false }],
-        };
       default:
         return snapshot;
     }
@@ -1492,7 +1475,7 @@ export const timezoneActivityDefinition: ActivityDefinition<TimezoneSnapshot, Re
     const sum = result.summary as { cityA: string; cityB: string; reunionDate: string };
     return {
       kind: 'activity',
-      title: `Countdown to Reunion · ${sum.cityA} ✈️ ${sum.cityB}`,
+      title: `Across the Distance · ${sum.cityA} ⇄ ${sum.cityB}`,
       metadata: { activityType: 'timezone', ...sum },
     };
   },

@@ -73,15 +73,15 @@ const RITUAL_DEFINITIONS: RitualDefinition[] = [
   },
   {
     id: 'long-distance-countdown',
-    title: 'Reunion Countdown',
-    icon: '✈️',
+    title: 'Next Moment Countdown',
+    icon: '♡',
     cadence: 'Looking forward',
     description:
-      'Keep your sights on the next embrace. Whether it’s an airport gate or your next scheduled virtual date night.',
+      'Keep a gentle marker for the next moment you will share, online or in person.',
     prompt:
-      'When is your next planned meetup, flight, or dedicated big date night?',
+      'What moment are you looking forward to together?',
     placeholder:
-      'e.g. Airport reunion in Chicago or Big Virtual Anniversary Date…',
+      'e.g. Friday movie call or our next hug…',
   },
   {
     id: 'anniversary-capsule',
@@ -102,7 +102,7 @@ export function SharedRituals() {
   const [activeTab, setActiveTab] = useState<RitualKey>('sunday-checkin');
   const [entryText, setEntryText] = useState('');
   const [targetDate, setTargetDate] = useState('2026-10-15');
-  const [countdownLabel, setCountdownLabel] = useState('Next Airport Reunion');
+  const [countdownLabel, setCountdownLabel] = useState('Our Next Moment');
   const [anniversaryDate, setAnniversaryDate] = useState('2026-12-25');
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<{
@@ -463,7 +463,7 @@ export function SharedRituals() {
                   fontSize: '13.5px',
                   background: 'var(--paper-raised, #ffffff)',
                 }}
-                placeholder="e.g. Terminal 2 Reunion"
+                placeholder="e.g. Sunday video dinner"
               />
             </div>
             <div>
@@ -476,7 +476,7 @@ export function SharedRituals() {
                   marginBottom: '6px',
                 }}
               >
-                Target reunion date
+                Date and time to look forward to
               </label>
               <input
                 type="date"
