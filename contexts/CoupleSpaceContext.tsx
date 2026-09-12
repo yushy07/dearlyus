@@ -184,8 +184,8 @@ export function CoupleSpaceProvider({
     input: Pick<AccountProfile, 'displayName' | 'city' | 'timezone'>,
   ) => {
     if (!user) throw new Error('You must be signed in.');
-    await saveAccountProfile(user, input);
-    await refresh();
+    const savedProfile = await saveAccountProfile(user, input);
+    setProfile(savedProfile);
   };
 
   const createSpaceHandler = async (name: string) => {

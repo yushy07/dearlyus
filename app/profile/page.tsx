@@ -115,6 +115,7 @@ export default function ProfilePage() {
     'all' | 'keepsakes' | 'rituals' | 'settings'
   >('all');
   const [flutterActive, setFlutterActive] = useState(false);
+  const [profileAttempted, setProfileAttempted] = useState(false);
 
   const triggerHeartFlutter = () => {
     setFlutterActive(true);
@@ -211,6 +212,7 @@ export default function ProfilePage() {
   );
 
   const handleSaveProfile = async () => {
+    setProfileAttempted(true);
     if (!displayName.trim() || !city.trim()) {
       setNotice({
         kind: 'error',
@@ -224,10 +226,13 @@ export default function ProfilePage() {
       await saveProfile({ displayName, city, timezone });
       setEditing(false);
       setNotice({ kind: 'success', text: 'Your side is up to date.' });
-    } catch {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '';
       setNotice({
         kind: 'error',
-        text: 'Profile could not be saved. Please try again.',
+        text: message.includes('signed in')
+          ? 'Your session expired. Please sign in again.'
+          : 'Your profile could not be saved. Check the fields and try once more.',
       });
     } finally {
       setBusy('');
@@ -421,81 +426,137 @@ export default function ProfilePage() {
               <span>Dearly Us ♡</span>
             </div>
             <div className={styles.setupBody}>
-              <div className={styles.eyebrow}>Your side of the story</div>
-              <h1>Let&apos;s make this feel like yours.</h1>
-              <p>
-                Start with you. Your person can join through a private
-                invitation after your profile is ready.
-              </p>
-              {notice && (
-                <div
-                  className={`${styles.notice} ${notice.kind === 'error' ? styles.noticeError : styles.noticeSuccess}`}
-                >
-                  {notice.text}
+              <section className={styles.setupStory}>
+                <div className={styles.eyebrow}>Your side of the story</div>
+                <h1>Let&apos;s make this feel like yours.</h1>
+                <p>
+                  Begin with the small details that help your person feel close,
+                  wherever tonight finds you both.
+                </p>
+                <div className={styles.setupJourney} aria-label="Setup journey">
+                  <div className={styles.setupJourneyActive}>
+                    <b>01</b>
+                    <span>
+                      <strong>Your place</strong>
+                      <small>Name, city and local time</small>
+                    </span>
+                  </div>
+                  <div>
+                    <b>02</b>
+                    <span>
+                      <strong>Your person</strong>
+                      <small>A private invitation for one</small>
+                    </span>
+                  </div>
+                  <div>
+                    <b>03</b>
+                    <span>
+                      <strong>Your space</strong>
+                      <small>Moments kept between you two</small>
+                    </span>
+                  </div>
                 </div>
-              )}
-              <div className={styles.onboardingAvatar}>
-                <div className={styles.avatar}>
-                  <Avatar
-                    url={profile?.avatarUrl}
-                    name={displayName || 'You'}
-                  />
+                <div className={styles.setupPromise}>
+                  <span aria-hidden="true">♡</span>
+                  Your profile stays private to your shared space.
                 </div>
-                <div>
-                  <strong>Your Google profile photo</strong>
-                  <span>
-                    {profile?.avatarUrl
-                      ? 'Ready to use as your Dearly Us avatar.'
-                      : 'We’ll use your initials until Google provides a photo.'}
-                  </span>
+              </section>
+
+              <section className={styles.setupFormPanel}>
+                {notice && (
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    className={`${styles.notice} ${notice.kind === 'error' ? styles.noticeError : styles.noticeSuccess}`}
+                  >
+                    {notice.text}
+                  </div>
+                )}
+                <div className={styles.onboardingAvatar}>
+                  <div className={styles.avatar}>
+                    <Avatar
+                      url={profile?.avatarUrl}
+                      name={displayName || 'You'}
+                    />
+                  </div>
+                  <div>
+                    <strong>
+                      {displayName.trim() || 'Your Dearly Us portrait'}
+                    </strong>
+                    <span>
+                      {profile?.avatarUrl
+                        ? 'Your Google photo is ready.'
+                        : 'Your initials will hold this place for now.'}
+                    </span>
+                  </div>
                 </div>
-              </div>
-              <div className={styles.formGrid} style={{ marginTop: 20 }}>
+                <div className={styles.formGrid}>
+                  <div className={styles.field}>
+                    <label htmlFor="profile-name">Your display name</label>
+                    <input
+                      id="profile-name"
+                      className={styles.input}
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      placeholder="What should we call you?"
+                      maxLength={60}
+                      autoComplete="name"
+                      aria-invalid={profileAttempted && !displayName.trim()}
+                    />
+                    {profileAttempted && !displayName.trim() && (
+                      <small className={styles.fieldError}>
+                        Add the name your person knows you by.
+                      </small>
+                    )}
+                  </div>
+                  <div className={styles.field}>
+                    <label htmlFor="profile-city">Your city</label>
+                    <input
+                      id="profile-city"
+                      className={styles.input}
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      placeholder="Where are you tonight?"
+                      maxLength={80}
+                      autoComplete="address-level2"
+                      aria-invalid={profileAttempted && !city.trim()}
+                    />
+                    {profileAttempted && !city.trim() && (
+                      <small className={styles.fieldError}>
+                        Add your city so your clocks feel personal.
+                      </small>
+                    )}
+                  </div>
+                </div>
                 <div className={styles.field}>
-                  <label>Your display name</label>
+                  <label htmlFor="profile-timezone">Your timezone</label>
                   <input
+                    id="profile-timezone"
                     className={styles.input}
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    placeholder="What should we call you?"
-                    maxLength={60}
-                  />
-                </div>
-                <div className={styles.field}>
-                  <label>Your city</label>
-                  <input
-                    className={styles.input}
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    placeholder="Where are you tonight?"
+                    value={timezone}
+                    onChange={(e) => setTimezone(e.target.value)}
+                    placeholder="e.g. America/New_York or Asia/Kolkata"
                     maxLength={80}
+                    spellCheck={false}
                   />
+                  <div className={styles.help}>
+                    Suggested from this device. You can change it anytime.
+                  </div>
                 </div>
-              </div>
-              <div className={styles.field} style={{ marginTop: 16 }}>
-                <label>Your timezone</label>
-                <input
-                  className={styles.input}
-                  value={timezone}
-                  onChange={(e) => setTimezone(e.target.value)}
-                  placeholder="e.g. America/New_York or Asia/Kolkata"
-                />
-                <div className={styles.help}>
-                  Suggested automatically from this device. You can change it
-                  anytime.
+                <div className={styles.formActions}>
+                  <span>Next, you&apos;ll create or join your space.</span>
+                  <button
+                    className={styles.setupSubmit}
+                    onClick={handleSaveProfile}
+                    disabled={busy === 'profile'}
+                  >
+                    {busy === 'profile'
+                      ? 'Saving your place…'
+                      : 'Save my place'}
+                    <i aria-hidden="true">→</i>
+                  </button>
                 </div>
-              </div>
-              <div className={styles.formActions}>
-                <button
-                  className="btn btn-primary"
-                  onClick={handleSaveProfile}
-                  disabled={busy === 'profile'}
-                >
-                  {busy === 'profile'
-                    ? 'Saving your place…'
-                    : 'Save and enter my space →'}
-                </button>
-              </div>
+              </section>
             </div>
           </div>
         </div>
@@ -1134,26 +1195,46 @@ export default function ProfilePage() {
                   <div className={styles.timelineIntro}>
                     <span>OUR STORY, AS IT HAPPENED</span>
                     <h3>Your shared timeline</h3>
-                    <p>Finished dates, saved creations, and relationship milestones live together here.</p>
+                    <p>
+                      Finished dates, saved creations, and relationship
+                      milestones live together here.
+                    </p>
                   </div>
                   <div className={styles.timelineTrack}>
                     {memoryTimeline.map((memory) => {
                       const content = (
                         <>
-                          <span className={styles.timelineIcon}>{memory.icon}</span>
+                          <span className={styles.timelineIcon}>
+                            {memory.icon}
+                          </span>
                           <span className={styles.timelineCopy}>
-                            <small>{new Date(memory.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</small>
+                            <small>
+                              {new Date(memory.date).toLocaleDateString(
+                                undefined,
+                                {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                                },
+                              )}
+                            </small>
                             <strong>{memory.title}</strong>
                             <em>{memory.label}</em>
                           </span>
                         </>
                       );
                       return memory.keepsake ? (
-                        <button key={memory.id} className={styles.timelineItem} onClick={() => setSelectedKeepsake(memory.keepsake)}>
+                        <button
+                          key={memory.id}
+                          className={styles.timelineItem}
+                          onClick={() => setSelectedKeepsake(memory.keepsake)}
+                        >
                           {content}
                         </button>
                       ) : (
-                        <div key={memory.id} className={styles.timelineItem}>{content}</div>
+                        <div key={memory.id} className={styles.timelineItem}>
+                          {content}
+                        </div>
                       );
                     })}
                   </div>

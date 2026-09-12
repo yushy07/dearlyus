@@ -162,13 +162,33 @@ export async function saveAccountProfile(
   const avatarUrl = (user.user_metadata?.avatar_url ||
     user.user_metadata?.picture ||
     null) as string | null;
-  const { error } = await supabase.rpc('save_my_profile', {
+  const { data, error } = await supabase.rpc('save_my_profile', {
     profile_display_name: input.displayName.trim(),
     profile_city: input.city.trim(),
     profile_timezone: input.timezone.trim(),
     profile_avatar_url: avatarUrl,
   });
   if (error) throw error;
+  if (!data) throw new Error('Supabase did not return the saved profile.');
+
+  const saved = data as {
+    id: string;
+    display_name: string;
+    city: string | null;
+    timezone: string;
+    avatar_url: string | null;
+    onboarding_completed: boolean;
+    account_status: string;
+  };
+  return {
+    id: saved.id,
+    displayName: saved.display_name,
+    city: saved.city || '',
+    timezone: saved.timezone,
+    avatarUrl: saved.avatar_url,
+    onboardingCompleted: saved.onboarding_completed,
+    accountStatus: saved.account_status as AccountLifecycleStatus,
+  } satisfies AccountProfile;
 }
 
 async function runSpaceRpc(name: string, params?: Record<string, string>) {
