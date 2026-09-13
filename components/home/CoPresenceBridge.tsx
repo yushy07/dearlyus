@@ -3,7 +3,6 @@
 import React from 'react';
 import Link from 'next/link';
 import { sounds } from '@/lib/sound';
-import { ScrollStack, ScrollStackItem } from '@/components/motion';
 import styles from './CoPresenceBridge.module.css';
 
 interface CoPresenceBridgeProps {
@@ -83,15 +82,9 @@ export function CoPresenceBridge({ onExploreStage }: CoPresenceBridgeProps) {
         {/* =================================================================== */}
         {/* 2. 4-COLUMN SPOTLIGHT ACTIVITY & CAPABILITY CARDS                   */}
         {/* =================================================================== */}
-        <ScrollStack
-          className={styles.cardsStack}
-          itemDistance={74}
-          itemStackDistance={18}
-          baseScale={0.92}
-          rotationAmount={0.16}
-        >
+        <div className={styles.cardsGrid}>
           {/* Card 1: Korean Life4Cuts Photobooth */}
-          <ScrollStackItem itemClassName={styles.stackItem}>
+          <article className={styles.stackItem}>
           <Link
             href="/photobooth"
             className={styles.spotlightCardLink}
@@ -118,10 +111,10 @@ export function CoPresenceBridge({ onExploreStage }: CoPresenceBridgeProps) {
               </div>
             </div>
           </Link>
-          </ScrollStackItem>
+          </article>
 
           {/* Card 2: 3D Distance Globe */}
-          <ScrollStackItem itemClassName={styles.stackItem}>
+          <article className={styles.stackItem}>
           <a
             href="#top"
             onClick={handleScrollToStage}
@@ -148,10 +141,10 @@ export function CoPresenceBridge({ onExploreStage }: CoPresenceBridgeProps) {
               </div>
             </div>
           </a>
-          </ScrollStackItem>
+          </article>
 
           {/* Card 3: 35+ Couple Duels */}
-          <ScrollStackItem itemClassName={styles.stackItem}>
+          <article className={styles.stackItem}>
           <Link
             href="/activity"
             className={styles.spotlightCardLink}
@@ -178,10 +171,10 @@ export function CoPresenceBridge({ onExploreStage }: CoPresenceBridgeProps) {
               </div>
             </div>
           </Link>
-          </ScrollStackItem>
+          </article>
 
           {/* Card 4: Date Passport & Keepsakes */}
-          <ScrollStackItem itemClassName={styles.stackItem}>
+          <article className={styles.stackItem}>
           <Link
             href="/passport"
             className={styles.spotlightCardLink}
@@ -208,8 +201,8 @@ export function CoPresenceBridge({ onExploreStage }: CoPresenceBridgeProps) {
               </div>
             </div>
           </Link>
-          </ScrollStackItem>
-        </ScrollStack>
+          </article>
+        </div>
       </div>
     </section>
   );
