@@ -311,7 +311,7 @@ export interface CoupleTicketProfile {
   seatNumber: string;
 }
 
-const DEFAULT_PROFILE: CoupleTicketProfile = {
+export const DEFAULT_PASSPORT_PROFILE: CoupleTicketProfile = {
   partner1: 'Mia',
   partner2: 'Alex',
   originCity: 'Seoul 🇰🇷 (GMT+9)',
@@ -321,33 +321,33 @@ const DEFAULT_PROFILE: CoupleTicketProfile = {
 };
 
 export function getCoupleTicketProfile(): CoupleTicketProfile {
-  if (typeof window === 'undefined') return DEFAULT_PROFILE;
+  if (typeof window === 'undefined') return DEFAULT_PASSPORT_PROFILE;
   try {
     const couple = getStoredCoupleProfile();
     const saved = localStorage.getItem('dearly_couple_ticket_profile');
     if (saved) {
       const parsed = JSON.parse(saved);
       return {
-        ...DEFAULT_PROFILE,
-        originCity: couple.cityA || DEFAULT_PROFILE.originCity,
-        destinationCity: couple.cityB || DEFAULT_PROFILE.destinationCity,
+        ...DEFAULT_PASSPORT_PROFILE,
+        originCity: couple.cityA || DEFAULT_PASSPORT_PROFILE.originCity,
+        destinationCity: couple.cityB || DEFAULT_PASSPORT_PROFILE.destinationCity,
         ...parsed,
         partner1:
-          parsed.partner1 || couple.partnerA || DEFAULT_PROFILE.partner1,
+          parsed.partner1 || couple.partnerA || DEFAULT_PASSPORT_PROFILE.partner1,
         partner2:
-          parsed.partner2 || couple.partnerB || DEFAULT_PROFILE.partner2,
+          parsed.partner2 || couple.partnerB || DEFAULT_PASSPORT_PROFILE.partner2,
       };
     }
 
     return {
-      ...DEFAULT_PROFILE,
+      ...DEFAULT_PASSPORT_PROFILE,
       partner1: couple.partnerA,
       partner2: couple.partnerB,
-      originCity: couple.cityA || DEFAULT_PROFILE.originCity,
-      destinationCity: couple.cityB || DEFAULT_PROFILE.destinationCity,
+      originCity: couple.cityA || DEFAULT_PASSPORT_PROFILE.originCity,
+      destinationCity: couple.cityB || DEFAULT_PASSPORT_PROFILE.destinationCity,
     };
   } catch {
-    return DEFAULT_PROFILE;
+    return DEFAULT_PASSPORT_PROFILE;
   }
 }
 

@@ -9,14 +9,15 @@ import {
   saveStampNote,
   getCoupleTicketProfile,
   saveCoupleTicketProfile,
+  DEFAULT_PASSPORT_PROFILE,
 } from '@/lib/passport';
 import type { PassportStamp, CoupleTicketProfile } from '@/types/passport';
 
 export function usePassport() {
   const [unlockedIds, setUnlockedIds] = useState<string[]>([]);
   const [stampNotes, setStampNotesState] = useState<Record<string, string>>({});
-  const [profile, setProfileState] = useState<CoupleTicketProfile>(() =>
-    getCoupleTicketProfile(),
+  const [profile, setProfileState] = useState<CoupleTicketProfile>(
+    DEFAULT_PASSPORT_PROFILE,
   );
   const [isLoaded, setIsLoaded] = useState(false);
 
