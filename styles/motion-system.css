@@ -140,9 +140,6 @@
     border-color var(--du-motion-standard);
   transform-origin: center;
 }
-.du-motion-root :where(button, a[class*='button'], a[class*='Button']):hover:not(:disabled) {
-  translate: 0 -1px;
-}
 .du-motion-root :where([role='menu'], [class*='dropdown'], [class*='Dropdown']) {
   transform-origin: 50% 0;
   animation: du-paper-tab-open 280ms var(--du-ease-out) both;
