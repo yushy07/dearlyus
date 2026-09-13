@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Footer } from '@/components/shared/Footer';
 import { sounds } from '@/lib/sound';
 import { ScrollReveal } from '@/components/ui';
+import { ScrollStack, ScrollStackItem } from '@/components/motion';
 import { usePassport } from '@/hooks/usePassport';
 import type { PassportStamp, CoupleTicketProfile } from '@/types/passport';
 import { BoardingPassCard } from './_components/BoardingPassCard';
@@ -234,6 +235,9 @@ export default function PassportPage() {
     activeCategory === 'All'
       ? stamps
       : stamps.filter((s) => s.category === activeCategory);
+  const featuredStamps = stamps
+    .filter((stamp) => unlockedIds.includes(stamp.id))
+    .slice(0, 3);
 
   return (
     <div
@@ -453,6 +457,23 @@ export default function PassportPage() {
               progressPercent={progressPercent}
             />
           </ScrollReveal>
+
+          {featuredStamps.length > 0 && (
+            <section className="passport-memory-feature">
+              <div className="passport-memory-feature__heading">
+                <span>RECENTLY STAMPED</span>
+                <h2>Pages you have already filled together.</h2>
+                <p>Let your newest shared milestones settle into the passport as you scroll.</p>
+              </div>
+              <ScrollStack className="passport-memory-feature__stack" itemDistance={72} itemStackDistance={18} baseScale={0.94}>
+                {featuredStamps.map((stamp) => (
+                  <ScrollStackItem key={stamp.id} as="div" itemClassName="passport-memory-feature__item">
+                    <StampCard stamp={stamp} isUnlocked isAnimating={animatingStampId === stamp.id} userNote={stampNotes[stamp.id] || stamp.defaultMemory} onStampClick={handleStampClick} onEditNoteClick={(selected) => { setSelectedStamp(selected); setEditingNoteId(selected.id); setTempNoteText(stampNotes[selected.id] || selected.defaultMemory); }} />
+                  </ScrollStackItem>
+                ))}
+              </ScrollStack>
+            </section>
+          )}
 
           {/* Category Filter Chips */}
           <div

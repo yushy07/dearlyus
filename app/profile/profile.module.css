@@ -1163,6 +1163,43 @@ button.timelineItem:hover {
   margin-top: 7px;
 }
 
+.memoryStack {
+  max-width: 760px;
+  margin: 32px auto 46px;
+}
+
+.memoryStackItem {
+  min-height: 168px;
+  padding: 0 !important;
+  overflow: hidden;
+  border-color: #d7bdb3 !important;
+  background: #fff9ef !important;
+  box-shadow: 0 18px 42px rgba(68, 49, 55, 0.13) !important;
+}
+
+.memoryStackItem button {
+  display: grid;
+  width: 100%;
+  min-height: 168px;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 22px;
+  padding: 28px 34px;
+  border: 0;
+  color: #443137;
+  background: transparent;
+  text-align: left;
+}
+
+.memoryStackItem button:disabled { cursor: default; }
+.memoryStackItem button:focus-visible { outline: 3px solid rgba(113, 61, 76, .3); outline-offset: -5px; }
+.memoryStackIcon { display: grid; width: 64px; height: 64px; place-items: center; border: 1px solid #d8b9b8; border-radius: 50%; background: #f3e0dc; font-size: 28px; }
+.memoryStackItem button > span:nth-child(2) { display: grid; gap: 5px; }
+.memoryStackItem small { color: #966272; font: 700 10px/1.4 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; }
+.memoryStackItem strong { font-family: var(--font-display); font-size: clamp(24px, 3vw, 34px); font-weight: 500; line-height: 1; }
+.memoryStackItem em { color: #806c70; font-size: 12px; font-style: normal; text-transform: capitalize; }
+.memoryStackItem i { color: #8e5968; font-size: 11px; font-style: normal; font-weight: 750; }
+
 @media (max-width: 820px) {
   .setupBody {
     grid-template-columns: 1fr;

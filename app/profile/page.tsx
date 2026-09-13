@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Navbar, AiConsentToggle } from '@/components/shared';
+import { ScrollStack, ScrollStackItem } from '@/components/motion';
 import { QRCodeSVG } from '@/lib/qrcode';
 import { sounds } from '@/lib/sound';
 import { useSupabaseSession } from '@/contexts/SupabaseSessionContext';
@@ -1200,6 +1201,17 @@ export default function ProfilePage() {
                       milestones live together here.
                     </p>
                   </div>
+                  <ScrollStack className={styles.memoryStack} itemDistance={68} itemStackDistance={16} baseScale={0.95}>
+                    {memoryTimeline.slice(0, 3).map((memory) => (
+                      <ScrollStackItem key={`featured-${memory.id}`} as="div" itemClassName={styles.memoryStackItem}>
+                        <button type="button" disabled={!memory.keepsake} onClick={() => memory.keepsake && setSelectedKeepsake(memory.keepsake)}>
+                          <span className={styles.memoryStackIcon}>{memory.icon}</span>
+                          <span><small>{new Date(memory.date).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</small><strong>{memory.title}</strong><em>{memory.label}</em></span>
+                          <i aria-hidden="true">Open ↗</i>
+                        </button>
+                      </ScrollStackItem>
+                    ))}
+                  </ScrollStack>
                   <div className={styles.timelineTrack}>
                     {memoryTimeline.map((memory) => {
                       const content = (

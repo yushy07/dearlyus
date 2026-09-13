@@ -9,6 +9,24 @@
   --du-spring-soft: cubic-bezier(0.2, 0.9, 0.25, 1.15);
   --du-stagger-max: 275ms;
 }
+
+.passport-memory-feature {
+  padding: 34px clamp(18px, 4vw, 54px) 18px;
+  border: 1px solid rgba(113, 61, 76, 0.18);
+  border-radius: 28px;
+  background: rgba(255, 249, 239, 0.66);
+}
+
+.passport-memory-feature__heading { max-width: 590px; margin-bottom: 18px; }
+.passport-memory-feature__heading span { color: #875566; font: 700 10px/1.4 var(--font-mono); letter-spacing: .16em; }
+.passport-memory-feature__heading h2 { margin: 8px 0; font-family: var(--font-display); font-size: clamp(30px, 4vw, 48px); font-weight: 500; line-height: 1; }
+.passport-memory-feature__heading p { margin: 0; color: var(--ink-soft); font-size: 14px; }
+.passport-memory-feature__stack { max-width: 760px; margin-inline: auto; }
+.passport-memory-feature__item { padding: 0 !important; overflow: hidden; background: transparent !important; box-shadow: 0 20px 42px rgba(68, 49, 55, .12) !important; }
+
+@media (max-width: 760px) {
+  .passport-memory-feature { padding: 25px 16px 8px; }
+}
 .du-paper-card {
   position: relative;
   border: 1px solid rgba(113, 61, 76, 0.2);
