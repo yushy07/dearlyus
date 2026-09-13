@@ -1,0 +1,41 @@
+.page { min-height: 100vh; padding-bottom: 90px; color: #443137; background: #f5eddf; }
+.navAction { display: inline-flex; align-items: center; gap: 8px; padding: 11px 17px; border-radius: 999px; color: #fff9ef; background: #713d4c; text-decoration: none; font-size: 13px; font-weight: 800; box-shadow: 0 5px 0 #56303c; }
+.hero { position: relative; display: grid; grid-template-columns: minmax(0, 1.06fr) minmax(360px, .94fr); gap: clamp(40px, 7vw, 100px); align-items: center; max-width: 1180px; min-height: 620px; margin: 0 auto; padding: 86px 36px 72px; }
+.hero::before { content: ''; position: absolute; inset: 34px 0; border: 1px solid rgba(113,61,76,.12); border-radius: 34px; pointer-events: none; }
+.heroCopy { position: relative; z-index: 2; }
+.kicker { display: inline-flex; align-items: center; gap: 8px; color: #8d5664; font: 700 11px/1.4 var(--font-mono); letter-spacing: .16em; }
+.hero h1 { margin: 18px 0 22px; font: 700 clamp(48px, 6vw, 76px)/.98 var(--font-serif); letter-spacing: -.045em; }
+.hero h1 em { color: #8d5664; font-weight: 600; }
+.heroCopy > p { max-width: 610px; margin: 0; color: #715c61; font-size: 18px; line-height: 1.75; }
+.heroDetails { display: flex; flex-wrap: wrap; gap: 12px 24px; margin-top: 30px; padding-top: 22px; border-top: 1px solid rgba(113,61,76,.18); color: #6a4638; font-size: 13px; font-weight: 700; }
+.heroDetails span { display: inline-flex; align-items: center; gap: 7px; }
+.heroStillLife { position: relative; min-height: 430px; transform-style: preserve-3d; perspective: 1000px; }
+.photo { position: absolute; inset: 36px 25px 36px 70px; display: block; padding: 15px 15px 58px; background: #fff9ef; box-shadow: 0 30px 50px rgba(68,49,55,.2); transform: rotate(3deg); }
+.photo img { width: 100%; height: 100%; object-fit: cover; filter: sepia(.08) saturate(.82); }
+.postcard { position: absolute; z-index: 2; right: -12px; bottom: 25px; width: 180px; padding: 28px 22px; background: #d7abb0; border: 1px solid #b9868e; box-shadow: 0 18px 28px rgba(68,49,55,.18); color: #713d4c; font: italic 600 23px/1.15 var(--font-serif); transform: rotate(-7deg) translateZ(20px); }
+.thread { position: absolute; z-index: 3; top: 10px; left: 42%; width: 180px; height: 110px; border: 1px solid #b89a67; border-color: #b89a67 transparent transparent #b89a67; border-radius: 55% 0 0; transform: rotate(15deg); }
+.pressedFlower { position: absolute; z-index: 3; left: 38px; bottom: 18px; color: #9c777a; font-size: 76px; transform: rotate(-24deg); }
+.issue { max-width: 1080px; margin: 0 auto; padding: 70px 36px 30px; border-top: 1px solid rgba(113,61,76,.18); }
+.issueHeading { display: grid; grid-template-columns: 1fr minmax(260px, 390px); gap: 40px; align-items: end; }
+.issueHeading h2 { margin: 10px 0 0; font: 700 clamp(36px, 5vw, 58px)/1.03 var(--font-serif); letter-spacing: -.035em; }
+.issueHeading > p { margin: 0; color: #79656a; line-height: 1.65; }
+.storyStack { margin-top: 18px; }
+.storyCard { min-height: 390px; overflow: hidden; border: 1px solid #d8c4b4; border-radius: 28px; background: #fff9ef; box-shadow: 0 25px 48px rgba(68,49,55,.16); }
+.storyLink { display: grid; grid-template-columns: minmax(300px, .92fr) 1.08fr; height: 100%; min-height: 390px; color: inherit; text-decoration: none; }
+.storyImage { position: relative; min-height: 390px; overflow: hidden; background: #e7d8c7; }
+.storyImage img { width: 100%; height: 100%; object-fit: cover; transition: transform 650ms cubic-bezier(.22,1,.36,1), filter 650ms; filter: saturate(.82) sepia(.06); }
+.storyImage span { position: absolute; left: 18px; bottom: 18px; display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; color: #fff9ef; background: #713d4c; border: 1px solid #c6a270; font: 700 12px var(--font-mono); }
+.storyBody { display: flex; flex-direction: column; justify-content: center; padding: clamp(32px, 5vw, 64px); }
+.storyMeta { display: flex; justify-content: space-between; gap: 12px; color: #965f6b; font: 700 10px var(--font-mono); letter-spacing: .12em; text-transform: uppercase; }
+.storyMeta span:last-child { display: inline-flex; align-items: center; gap: 6px; }
+.storyBody h3 { margin: 22px 0 14px; font: 700 clamp(28px, 3vw, 42px)/1.08 var(--font-serif); letter-spacing: -.025em; }
+.storyBody p { margin: 0; color: #755f64; line-height: 1.7; }
+.readLink { display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; margin-top: 28px; padding-bottom: 5px; border-bottom: 1px solid #9b6671; color: #713d4c; font-size: 13px; font-weight: 800; }
+.storyLink:hover .storyImage img { transform: scale(1.035); filter: saturate(.95); }
+.closingNote { display: grid; grid-template-columns: auto 1fr auto; gap: 24px; align-items: center; max-width: 1080px; margin: 30px auto 0; padding: 34px 40px; border: 1px solid #cbb6a5; border-radius: 22px; background: #e7d3ca; box-shadow: 0 14px 32px rgba(68,49,55,.1); }
+.closingNote > span { font: 48px var(--font-serif); color: #713d4c; }
+.closingNote p { margin: 0 0 6px; color: #8d5664; font: 700 10px var(--font-mono); letter-spacing: .15em; }
+.closingNote h2 { margin: 0; font: 700 26px var(--font-serif); }
+.closingNote a { display: inline-flex; align-items: center; gap: 7px; color: #fff9ef; background: #713d4c; padding: 13px 17px; border-radius: 999px; text-decoration: none; font-size: 13px; font-weight: 800; }
+@media (max-width: 760px) { .hero { grid-template-columns: 1fr; min-height: auto; padding: 54px 22px; } .hero::before { inset: 18px 10px; } .heroStillLife { min-height: 330px; } .issue { padding: 50px 20px 20px; } .issueHeading { grid-template-columns: 1fr; gap: 16px; } .storyLink { grid-template-columns: 1fr; } .storyImage { min-height: 240px; } .storyCard { min-height: auto; } .closingNote { grid-template-columns: auto 1fr; margin: 24px 20px 0; padding: 26px 22px; } .closingNote a { grid-column: 1 / -1; justify-content: center; } }
+@media (prefers-reduced-motion: reduce) { .storyImage img { transition: none; } }

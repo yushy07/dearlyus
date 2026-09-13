@@ -8,7 +8,7 @@ export const BLOG_POSTS: Record<string, BlogPostData> = {
     title: '7 fun LDR online dates that aren’t watching Netflix',
     summary:
       'Active, shared things to do instead of another muted stream — a synced photobooth, the same recipe in two kitchens, brain-teaser duels, a joint vision board.',
-    image: '/august/hero.webp',
+    image: '/august/gate.webp',
     date: 'August 14, 2026',
     author: 'Mia & Alex (Dearly Us Founders)',
     content: [
@@ -57,7 +57,7 @@ export const BLOG_POSTS: Record<string, BlogPostData> = {
     title: 'How to use our online photobooth for couple keepsakes',
     summary:
       'Six steps from a room code to a strip you both took at the same second — with theme packs and backdrops laid out so you can try them here first.',
-    image: '/august/c-booth.webp',
+    image: '/photos/frame2.webp',
     date: 'June 19, 2026',
     author: 'Mia (Dearly Us Team)',
     content: [
