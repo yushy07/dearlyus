@@ -6,7 +6,6 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -24,7 +23,6 @@ export function useMotionPreferences() {
 
 export function MotionProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const rootRef = useRef<HTMLDivElement>(null);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [pageVisible, setPageVisible] = useState(true);
 
@@ -53,8 +51,14 @@ export function MotionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const root = rootRef.current;
-    if (!root) return;
+    const root = document.body;
+    root.classList.add('du-motion-root');
+    root.dataset.reducedMotion = String(reducedMotion);
+    root.dataset.pageVisible = String(pageVisible);
+  }, [reducedMotion, pageVisible]);
+
+  useEffect(() => {
+    const root = document.body;
     const selector = '[data-motion-reveal], main > section, main > article';
     const candidates = Array.from(root.querySelectorAll<HTMLElement>(selector));
     if (reducedMotion || !('IntersectionObserver' in window)) {
@@ -96,8 +100,7 @@ export function MotionProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (reducedMotion) return;
-    const root = rootRef.current;
-    if (!root) return;
+    const root = document.body;
     const move = (event: PointerEvent) => {
       root.style.setProperty(
         '--du-pointer-rotate-y',
@@ -118,15 +121,7 @@ export function MotionProvider({ children }: { children: ReactNode }) {
   );
   return (
     <MotionContext.Provider value={value}>
-      <div
-        ref={rootRef}
-        key={pathname}
-        className="du-motion-root"
-        data-reduced-motion={reducedMotion}
-        data-page-visible={pageVisible}
-      >
-        {children}
-      </div>
+      {children}
     </MotionContext.Provider>
   );
 }

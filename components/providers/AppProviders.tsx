@@ -6,6 +6,7 @@ import { CoupleSpaceProvider } from '@/contexts/CoupleSpaceContext';
 import { ActiveRoomProvider } from '@/contexts/ActiveRoomContext';
 import { PresenceProvider } from '@/contexts/PresenceContext';
 import { ActivitySessionProvider } from '@/contexts/ActivitySessionContext';
+import { MotionProvider } from '@/components/motion/MotionProvider';
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
   return (
@@ -13,7 +14,9 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
       <CoupleSpaceProvider>
         <ActiveRoomProvider>
           <PresenceProvider>
-            <ActivitySessionProvider>{children}</ActivitySessionProvider>
+            <ActivitySessionProvider>
+              <MotionProvider>{children}</MotionProvider>
+            </ActivitySessionProvider>
           </PresenceProvider>
         </ActiveRoomProvider>
       </CoupleSpaceProvider>
