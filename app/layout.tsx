@@ -60,6 +60,7 @@ export const viewport: Viewport = {
 import { GlobalExperience } from '@/components/shared/GlobalExperience';
 import { AppProviders } from '@/components/providers/AppProviders';
 import { SiteAtmosphere } from '@/components/shared/SiteAtmosphere';
+import { MotionProvider } from '@/components/motion/MotionProvider';
 
 export default function RootLayout({
   children,
@@ -70,8 +71,10 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body suppressHydrationWarning>
         <AppProviders>
-          <SiteAtmosphere>{children}</SiteAtmosphere>
-          <GlobalExperience />
+          <MotionProvider>
+            <SiteAtmosphere>{children}</SiteAtmosphere>
+            <GlobalExperience />
+          </MotionProvider>
         </AppProviders>
       </body>
     </html>
