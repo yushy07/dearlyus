@@ -18,6 +18,7 @@ import { useCoupleProfile } from '@/lib/couple';
 import './activity-collection.css';
 import { ActivityIllustration } from './ActivityIllustration';
 import { listRecoverableActivitySessions } from '@/lib/activity-session';
+import { ScrollStack, ScrollStackItem } from '@/components/motion';
 
 type Category = 'all' | 'play' | 'talk' | 'make' | 'distance';
 type FilterTag =
@@ -611,16 +612,22 @@ export default function ActivityPage() {
             </div>
           </div>
 
-          <div className="collection-concierge__grid">
+          <ScrollStack
+            className="collection-concierge__stack"
+            itemDistance={82}
+            itemStackDistance={20}
+            baseScale={0.91}
+            rotationAmount={0.18}
+          >
             {CURATED_ARCS.map((arc) => {
               const ArcIcon = ARC_ICONS[arc.id];
               return (
-                <Link
-                  key={arc.id}
-                  href={arc.path}
-                  className={`collection-arc collection-arc--${arc.id}`}
-                  aria-label={`Build the ${arc.title} date plan`}
-                >
+                <ScrollStackItem key={arc.id} itemClassName="collection-arc-stack-item">
+                  <Link
+                    href={arc.path}
+                    className={`collection-arc collection-arc--${arc.id}`}
+                    aria-label={`Build the ${arc.title} date plan`}
+                  >
                   <div className="collection-arc__topline">
                     <span className="collection-arc__number">ARC {arc.number}</span>
                     <span className="collection-arc__duration"><Clock3 size={14} /> {arc.duration}</span>
@@ -645,10 +652,11 @@ export default function ActivityPage() {
                   <span className="collection-arc__cta">
                     Build this date <ArrowUpRight size={17} />
                   </span>
-                </Link>
+                  </Link>
+                </ScrollStackItem>
               );
             })}
-          </div>
+          </ScrollStack>
         </section>
 
         {/* Main Catalogue Section */}

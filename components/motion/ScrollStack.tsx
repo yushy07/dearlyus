@@ -74,6 +74,16 @@ export default function ScrollStack({
     return value.includes('%') ? (Number.parseFloat(value) / 100) * height : Number.parseFloat(value);
   }, []);
 
+  const getLayoutTop = useCallback((element: HTMLElement) => {
+    let top = 0;
+    let current: HTMLElement | null = element;
+    while (current) {
+      top += current.offsetTop;
+      current = current.offsetParent as HTMLElement | null;
+    }
+    return top;
+  }, []);
+
   const update = useCallback(() => {
     const root = rootRef.current;
     if (!root || reducedMotion || !pageVisible || window.innerWidth <= 760) return;
@@ -83,17 +93,18 @@ export default function ScrollStack({
     const stackAt = parsePosition(stackPosition, height);
     const scaleEndsAt = parsePosition(scaleEndPosition, height);
     const end = root.querySelector<HTMLElement>(`.${styles.end}`);
-    const endTop = end ? end.getBoundingClientRect().top + scrollTop : scroller.scrollHeight;
+    const rootTop = useWindowScroll ? 0 : getLayoutTop(root);
+    const endTop = end ? getLayoutTop(end) - rootTop : scroller.scrollHeight;
     const pinEnd = endTop - height * 0.52;
     let topIndex = 0;
 
     cardsRef.current.forEach((card, index) => {
-      const top = card.getBoundingClientRect().top + scrollTop;
+      const top = getLayoutTop(card) - rootTop;
       if (scrollTop >= top - stackAt - itemStackDistance * index) topIndex = index;
     });
 
     cardsRef.current.forEach((card, index) => {
-      const top = card.getBoundingClientRect().top + scrollTop;
+      const top = getLayoutTop(card) - rootTop;
       const start = top - stackAt - itemStackDistance * index;
       const endScale = Math.max(start + 1, top - scaleEndsAt);
       const progress = Math.min(1, Math.max(0, (scrollTop - start) / (endScale - start)));
@@ -117,7 +128,7 @@ export default function ScrollStack({
         completedRef.current = complete;
       }
     });
-  }, [baseScale, blurAmount, itemScale, itemStackDistance, onStackComplete, pageVisible, parsePosition, reducedMotion, rotationAmount, scaleEndPosition, stackPosition, useWindowScroll]);
+  }, [baseScale, blurAmount, getLayoutTop, itemScale, itemStackDistance, onStackComplete, pageVisible, parsePosition, reducedMotion, rotationAmount, scaleEndPosition, stackPosition, useWindowScroll]);
 
   useLayoutEffect(() => {
     const root = rootRef.current;
