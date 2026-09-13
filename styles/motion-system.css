@@ -111,6 +111,82 @@
   transform: scaleX(1);
   transform-origin: left;
 }
+.du-motion-root .collection-still-life {
+  transform-style: preserve-3d;
+  animation: still-life-breathe 9s ease-in-out infinite;
+}
+.du-motion-root .collection-hero-deck,
+.du-motion-root .collection-hero-photo,
+.du-motion-root .collection-hero-letter {
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+}
+.du-motion-root .collection-card-stage::before {
+  transition:
+    transform 520ms var(--du-ease-out),
+    border-color 320ms;
+}
+.du-motion-root .collection-card:hover .collection-card-stage::before {
+  transform: scaleX(0.8) scaleY(1.06);
+  border-color: rgba(255, 251, 244, 0.7);
+}
+.du-motion-root .collection-card-cta svg {
+  transition: transform 260ms var(--du-ease-out);
+}
+.du-motion-root .collection-card:hover .collection-card-cta svg {
+  transform: translate(3px, -3px);
+}
+.du-motion-root .passport-blush-cover {
+  transform-style: preserve-3d;
+  transition:
+    transform 520ms var(--du-ease-out),
+    box-shadow 520ms var(--du-ease-out);
+}
+.du-motion-root .passport-blush-cover:hover {
+  transform: perspective(1100px) rotateY(-2.4deg) rotateX(1deg) translateY(-5px);
+}
+.du-motion-root .passport-boarding-pass {
+  transform-origin: 50% 100%;
+  animation: ticket-set-down 620ms var(--du-ease-out) both;
+}
+.du-motion-root .passport-stamp-badge {
+  transform-origin: center;
+}
+.du-motion-root [class*='timelineItem'] {
+  animation: memory-enter 540ms var(--du-ease-out) both;
+}
+.du-motion-root [class*='timelineItem']:nth-child(2n) {
+  animation-delay: 70ms;
+}
+.du-motion-root [class*='timelineItem']:nth-child(3n) {
+  animation-delay: 130ms;
+}
+.du-motion-root [class*='keepsakePreview'] img {
+  transition:
+    filter 700ms,
+    transform 700ms var(--du-ease-out);
+}
+.du-motion-root [class*='keepsake']:hover [class*='keepsakePreview'] img {
+  transform: scale(1.025);
+}
+@keyframes still-life-breathe {
+  50% {
+    transform: perspective(1100px) rotateY(var(--du-pointer-rotate-y, 0deg))
+      rotateX(var(--du-pointer-rotate-x, 0deg)) translateY(-4px);
+  }
+}
+@keyframes ticket-set-down {
+  from {
+    opacity: 0;
+    transform: perspective(900px) translateY(-12px) rotateX(-6deg);
+  }
+}
+@keyframes memory-enter {
+  from {
+    opacity: 0;
+    transform: translateX(-12px) rotate(-0.4deg);
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .du-motion-root {
     animation: none;

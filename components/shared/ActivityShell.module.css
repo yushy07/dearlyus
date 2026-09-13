@@ -99,9 +99,18 @@
 }
 
 @keyframes pulseDot {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(185, 120, 131, 0.6); }
-  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(185, 120, 131, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(185, 120, 131, 0); }
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(185, 120, 131, 0.6);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(185, 120, 131, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(185, 120, 131, 0);
+  }
 }
 
 .demoPill {
@@ -244,7 +253,11 @@
   padding: 1.1rem;
   border: 1px solid rgba(121, 76, 88, 0.2);
   border-radius: 18px;
-  background: linear-gradient(145deg, rgba(255, 252, 247, 0.98), rgba(246, 232, 228, 0.9));
+  background: linear-gradient(
+    145deg,
+    rgba(255, 252, 247, 0.98),
+    rgba(246, 232, 228, 0.9)
+  );
   box-shadow: 0 14px 34px rgba(74, 40, 53, 0.1);
 }
 
@@ -320,4 +333,52 @@
 .resumeBtn:hover {
   background: #5f3944;
   transform: translateY(-2px);
+}
+.stageScene {
+  min-height: 100%;
+  animation: stage-paper-arrive 460ms var(--du-ease-out, ease-out) both;
+  transform-origin: 50% 16%;
+}
+.shell[data-activity-stage='remember'] .stageScene {
+  animation-name: stage-keepsake-arrive;
+}
+.stageStepActive .stageNumber {
+  animation: stage-number-settle 420ms var(--du-ease-out, ease-out) both;
+}
+@keyframes stage-paper-arrive {
+  from {
+    opacity: 0.25;
+    transform: perspective(1000px) translateY(12px) rotateX(1.2deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes stage-keepsake-arrive {
+  from {
+    opacity: 0;
+    transform: perspective(900px) translateY(20px) rotateX(3deg) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes stage-number-settle {
+  0% {
+    transform: scale(0.72);
+  }
+  65% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stageScene,
+  .stageStepActive .stageNumber {
+    animation: none;
+  }
 }

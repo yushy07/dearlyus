@@ -1,0 +1,96 @@
+/* Activity-specific accents layered over the shared motion language. */
+[id^='activity-shell-'] [class*='stageCanvas'] {
+  perspective: 1200px;
+}
+[id^='activity-shell-']
+  :where([class*='card'], [class*='Card'], [class*='panel'], [class*='Panel']) {
+  backface-visibility: hidden;
+}
+[id^='activity-shell-'] :where([aria-pressed='true'], [data-selected='true']) {
+  animation: du-choice-lock 360ms var(--du-ease-out, ease-out);
+}
+#activity-shell-letter :where([class*='envelope'], [class*='letter']) {
+  transform-origin: 50% 100%;
+}
+#activity-shell-letter :where([class*='sealed'], [class*='locked']) {
+  animation: du-seal-set 520ms var(--du-ease-out, ease-out);
+}
+#activity-shell-birthday :where([class*='gift'], [class*='present']) {
+  transform-style: preserve-3d;
+}
+#activity-shell-scrapbook :where([class*='photo'], [class*='sticker']) {
+  transform-origin: center;
+  transition:
+    transform 260ms var(--du-ease-out, ease-out),
+    filter 260ms;
+}
+#activity-shell-scrapbook :where([class*='photo'], [class*='sticker']):hover {
+  filter: drop-shadow(0 10px 10px rgba(65, 39, 45, 0.16));
+}
+#activity-shell-shirts :where([class*='shirt'], [class*='garment']) {
+  transform-style: preserve-3d;
+  transition: transform 520ms var(--du-ease-out, ease-out);
+}
+#activity-shell-shirts :where([class*='shirt'], [class*='garment']):hover {
+  transform: perspective(850px) rotateY(2deg) translateY(-3px);
+}
+#activity-shell-arcade :where([class*='score'], [class*='token']),
+#activity-shell-iq :where([class*='score'], [class*='timer']),
+#activity-shell-riddle :where([class*='clue'], [class*='hint']) {
+  font-variant-numeric: tabular-nums;
+}
+#activity-shell-arcade :where([class*='dice'], [class*='coin']),
+#activity-shell-iq :where([class*='result']) {
+  transform-style: preserve-3d;
+}
+#activity-shell-date :where([class*='timeline'], [class*='itinerary']),
+#activity-shell-bucket :where([class*='timeline'], [class*='calendar']),
+#activity-shell-future :where([class*='timeline'], [class*='milestone']),
+#activity-shell-timezone :where([class*='clock'], [class*='dial']) {
+  transform-origin: center;
+}
+#activity-shell-draw canvas {
+  transition: box-shadow 420ms var(--du-ease-out, ease-out);
+}
+#activity-shell-draw canvas:focus-within {
+  box-shadow: 0 18px 38px rgba(72, 45, 52, 0.15);
+}
+.studio-machine :where(button, [role='button']) {
+  transform-origin: 50% 80%;
+}
+.studio-print-paper {
+  transform-origin: 50% 0;
+  animation: du-print-emerge 720ms var(--du-ease-out, ease-out) both;
+}
+.court-stage :where(button, [role='button']) {
+  transform-origin: 50% 85%;
+}
+@keyframes du-choice-lock {
+  45% {
+    transform: translateY(2px) scale(0.975);
+  }
+}
+@keyframes du-seal-set {
+  0% {
+    opacity: 0.4;
+    transform: translateY(-8px) rotate(-2deg);
+  }
+  70% {
+    transform: translateY(1px) rotate(0.5deg);
+  }
+}
+@keyframes du-print-emerge {
+  from {
+    opacity: 0.25;
+    transform: translateY(-22px) scaleY(0.96);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [id^='activity-shell-'] *,
+  [id^='activity-shell-'] *::before,
+  [id^='activity-shell-'] *::after,
+  .studio-print-paper {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

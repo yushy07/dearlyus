@@ -113,23 +113,32 @@ export function ActivityShell({
 
   const title = titleProp || activityTitle || 'Dearly Us Activity';
   const subtitle = subtitleProp || activitySubtitle;
-  const key = activityKey || activitySlug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const key =
+    activityKey ||
+    activitySlug ||
+    title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   const slug = activitySlug || key;
   const candidateStage = stageProp || currentStage;
   const stage: ActivityStage =
-    candidateStage === 'invite' || candidateStage === 'ready' || candidateStage === 'remember'
+    candidateStage === 'invite' ||
+    candidateStage === 'ready' ||
+    candidateStage === 'remember'
       ? candidateStage
       : 'play';
-  const cupidotPhaseValue = (cupidotPhase || guidancePhase || 'private') as ActivityLifecyclePhase;
+  const cupidotPhaseValue = (cupidotPhase ||
+    guidancePhase ||
+    'private') as ActivityLifecyclePhase;
   const cupidotNoteValue = cupidotNote || guidancePrivacyNote;
-  const keepsakeRail = keepsakeRailProp || (keepsakeSummary ? (
-    <div className={styles.keepsakeSummaryCard}>
-      {keepsakeSummary.badge && <span>{keepsakeSummary.badge}</span>}
-      <small>{keepsakeSummary.kind || 'Keepsake'}</small>
-      <h3>{keepsakeSummary.title}</h3>
-      {keepsakeSummary.subtitle && <p>{keepsakeSummary.subtitle}</p>}
-    </div>
-  ) : null);
+  const keepsakeRail =
+    keepsakeRailProp ||
+    (keepsakeSummary ? (
+      <div className={styles.keepsakeSummaryCard}>
+        {keepsakeSummary.badge && <span>{keepsakeSummary.badge}</span>}
+        <small>{keepsakeSummary.kind || 'Keepsake'}</small>
+        <h3>{keepsakeSummary.title}</h3>
+        {keepsakeSummary.subtitle && <p>{keepsakeSummary.subtitle}</p>}
+      </div>
+    ) : null);
   const isReconnecting =
     recoveryState === 'reconnecting' ||
     recoveryState === 'replaying_missed_events';
@@ -173,10 +182,18 @@ export function ActivityShell({
   };
 
   return (
-    <div className={`${styles.shell} ${className}`} id={`activity-shell-${key}`}>
+    <div
+      className={`${styles.shell} ${className}`}
+      id={`activity-shell-${key}`}
+      data-activity-stage={stage}
+    >
       {/* Top Bar */}
       <header className={styles.topBar}>
-        <Link href="/activity" className={styles.backLink} title="Return to activities catalogue">
+        <Link
+          href="/activity"
+          className={styles.backLink}
+          title="Return to activities catalogue"
+        >
           <ArrowLeft size={16} />
           <span>All Activities</span>
         </Link>
@@ -204,7 +221,10 @@ export function ActivityShell({
 
         <div className={styles.controlsArea}>
           {isSoloDemo ? (
-            <span className={styles.demoPill} title="Playing in local test mode. Invite your partner to synchronize!">
+            <span
+              className={styles.demoPill}
+              title="Playing in local test mode. Invite your partner to synchronize!"
+            >
               Solo Sandbox
             </span>
           ) : (
@@ -276,7 +296,8 @@ export function ActivityShell({
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <RotateCw size={14} className={styles.statusDotPulse} />
             <span>
-              Restoring live connection with your partner... Catching up on missed events.
+              Restoring live connection with your partner... Catching up on
+              missed events.
             </span>
           </div>
           {onRetryRecovery && (
@@ -294,7 +315,8 @@ export function ActivityShell({
       {isRecoveryError && (
         <div className={`${styles.alertBanner} ${styles.alertWarning}`}>
           <span>
-            Connection interrupted. Authoritative snapshot restored, but some live events may need a refresh.
+            Connection interrupted. Authoritative snapshot restored, but some
+            live events may need a refresh.
           </span>
           {onRetryRecovery && (
             <button
@@ -316,12 +338,20 @@ export function ActivityShell({
 
       {/* Expandable Cupidot Guidance */}
       {showCupidot && (
-        <div style={{ padding: '0.75rem 1.5rem', background: 'rgba(255, 248, 250, 0.9)' }}>
+        <div
+          style={{
+            padding: '0.75rem 1.5rem',
+            background: 'rgba(255, 248, 250, 0.9)',
+          }}
+        >
           <CupidotActivityGuidance
             activityName={title}
             phase={cupidotPhaseValue}
             partnerName={partnerName}
-            privacyNote={cupidotNoteValue || 'Your inputs remain completely private until both partner answers are locked in.'}
+            privacyNote={
+              cupidotNoteValue ||
+              'Your inputs remain completely private until both partner answers are locked in.'
+            }
             isDemoMode={isSoloDemo}
           />
         </div>
@@ -330,22 +360,47 @@ export function ActivityShell({
       {/* Main Workspace Layout */}
       <div className={styles.mainContainer}>
         <main className={styles.stageCanvas}>
-          {children}
+          <div key={stage} className={styles.stageScene}>
+            {children}
+          </div>
 
           {/* Pause Backdrop Overlay */}
           {isPaused && (
             <div className={styles.pauseBackdrop}>
               <div className={styles.pauseCard}>
-                <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>☕</div>
-                <h2 style={{ fontFamily: 'Georgia, serif', color: '#4a2835', margin: '0 0 0.5rem' }}>
+                <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>
+                  ☕
+                </div>
+                <h2
+                  style={{
+                    fontFamily: 'Georgia, serif',
+                    color: '#4a2835',
+                    margin: '0 0 0.5rem',
+                  }}
+                >
                   Date Paused Gently
                 </h2>
-                <p style={{ color: '#8c6a75', fontSize: '0.9rem', lineHeight: 1.5, margin: 0 }}>
-                  Take a breath, grab some tea, or talk things through. Your progress is safely sealed on both screens.
+                <p
+                  style={{
+                    color: '#8c6a75',
+                    fontSize: '0.9rem',
+                    lineHeight: 1.5,
+                    margin: 0,
+                  }}
+                >
+                  Take a breath, grab some tea, or talk things through. Your
+                  progress is safely sealed on both screens.
                 </p>
                 {onResume && (
-                  <button type="button" className={styles.resumeBtn} onClick={onResume}>
-                    <Play size={15} style={{ display: 'inline', marginRight: '6px' }} />
+                  <button
+                    type="button"
+                    className={styles.resumeBtn}
+                    onClick={onResume}
+                  >
+                    <Play
+                      size={15}
+                      style={{ display: 'inline', marginRight: '6px' }}
+                    />
                     Resume Date
                   </button>
                 )}
@@ -356,7 +411,9 @@ export function ActivityShell({
 
         {/* Persistent Keepsake / Result Rail on wide screens */}
         {keepsakeRail && (
-          <aside className={`${styles.keepsakeRail} ${styles.keepsakeRailVisible}`}>
+          <aside
+            className={`${styles.keepsakeRail} ${styles.keepsakeRailVisible}`}
+          >
             {keepsakeRail}
           </aside>
         )}

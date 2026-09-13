@@ -87,12 +87,12 @@ export function MotionProvider({ children }: { children: ReactNode }) {
     if (!root) return;
     const move = (event: PointerEvent) => {
       root.style.setProperty(
-        '--du-pointer-x',
-        `${(event.clientX / innerWidth - 0.5).toFixed(3)}`,
+        '--du-pointer-rotate-y',
+        `${((event.clientX / innerWidth - 0.5) * 1.5).toFixed(2)}deg`,
       );
       root.style.setProperty(
-        '--du-pointer-y',
-        `${(event.clientY / innerHeight - 0.5).toFixed(3)}`,
+        '--du-pointer-rotate-x',
+        `${((event.clientY / innerHeight - 0.5) * -1).toFixed(2)}deg`,
       );
     };
     window.addEventListener('pointermove', move, { passive: true });
