@@ -8,7 +8,7 @@ import { sounds } from '@/lib/sound';
 const FAQ_ITEMS = [
   {
     q: 'What games and activities can we play on Dearly Us?',
-    a: 'Over 35 realtime activities are live: Truth or Dare with 20 tiny minigames, Honest Cards, the Our Future planning date, the Love Match compatibility test, Riddle Night, IQ Duel, the How Well Do You Know Me quiz, Korean Life4Cuts online photobooth, Couples Debate, Draw Together, Couples Court, Snap Hunt, PvP Fashion Show, Face Avatar Arcade, and The Lab study-date timer. Everything happens synchronously in one shared room.',
+    a: 'Over 35 realtime activities are live: classic bottle-style Truth or Dare, Honest Cards, the Our Future planning date, Love Match, Riddle Night, IQ Duel, the How Well Do You Know Me quiz, Korean Life4Cuts online photobooth, Couples Debate, Draw Together, Couples Court, Snap Hunt, Fashion Show, Face Avatar Arcade, and The Lab study-date timer. Everything happens synchronously in one shared room.',
   },
   {
     q: 'Is Dearly Us free to play?',

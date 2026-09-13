@@ -336,8 +336,8 @@ export function HomeActivitiesGrid() {
                 Truth or Dare <span className="badge new">New</span>
               </h3>
               <p>
-                Seal a stake, battle through 20 tiny minigames — the loser of
-                every round picks truth or dare.
+                Spin a classic shared bottle, choose truth or dare, and make the
+                distance feel like one table.
               </p>
             </Link>
 

@@ -55,11 +55,8 @@ export function MotionProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
-    const candidates = Array.from(
-      root.querySelectorAll<HTMLElement>(
-        '[data-motion-reveal], main > section, main > article',
-      ),
-    );
+    const selector = '[data-motion-reveal], main > section, main > article';
+    const candidates = Array.from(root.querySelectorAll<HTMLElement>(selector));
     if (reducedMotion || !('IntersectionObserver' in window)) {
       candidates.forEach((element) => (element.dataset.motionVisible = 'true'));
       return;
@@ -74,11 +71,27 @@ export function MotionProvider({ children }: { children: ReactNode }) {
         }),
       { threshold: 0.08, rootMargin: '0px 0px -35px' },
     );
-    candidates.forEach((element, index) => {
+    const observe = (element: HTMLElement, index: number) => {
+      if (element.dataset.motionObserved) return;
+      element.dataset.motionObserved = 'true';
       element.dataset.motionIndex = String(index % 5);
       observer.observe(element);
-    });
-    return () => observer.disconnect();
+    };
+    candidates.forEach(observe);
+    const mutations = new MutationObserver((records) =>
+      records.forEach((record) =>
+        record.addedNodes.forEach((node) => {
+          if (!(node instanceof HTMLElement)) return;
+          if (node.matches(selector)) observe(node, 0);
+          node.querySelectorAll<HTMLElement>(selector).forEach(observe);
+        }),
+      ),
+    );
+    mutations.observe(root, { childList: true, subtree: true });
+    return () => {
+      observer.disconnect();
+      mutations.disconnect();
+    };
   }, [pathname, reducedMotion]);
 
   useEffect(() => {

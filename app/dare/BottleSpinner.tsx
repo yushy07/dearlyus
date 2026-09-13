@@ -21,6 +21,9 @@ export function BottleSpinner({
   const rotationRef = useRef(0);
   const targetRef = useRef(0);
   const spinningRef = useRef(false);
+  const spinStartedRef = useRef(0);
+  const spinFromRef = useRef(0);
+  const spinDurationRef = useRef(4200);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -150,17 +153,25 @@ export function BottleSpinner({
     resize();
 
     let frame = 0;
-    let previous = performance.now();
     const render = (now: number) => {
-      const dt = Math.min((now - previous) / 1000, 0.05);
-      previous = now;
       if (spinningRef.current) {
-        const distance = targetRef.current - rotationRef.current;
-        rotationRef.current +=
-          distance * Math.min(1, dt * (Math.abs(distance) > 2 ? 1.5 : 4.5));
-        if (Math.abs(distance) < 0.008) {
+        const progress = Math.min(
+          1,
+          (now - spinStartedRef.current) / spinDurationRef.current,
+        );
+        const eased = 1 - Math.pow(1 - progress, 4);
+        const settleWobble =
+          Math.sin(progress * Math.PI * 10) * (1 - progress) * 0.075;
+        rotationRef.current =
+          spinFromRef.current +
+          (targetRef.current - spinFromRef.current) * eased +
+          settleWobble;
+        bottle.rotation.z =
+          Math.sin(progress * Math.PI * 8) * (1 - progress) * 0.018;
+        if (progress >= 1) {
           rotationRef.current = targetRef.current;
           spinningRef.current = false;
+          bottle.rotation.z = 0;
         }
       }
       bottle.rotation.y = rotationRef.current;
@@ -193,6 +204,11 @@ export function BottleSpinner({
     const radians = THREE.MathUtils.degToRad(finalRotationDegrees);
     targetRef.current = reducedMotion ? radians % (Math.PI * 2) : radians;
     spinningRef.current = spinning;
+    if (spinning) {
+      spinFromRef.current = rotationRef.current;
+      spinStartedRef.current = performance.now();
+      spinDurationRef.current = reducedMotion ? 360 : 4200;
+    }
     if (!spinning) rotationRef.current = targetRef.current;
   }, [finalRotationDegrees, spinId, spinning, reducedMotion]);
 
