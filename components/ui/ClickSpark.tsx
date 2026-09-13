@@ -30,19 +30,25 @@ export function ClickSpark() {
     resize();
     window.addEventListener('resize', resize);
 
-    const colors = ['#FF7BA3', '#5FA0FF', '#FFD68A', '#4ECCA3', '#FFFFFF'];
+    const reduced =
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+      localStorage.getItem('dearly_reduced_motion') === 'true';
+    const colors = ['#82495A', '#C89A9F', '#B89A67', '#F5EDDF'];
 
     const handleClick = (e: MouseEvent) => {
-      const count = 12;
+      if (reduced) return;
+      const target = e.target as HTMLElement | null;
+      if (!target?.closest('button, a, [role="button"]')) return;
+      const count = 6;
       for (let i = 0; i < count; i++) {
         const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
-        const speed = Math.random() * 3 + 2;
+        const speed = Math.random() * 1.4 + 1;
         sparksRef.current.push({
           x: e.clientX,
           y: e.clientY,
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed,
-          size: Math.random() * 3 + 1.5,
+          size: Math.random() * 1.8 + 1,
           color: colors[Math.floor(Math.random() * colors.length)],
           alpha: 1,
           life: 1,
@@ -62,7 +68,7 @@ export function ClickSpark() {
         spark.y += spark.vy;
         spark.vx *= 0.94;
         spark.vy *= 0.94;
-        spark.alpha -= 0.035;
+        spark.alpha -= 0.06;
 
         if (spark.alpha <= 0) {
           sparksRef.current.splice(i, 1);

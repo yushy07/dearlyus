@@ -25,6 +25,70 @@
   background-repeat: no-repeat;
   background-position: center 70px;
   background-size: max(1200px, 100%) 670px;
+  position: relative;
+  overflow: clip;
+}
+.site-romantic-content {
+  position: relative;
+  z-index: 1;
+}
+.site-romantic-depth {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.site-romantic-orbit {
+  position: absolute;
+  width: 270px;
+  height: 270px;
+  border: 1px solid color-mix(in srgb, var(--pink) 20%, transparent);
+  border-radius: 50%;
+  opacity: 0.46;
+  animation: atmosphere-drift 18s ease-in-out infinite alternate;
+}
+.site-romantic-orbit::after {
+  content: '';
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--pink);
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--pink) 10%, transparent);
+}
+.site-romantic-orbit--one {
+  left: -145px;
+  top: 24vh;
+}
+.site-romantic-orbit--one::after {
+  right: 31px;
+  top: 35px;
+}
+.site-romantic-orbit--two {
+  right: -165px;
+  top: 61vh;
+  animation-delay: -8s;
+}
+.site-romantic-orbit--two::after {
+  left: 20px;
+  bottom: 56px;
+}
+.site-romantic-thread {
+  position: absolute;
+  left: 50%;
+  top: 110px;
+  width: min(72vw, 960px);
+  height: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--pink) 28%, transparent),
+    transparent
+  );
+  transform-origin: left;
+  animation: thread-breathe 12s ease-in-out infinite;
 }
 .site-romantic--keepsake {
   --paper: #f3e8d9;
@@ -146,6 +210,21 @@
   .site-romantic .act,
   .site-romantic .btn {
     transition: none;
+  }
+  .site-romantic-orbit,
+  .site-romantic-thread {
+    animation: none;
+  }
+}
+@keyframes atmosphere-drift {
+  to {
+    transform: translate3d(15px, -22px, 0) rotate(5deg);
+  }
+}
+@keyframes thread-breathe {
+  50% {
+    opacity: 0.35;
+    transform: translateX(-50%) scaleX(0.94);
   }
 }
 .site-romantic .activity-filter {

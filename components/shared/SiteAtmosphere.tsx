@@ -37,6 +37,11 @@ export function SiteAtmosphere({ children }: { children: ReactNode }) {
           : 'paper';
   return (
     <div className={`site-romantic site-romantic--${mood}`}>
+      <div className="site-romantic-depth" aria-hidden="true">
+        <i className="site-romantic-orbit site-romantic-orbit--one" />
+        <i className="site-romantic-orbit site-romantic-orbit--two" />
+        <i className="site-romantic-thread" />
+      </div>
       <div className="site-romantic-content">{children}</div>
     </div>
   );

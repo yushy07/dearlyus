@@ -1,0 +1,144 @@
+:root {
+  --du-motion-fast: 160ms;
+  --du-motion-standard: 320ms;
+  --du-motion-reveal: 620ms;
+  --du-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --du-ease-press: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --du-shadow-rest: 0 9px 24px rgba(68, 43, 50, 0.11);
+  --du-shadow-lift: 0 16px 34px rgba(68, 43, 50, 0.17);
+}
+.du-motion-root {
+  min-height: 100%;
+  isolation: isolate;
+  animation: du-page-arrive var(--du-motion-reveal) var(--du-ease-out) both;
+}
+.du-motion-root[data-page-visible='false'] * {
+  animation-play-state: paused !important;
+}
+.du-motion-root
+  :where(button, [role='button'], a[class*='button'], a[class*='Button']) {
+  transition:
+    transform var(--du-motion-fast) var(--du-ease-press),
+    box-shadow var(--du-motion-standard) var(--du-ease-out),
+    background-color var(--du-motion-standard),
+    border-color var(--du-motion-standard);
+  transform-origin: center;
+}
+.du-motion-root
+  :where(
+    button,
+    [role='button'],
+    a[class*='button'],
+    a[class*='Button']
+  ):active:not(:disabled) {
+  transform: translateY(2px) scale(0.985);
+}
+.du-motion-root :where(button, [role='button'], a):focus-visible {
+  outline: 2px solid #82495a;
+  outline-offset: 3px;
+}
+.du-motion-root [data-motion-reveal],
+.du-motion-root main > section,
+.du-motion-root main > article {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity var(--du-motion-reveal) var(--du-ease-out),
+    transform var(--du-motion-reveal) var(--du-ease-out);
+  transition-delay: calc(var(--du-motion-index, 0)*55ms);
+}
+.du-motion-root [data-motion-visible='true'] {
+  opacity: 1;
+  transform: translateY(0);
+}
+.du-motion-root [data-motion-index='1'] {
+  --du-motion-index: 1;
+}
+.du-motion-root [data-motion-index='2'] {
+  --du-motion-index: 2;
+}
+.du-motion-root [data-motion-index='3'] {
+  --du-motion-index: 3;
+}
+.du-motion-root [data-motion-index='4'] {
+  --du-motion-index: 4;
+}
+.du-motion-root :where(input, textarea, select) {
+  transition:
+    border-color var(--du-motion-standard),
+    box-shadow var(--du-motion-standard),
+    background-color var(--du-motion-standard);
+}
+.du-motion-root :where(input, textarea, select):focus {
+  box-shadow: 0 0 0 3px rgba(130, 73, 90, 0.12);
+}
+.du-motion-root
+  :where([class*='card'], [class*='Card']):not([class*='discard']) {
+  transform-origin: center;
+  transition:
+    transform var(--du-motion-standard) var(--du-ease-out),
+    box-shadow var(--du-motion-standard) var(--du-ease-out);
+}
+@keyframes du-page-arrive {
+  from {
+    opacity: 0.25;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.du-motion-root .navbar-unified-links a:not(.nav-passport-pill) {
+  position: relative;
+}
+.du-motion-root .navbar-unified-links a:not(.nav-passport-pill)::after {
+  content: '';
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: -5px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform var(--du-motion-standard) var(--du-ease-out);
+}
+.du-motion-root .navbar-unified-links a:not(.nav-passport-pill):hover::after,
+.du-motion-root
+  .navbar-unified-links
+  a:not(.nav-passport-pill):focus-visible::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+@media (prefers-reduced-motion: reduce) {
+  .du-motion-root {
+    animation: none;
+  }
+  .du-motion-root * {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .du-motion-root [data-motion-reveal],
+  .du-motion-root main > section,
+  .du-motion-root main > article {
+    opacity: 1;
+    transform: none;
+  }
+}
+.du-motion-root[data-reduced-motion='true'] {
+  animation: none;
+}
+.du-motion-root[data-reduced-motion='true'] * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+.du-motion-root[data-reduced-motion='true'] [data-motion-reveal],
+.du-motion-root[data-reduced-motion='true'] main > section,
+.du-motion-root[data-reduced-motion='true'] main > article {
+  opacity: 1;
+  transform: none;
+}
