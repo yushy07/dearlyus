@@ -292,7 +292,7 @@ export function ActivityShell({
 
       {/* Reconnect & Recovery Banners */}
       {isReconnecting && (
-        <div className={styles.alertBanner}>
+        <div className={styles.alertBanner} data-motion-status="loading" role="status">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <RotateCw size={14} className={styles.statusDotPulse} />
             <span>
@@ -313,7 +313,7 @@ export function ActivityShell({
       )}
 
       {isRecoveryError && (
-        <div className={`${styles.alertBanner} ${styles.alertWarning}`}>
+        <div className={`${styles.alertBanner} ${styles.alertWarning}`} data-motion-status="error" role="alert">
           <span>
             Connection interrupted. Authoritative snapshot restored, but some
             live events may need a refresh.
@@ -331,7 +331,7 @@ export function ActivityShell({
       )}
 
       {staleWarning && (
-        <div className={`${styles.alertBanner} ${styles.alertWarning}`}>
+        <div className={`${styles.alertBanner} ${styles.alertWarning}`} data-motion-status="error" role="alert">
           <span>{staleWarning}</span>
         </div>
       )}
@@ -360,7 +360,7 @@ export function ActivityShell({
       {/* Main Workspace Layout */}
       <div className={styles.mainContainer}>
         <main className={styles.stageCanvas}>
-          <div key={stage} className={styles.stageScene}>
+          <div key={stage} className={`${styles.stageScene} du-curtain-transition`}>
             {children}
           </div>
 

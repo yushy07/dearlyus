@@ -6,6 +6,122 @@
   --du-ease-press: cubic-bezier(0.2, 0.8, 0.2, 1);
   --du-shadow-rest: 0 9px 24px rgba(68, 43, 50, 0.11);
   --du-shadow-lift: 0 16px 34px rgba(68, 43, 50, 0.17);
+  --du-spring-soft: cubic-bezier(0.2, 0.9, 0.25, 1.15);
+  --du-stagger-max: 275ms;
+}
+.du-paper-card {
+  position: relative;
+  border: 1px solid rgba(113, 61, 76, 0.2);
+  border-radius: 18px;
+  background: #fff9ef;
+  box-shadow: var(--du-shadow-rest);
+  transform-style: preserve-3d;
+}
+.du-paper-card::after {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  border: 1px solid rgba(184, 154, 103, 0.16);
+  border-radius: inherit;
+  pointer-events: none;
+}
+.du-depth-tilt,
+.du-object-stage {
+  transform-style: preserve-3d;
+  perspective: 1100px;
+}
+.du-depth-tilt {
+  transition: transform 420ms var(--du-ease-out);
+}
+.du-depth-tilt:hover {
+  transform: perspective(1100px) rotateX(var(--du-pointer-rotate-x, 0deg))
+    rotateY(var(--du-pointer-rotate-y, 0deg)) translateY(-4px);
+}
+.du-physical-button {
+  border: 1px solid rgba(113, 61, 76, 0.3);
+  border-radius: 999px;
+  background: #fff9ef;
+  box-shadow: 0 5px 0 rgba(106, 70, 56, 0.2), 0 10px 20px rgba(68, 49, 55, 0.1);
+  color: #443137;
+}
+.du-physical-button:active:not(:disabled) {
+  box-shadow: 0 1px 0 rgba(106, 70, 56, 0.22), 0 4px 9px rgba(68, 49, 55, 0.1);
+}
+.du-ink-stamp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid currentColor;
+  border-radius: 5px;
+  padding: 0.25rem 0.55rem;
+  color: #713d4c;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  transform: rotate(-1.5deg);
+  animation: du-stamp-land 460ms var(--du-spring-soft) both;
+}
+.du-folded-letter {
+  perspective: 900px;
+}
+.du-folded-letter__paper {
+  transform-origin: 50% 0;
+  animation: du-letter-unfold 680ms var(--du-ease-out) both;
+}
+.du-developing-photo {
+  overflow: hidden;
+  animation: du-photo-develop 850ms ease-out both;
+}
+.du-curtain-transition {
+  transform-origin: 50% 0;
+  animation: du-curtain-open 580ms var(--du-ease-out) both;
+}
+.du-shared-thread {
+  position: relative;
+}
+.du-shared-thread::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -18px;
+  width: 1px;
+  height: 18px;
+  background: #c89a9f;
+  transform: scaleY(0);
+  transform-origin: top;
+  animation: du-thread-draw 640ms 180ms var(--du-ease-out) forwards;
+}
+.du-motion-status {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  animation: du-correspondence-enter 360ms var(--du-ease-out) both;
+}
+.du-motion-status__mark,
+[data-motion-status]::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #b89a67;
+  box-shadow: 0 0 0 5px rgba(184, 154, 103, 0.15);
+}
+[data-motion-status] {
+  animation: du-correspondence-enter 360ms var(--du-ease-out) both;
+}
+[data-motion-status='loading']::before {
+  animation: du-status-breathe 1.25s ease-in-out infinite;
+}
+[data-motion-status='error'] {
+  animation: du-paper-error 340ms ease-out both;
+}
+[data-motion-status='error']::before {
+  background: #9a4d5b;
+}
+.du-motion-status--success .du-motion-status__mark {
+  background: #7b846d;
 }
 .du-motion-root {
   min-height: 100%;
@@ -187,6 +303,31 @@
     transform: translateX(-12px) rotate(-0.4deg);
   }
 }
+@keyframes du-stamp-land {
+  from { opacity: 0; transform: translateY(-14px) rotate(-5deg) scale(1.22); }
+  70% { opacity: 1; transform: translateY(2px) rotate(-1deg) scale(0.97); }
+}
+@keyframes du-letter-unfold {
+  from { opacity: 0; transform: rotateX(-72deg) translateY(-10px); }
+}
+@keyframes du-photo-develop {
+  from { opacity: 0.3; filter: blur(8px) saturate(0.2); transform: translateY(-10px); }
+  55% { filter: blur(2px) saturate(0.7); }
+}
+@keyframes du-curtain-open {
+  from { opacity: 0; clip-path: inset(0 48% 0 48% round 18px); transform: translateY(6px); }
+  to { opacity: 1; clip-path: inset(0 0 0 0 round 0); transform: none; }
+}
+@keyframes du-thread-draw { to { transform: scaleY(1); } }
+@keyframes du-correspondence-enter {
+  from { opacity: 0; transform: translateY(-8px) rotate(-0.3deg); }
+}
+@keyframes du-paper-error {
+  0%, 100% { transform: translateX(0); }
+  35% { transform: translateX(-4px) rotate(-0.2deg); }
+  70% { transform: translateX(3px) rotate(0.15deg); }
+}
+@keyframes du-status-breathe { 50% { opacity: 0.45; transform: scale(0.82); } }
 @media (prefers-reduced-motion: reduce) {
   .du-motion-root {
     animation: none;
