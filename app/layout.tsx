@@ -56,7 +56,9 @@ export const metadata: Metadata = {
 import { GlobalExperience } from '@/components/shared/GlobalExperience';
 import { AppProviders } from '@/components/providers/AppProviders';
 import { SiteAtmosphere } from '@/components/shared/SiteAtmosphere';
-import { MotionProvider } from '@/components/motion';
+// Import the client provider directly. Keeping the server layout away from the
+// motion barrel prevents Vinext from eagerly analysing browser-only galleries.
+import { MotionProvider } from '@/components/motion/MotionProvider';
 
 export default function RootLayout({
   children,
