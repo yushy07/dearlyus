@@ -140,6 +140,22 @@
     border-color var(--du-motion-standard);
   transform-origin: center;
 }
+.du-motion-root :where(button, a[class*='button'], a[class*='Button']):hover:not(:disabled) {
+  translate: 0 -1px;
+}
+.du-motion-root :where([role='menu'], [class*='dropdown'], [class*='Dropdown']) {
+  transform-origin: 50% 0;
+  animation: du-paper-tab-open 280ms var(--du-ease-out) both;
+}
+.du-motion-root :where([role='alert'], [class*='toast'], [class*='Toast']) {
+  animation: du-correspondence-enter 360ms var(--du-ease-out) both;
+}
+.du-motion-root :where([aria-busy='true'], [class*='loading'], [class*='Loading']) {
+  cursor: progress;
+}
+.du-motion-root :where([class*='success'], [class*='Success']) {
+  transform-origin: center;
+}
 .du-motion-root
   :where(
     button,
@@ -285,6 +301,61 @@
 .du-motion-root [class*='keepsake']:hover [class*='keepsakePreview'] img {
   transform: scale(1.025);
 }
+/* Homepage chapters retain the editorial layout while behaving like keepsakes. */
+.du-motion-root .section :where(.letter-note, .gift-note, .home-browser-note) {
+  transform-origin: 50% 0;
+  animation: du-note-unfold 660ms var(--du-ease-out) both;
+}
+.du-motion-root .section :where(.scrap-photo, .scene-garden-photo) {
+  animation: du-photo-settle 720ms var(--du-ease-out) both;
+}
+.du-motion-root .stats .stat :where(.num, strong, b) {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+  animation: du-counter-settle 520ms var(--du-spring-soft) both;
+}
+.du-motion-root .stats .stat:nth-child(2) :where(.num, strong, b) { animation-delay: 80ms; }
+.du-motion-root .stats .stat:nth-child(3) :where(.num, strong, b) { animation-delay: 150ms; }
+.du-motion-root :where(.final-cta, .print-band, [class*='finalCta']) {
+  transform-origin: 50% 100%;
+  animation: du-final-letter 760ms var(--du-ease-out) both;
+}
+/* Our Space: developing memories, folded notes, waveform and shelf depth. */
+.du-motion-root :where([class*='timelineItem'], [class*='memoryCard']) img {
+  animation: du-photo-develop 820ms ease-out both;
+}
+.du-motion-root :where([class*='letterCard'], [class*='noteCard']) {
+  transform-origin: 50% 0;
+  animation: du-letter-unfold 640ms var(--du-ease-out) both;
+}
+.du-motion-root :where([class*='waveform'], [class*='audioWave']) {
+  transform-origin: center;
+  animation: du-waveform-live 1.5s ease-in-out infinite;
+}
+.du-motion-root :where([class*='keepsakeGrid'], [class*='memoryShelf']) {
+  perspective: 1200px;
+}
+.du-motion-root :where([class*='keepsakeCard'], [class*='shelfItem']) {
+  transform-style: preserve-3d;
+  transition: transform 420ms var(--du-ease-out), box-shadow 420ms;
+}
+.du-motion-root :where([class*='keepsakeCard'], [class*='shelfItem']):hover {
+  transform: perspective(900px) translateY(-5px) rotateX(1.2deg);
+}
+/* Passport, arrival and profile flows. */
+.du-motion-root :where([class*='stepPanel'], [class*='onboardingCard']) {
+  transform-origin: left center;
+  animation: du-page-turn 620ms var(--du-ease-out) both;
+}
+.du-motion-root :where([class*='profilePhoto'], [class*='avatarFrame']) img {
+  animation: du-photo-settle 620ms var(--du-spring-soft) both;
+}
+.du-motion-root :where([class*='inviteTicket'], [class*='roomTicket']) {
+  animation: du-ticket-tear 560ms var(--du-ease-out) both;
+}
+.du-motion-root :where([class*='timezoneClock'], [class*='clockFace']) {
+  animation: du-clock-set 620ms var(--du-ease-out) both;
+}
 @keyframes still-life-breathe {
   50% {
     transform: perspective(1100px) rotateY(var(--du-pointer-rotate-y, 0deg))
@@ -328,6 +399,42 @@
   70% { transform: translateX(3px) rotate(0.15deg); }
 }
 @keyframes du-status-breathe { 50% { opacity: 0.45; transform: scale(0.82); } }
+@keyframes du-paper-tab-open {
+  from { opacity: 0; transform: perspective(700px) rotateX(-14deg) translateY(-6px); }
+}
+
+/* Cupidot responds to intent instead of bouncing continuously. */
+.du-motion-root [data-cupidot-state='thinking'],
+.du-motion-root [data-cupidot-state='focused'],
+.du-motion-root [data-cupidot-state='anticipating_reveal'] {
+  animation: cupidot-listen 2.4s ease-in-out infinite;
+}
+.du-motion-root [data-cupidot-state='happy'],
+.du-motion-root [data-cupidot-state='celebrating'],
+.du-motion-root [data-cupidot-state='reunion'] {
+  animation: cupidot-celebrate 620ms var(--du-spring-soft) both;
+}
+.du-motion-root [data-cupidot-state='sleeping'],
+.du-motion-root [data-cupidot-state='resting'],
+.du-motion-root [data-cupidot-state='settling_for_night'] {
+  animation: cupidot-rest 4.8s ease-in-out infinite;
+}
+.du-motion-root [data-cupidot-state='reconnecting'],
+.du-motion-root [data-cupidot-state='waiting'] {
+  animation: cupidot-wait 3.4s ease-in-out infinite;
+}
+@keyframes cupidot-listen { 50% { transform: translateY(2px) rotate(0.6deg); } }
+@keyframes cupidot-celebrate { 45% { transform: translateY(-6px) rotate(-2deg) scale(1.025); } }
+@keyframes cupidot-rest { 50% { transform: translateY(2px) scale(0.99); } }
+@keyframes cupidot-wait { 50% { transform: rotate(-1deg); } }
+@keyframes du-note-unfold { from { opacity: 0; transform: rotateX(-38deg) translateY(-7px); } }
+@keyframes du-photo-settle { from { opacity: 0; transform: translateY(-12px) rotate(-2deg) scale(1.035); } }
+@keyframes du-counter-settle { from { opacity: 0; transform: translateY(8px) rotateX(-36deg); } }
+@keyframes du-final-letter { from { opacity: 0; transform: perspective(900px) rotateX(4deg) translateY(18px); } }
+@keyframes du-waveform-live { 50% { transform: scaleY(0.76); opacity: 0.78; } }
+@keyframes du-page-turn { from { opacity: 0; transform: perspective(1100px) rotateY(-7deg) translateX(-8px); } }
+@keyframes du-ticket-tear { from { opacity: 0; clip-path: inset(0 100% 0 0); transform: translateX(-8px); } }
+@keyframes du-clock-set { from { opacity: 0.5; transform: rotate(-8deg) scale(0.96); } }
 @media (prefers-reduced-motion: reduce) {
   .du-motion-root {
     animation: none;

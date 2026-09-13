@@ -65,6 +65,160 @@
 .court-stage :where(button, [role='button']) {
   transform-origin: 50% 85%;
 }
+
+/* Photobooth: mechanical camera, developing rail and print delivery. */
+.photo-studio .entrance-machine,
+.photo-studio .studio-camera {
+  transform-style: preserve-3d;
+  transition: transform 480ms var(--du-ease-out, ease-out), box-shadow 480ms;
+}
+.photo-studio .entrance-machine:hover {
+  transform: perspective(1000px) rotateY(-2deg) translateY(-4px);
+}
+.photo-studio .studio-camera-lamp.on {
+  animation: booth-ready-lamp 1.8s ease-in-out infinite;
+}
+.photo-studio .studio-countdown {
+  transform-origin: center;
+  animation: booth-counter-turn 720ms var(--du-spring-soft, ease-out) both;
+}
+.photo-studio [class*='film'] :where(.processing, [class*='processing']) {
+  animation: du-photo-develop 950ms ease-out both;
+}
+.photo-studio .studio-scene-card {
+  transform-origin: 50% 100%;
+  transition: transform 280ms var(--du-ease-out, ease-out), box-shadow 280ms;
+}
+.photo-studio .studio-scene-card:hover {
+  transform: perspective(800px) translateY(-4px) rotateX(1.5deg);
+}
+.photo-studio .studio-scene-card[aria-pressed='true'],
+.photo-studio .studio-scene-card.selected {
+  animation: sample-book-select 440ms var(--du-spring-soft, ease-out);
+}
+.photo-studio .studio-print-paper {
+  filter: drop-shadow(0 16px 14px rgba(62, 38, 44, 0.2));
+}
+
+/* Couples Court: a miniature theatre with physical turns and verdicts. */
+.tiny-court .velvet-curtain {
+  transform-origin: top center;
+  animation: court-curtain-part 720ms var(--du-ease-out, ease-out) both;
+}
+.tiny-court .curtain-left { transform-origin: top left; }
+.tiny-court .curtain-right { transform-origin: top right; }
+.tiny-court .partner-desk {
+  transition: transform 480ms var(--du-ease-out, ease-out), filter 480ms;
+}
+.tiny-court .partner-desk.active {
+  transform: perspective(1000px) translateZ(18px) translateY(-6px);
+  filter: drop-shadow(0 18px 16px rgba(91, 55, 46, 0.2));
+}
+.tiny-court .partner-desk.active .desk-lamp {
+  animation: court-lamp-warm 1.8s ease-in-out infinite;
+}
+.tiny-court .judge-bench.thinking .judge-glasses {
+  animation: glasses-settle 420ms var(--du-spring-soft, ease-out) both;
+}
+.tiny-court .tiny-gavel,
+.tiny-court .gavel-button:active {
+  transform-origin: 80% 90%;
+}
+.tiny-court .gavel-button:active .tiny-gavel,
+.tiny-court .judge-bench:not(.thinking) .tiny-gavel {
+  animation: court-gavel 500ms var(--du-ease-out, ease-out);
+}
+.tiny-court .court-paper,
+.tiny-court .reveal-card {
+  transform-origin: 50% 0;
+  animation: du-letter-unfold 650ms var(--du-ease-out, ease-out) both;
+}
+.tiny-court .objection-options button[aria-pressed='true'] {
+  animation: objection-token-land 420ms var(--du-spring-soft, ease-out);
+}
+.tiny-court .verdict-seal {
+  animation: du-stamp-land 520ms 180ms var(--du-spring-soft, ease-out) both;
+}
+.tiny-court .verdict-card {
+  animation: verdict-print 760ms var(--du-ease-out, ease-out) both;
+}
+
+/* Truth or Dare table props. */
+#activity-shell-dare :where([class*='truthCard'], [class*='dareCard'], [class*='choiceCard']) {
+  transform-origin: 50% 100%;
+  animation: table-card-deal 520ms var(--du-ease-out, ease-out) both;
+}
+#activity-shell-dare :where([class*='lamp'], [class*='spotlight']) {
+  transition: transform 520ms var(--du-ease-out, ease-out), opacity 520ms;
+}
+#activity-shell-dare :where([class*='token'], [class*='ribbon']) {
+  animation: objection-token-land 420ms var(--du-spring-soft, ease-out) both;
+}
+
+/* Games: shared table language with authoritative-result movement. */
+#activity-shell-arcade :where(canvas, [class*='game'], [class*='board']),
+#activity-shell-iq :where([class*='question'], [class*='result']),
+#activity-shell-riddle :where([class*='book'], [class*='clue']) {
+  transform-style: preserve-3d;
+  transition: transform 420ms var(--du-ease-out, ease-out), box-shadow 420ms;
+}
+#activity-shell-iq :where([class*='question'], [class*='round']) {
+  animation: table-card-deal 520ms var(--du-ease-out, ease-out) both;
+}
+#activity-shell-iq :where([class*='locked'], [class*='sealed']),
+#activity-shell-riddle :where([class*='unlocked'], [class*='solved']) {
+  animation: du-stamp-land 460ms var(--du-spring-soft, ease-out) both;
+}
+#activity-shell-riddle :where([class*='hint'], [class*='tab']) {
+  transform-origin: left center;
+  animation: hint-tab-peel 420ms var(--du-ease-out, ease-out) both;
+}
+
+/* Keepsake studios. */
+#activity-shell-letter :where([class*='paper'], textarea) {
+  animation: writing-paper-rise 560ms var(--du-ease-out, ease-out) both;
+}
+#activity-shell-letter :where([class*='wave'], [class*='audio']) {
+  transform-origin: center;
+  animation: paper-waveform 1.4s ease-in-out infinite;
+}
+#activity-shell-birthday :where([class*='wrap'], [class*='gift']) {
+  animation: gift-unfold 680ms var(--du-spring-soft, ease-out) both;
+}
+#activity-shell-birthday :where([class*='photo'], [class*='media']) {
+  animation: table-card-deal 540ms var(--du-ease-out, ease-out) both;
+}
+#activity-shell-scrapbook :where([class*='dragging'], [data-dragging='true']) {
+  filter: drop-shadow(0 20px 14px rgba(65, 39, 45, 0.22));
+  transform: translateY(-6px) scale(1.02);
+}
+#activity-shell-scrapbook :where([class*='sticker']):active {
+  transform: rotate(-2deg) scale(0.96);
+}
+#activity-shell-shirts :where([class*='shirt'], [class*='garment']) {
+  animation: fabric-settle 760ms ease-out both;
+}
+#activity-shell-shirts :where([class*='approved'], [class*='tag']) {
+  animation: du-stamp-land 460ms var(--du-spring-soft, ease-out) both;
+}
+
+/* Planning activities: proposals, clocks and accepted keepsakes. */
+#activity-shell-date :where([class*='plan'], [class*='itinerary']),
+#activity-shell-bucket :where([class*='item'], [class*='ticket']),
+#activity-shell-future :where([class*='milestone'], [class*='vision']),
+#activity-shell-forecast :where([class*='forecast'], [class*='result']),
+#activity-shell-timezone :where([class*='moment'], [class*='window']),
+#activity-shell-lab :where([class*='task'], [class*='session']) {
+  animation: planning-slip-arrive 520ms var(--du-ease-out, ease-out) both;
+}
+#activity-shell-timezone :where([class*='clock'], [class*='dial'], canvas) {
+  transition: transform 640ms var(--du-ease-out, ease-out);
+}
+#activity-shell-date :where([class*='accepted'], [class*='complete']),
+#activity-shell-bucket :where([class*='accepted'], [class*='complete']),
+#activity-shell-future :where([class*='accepted'], [class*='complete']) {
+  animation: du-stamp-land 460ms var(--du-spring-soft, ease-out) both;
+}
 @keyframes du-choice-lock {
   45% {
     transform: translateY(2px) scale(0.975);
@@ -85,6 +239,22 @@
     transform: translateY(-22px) scaleY(0.96);
   }
 }
+@keyframes booth-ready-lamp { 50% { opacity: 0.62; box-shadow: 0 0 14px rgba(154, 77, 91, 0.38); } }
+@keyframes booth-counter-turn { from { opacity: 0; transform: perspective(500px) rotateX(-82deg) scale(0.86); } }
+@keyframes sample-book-select { 55% { transform: translateY(-5px) rotate(-0.7deg) scale(1.015); } }
+@keyframes court-curtain-part { from { transform: scaleX(1.16); filter: brightness(0.75); } }
+@keyframes court-lamp-warm { 50% { filter: brightness(1.14); } }
+@keyframes glasses-settle { from { opacity: 0; transform: translateY(-10px) rotate(-4deg); } }
+@keyframes court-gavel { 0% { transform: rotate(-20deg); } 55% { transform: rotate(10deg) translateY(2px); } }
+@keyframes objection-token-land { from { opacity: 0; transform: translateY(-15px) rotate(-8deg) scale(1.16); } }
+@keyframes verdict-print { from { opacity: 0; transform: translateY(-28px) scaleY(0.94); clip-path: inset(0 0 94%); } }
+@keyframes table-card-deal { from { opacity: 0; transform: perspective(800px) translateY(-12px) rotateX(-8deg) rotateZ(-1deg); } }
+@keyframes hint-tab-peel { from { opacity: 0; transform: rotateY(-55deg) translateX(-8px); } }
+@keyframes writing-paper-rise { from { opacity: 0; transform: perspective(800px) translateY(12px) rotateX(4deg); } }
+@keyframes paper-waveform { 50% { transform: scaleY(0.82); opacity: 0.72; } }
+@keyframes gift-unfold { from { opacity: 0; transform: perspective(900px) rotateY(-8deg) scale(0.95); } }
+@keyframes fabric-settle { 0% { opacity: 0.6; transform: perspective(700px) rotateY(-4deg) scaleX(0.96); } 65% { transform: rotateY(1deg) scaleX(1.01); } }
+@keyframes planning-slip-arrive { from { opacity: 0; transform: translateX(-12px) rotate(-0.5deg); } }
 @media (prefers-reduced-motion: reduce) {
   [id^='activity-shell-'] *,
   [id^='activity-shell-'] *::before,

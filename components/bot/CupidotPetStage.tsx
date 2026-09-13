@@ -155,6 +155,8 @@ export function CupidotPetStage({
   return (
     <div
       className={`cupidot-pet-stage ${className}`}
+      data-cupidot-state={state}
+      data-cupidot-mood={mood}
       style={{
         display: 'flex',
         flexDirection: 'column',

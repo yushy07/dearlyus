@@ -168,7 +168,13 @@ export function CupidotCompanion() {
 
   return (
     <>
-      <div ref={dockDrag.ref} className={styles.dock} style={dockDrag.style}>
+      <div
+        ref={dockDrag.ref}
+        className={styles.dock}
+        style={dockDrag.style}
+        data-cupidot-state={botState}
+        data-cupidot-mood={mood}
+      >
         {ready && !isOpen && showGreeting && (
           <button
             className={styles.greeting}
@@ -211,6 +217,8 @@ export function CupidotCompanion() {
           <div
             ref={panel}
             className={styles.panel}
+            data-cupidot-state={botState}
+            data-cupidot-mood={mood}
             role="dialog"
             aria-modal="true"
             aria-labelledby="cupidot-title"

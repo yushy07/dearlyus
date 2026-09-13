@@ -2,6 +2,11 @@
 
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import {
+  configureDearlyRenderer,
+  createSceneVisibilityController,
+  disposeThreeObject,
+} from '@/lib/three-scene-lifecycle';
 
 type BottleSpinnerProps = {
   finalRotationDegrees: number;
@@ -33,8 +38,7 @@ export function BottleSpinner({
     camera.position.set(0, 6.6, 0.01);
     camera.lookAt(0, 0, 0);
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    configureDearlyRenderer(renderer);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFShadowMap;
     host.appendChild(renderer.domElement);
@@ -153,6 +157,13 @@ export function BottleSpinner({
     resize();
 
     let frame = 0;
+    let sceneVisible = true;
+    const stopVisibilityController = createSceneVisibilityController(
+      host,
+      (visible) => {
+        sceneVisible = visible;
+      },
+    );
     const render = (now: number) => {
       if (spinningRef.current) {
         const progress = Math.min(
@@ -177,7 +188,7 @@ export function BottleSpinner({
       bottle.rotation.y = rotationRef.current;
       bottle.position.y =
         0.22 + (spinningRef.current ? Math.sin(now * 0.012) * 0.025 : 0);
-      renderer.render(scene, camera);
+      if (sceneVisible) renderer.render(scene, camera);
       frame = requestAnimationFrame(render);
     };
     frame = requestAnimationFrame(render);
@@ -185,15 +196,8 @@ export function BottleSpinner({
     return () => {
       cancelAnimationFrame(frame);
       observer.disconnect();
-      scene.traverse((object) => {
-        if (object instanceof THREE.Mesh) {
-          object.geometry.dispose();
-          const materials = Array.isArray(object.material)
-            ? object.material
-            : [object.material];
-          materials.forEach((material) => material.dispose());
-        }
-      });
+      stopVisibilityController();
+      disposeThreeObject(scene);
       renderer.dispose();
       renderer.domElement.remove();
       groupRef.current = null;
