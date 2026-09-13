@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Navbar, AiConsentToggle } from '@/components/shared';
-import { ScrollStack, ScrollStackItem } from '@/components/motion';
+import { DomeGallery, ScrollStack, ScrollStackItem } from '@/components/motion';
 import { QRCodeSVG } from '@/lib/qrcode';
 import { sounds } from '@/lib/sound';
 import { useSupabaseSession } from '@/contexts/SupabaseSessionContext';
@@ -165,6 +165,16 @@ export default function ProfilePage() {
         )
         .slice(0, 12),
     [keepsakes, milestones],
+  );
+  const memoryGalleryImages = useMemo(
+    () =>
+      keepsakes
+        .filter((item) => Boolean(item.previewUrl))
+        .map((item) => ({
+          src: item.previewUrl as string,
+          alt: item.caption || item.title || 'A shared memory',
+        })),
+    [keepsakes],
   );
 
   // Sync state from context
@@ -1201,6 +1211,16 @@ export default function ProfilePage() {
                       milestones live together here.
                     </p>
                   </div>
+                  {memoryGalleryImages.length > 0 && (
+                    <section className={styles.memoryDomeSection}>
+                      <div className={styles.memoryDomeHeading}>
+                        <span>YOUR LITTLE UNIVERSE</span>
+                        <h3>Move through the moments you kept.</h3>
+                        <p>Drag the gallery together, then open any photograph for a closer look.</p>
+                      </div>
+                      <DomeGallery images={memoryGalleryImages} className={styles.memoryDome} />
+                    </section>
+                  )}
                   <ScrollStack className={styles.memoryStack} itemDistance={68} itemStackDistance={16} baseScale={0.95}>
                     {memoryTimeline.slice(0, 3).map((memory) => (
                       <ScrollStackItem key={`featured-${memory.id}`} as="div" itemClassName={styles.memoryStackItem}>

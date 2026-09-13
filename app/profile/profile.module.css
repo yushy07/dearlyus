@@ -1168,6 +1168,13 @@ button.timelineItem:hover {
   margin: 32px auto 46px;
 }
 
+.memoryDomeSection { margin: 34px 0 66px; }
+.memoryDomeHeading { max-width: 620px; margin: 0 0 22px; }
+.memoryDomeHeading span { color: #8a5060; font: 700 10px/1.4 var(--font-mono); letter-spacing: .16em; }
+.memoryDomeHeading h3 { margin: 8px 0; color: #443137; font-family: var(--font-display); font-size: clamp(32px,4vw,50px); font-weight: 500; line-height: 1; }
+.memoryDomeHeading p { margin: 0; color: #806c70; font-size: 14px; }
+.memoryDome { margin-inline: auto; }
+
 .memoryStackItem {
   min-height: 168px;
   padding: 0 !important;
