@@ -148,8 +148,15 @@ export async function recoverActivitySession<
 
 export async function listRecoverableActivitySessions() {
   const supabase = getSupabase();
-  if (!supabase) return [] as Array<{ sessionId: string; activityType: string; updatedAt: string }>;
-  const { data, error } = await supabase.rpc('list_recoverable_activity_sessions');
+  if (!supabase)
+    return [] as Array<{
+      sessionId: string;
+      activityType: string;
+      updatedAt: string;
+    }>;
+  const { data, error } = await supabase.rpc(
+    'list_recoverable_activity_sessions',
+  );
   if (error) throw error;
   return (Array.isArray(data) ? data : []).map((row: any) => ({
     sessionId: String(row.sessionId),
@@ -203,6 +210,36 @@ export async function appendActivityEvent(
     revision: number;
     sequence: number;
   };
+}
+
+export interface DareActionResult<TSnapshot = Record<string, unknown>> {
+  accepted: boolean;
+  duplicate: boolean;
+  revision: number;
+  sequence: number;
+  snapshot: TSnapshot;
+}
+
+export async function applyDareAction<TSnapshot = Record<string, unknown>>(
+  sessionId: string,
+  actionName: string,
+  payload: Record<string, unknown> = {},
+  expectedRevision?: number,
+  actionId = crypto.randomUUID(),
+) {
+  const supabase = getSupabase();
+  if (!supabase || sessionId.startsWith('mock-')) {
+    throw new Error('LOCAL_DARE_ACTION');
+  }
+  const { data, error } = await supabase.rpc('apply_dare_action', {
+    target_session_id: sessionId,
+    action_id: actionId,
+    action_name: actionName,
+    action_payload: payload,
+    expected_revision: expectedRevision ?? null,
+  });
+  if (error) throw error;
+  return data as DareActionResult<TSnapshot>;
 }
 
 export async function lockPrivateAnswer(
