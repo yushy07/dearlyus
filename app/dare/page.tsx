@@ -16,8 +16,8 @@ import { useSupabaseSession } from '@/contexts/SupabaseSessionContext';
 import { useCoupleProfile } from '@/lib/couple';
 import {
   applyDareAction,
-  lockPrivateAnswer,
-  revealPrivateAnswers,
+  lockDareTruthAnswer,
+  revealDareTruthAnswer,
 } from '@/lib/activity-session';
 import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
 import { BottleSpinner } from './BottleSpinner';
@@ -212,8 +212,11 @@ export default function TruthOrDarePage() {
     prompt = snap.prompt ? list[snap.prompt.index % list.length] : '';
   const myTurn =
       !live || !snap.activePlayerId || snap.activePlayerId === user?.id,
-    chosen =
-      snap.activePlayerId && snap.activePlayerId !== user?.id
+    chosen = !live
+      ? snap.activePlayerId === 'local-b'
+        ? couple.partnerB
+        : couple.partnerA
+      : snap.activePlayerId && snap.activePlayerId !== user?.id
         ? couple.partnerB
         : couple.partnerA,
     reduce =
@@ -282,24 +285,28 @@ export default function TruthOrDarePage() {
         catalogVersion: 'distance-v2',
       });
   }, [stage, myTurn, snap.promptType, deckId]);
+  useEffect(() => {
+    if (
+      !live ||
+      !activity.sessionId ||
+      stage !== 'partner_reaction' ||
+      snap.promptType !== 'truth' ||
+      shown
+    )
+      return;
+    void revealDareTruthAnswer(activity.sessionId)
+      .then((result) => setShown(result.answer.answer))
+      .catch(() => setError('The revealed answer is reconnecting…'));
+  }, [live, activity.sessionId, stage, snap.promptType, shown]);
   const lock = async () => {
     if (!answer.trim()) return;
     if (live && activity.sessionId) {
       setBusy(true);
       try {
-        await lockPrivateAnswer(activity.sessionId, snap.roundNumber || 1, {
-          answer: answer.trim(),
-          kind: 'truth',
-        });
+        await lockDareTruthAnswer(activity.sessionId, answer.trim());
         await act('dare_answer_locked');
-        const x = await revealPrivateAnswers(
-          activity.sessionId,
-          snap.roundNumber || 1,
-        );
-        const mine = x.answers.find((v) => v.userId === user?.id)?.answer as
-          | { answer?: string }
-          | undefined;
-        setShown(mine?.answer || answer.trim());
+        const x = await revealDareTruthAnswer(activity.sessionId);
+        setShown(x.answer.answer || answer.trim());
         await act('dare_answer_revealed');
       } catch (e: any) {
         setError(e?.message || 'Your answer could not be locked.');

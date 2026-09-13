@@ -214,7 +214,7 @@
 }
 .table {
   position: relative;
-  min-height: 590px;
+  min-height: 470px;
   border: 10px solid #57352f;
   border-radius: 48% 48% 44% 44%/34% 34% 48% 48%;
   background: radial-gradient(ellipse, #98694f, #754a3b 55%, #5d372e);
@@ -232,7 +232,7 @@
 }
 .bottle {
   position: absolute;
-  inset: 8px 7% 185px;
+  inset: 4px 7% 132px;
 }
 .bottle > div {
   width: 100%;
@@ -242,7 +242,7 @@
   position: absolute;
   z-index: 2;
   left: 50%;
-  bottom: 48px;
+  bottom: 27px;
   width: min(78%, 610px);
   transform: translateX(-50%);
   text-align: center;
@@ -467,7 +467,7 @@
     display: none;
   }
   .table {
-    min-height: 570px;
+    min-height: 470px;
     border-radius: 36px;
   }
   .panel {

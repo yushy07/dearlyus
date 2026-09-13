@@ -242,6 +242,32 @@ export async function applyDareAction<TSnapshot = Record<string, unknown>>(
   return data as DareActionResult<TSnapshot>;
 }
 
+export async function lockDareTruthAnswer(sessionId: string, answer: string) {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('SUPABASE_UNAVAILABLE');
+  const { data, error } = await supabase.rpc('lock_dare_truth_answer', {
+    target_session_id: sessionId,
+    answer_payload: { answer, kind: 'truth' },
+  });
+  if (error) throw error;
+  return data as { locked: boolean; roundId: string };
+}
+
+export async function revealDareTruthAnswer(sessionId: string) {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('SUPABASE_UNAVAILABLE');
+  const { data, error } = await supabase.rpc('reveal_dare_truth_answer', {
+    target_session_id: sessionId,
+  });
+  if (error) throw error;
+  return data as {
+    roundId: string;
+    answererId: string;
+    answer: { answer: string; kind: 'truth' };
+    revealedAt: string;
+  };
+}
+
 export async function lockPrivateAnswer(
   sessionId: string,
   roundNumber: number,
