@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { sounds } from '@/lib/sound';
+import { useActiveRoom } from '@/contexts/ActiveRoomContext';
 
 interface RoomCodeJoinerProps {
   roomCode: string[];
@@ -10,58 +12,61 @@ interface RoomCodeJoinerProps {
 }
 
 export function RoomCodeJoiner({ roomCode, setRoomCode }: RoomCodeJoinerProps) {
+  const router = useRouter();
+  const { room, createRoom, joinRoom, loading } = useActiveRoom();
   const [copied, setCopied] = useState(false);
-  const [datesCount, setDatesCount] = useState(14820);
-  const [sessionsCount, setSessionsCount] = useState(38940);
-  const [stripsCount, setStripsCount] = useState(52180);
+  const [error, setError] = useState('');
 
-  // Stats count up on view
-  useEffect(() => {
-    let start: number | null = null;
-    const duration = 1600;
-    const targetDates = 24890;
-    const targetSessions = 18450;
-    const targetStrips = 52180;
-
-    const step = (timestamp: number) => {
-      if (!start) start = timestamp;
-      const progress = Math.min((timestamp - start) / duration, 1);
-      const ease = 1 - Math.pow(1 - progress, 3);
-
-      setDatesCount(Math.floor(targetDates * ease));
-      setSessionsCount(Math.floor(targetSessions * ease));
-      setStripsCount(Math.floor(targetStrips * ease));
-
-      if (progress < 1) {
-        requestAnimationFrame(step);
-      }
-    };
-
-    const anim = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(anim);
-  }, []);
-
-  const handleCellChange = (index: number, val: string) => {
-    if (!val) return;
-    const next = [...roomCode];
-    next[index] = val.slice(-1).toUpperCase();
-    setRoomCode(next);
-  };
+  const code = roomCode.join('');
+  const handleCodeChange = (value: string) =>
+    setRoomCode(
+      value
+        .replace(/[^a-z0-9]/gi, '')
+        .toUpperCase()
+        .slice(0, 16)
+        .split(''),
+    );
 
   const copyCode = () => {
-    navigator.clipboard.writeText(roomCode.join(''));
+    if (!code) return;
+    navigator.clipboard.writeText(code);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const generateNewCode = () => {
+  const openNewRoom = async () => {
     sounds.playPop();
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    const fresh = Array.from(
-      { length: 5 },
-      () => chars[Math.floor(Math.random() * chars.length)],
-    );
-    setRoomCode(fresh);
+    setError('');
+    try {
+      const created = await createRoom();
+      setRoomCode(created.code.split(''));
+      router.push(`/room/${encodeURIComponent(created.code)}`);
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : 'Sign in to open a shared room.',
+      );
+    }
+  };
+
+  const joinExistingRoom = async () => {
+    if (code.length < 8) {
+      setError('Enter the complete 8–16 character room code.');
+      return;
+    }
+    sounds.playPop();
+    setError('');
+    try {
+      const joined = await joinRoom(code);
+      router.push(`/room/${encodeURIComponent(joined.code)}`);
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : 'That room could not be joined.',
+      );
+    }
   };
 
   return (
@@ -93,32 +98,38 @@ export function RoomCodeJoiner({ roomCode, setRoomCode }: RoomCodeJoinerProps) {
                 </Link>
               </div>
               <div className="joincode">
-                have a code? &nbsp;
-                <div className="cells">
-                  {roomCode.map((char, idx) => (
-                    <input
-                      key={idx}
-                      type="text"
-                      maxLength={1}
-                      value={char}
-                      onChange={(e) => handleCellChange(idx, e.target.value)}
-                      style={{
-                        width: '36px',
-                        height: '42px',
-                        textAlign: 'center',
-                        border: '1.5px solid var(--line)',
-                        borderRadius: '10px',
-                        fontWeight: 700,
-                        fontSize: '17px',
-                        fontFamily: 'var(--font-mono)',
-                        background: 'var(--paper-raised)',
-                        color: 'var(--ink)',
-                      }}
-                    />
-                  ))}
-                </div>
+                <label htmlFor="home-room-code">have a code?</label>
+                <input
+                  id="home-room-code"
+                  type="text"
+                  value={code}
+                  onChange={(event) => handleCodeChange(event.target.value)}
+                  placeholder="ENTER ROOM CODE"
+                  autoComplete="off"
+                  aria-describedby={error ? 'home-room-error' : undefined}
+                  style={{
+                    width: '190px',
+                    height: '42px',
+                    padding: '0 12px',
+                    border: '1.5px solid var(--line)',
+                    borderRadius: '10px',
+                    fontWeight: 700,
+                    fontFamily: 'var(--font-mono)',
+                    background: 'var(--paper-raised)',
+                    color: 'var(--ink)',
+                    letterSpacing: '0.08em',
+                  }}
+                />
+                <button
+                  className="btn btn-primary"
+                  onClick={joinExistingRoom}
+                  disabled={loading || code.length < 8}
+                >
+                  {loading ? 'Connecting…' : 'Join'}
+                </button>
                 <button
                   onClick={copyCode}
+                  disabled={!code}
                   style={{
                     border: '1px solid var(--line)',
                     background: 'var(--paper-raised)',
@@ -134,7 +145,8 @@ export function RoomCodeJoiner({ roomCode, setRoomCode }: RoomCodeJoinerProps) {
                   {copied ? '✓ Copied' : 'Copy'}
                 </button>
                 <button
-                  onClick={generateNewCode}
+                  onClick={openNewRoom}
+                  disabled={loading}
                   style={{
                     border: '1px solid var(--line)',
                     background: 'var(--paper-raised)',
@@ -146,11 +158,24 @@ export function RoomCodeJoiner({ roomCode, setRoomCode }: RoomCodeJoinerProps) {
                     cursor: 'pointer',
                     marginLeft: '4px',
                   }}
-                  title="Generate Fresh Private Room"
+                  title="Open a new private room in Supabase"
                 >
-                  🎲 New
+                  {room ? 'Open another' : 'New room'}
                 </button>
               </div>
+              {error && (
+                <p
+                  id="home-room-error"
+                  role="alert"
+                  style={{
+                    marginTop: 8,
+                    color: 'var(--burgundy)',
+                    fontSize: 13,
+                  }}
+                >
+                  {error}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -165,16 +190,16 @@ export function RoomCodeJoiner({ roomCode, setRoomCode }: RoomCodeJoinerProps) {
         <div className="wrap">
           <div className="statgrid">
             <div className="stat">
-              <div className="n">{datesCount.toLocaleString()}+</div>
-              <div className="l">active dates</div>
+              <div className="n">35+</div>
+              <div className="l">activities built for two</div>
             </div>
             <div className="stat">
-              <div className="n">{sessionsCount.toLocaleString()}+</div>
-              <div className="l">photobooth sessions</div>
+              <div className="n">2</div>
+              <div className="l">screens in one private room</div>
             </div>
             <div className="stat">
-              <div className="n">{stripsCount.toLocaleString()}+</div>
-              <div className="l">photostrips printed</div>
+              <div className="n">1</div>
+              <div className="l">shared space that follows you</div>
             </div>
           </div>
         </div>
