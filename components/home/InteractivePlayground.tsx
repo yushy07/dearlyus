@@ -226,13 +226,26 @@ export function InteractivePlayground({
               </figcaption>
             </figure>
 
-            {/* The Photobooth Machine */}
+            {/* The instant camera and its developing four-cut print */}
             <div className="booth">
-              <div className="booth-head" aria-hidden="true">
-                <span className="bh-light l"></span>
-                <span className="bh-lens"></span>
-                <span className="bh-light r"></span>
-                <span className="bh-slot"></span>
+              <div
+                className={`booth-head ${flashing ? 'is-flashing' : ''}`}
+                aria-hidden="true"
+              >
+                <span className="bh-brand">dearly us.</span>
+                <span className="bh-viewfinder"></span>
+                <span className="bh-flash"></span>
+                <span className="bh-shutter"></span>
+                <span className="bh-lens">
+                  <i></i>
+                </span>
+                <span className="bh-film-count">
+                  {String(Math.min(shotStep + 1, 4)).padStart(2, '0')}
+                </span>
+                <span className="bh-body-band"></span>
+                <span className="bh-slot">
+                  <i></i>
+                </span>
               </div>
 
               <div className="prints">
@@ -289,54 +302,8 @@ export function InteractivePlayground({
                     />
                   </div>
                   <div className="serial">
-                    dearly us · <b>{roomCode.join('') || 'YOUR ROOM'}</b>
-                  </div>
-                </div>
-
-                {/* Secondary Decorative Strip */}
-                <div className="strip" id="strip2" aria-hidden="true">
-                  <div className="frame lit">
-                    <span className="num">01</span>
-                    <img
-                      className="shot"
-                      src="/photos/b1.webp"
-                      width="503"
-                      height="377"
-                      alt=""
-                    />
-                  </div>
-                  <div className="frame lit">
-                    <span className="num">02</span>
-                    <img
-                      className="shot"
-                      src="/photos/b2.webp"
-                      width="503"
-                      height="377"
-                      alt=""
-                    />
-                  </div>
-                  <div className="frame lit">
-                    <span className="num">03</span>
-                    <img
-                      className="shot"
-                      src="/photos/b3.webp"
-                      width="503"
-                      height="377"
-                      alt=""
-                    />
-                  </div>
-                  <div className="frame lit">
-                    <span className="num">04</span>
-                    <img
-                      className="shot"
-                      src="/photos/b4.webp"
-                      width="503"
-                      height="377"
-                      alt=""
-                    />
-                  </div>
-                  <div className="serial">
-                    dearly us · <b>7K2QF</b>
+                    <span>a little closer.</span>
+                    <b>dearly us · {roomCode.join('') || 'YOUR ROOM'}</b>
                   </div>
                 </div>
               </div>
