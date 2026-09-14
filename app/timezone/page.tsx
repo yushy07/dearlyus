@@ -72,12 +72,13 @@ const COMMON_TIMEZONES = [
 ];
 
 export default function TimezoneHubPage() {
-  const { partnerA, partnerB, cityA, cityB } = useCoupleProfile();
+  const { partnerA, partnerB, cityA, cityB, timezoneA, timezoneB } =
+    useCoupleProfile();
   const { space } = useCoupleSpace();
   const [city1, setCity1] = useState(cityA || 'Calgary');
   const [city2, setCity2] = useState(cityB || 'Jakarta');
-  const [tz1, setTz1] = useState('America/Edmonton');
-  const [tz2, setTz2] = useState('Asia/Jakarta');
+  const [tz1, setTz1] = useState(timezoneA || 'America/Edmonton');
+  const [tz2, setTz2] = useState(timezoneB || 'Asia/Jakarta');
 
   const [reunionDate, setReunionDate] = useState('2026-11-20T18:00');
   const [momentLabel, setMomentLabel] = useState('Our next moment together');
@@ -238,6 +239,11 @@ export default function TimezoneHubPage() {
   }, [reunionDate]);
 
   const [sharedLoaded, setSharedLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!sharedLoaded && timezoneA) setTz1(timezoneA);
+    if (!sharedLoaded && timezoneB) setTz2(timezoneB);
+  }, [timezoneA, timezoneB, sharedLoaded]);
 
   useEffect(() => {
     if (!space?.id) return;
