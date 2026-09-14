@@ -7,6 +7,7 @@ import React, {
   useState,
   useCallback,
   useMemo,
+  useRef,
 } from 'react';
 import { useSupabaseSession } from './SupabaseSessionContext';
 import type { SpaceMember } from '@/lib/domain';
@@ -17,7 +18,6 @@ import {
   type RelationshipMilestone,
   type SharedPreferences,
   loadAccount,
-  profileFromUser,
   saveAccountProfile,
   createCoupleSpace as rpcCreateCoupleSpace,
   joinCoupleSpace as rpcJoinCoupleSpace,
@@ -29,6 +29,7 @@ import {
 } from '@/lib/account';
 
 export interface CoupleSpaceContextValue {
+  status: 'initializing' | 'ready' | 'refreshing' | 'recoverable_error';
   profile: AccountProfile | null;
   space: CoupleSpace | null;
   partner: SpaceMember | null;
@@ -71,9 +72,14 @@ export function CoupleSpaceProvider({
     null,
   );
   const [loading, setLoading] = useState(true);
+  const [status, setStatus] = useState<CoupleSpaceContextValue['status']>(
+    'initializing',
+  );
   const [error, setError] = useState<string | null>(null);
+  const requestSequence = useRef(0);
 
   const refresh = useCallback(async () => {
+    const requestId = ++requestSequence.current;
     if (!user) {
       setProfile(null);
       setSpace(null);
@@ -81,23 +87,31 @@ export function CoupleSpaceProvider({
       setMilestones([]);
       setPreferences(null);
       setLoading(false);
+      setStatus('ready');
       return;
     }
 
     try {
+      setStatus((current) =>
+        current === 'ready' || current === 'recoverable_error'
+          ? 'refreshing'
+          : 'initializing',
+      );
       setError(null);
       const account = await loadAccount(user);
+      if (requestId !== requestSequence.current) return;
       setProfile(account.profile);
       setSpace(account.space);
       setKeepsakes(account.keepsakes);
       setMilestones(account.milestones);
       setPreferences(account.preferences);
+      setStatus('ready');
     } catch (err: any) {
-      const fallback = profileFromUser(user);
-      setProfile(fallback);
+      if (requestId !== requestSequence.current) return;
       setError(err?.message || 'Failed to load couple space.');
+      setStatus('recoverable_error');
     } finally {
-      setLoading(false);
+      if (requestId === requestSequence.current) setLoading(false);
     }
   }, [user]);
 
@@ -186,17 +200,20 @@ export function CoupleSpaceProvider({
     if (!user) throw new Error('You must be signed in.');
     const savedProfile = await saveAccountProfile(user, input);
     setProfile(savedProfile);
+    await refresh();
   };
 
   const createSpaceHandler = async (name: string) => {
     const nextSpace = await rpcCreateCoupleSpace(name);
     setSpace(nextSpace);
+    await refresh();
     return nextSpace;
   };
 
   const joinSpaceHandler = async (code: string) => {
     const nextSpace = await rpcJoinCoupleSpace(code);
     setSpace(nextSpace);
+    await refresh();
     return nextSpace;
   };
 
@@ -263,6 +280,7 @@ export function CoupleSpaceProvider({
 
   const value = useMemo<CoupleSpaceContextValue>(
     () => ({
+      status,
       profile,
       space,
       partner,
@@ -286,6 +304,7 @@ export function CoupleSpaceProvider({
     }),
     [
       profile,
+      status,
       space,
       partner,
       ownMember,

@@ -67,6 +67,7 @@ export default function ProfilePage() {
   const searchParams = useSearchParams();
   const { user, signOut: authSignOut } = useSupabaseSession();
   const {
+    status,
     profile,
     space,
     partner,
@@ -414,6 +415,43 @@ export default function ProfilePage() {
           <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>
             Taking you to sign-in…
           </p>
+        </div>
+      </main>
+    );
+  }
+
+  if (status === 'recoverable_error' && !profile) {
+    return (
+      <main className={styles.page}>
+        <Navbar />
+        <div className={styles.setupShell}>
+          <section className={styles.setupCard}>
+            <div className={styles.setupStamp}>
+              <span>Your saved place</span>
+              <span>Dearly Us ♡</span>
+            </div>
+            <div className={styles.setupBody}>
+              <div className={styles.setupStory}>
+                <div className={styles.eyebrow}>A small connection pause</div>
+                <h1>Your space is still yours.</h1>
+                <p>
+                  We couldn&apos;t read your saved details just now. Nothing has
+                  been reset, and you do not need to create your profile again.
+                </p>
+              </div>
+              <div className={styles.setupFormPanel}>
+                <div className={`${styles.notice} ${styles.noticeError}`}>
+                  {spaceError || 'Your saved space could not be loaded.'}
+                </div>
+                <button
+                  className={styles.setupSubmit}
+                  onClick={() => void refresh()}
+                >
+                  Try opening my space again <i aria-hidden="true">→</i>
+                </button>
+              </div>
+            </div>
+          </section>
         </div>
       </main>
     );

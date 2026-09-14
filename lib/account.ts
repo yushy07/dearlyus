@@ -38,6 +38,25 @@ export interface SharedPreferences {
   updatedAt: string | null;
 }
 
+export type AccountBootstrapState =
+  | 'needs_profile'
+  | 'needs_connection'
+  | 'waiting_for_partner'
+  | 'connected';
+
+export interface AccountBootstrap {
+  state: AccountBootstrapState;
+  profile: AccountProfile | null;
+  space: CoupleSpace | null;
+  preferences: SharedPreferences | null;
+  summary: {
+    keepsakeCount: number;
+    milestoneCount: number;
+    pendingActivityCount: number;
+  };
+  revision: number;
+}
+
 export function profileFromUser(user: User): AccountProfile {
   const metadata = user.user_metadata ?? {};
   return {
@@ -56,34 +75,15 @@ export function profileFromUser(user: User): AccountProfile {
 export async function loadAccount(user: User) {
   const supabase = getSupabase();
   if (!supabase) throw new Error('Supabase is not configured.');
+  const { data: bootstrapData, error: bootstrapError } = await supabase.rpc(
+    'get_my_account_bootstrap',
+  );
+  if (bootstrapError) throw bootstrapError;
+  if (!bootstrapData) throw new Error('Supabase returned no account state.');
 
-  const { data, error } = await supabase
-    .from('profiles')
-    .select(
-      'id, display_name, city, timezone, avatar_url, onboarding_completed, account_status',
-    )
-    .eq('id', user.id)
-    .maybeSingle();
-  if (error) throw error;
-
-  const fallback = profileFromUser(user);
-  const profile: AccountProfile = data
-    ? {
-        id: data.id,
-        displayName: data.display_name || fallback.displayName,
-        city: data.city || '',
-        timezone: data.timezone || fallback.timezone,
-        avatarUrl: data.avatar_url || fallback.avatarUrl,
-        onboardingCompleted: Boolean(data.onboarding_completed),
-        accountStatus: (data.account_status ||
-          'active') as AccountLifecycleStatus,
-      }
-    : fallback;
-
-  const { data: spaceData, error: spaceError } =
-    await supabase.rpc('get_my_space');
-  if (spaceError) throw spaceError;
-  const space = spaceData ? (spaceData as CoupleSpace) : null;
+  const bootstrap = bootstrapData as AccountBootstrap;
+  const profile = bootstrap.profile ?? profileFromUser(user);
+  const space = bootstrap.space;
 
   let keepsakes: Keepsake[] = [];
   if (space?.id) {
@@ -95,8 +95,7 @@ export async function loadAccount(user: User) {
       .eq('couple_id', space.id)
       .order('created_at', { ascending: false })
       .limit(12);
-    if (keepsakeError) throw keepsakeError;
-    keepsakes = await Promise.all(
+    if (!keepsakeError) keepsakes = await Promise.all(
       (keepsakeData ?? []).map(async (item) => {
         let previewUrl = item.preview_url;
         if (!previewUrl && item.storage_bucket && item.storage_path) {
@@ -123,7 +122,7 @@ export async function loadAccount(user: User) {
     );
   }
 
-  let preferences: SharedPreferences | null = null;
+  let preferences: SharedPreferences | null = bootstrap.preferences;
   let milestones: RelationshipMilestone[] = [];
   if (space?.id) {
     const [
@@ -138,19 +137,28 @@ export async function loadAccount(user: User) {
         .order('occurred_at', { ascending: false })
         .limit(20),
     ]);
-    if (preferenceError) throw preferenceError;
-    if (milestoneError) throw milestoneError;
-    preferences = preferenceData as SharedPreferences | null;
-    milestones = (milestoneData ?? []).map((item) => ({
-      id: item.id,
-      kind: item.kind,
-      title: item.title,
-      occurredAt: item.occurred_at,
-      metadata: item.metadata ?? {},
-    }));
+    if (!preferenceError)
+      preferences = preferenceData as SharedPreferences | null;
+    if (!milestoneError)
+      milestones = (milestoneData ?? []).map((item) => ({
+        id: item.id,
+        kind: item.kind,
+        title: item.title,
+        occurredAt: item.occurred_at,
+        metadata: item.metadata ?? {},
+      }));
   }
 
-  return { profile, space, keepsakes, preferences, milestones };
+  return {
+    profile,
+    space,
+    keepsakes,
+    preferences,
+    milestones,
+    state: bootstrap.state,
+    summary: bootstrap.summary,
+    revision: bootstrap.revision,
+  };
 }
 
 export async function saveAccountProfile(
@@ -199,10 +207,23 @@ async function runSpaceRpc(name: string, params?: Record<string, string>) {
   return data as CoupleSpace;
 }
 
+async function runBootstrapRpc(
+  name: string,
+  params?: Record<string, string>,
+) {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Supabase is not configured.');
+  const { data, error } = await supabase.rpc(name, params);
+  if (error) throw error;
+  const bootstrap = data as AccountBootstrap;
+  if (!bootstrap?.space) throw new Error('Supabase returned no couple space.');
+  return bootstrap.space;
+}
+
 export const createCoupleSpace = (name: string) =>
-  runSpaceRpc('create_couple_space', { space_name: name });
+  runBootstrapRpc('create_couple_space_v2', { space_name: name });
 export const joinCoupleSpace = (code: string) =>
-  runSpaceRpc('join_couple_by_invite', { invite_code: code });
+  runBootstrapRpc('accept_couple_invite_v2', { invite_code: code });
 export const regenerateInvite = () => runSpaceRpc('regenerate_couple_invite');
 export const revokeInvite = () => runSpaceRpc('revoke_couple_invite');
 export const rotateRoom = () => runSpaceRpc('rotate_couple_room');
