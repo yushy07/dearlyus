@@ -12,7 +12,9 @@ export type ActivityRecordKind =
   | 'lab_session'
   | 'love_match'
   | 'date_night_capsule'
-  | 'birthday_gift';
+  | 'birthday_gift'
+  | 'passport'
+  | 'cupidot_home';
 
 export interface CoupleActivityRecord<T = Record<string, unknown>> {
   id: string;
@@ -24,6 +26,7 @@ export interface CoupleActivityRecord<T = Record<string, unknown>> {
   status: 'draft' | 'active' | 'completed' | 'archived';
   targetAt: string | null;
   updatedAt: string;
+  revision: number;
 }
 
 function mapRecord<T>(row: any): CoupleActivityRecord<T> {
@@ -37,15 +40,21 @@ function mapRecord<T>(row: any): CoupleActivityRecord<T> {
     status: row.status,
     targetAt: row.target_at,
     updatedAt: row.updated_at,
+    revision: Number(row.revision ?? 1),
   };
 }
 
-export async function loadActivityRecords<T>(coupleId: string, kind: ActivityRecordKind) {
+export async function loadActivityRecords<T>(
+  coupleId: string,
+  kind: ActivityRecordKind,
+) {
   const supabase = getSupabase();
   if (!supabase) return [] as CoupleActivityRecord<T>[];
   const { data, error } = await supabase
     .from('plans_and_milestones')
-    .select('id,couple_id,record_kind,record_key,title,payload,status,target_at,updated_at')
+    .select(
+      'id,couple_id,record_kind,record_key,title,payload,status,target_at,updated_at,revision',
+    )
     .eq('couple_id', coupleId)
     .eq('record_kind', kind)
     .order('updated_at', { ascending: false });
@@ -53,7 +62,9 @@ export async function loadActivityRecords<T>(coupleId: string, kind: ActivityRec
   return (data || []).map(mapRecord<T>);
 }
 
-export async function upsertActivityRecord<T extends Record<string, unknown>>(input: {
+export async function upsertActivityRecord<
+  T extends Record<string, unknown>,
+>(input: {
   coupleId: string;
   kind: ActivityRecordKind;
   key: string;
@@ -61,30 +72,23 @@ export async function upsertActivityRecord<T extends Record<string, unknown>>(in
   payload: T;
   status?: CoupleActivityRecord['status'];
   targetAt?: string | null;
+  expectedRevision?: number | null;
 }) {
   const supabase = getSupabase();
   if (!supabase) throw new Error('Supabase is not configured.');
   const { data: auth, error: authError } = await supabase.auth.getUser();
-  if (authError || !auth.user) throw authError || new Error('Sign in to save shared activity data.');
-  const { data, error } = await supabase
-    .from('plans_and_milestones')
-    .upsert(
-      {
-        couple_id: input.coupleId,
-        record_kind: input.kind,
-        record_key: input.key,
-        title: input.title.slice(0, 120),
-        payload: input.payload,
-        status: input.status || 'active',
-        target_at: input.targetAt || null,
-        created_by: auth.user.id,
-        updated_by: auth.user.id,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'couple_id,record_kind,record_key' },
-    )
-    .select('id,couple_id,record_kind,record_key,title,payload,status,target_at,updated_at')
-    .single();
+  if (authError || !auth.user)
+    throw authError || new Error('Sign in to save shared activity data.');
+  const { data, error } = await supabase.rpc('upsert_shared_activity_record', {
+    target_couple_id: input.coupleId,
+    target_kind: input.kind,
+    target_key: input.key,
+    target_title: input.title.slice(0, 120),
+    target_payload: input.payload,
+    target_status: input.status || 'active',
+    target_at: input.targetAt || null,
+    expected_revision: input.expectedRevision ?? null,
+  });
   if (error) throw error;
   return mapRecord<T>(data);
 }
@@ -97,30 +101,43 @@ export async function uploadTemporaryActivityAsset(input: {
 }) {
   const supabase = getSupabase();
   if (!supabase) throw new Error('Supabase is not configured.');
-  if (input.file.size > 12 * 1024 * 1024) throw new Error('File must be 12 MB or smaller.');
+  if (input.file.size > 12 * 1024 * 1024)
+    throw new Error('File must be 12 MB or smaller.');
   const { data: auth, error: authError } = await supabase.auth.getUser();
-  if (authError || !auth.user) throw authError || new Error('Sign in to upload private activity media.');
-  const mime = input.file.type || (input.mediaKind === 'image' ? 'image/jpeg' : 'audio/webm');
+  if (authError || !auth.user)
+    throw authError || new Error('Sign in to upload private activity media.');
+  const mime =
+    input.file.type ||
+    (input.mediaKind === 'image' ? 'image/jpeg' : 'audio/webm');
   const extension = mime.split('/')[1]?.replace('mpeg', 'mp3') || 'bin';
   const path = `${input.coupleId}/${auth.user.id}/${crypto.randomUUID()}.${extension}`;
-  const { error: uploadError } = await supabase.storage.from('activity-assets').upload(path, input.file, {
-    contentType: mime,
-    upsert: false,
-  });
+  const { error: uploadError } = await supabase.storage
+    .from('activity-assets')
+    .upload(path, input.file, {
+      contentType: mime,
+      upsert: false,
+    });
   if (uploadError) throw uploadError;
-  const { data, error } = await supabase.rpc('register_temporary_activity_asset', {
-    target_couple_id: input.coupleId,
-    target_session_id: input.sessionId || null,
-    target_path: path,
-    target_media_kind: input.mediaKind,
-    target_mime_type: mime,
-    target_byte_size: input.file.size,
-  });
+  const { data, error } = await supabase.rpc(
+    'register_temporary_activity_asset',
+    {
+      target_couple_id: input.coupleId,
+      target_session_id: input.sessionId || null,
+      target_path: path,
+      target_media_kind: input.mediaKind,
+      target_mime_type: mime,
+      target_byte_size: input.file.size,
+    },
+  );
   if (error) {
     await supabase.storage.from('activity-assets').remove([path]);
     throw error;
   }
-  const registered = data as { id: string; storage_path: string; expires_at: string };
+  const registered = data as {
+    id: string;
+    storage_path: string;
+    expires_at: string;
+  };
   const { data: signed, error: signedError } = await supabase.storage
     .from('activity-assets')
     .createSignedUrl(path, 60 * 60 * 24 * 7);
@@ -144,17 +161,24 @@ export async function uploadBirthdayAsset(input: {
 }) {
   const supabase = getSupabase();
   if (!supabase) throw new Error('Supabase is not configured.');
-  if (input.file.size > 12 * 1024 * 1024) throw new Error('File must be 12 MB or smaller.');
+  if (input.file.size > 12 * 1024 * 1024)
+    throw new Error('File must be 12 MB or smaller.');
   const { data: auth, error: authError } = await supabase.auth.getUser();
-  if (authError || !auth.user) throw authError || new Error('Sign in to upload birthday media.');
-  const extension = input.file.type.split('/')[1]?.replace('mpeg', 'mp3') || 'bin';
+  if (authError || !auth.user)
+    throw authError || new Error('Sign in to upload birthday media.');
+  const extension =
+    input.file.type.split('/')[1]?.replace('mpeg', 'mp3') || 'bin';
   const path = `${input.coupleId}/${auth.user.id}/${crypto.randomUUID()}.${extension}`;
-  const { error } = await supabase.storage.from('birthday-assets').upload(path, input.file, {
-    contentType: input.file.type,
-    upsert: false,
-  });
+  const { error } = await supabase.storage
+    .from('birthday-assets')
+    .upload(path, input.file, {
+      contentType: input.file.type,
+      upsert: false,
+    });
   if (error) throw error;
-  const { data: signed, error: signedError } = await supabase.storage.from('birthday-assets').createSignedUrl(path, 3600);
+  const { data: signed, error: signedError } = await supabase.storage
+    .from('birthday-assets')
+    .createSignedUrl(path, 3600);
   if (signedError) throw signedError;
   return { path, signedUrl: signed.signedUrl };
 }
@@ -162,15 +186,23 @@ export async function uploadBirthdayAsset(input: {
 export async function loadBirthdayGift(coupleId: string) {
   const supabase = getSupabase();
   if (!supabase) return null;
-  const { data, error } = await supabase.from('birthday_gifts')
+  const { data, error } = await supabase
+    .from('birthday_gifts')
     .select('id,title,payload,status,target_at,created_by,updated_at')
-    .eq('couple_id', coupleId).eq('record_key', 'current-gift').maybeSingle();
+    .eq('couple_id', coupleId)
+    .eq('record_key', 'current-gift')
+    .maybeSingle();
   if (error) throw error;
   if (!data) return null;
   const payload = data.payload as BirthdayGiftPayload;
-  const sign = async (path?: string | null) => path
-    ? (await supabase.storage.from('birthday-assets').createSignedUrl(path, 3600)).data?.signedUrl || null
-    : null;
+  const sign = async (path?: string | null) =>
+    path
+      ? (
+          await supabase.storage
+            .from('birthday-assets')
+            .createSignedUrl(path, 3600)
+        ).data?.signedUrl || null
+      : null;
   return {
     ...data,
     payload,
@@ -189,16 +221,20 @@ export async function saveBirthdayGift(input: {
   const supabase = getSupabase();
   if (!supabase) throw new Error('Supabase is not configured.');
   const { data: auth, error: authError } = await supabase.auth.getUser();
-  if (authError || !auth.user) throw authError || new Error('Sign in to save the birthday gift.');
-  const { error } = await supabase.from('birthday_gifts').upsert({
-    couple_id: input.coupleId,
-    record_key: 'current-gift',
-    created_by: auth.user.id,
-    title: input.title.slice(0, 120),
-    payload: input.payload,
-    status: input.status,
-    target_at: input.targetAt || null,
-    updated_at: new Date().toISOString(),
-  }, { onConflict: 'couple_id,record_key' });
+  if (authError || !auth.user)
+    throw authError || new Error('Sign in to save the birthday gift.');
+  const { error } = await supabase.from('birthday_gifts').upsert(
+    {
+      couple_id: input.coupleId,
+      record_key: 'current-gift',
+      created_by: auth.user.id,
+      title: input.title.slice(0, 120),
+      payload: input.payload,
+      status: input.status,
+      target_at: input.targetAt || null,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'couple_id,record_key' },
+  );
   if (error) throw error;
 }
