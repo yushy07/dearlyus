@@ -52,6 +52,8 @@ playwright-server.log
 /supabase/.branches/
 /supabase/.temp/
 /supabase/.cache/
+/supabase/.logs/
+/supabase/.generated/
 /supabase/.env
 /supabase/.env.*
 !/supabase/.env.example
@@ -66,6 +68,12 @@ lerna-debug.log*
 *.log
 *.dump
 *.dump.gz
+/*.sql
+/*.pgsql
+/*schema*.json
+/*backend*.json
+/supabase/**/*.dump
+/supabase/**/*.dump.gz
 *.pid
 *.seed
 *.pid.lock
@@ -148,4 +156,3 @@ scripts/capture-*.mjs
 scripts/*.tmp.js
 scripts/*.temp.js
 scripts/scratch/
-

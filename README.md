@@ -187,13 +187,13 @@ The booth never requires a paid service. Camera streams stay peer-to-peer and in
 - **Web Speech Narration**: Built-in speech synthesis read-aloud featuring Cupidot's animated speaking states.
 - **1-Click Story Card Exporter**: Generates high-resolution 1080×1920 (9:16) vertical story graphics with couple stamps and confetti animations for Instagram Stories or lock screens.
 
-### 🏡 11. Our Space Sanctuary & Rituals Hub (`/our-space`, `/profile`)
+### 🏡 11. Durable Our Space Journey (`/our-space`, `/profile`)
 
-- **Couple Rituals Engine**: Track daily morning & bedtime rituals, custom check-ins, and anniversary countdowns.
-- **Relationship Constellation**: Visual map of milestones, keepsakes, and shared memories plotted across your journey.
-- **Date Night Capsules**: Sealed time capsules and shared notes unlocked on custom anniversary dates.
-- **Keepsake Approval Queue**: Mutual review workflow ensuring keepsakes are agreed upon before being saved to the permanent sanctuary album.
-- **Shared Story Timeline**: Completed activity keepsakes and relationship milestones appear together in date order, with direct access to saved artifacts.
+- **Reliable Account Restore**: One Supabase bootstrap restores the saved profile, couple membership, active invitation, preferences, and summary without mistaking a temporary content error for a new account.
+- **Clear Four-Step Experience**: First arrival, create or join, partner invitation lounge, and the connected dashboard are distinct states with focused actions.
+- **Invitation Recovery**: Private invitation destinations survive Google OAuth, refreshes, duplicate clicks, and already-accepted links.
+- **Couple Dashboard**: Both partners, their local times, date-night entry, quick activities, and recent keepsakes appear together in the romantic paper-and-plum space.
+- **Separate Settings**: Profile controls and advanced preferences live at `/profile`, keeping the emotional shared home focused on the couple.
 
 ### 🎁 11.1 Private Creative Keepsakes
 
@@ -249,7 +249,7 @@ The booth never requires a paid service. Camera streams stay peer-to-peer and in
 | **`/letter`**        | Time Capsule Letters with 3D wax seal cracking & unfolding envelope.                                                                       |
 | **`/login`**         | Google-only sign-in with safe return-path handling.                                                                                        |
 | **`/match`**         | 16-dimension romance personality compatibility test.                                                                                       |
-| **`/our-space`**     | **Our Space Sanctuary**: Cupidot home area, decor shelf, shared rituals, relationship constellation, date night capsules & memory weather. |
+| **`/our-space`**     | Durable arrival, couple connection, invitation lounge, shared date-night dashboard and private keepsake shelf.                         |
 | **`/passport`**      | Official Love Passport with souvenir stamps and dual-city boarding pass.                                                                   |
 | **`/photobooth`**    | Korean Life4Cuts (_인생네컷_) paired studio with live capture, upload fallback, shared-background composition, drawing, approval, and print exports. |
 | **`/privacy`**       | Transparent privacy policy and shared-room data disclosure.                                                                                |
@@ -275,9 +275,9 @@ dearlyus/
 ├── app/                          # Next.js / Vinext application routes and pages
 │   ├── (activities)/             # Interactive couple date games (photobooth, quiz, draw, court...)
 │   ├── forecast/                 # Daily cross-city love weather forecast & story card export
-│   ├── our-space/                # Canonical sanctuary hub & Cupidot home area
+│   ├── our-space/                # Arrival, connection, invitation lounge & couple dashboard
 │   ├── profile/                  # Account settings, romance spectrum & room code
-│   └── api/                      # Backend endpoints for stats, room configuration & callbacks
+│   └── api/                      # Lightweight application HTTP endpoints; no database schema lives here
 ├── components/
 │   ├── home/                     # Modular homepage components:
 │   │   ├── DearlyCinematicHero   # Hero section with cinematic video reveal & floating widgets
@@ -312,9 +312,13 @@ dearlyus/
 │   ├── globals.css               # Base styles and theme configuration
 │   └── home-editorial.css        # Comprehensive editorial styling system & atmospheric backdrops
 ├── data/                         # Curated local prompts, questions, and content packs
-├── docs/                         # Current backend handoffs, QA matrix, and high-resolution screenshots
+├── docs/                         # Product documentation and high-resolution screenshots
 │   └── screenshots/              # Authentic live screenshots of website features (10 captures)
-├── supabase/                     # Linked Supabase CLI configuration and versioned migrations
+├── supabase/                     # Complete persistent backend boundary
+│   ├── config.toml               # Linked Supabase CLI configuration
+│   ├── migrations/               # Versioned database schema, RPCs, RLS and Storage policies
+│   ├── functions/                # Deployable Supabase Edge Functions
+│   └── docs/                     # Backend contracts and deployment status notes
 ├── tests/
 │   ├── browser/                  # Playwright browser end-to-end specifications
 │   ├── cupidot-moments.test.ts   # Companion moments deck & shuffle tests
@@ -380,6 +384,16 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 The solo photobooth works without Supabase. Private paired booths require Google sign-in plus the live photobooth room/state RPCs, private Realtime channel policies, and the private `couple-photostrips` Storage bucket. No TURN credentials are required; blocked peer video falls back to synchronized uploads.
+
+### Backend boundary
+
+All persistent backend definitions belong in `supabase/`:
+
+- `supabase/migrations/` owns tables, indexes, database functions, RLS, Realtime and Storage policies.
+- `supabase/functions/` owns Edge Function source.
+- `supabase/docs/` owns backend contracts and deployment notes.
+
+The files in `lib/` and `contexts/` are frontend clients for that contract; they contain no service-role credentials or authoritative database logic. The small `app/api/` handlers serve application configuration and aggregate statistics and do not own persistent data. Do not place SQL files, database dumps, backend credentials or deployment scratch files in the repository root.
 
 ### Linked Supabase workflow
 
