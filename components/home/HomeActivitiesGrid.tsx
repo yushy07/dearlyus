@@ -701,7 +701,7 @@ export function HomeActivitiesGrid() {
               </h3>
               <p>
                 Visual 24h sun/moon horizon, golden overlap hours, and a
-                millisecond airport reunion countdown.
+                shared overlap countdown for your next moment together.
               </p>
             </Link>
 
@@ -714,8 +714,8 @@ export function HomeActivitiesGrid() {
                 100 Dates Bucket List <span className="badge new">New</span>
               </h3>
               <p>
-                Scratch off milestone cards from late-night video call dates to
-                airport hugs and grocery runs.
+                Scratch off milestone cards from late-night video calls to
+                surprise visits, cozy routines, and grocery runs.
               </p>
             </Link>
 

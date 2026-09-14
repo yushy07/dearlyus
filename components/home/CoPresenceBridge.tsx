@@ -25,7 +25,7 @@ export function CoPresenceBridge({ onExploreStage }: CoPresenceBridgeProps) {
 
   const marqueeItems = [
     { text: '인생네컷 Life4Cuts Photobooth', highlight: 'pink', icon: '📸' },
-    { text: 'Interactive 3D Distance Globe', highlight: 'blue', icon: '🌍' },
+    { text: 'Interactive 3D Shared Earth', highlight: 'blue', icon: '🌍' },
     {
       text: '35+ Realtime Couple Duels & Games',
       highlight: 'pink',
@@ -113,7 +113,7 @@ export function CoPresenceBridge({ onExploreStage }: CoPresenceBridgeProps) {
           </Link>
           </article>
 
-          {/* Card 2: 3D Distance Globe */}
+          {/* Card 2: 3D Shared Earth */}
           <article className={styles.stackItem}>
           <a
             href="#top"
@@ -127,16 +127,16 @@ export function CoPresenceBridge({ onExploreStage }: CoPresenceBridgeProps) {
                   🌍
                 </div>
                 <span className={`${styles.cardBadge} ${styles.badgeBlue}`}>
-                  Live Flight Arc
+                  Same Sky
                 </span>
               </div>
-              <h3 className={styles.cardTitle}>Distance & Timezone</h3>
+              <h3 className={styles.cardTitle}>Two Places, One Earth</h3>
               <p className={styles.cardDesc}>
-                Spin the interactive 3D globe calculating exact distance between
-                Calgary & Jakarta in realtime.
+                Turn a living Earth and see both of your places connected in one
+                calm, shared moment.
               </p>
               <div className={styles.cardFooter}>
-                <span>Spin 3D Globe</span>
+                <span>Explore the Earth</span>
                 <span className={styles.arrowRight}>↓</span>
               </div>
             </div>

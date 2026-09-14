@@ -97,7 +97,7 @@ export function InteractivePlayground({
             }}
           >
             <span className="eyebrow" style={{ margin: 0 }}>
-              LIVE CO-PRESENCE STAGE · {cityA.toUpperCase()} ⟷{' '}
+              LIVE CO-PRESENCE STAGE · {cityA.toUpperCase()} ♡{' '}
               {cityB.toUpperCase()}
             </span>
             <div
@@ -114,7 +114,7 @@ export function InteractivePlayground({
                 borderRadius: '9999px',
               }}
             >
-              ✈ Countdown till next time we meet +
+              Under the same sky · together right now
             </div>
           </div>
 
@@ -128,9 +128,9 @@ export function InteractivePlayground({
             <span style={{ color: 'var(--blue)', fontWeight: 700 }}>
               Synchronized across any distance.
             </span>{' '}
-            Spin the interactive 3D globe to check flight paths and live
-            distance, or snap authentic Korean Life4Cuts photostrips together
-            across the miles.
+            Turn the shared Earth to find both your places under one sky, or
+            make an authentic Korean Life4Cuts photostrip together from wherever
+            you are.
           </p>
 
           <div className="cta-row">

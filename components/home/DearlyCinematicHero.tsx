@@ -317,7 +317,7 @@ export function DearlyCinematicHero({
         {/* Main Hero Content */}
         <div className={styles.contentLayer}>
           <div className={styles.heroBottom}>
-            {/* Eyebrow and Flight Countdown Pill */}
+            {/* Eyebrow and shared-presence pill */}
             <div className={styles.eyebrowRow}>
               <RevealMask active={active} delay={400}>
                 <span className={styles.eyebrowBadge}>
@@ -326,8 +326,8 @@ export function DearlyCinematicHero({
               </RevealMask>
 
               <RevealMask active={active} delay={480}>
-                <span className={styles.flightPill}>
-                  ✈ Countdown till next time we meet +
+                <span className={styles.presencePill}>
+                  Two places · one little world
                 </span>
               </RevealMask>
             </div>

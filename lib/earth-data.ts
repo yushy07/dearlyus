@@ -427,7 +427,7 @@ export function latLngToVector3(
 
 /**
  * Generates an elevated 3D great-circle arc between two geographical points.
- * Peaks gently at mid-flight above the globe surface.
+ * Peaks gently above the globe surface.
  */
 export function createGeodesicPoints(
   startLat: number,
@@ -465,7 +465,7 @@ export function createGeodesicPoints(
     }
 
     interpolated.normalize();
-    // Parabolic altitude lift over flight
+    // Parabolic lift above the surface
     const altitude = Math.sin(t * Math.PI) * (radius * peakAltitude);
     interpolated.multiplyScalar(radius + altitude);
     points.push(interpolated);
@@ -476,7 +476,8 @@ export function createGeodesicPoints(
 
 /**
  * Procedurally generates an ultra-crisp high-res equirectangular Earth texture on an offscreen canvas.
- * Blends deep midnight celestial oceans with warm champagne continents and glowing city lights.
+ * Builds a recognizable daylight Earth with blue oceans, varied land, polar ice,
+ * and restrained city lights on the night-facing edge.
  */
 export function generateEarthTexture(
   width = 2048,
@@ -487,26 +488,26 @@ export function generateEarthTexture(
   canvas.height = height;
   const ctx = canvas.getContext('2d')!;
 
-  // 1. Deep Celestial Ocean Background
+  // 1. Natural ocean base
   const oceanGrad = ctx.createLinearGradient(0, 0, 0, height);
-  oceanGrad.addColorStop(0, '#100c16'); // Polar deep
-  oceanGrad.addColorStop(0.2, '#15101d');
-  oceanGrad.addColorStop(0.5, '#1e1628'); // Tropical warm deep
-  oceanGrad.addColorStop(0.8, '#15101d');
-  oceanGrad.addColorStop(1, '#100c16');
+  oceanGrad.addColorStop(0, '#9cc8d7');
+  oceanGrad.addColorStop(0.12, '#2d7899');
+  oceanGrad.addColorStop(0.48, '#07527c');
+  oceanGrad.addColorStop(0.82, '#276f91');
+  oceanGrad.addColorStop(1, '#c8e0e5');
   ctx.fillStyle = oceanGrad;
   ctx.fillRect(0, 0, width, height);
 
   // Subtle ocean bathymetry / current texture
-  ctx.fillStyle = 'rgba(78, 56, 92, 0.08)';
-  for (let i = 0; i < 40; i++) {
-    const y = Math.random() * height;
-    const h = 8 + Math.random() * 24;
+  ctx.fillStyle = 'rgba(126, 202, 218, 0.07)';
+  for (let i = 0; i < 36; i++) {
+    const y = ((i * 83) % height) + Math.sin(i * 1.7) * 16;
+    const h = 7 + ((i * 11) % 20);
     ctx.fillRect(0, y, width, h);
   }
 
   // 2. Graticule Lat/Lng grid
-  ctx.strokeStyle = 'rgba(235, 215, 240, 0.06)';
+  ctx.strokeStyle = 'rgba(205, 235, 240, 0.035)';
   ctx.lineWidth = 1;
   // Parallels
   for (let lat = -60; lat <= 60; lat += 30) {
@@ -526,7 +527,7 @@ export function generateEarthTexture(
   }
 
   // Equator highlight
-  ctx.strokeStyle = 'rgba(255, 214, 138, 0.14)';
+  ctx.strokeStyle = 'rgba(210, 238, 239, 0.06)';
   ctx.lineWidth = 1.5;
   ctx.beginPath();
   ctx.moveTo(0, height / 2);
@@ -548,20 +549,24 @@ export function generateEarthTexture(
     }
     ctx.closePath();
 
-    // Warm terracotta / champagne land gradient
-    ctx.fillStyle = 'rgba(196, 163, 145, 0.42)';
+    const landGrad = ctx.createLinearGradient(0, toY(70), 0, toY(-40));
+    landGrad.addColorStop(0, '#829b68');
+    landGrad.addColorStop(0.38, '#567c4e');
+    landGrad.addColorStop(0.7, '#8c8755');
+    landGrad.addColorStop(1, '#b19865');
+    ctx.fillStyle = landGrad;
     ctx.fill();
 
-    // Land Shading & Shoreline glow
-    ctx.strokeStyle = 'rgba(255, 235, 220, 0.72)';
-    ctx.lineWidth = 2.2;
-    ctx.stroke();
-
-    // Subtle inner coastline blur for tactile depth
-    ctx.strokeStyle = 'rgba(244, 114, 182, 0.25)';
-    ctx.lineWidth = 4.5;
+    ctx.strokeStyle = 'rgba(213, 226, 183, 0.7)';
+    ctx.lineWidth = 1.4;
     ctx.stroke();
   });
+
+  // Polar ice keeps the silhouette immediately readable as Earth.
+  ctx.fillStyle = 'rgba(235, 244, 239, 0.86)';
+  ctx.fillRect(0, 0, width, height * 0.055);
+  ctx.fillStyle = 'rgba(230, 240, 235, 0.72)';
+  ctx.fillRect(0, height * 0.94, width, height * 0.06);
 
   // 4. Urban Night Light Constellations
   CITY_LIGHTS.forEach(([lat, lng, radius, brightness]) => {
@@ -586,17 +591,6 @@ export function generateEarthTexture(
     ctx.arc(cx, cy, Math.max(1.2, radius * 0.4), 0, Math.PI * 2);
     ctx.fill();
   });
-
-  // Additional micro-lights scattered across continents for realistic urban density
-  ctx.fillStyle = 'rgba(254, 240, 138, 0.55)';
-  for (let i = 0; i < 180; i++) {
-    // Random jitter around major continents
-    const lat = 10 + Math.random() * 50;
-    const lng = -120 + Math.random() * 240;
-    const x = toX(lng);
-    const y = toY(lat);
-    ctx.fillRect(x, y, 1.5, 1.5);
-  }
 
   return canvas;
 }
@@ -633,13 +627,13 @@ export function generateCloudTexture(
   // Cloud swirls across mid-latitudes and tropics
   ctx.fillStyle = 'rgba(255, 255, 255, 0.22)';
   for (let i = 0; i < 90; i++) {
-    const x = Math.random() * width;
-    const y = 80 + Math.random() * (height - 160);
-    const rx = 30 + Math.random() * 70;
-    const ry = 8 + Math.random() * 18;
+    const x = (i * 137.5) % width;
+    const y = 80 + ((i * 71) % (height - 160));
+    const rx = 30 + ((i * 19) % 70);
+    const ry = 8 + ((i * 7) % 18);
 
     ctx.beginPath();
-    ctx.ellipse(x, y, rx, ry, (Math.random() - 0.5) * 0.4, 0, Math.PI * 2);
+    ctx.ellipse(x, y, rx, ry, Math.sin(i) * 0.2, 0, Math.PI * 2);
     ctx.fill();
   }
 

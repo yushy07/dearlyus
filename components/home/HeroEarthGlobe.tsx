@@ -32,7 +32,6 @@ export function HeroEarthGlobe({
   const lastMousePos = useRef({ x: 0, y: 0 });
   const dragVelocity = useRef({ x: 0, y: 0 });
   const [isInteracting, setIsInteracting] = useState(false);
-  const [pulseCount, setPulseCount] = useState(0);
 
   // Calgary & Jakarta Geo Coordinates
   const calgaryCoords = { lat: 51.0447, lng: -114.0719 };
@@ -70,15 +69,19 @@ export function HeroEarthGlobe({
     renderer.domElement.style.borderRadius = '50%';
     container.appendChild(renderer.domElement);
 
-    // 3. Lighting (Atmospheric Twilight Sunlight & Warm Sky Bounce)
-    const sunLight = new THREE.DirectionalLight(0xffeedd, 3.4);
+    const prefersReducedMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)',
+    ).matches;
+
+    // Daylight with a warm evening rim keeps the Earth natural inside the scene.
+    const sunLight = new THREE.DirectionalLight(0xfff4df, 2.85);
     sunLight.position.set(-4.5, 4.0, 3.8);
     scene.add(sunLight);
 
-    const ambientLight = new THREE.HemisphereLight(0xfff0ea, 0x1f1422, 1.8);
+    const ambientLight = new THREE.HemisphereLight(0xbfe2f0, 0x172b35, 1.45);
     scene.add(ambientLight);
 
-    const rimLight = new THREE.PointLight(0xc89a9f, 12, 14);
+    const rimLight = new THREE.PointLight(0xe3a7aa, 5.5, 14);
     rimLight.position.set(4, -2.5, 2.0);
     scene.add(rimLight);
 
@@ -140,10 +143,10 @@ export function HeroEarthGlobe({
 
     const earthMaterial = new THREE.MeshStandardMaterial({
       map: earthTexture,
-      roughness: 0.55,
-      metalness: 0.08,
-      emissive: new THREE.Color(0x18101e),
-      emissiveIntensity: 0.28,
+      roughness: 0.82,
+      metalness: 0,
+      emissive: new THREE.Color(0x06283a),
+      emissiveIntensity: 0.09,
     });
 
     const earthGeometry = new THREE.SphereGeometry(earthRadius, 64, 64);
@@ -159,8 +162,7 @@ export function HeroEarthGlobe({
     const cloudMaterial = new THREE.MeshStandardMaterial({
       map: cloudTexture,
       transparent: true,
-      opacity: 0.38,
-      blending: THREE.AdditiveBlending,
+      opacity: 0.24,
       roughness: 1,
       metalness: 0,
     });
@@ -171,9 +173,9 @@ export function HeroEarthGlobe({
 
     // Ethereal Atmosphere Glow Mesh (Outer Silhouette Glow)
     const atmosphereMaterial = new THREE.MeshBasicMaterial({
-      color: 0xdeb8c2,
+      color: 0x9ed8eb,
       transparent: true,
-      opacity: 0.22,
+      opacity: 0.18,
       side: THREE.BackSide,
       blending: THREE.AdditiveBlending,
     });
@@ -185,7 +187,7 @@ export function HeroEarthGlobe({
 
     // Outer Sky Blue Halo
     const outerHaloMaterial = new THREE.MeshBasicMaterial({
-      color: 0x79a8e2,
+      color: 0xb9e8f2,
       transparent: true,
       opacity: 0.12,
       side: THREE.BackSide,
@@ -197,7 +199,7 @@ export function HeroEarthGlobe({
     );
     scene.add(outerHaloMesh);
 
-    // 6. Geodesic Flight Arc & Waypoint Nodes
+    // 6. A quiet shared-world thread between both partners.
     // Calgary & Jakarta on Earth's surface (attached directly to earthMesh so they rotate with the Earth)
     const calgaryPos = latLngToVector3(
       calgaryCoords.lat,
@@ -224,7 +226,7 @@ export function HeroEarthGlobe({
     const arcCurve = new THREE.CatmullRomCurve3(arcPoints);
     const arcGeometry = new THREE.TubeGeometry(arcCurve, 80, 0.016, 8, false);
 
-    // Gradient vertex colors along flight arc (Calgary rose -> Mid-flight gold -> Jakarta blue)
+    // Rose-to-gold connection thread; it represents presence rather than travel.
     const count = arcGeometry.attributes.position.count;
     const arcColors = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
@@ -253,27 +255,6 @@ export function HeroEarthGlobe({
     });
     const arcMesh = new THREE.Mesh(arcGeometry, arcMaterial);
     earthMesh.add(arcMesh);
-
-    // Traveling Flight Waypoint / Heartbeat Beacon
-    const beaconGeometry = new THREE.SphereGeometry(0.048, 16, 16);
-    const beaconMaterial = new THREE.MeshBasicMaterial({
-      color: 0xfff6dd,
-      blending: THREE.AdditiveBlending,
-    });
-    const beaconMesh = new THREE.Mesh(beaconGeometry, beaconMaterial);
-    earthMesh.add(beaconMesh);
-
-    const beaconGlowMaterial = new THREE.MeshBasicMaterial({
-      color: 0xffd68a,
-      transparent: true,
-      opacity: 0.6,
-      blending: THREE.AdditiveBlending,
-    });
-    const beaconGlowMesh = new THREE.Mesh(
-      new THREE.SphereGeometry(0.09, 16, 16),
-      beaconGlowMaterial,
-    );
-    beaconMesh.add(beaconGlowMesh);
 
     // Helper: Create City Marker Pin & Pulsing Rings
     function createCityMarker(pos: THREE.Vector3, colorHex: number) {
@@ -384,7 +365,6 @@ export function HeroEarthGlobe({
     // 8. Render & Animation Loop
     let isVisible = true;
     let animId: number;
-    let beaconT = 0;
     let time = 0;
 
     const animate = () => {
@@ -401,7 +381,7 @@ export function HeroEarthGlobe({
           dragVelocity.current.x *= 0.94;
         } else {
           // Continuous Earth spin (just like real Earth!)
-          earthMesh.rotation.y += 0.0022;
+          if (!prefersReducedMotion) earthMesh.rotation.y += 0.00135;
         }
 
         if (Math.abs(dragVelocity.current.y) > 0.0001) {
@@ -416,11 +396,6 @@ export function HeroEarthGlobe({
 
       // Clouds rotate slightly faster for realistic atmospheric drift
       cloudMesh.rotation.y = earthMesh.rotation.y * 1.06;
-
-      // Animate flight beacon along great-circle arc
-      beaconT = (beaconT + 0.006) % 1;
-      const beaconPos = arcCurve.getPoint(beaconT);
-      beaconMesh.position.copy(beaconPos);
 
       // Radar pulses at Calgary and Jakarta markers
       const pulseScale = 1 + (Math.sin(time * 3.5) * 0.5 + 0.5) * 0.6;
@@ -505,12 +480,11 @@ export function HeroEarthGlobe({
           position: 'relative',
         }}
         title="Interactive 3D Earth Globe · Drag to spin"
-        aria-label="Interactive 3D Earth Globe showing live distance and flight path between Calgary and Jakarta"
+        aria-label={`Rotating interactive Earth showing ${cityA} and ${cityB} connected under one sky`}
       />
 
-      {/* Floating Glassmorphic Distance & Flight Status Badge */}
+      {/* Shared-world status */}
       <div
-        onClick={() => setPulseCount((c) => c + 1)}
         style={{
           position: 'absolute',
           bottom: '22px',
@@ -530,7 +504,6 @@ export function HeroEarthGlobe({
           fontWeight: 600,
           color: '#fdf2f8',
           letterSpacing: '0.01em',
-          cursor: 'pointer',
           transition: 'all 0.25s ease',
         }}
       >
@@ -545,7 +518,7 @@ export function HeroEarthGlobe({
           }}
         />
         <span>
-          ✈ 13,115 km flight path · {cityA} ⇄ {cityB}
+          ♥ Two places, one shared world · {cityA} &amp; {cityB}
         </span>
         <span
           style={{
