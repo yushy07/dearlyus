@@ -69,7 +69,7 @@ export default function InvitePage() {
         return;
       }
       const { data: invite, error: inviteError } = await supabase.rpc(
-        'get_couple_invite_preview',
+        'get_couple_invite_preview_v2',
         { invite_code: code },
       );
       if (inviteError || !invite)

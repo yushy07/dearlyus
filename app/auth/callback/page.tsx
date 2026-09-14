@@ -33,7 +33,11 @@ export default function AuthCallbackPage() {
         return;
       }
 
-      const requested = sessionStorage.getItem('dearly_auth_return_to');
+      const callbackNext = new URLSearchParams(window.location.search).get(
+        'next',
+      );
+      const requested =
+        callbackNext || sessionStorage.getItem('dearly_auth_return_to');
       sessionStorage.removeItem('dearly_auth_return_to');
       const nextPath =
         requested?.startsWith('/') && !requested.startsWith('//')
