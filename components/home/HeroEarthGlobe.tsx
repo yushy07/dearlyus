@@ -17,15 +17,11 @@ import {
 interface HeroEarthGlobeProps {
   cityA?: string;
   cityB?: string;
-  partnerA?: string;
-  partnerB?: string;
 }
 
 export function HeroEarthGlobe({
   cityA = 'Calgary',
   cityB = 'Jakarta',
-  partnerA = 'Mia',
-  partnerB = 'Alex',
 }: HeroEarthGlobeProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
@@ -482,56 +478,6 @@ export function HeroEarthGlobe({
         title="Interactive 3D Earth Globe · Drag to spin"
         aria-label={`Rotating interactive Earth showing ${cityA} and ${cityB} connected under one sky`}
       />
-
-      {/* Shared-world status */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '22px',
-          zIndex: 8,
-          background: 'rgba(27, 20, 29, 0.72)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          border: '1px solid rgba(244, 114, 182, 0.28)',
-          borderRadius: '9999px',
-          padding: '6px 16px',
-          boxShadow:
-            '0 8px 32px rgba(0, 0, 0, 0.38), 0 0 16px rgba(244, 114, 182, 0.12)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          fontSize: '12px',
-          fontWeight: 600,
-          color: '#fdf2f8',
-          letterSpacing: '0.01em',
-          transition: 'all 0.25s ease',
-        }}
-      >
-        <span
-          style={{
-            display: 'inline-block',
-            width: '7px',
-            height: '7px',
-            borderRadius: '50%',
-            background: '#F472B6',
-            boxShadow: '0 0 8px #F472B6',
-          }}
-        />
-        <span>
-          ♥ Two places, one shared world · {cityA} &amp; {cityB}
-        </span>
-        <span
-          style={{
-            color: 'rgba(255, 214, 138, 0.9)',
-            fontSize: '11px',
-            fontFamily: 'var(--font-mono, monospace)',
-            paddingLeft: '4px',
-            borderLeft: '1px solid rgba(255,255,255,0.15)',
-          }}
-        >
-          Drag to spin ↻
-        </span>
-      </div>
     </div>
   );
 }

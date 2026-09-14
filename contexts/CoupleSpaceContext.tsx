@@ -72,9 +72,8 @@ export function CoupleSpaceProvider({
     null,
   );
   const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState<CoupleSpaceContextValue['status']>(
-    'initializing',
-  );
+  const [status, setStatus] =
+    useState<CoupleSpaceContextValue['status']>('initializing');
   const [error, setError] = useState<string | null>(null);
   const requestSequence = useRef(0);
 
@@ -119,6 +118,25 @@ export function CoupleSpaceProvider({
     if (authLoading) return;
     void refresh();
   }, [authLoading, refresh]);
+
+  // A partner can finish onboarding or edit their city in another browser.
+  // Refresh when this tab returns to view, plus a light visible-only heartbeat,
+  // so all names and places stay current even when profile-table realtime is
+  // unavailable under row-level security.
+  useEffect(() => {
+    if (!user) return;
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible') void refresh();
+    };
+    const interval = window.setInterval(refreshWhenVisible, 30_000);
+    window.addEventListener('focus', refreshWhenVisible);
+    document.addEventListener('visibilitychange', refreshWhenVisible);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener('focus', refreshWhenVisible);
+      document.removeEventListener('visibilitychange', refreshWhenVisible);
+    };
+  }, [user, refresh]);
 
   // Realtime subscription to couple space tables
   useEffect(() => {

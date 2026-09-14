@@ -10,6 +10,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
+import { useSupabaseSession } from '@/contexts/SupabaseSessionContext';
 
 export interface CoupleProfile {
   partnerA: string;
@@ -89,6 +90,7 @@ export function saveStoredCoupleProfile(
  */
 export function useCoupleProfile() {
   const { profile, partner, space, saveProfile } = useCoupleSpace();
+  const { user } = useSupabaseSession();
   const [localProfile, setLocalProfile] =
     useState<CoupleProfile>(DEFAULT_COUPLE);
 
@@ -135,17 +137,28 @@ export function useCoupleProfile() {
     }
   };
 
-  return useMemo(
-    () => ({
-      // Signed-in experiences read the shared couple context. The local record is
-      // retained only as a solo/demo fallback for routes opened without a space.
-      partnerA: profile?.displayName || localProfile.partnerA || 'Partner 1',
-      partnerB: partner?.displayName || localProfile.partnerB || 'Partner 2',
-      cityA: profile?.city || localProfile.cityA || 'City 1',
-      cityB: partner?.city || localProfile.cityB || 'City 2',
+  return useMemo(() => {
+    const hasSavedProfile = Boolean(user && profile?.onboardingCompleted);
+
+    return {
+      // Supabase is authoritative after onboarding. Mia and Alex exist only as
+      // the public preview before a real profile has been completed.
+      partnerA: hasSavedProfile
+        ? profile!.displayName
+        : DEFAULT_COUPLE.partnerA,
+      partnerB: hasSavedProfile
+        ? partner?.displayName || 'Your person'
+        : DEFAULT_COUPLE.partnerB,
+      cityA: hasSavedProfile
+        ? profile!.city
+        : DEFAULT_COUPLE.cityA || 'Calgary',
+      cityB: hasSavedProfile
+        ? partner?.city || 'Their city'
+        : DEFAULT_COUPLE.cityB || 'Jakarta',
       roomCode: space?.activeRoomCode || localProfile.roomCode || '',
       updateProfile,
-    }),
-    [profile, partner, space, localProfile, updateProfile],
-  );
+      isPersonalized: hasSavedProfile,
+      partnerConnected: Boolean(partner),
+    };
+  }, [user, profile, partner, space, localProfile.roomCode, updateProfile]);
 }

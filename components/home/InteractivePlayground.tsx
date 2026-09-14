@@ -185,12 +185,7 @@ export function InteractivePlayground({
         {/* Hero 3D Globe Projection & Photobooth Machine */}
         <div className="stage">
           <div className="globe">
-            <HeroEarthGlobe
-              cityA={cityA}
-              cityB={cityB}
-              partnerA={partnerA}
-              partnerB={partnerB}
-            />
+            <HeroEarthGlobe cityA={cityA} cityB={cityB} />
 
             {/* Partner A Node */}
             <figure className="gnode a">
