@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { SceneBackdrop } from './SceneBackdrop';
+import { HeroEarthGlobe } from './HeroEarthGlobe';
 
 interface InteractivePlaygroundProps {
   partnerA: string;
@@ -184,97 +185,12 @@ export function InteractivePlayground({
         {/* Hero 3D Globe Projection & Photobooth Machine */}
         <div className="stage">
           <div className="globe">
-            <svg className="gl-map" viewBox="0 0 600 600" aria-hidden="true">
-              <defs>
-                <radialGradient id="gl-sphere" cx="34%" cy="27%" r="78%">
-                  <stop offset="0%" stopColor="#9FD2F5" />
-                  <stop offset="34%" stopColor="#79B7EA" />
-                  <stop offset="68%" stopColor="#5495D6" />
-                  <stop offset="100%" stopColor="#3A6FAE" />
-                </radialGradient>
-                <linearGradient
-                  id="gl-landfill"
-                  x1=".15"
-                  y1="0"
-                  x2=".9"
-                  y2=".9"
-                >
-                  <stop offset="0%" stopColor="#6FD189" />
-                  <stop offset="45%" stopColor="#41B76B" />
-                  <stop offset="78%" stopColor="#2A9A57" />
-                  <stop offset="100%" stopColor="#1C7A47" />
-                </linearGradient>
-                <linearGradient id="gl-arc-a" x1="1" y1="0" x2="0" y2="0">
-                  <stop offset="0%" stopColor="#F472B6" stopOpacity=".15" />
-                  <stop offset="100%" stopColor="#F472B6" stopOpacity=".95" />
-                </linearGradient>
-                <linearGradient id="gl-arc-b" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#60A5FA" stopOpacity=".15" />
-                  <stop offset="100%" stopColor="#60A5FA" stopOpacity=".95" />
-                </linearGradient>
-                <clipPath id="gl-clip">
-                  <circle cx="300" cy="300" r="252" />
-                </clipPath>
-              </defs>
-
-              {/* Lit sphere background */}
-              <circle
-                cx="300"
-                cy="300"
-                r="252"
-                fill="#7FC0FF"
-                opacity=".40"
-                className="gl-halo"
-              />
-              <circle cx="300" cy="300" r="252" fill="url(#gl-sphere)" />
-
-              {/* Globe continent paths & graticules */}
-              <g clipPath="url(#gl-clip)">
-                <path
-                  className="gl-land"
-                  d="M 120 180 Q 180 140 240 180 T 360 220 T 460 160 Q 520 220 480 340 T 360 440 T 200 420 Q 110 320 120 180 Z"
-                />
-                <path
-                  className="gl-glow"
-                  d="M 140 200 Q 200 160 260 200 T 380 240 T 440 180 Q 490 230 460 330 T 340 420 T 220 400 Z"
-                />
-                <ellipse
-                  cx="300"
-                  cy="300"
-                  rx="210"
-                  ry="250"
-                  className="gl-grat"
-                />
-                <ellipse
-                  cx="300"
-                  cy="300"
-                  rx="140"
-                  ry="250"
-                  className="gl-grat"
-                />
-                <ellipse
-                  cx="300"
-                  cy="300"
-                  rx="70"
-                  ry="250"
-                  className="gl-grat"
-                />
-                <line x1="300" y1="48" x2="300" y2="552" className="gl-grat" />
-                <line x1="48" y1="300" x2="552" y2="300" className="gl-grat" />
-                <line x1="80" y1="200" x2="520" y2="200" className="gl-grat" />
-                <line x1="80" y1="400" x2="520" y2="400" className="gl-grat" />
-
-                {/* Connecting Arcs */}
-                <path
-                  d="M 478 214 C 418 188 360 220 320 286"
-                  className="gl-arc pink"
-                />
-                <path
-                  d="M 126 392 C 188 420 244 386 282 312"
-                  className="gl-arc blue"
-                />
-              </g>
-            </svg>
+            <HeroEarthGlobe
+              cityA={cityA}
+              cityB={cityB}
+              partnerA={partnerA}
+              partnerB={partnerB}
+            />
 
             {/* Partner A Node */}
             <figure className="gnode a">

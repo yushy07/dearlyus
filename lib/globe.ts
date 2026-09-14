@@ -3,6 +3,8 @@
  * Pure Canvas 2D spherical projection with day/night solar terminator and heartbeat wave pulses.
  */
 
+import { CONTINENT_POLYGONS, CITY_LIGHTS } from './earth-data';
+
 export interface GlobeCity {
   name: string;
   lat: number;
@@ -167,7 +169,48 @@ export class InteractiveGlobe {
     ctx.lineWidth = 3;
     ctx.stroke();
 
-    // 2. Graticule Lat/Lng Wireframe
+    // 2. Continents & Landmasses
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.clip();
+
+    CONTINENT_POLYGONS.forEach((polygon) => {
+      ctx.beginPath();
+      let started = false;
+      for (const [lat, lng] of polygon) {
+        const p = this.project(lat, lng);
+        if (p.visible) {
+          if (!started) {
+            ctx.moveTo(p.x, p.y);
+            started = true;
+          } else {
+            ctx.lineTo(p.x, p.y);
+          }
+        } else {
+          started = false;
+        }
+      }
+      ctx.fillStyle = 'rgba(196, 163, 145, 0.38)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255, 235, 220, 0.45)';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+    });
+
+    // City lights
+    CITY_LIGHTS.forEach(([lat, lng, rad, brightness]) => {
+      const p = this.project(lat, lng);
+      if (p.visible) {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, rad * 0.8, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 214, 138, ${brightness * 0.8})`;
+        ctx.fill();
+      }
+    });
+    ctx.restore();
+
+    // 3. Graticule Lat/Lng Wireframe
     ctx.strokeStyle = 'rgba(245, 237, 223, 0.1)';
     ctx.lineWidth = 1;
 

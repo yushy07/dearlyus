@@ -190,7 +190,7 @@
   padding-block: 30px;
 }
 .home-editorial .home-landscape .globe {
-  filter: saturate(0.65);
+  filter: none;
 }
 .home-editorial .home-landscape .strip {
   --paper-raised: #fffaf3;
@@ -727,7 +727,7 @@
   color: #e0dfd8;
 }
 .home-editorial .home-landscape .globe {
-  filter: saturate(0.5);
+  filter: none;
 }
 .home-editorial .home-landscape .eyebrow {
   color: #e0cfbf;
