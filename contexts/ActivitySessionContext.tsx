@@ -9,6 +9,7 @@ import React, {
   useMemo,
   useRef,
 } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useSupabaseSession } from './SupabaseSessionContext';
 import { useActiveRoom } from './ActiveRoomContext';
 import {
@@ -70,6 +71,15 @@ export function ActivitySessionProvider({
 }) {
   const { user, supabase } = useSupabaseSession();
   const { room } = useActiveRoom();
+  const searchParams = useSearchParams();
+  const routeSessionId = searchParams.get('session');
+  const validRouteSessionId =
+    routeSessionId &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      routeSessionId,
+    )
+      ? routeSessionId
+      : null;
 
   const [session, setSession] = useState<ActivitySession | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(
@@ -178,8 +188,9 @@ export function ActivitySessionProvider({
   }, []);
 
   const recover = useCallback(
-    async (afterSequence = 0) => {
-      const targetId = sessionId || room?.currentSessionId;
+    async (afterSequence = 0, requestedSessionId?: string) => {
+      const targetId =
+        requestedSessionId || sessionId || room?.currentSessionId;
       if (!targetId || !user) return;
 
       setIsReplaying(true);
@@ -226,12 +237,23 @@ export function ActivitySessionProvider({
   );
 
   useEffect(() => {
-    const activeSessionId = initialSessionId || room?.currentSessionId || null;
+    const activeSessionId =
+      initialSessionId || validRouteSessionId || room?.currentSessionId || null;
     if (activeSessionId && activeSessionId !== sessionId) {
       setSessionId(activeSessionId);
-      void recover(0);
+      void recover(0, activeSessionId);
+    } else if (activeSessionId && !session && user) {
+      void recover(0, activeSessionId);
     }
-  }, [initialSessionId, room?.currentSessionId, sessionId, recover]);
+  }, [
+    initialSessionId,
+    validRouteSessionId,
+    room?.currentSessionId,
+    sessionId,
+    session,
+    user,
+    recover,
+  ]);
 
   // Reload the latest snapshot after browser sleep, tab hidden -> visible, or reconnection
   useEffect(() => {

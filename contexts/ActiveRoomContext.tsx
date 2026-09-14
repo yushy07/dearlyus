@@ -8,6 +8,7 @@ import React, {
   useCallback,
   useMemo,
 } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useSupabaseSession } from './SupabaseSessionContext';
 import { useCoupleSpace } from './CoupleSpaceContext';
 import {
@@ -44,12 +45,21 @@ export function ActiveRoomProvider({
 }) {
   const { user, supabase } = useSupabaseSession();
   const { space } = useCoupleSpace();
+  const searchParams = useSearchParams();
   const [room, setRoom] = useState<DateRoom | null>(null);
   const [loading, setLoading] = useState<boolean>(Boolean(initialRoomCode));
   const [error, setError] = useState<string | null>(null);
 
+  const routeRoomCode = searchParams
+    .get('room')
+    ?.replace(/[^a-z0-9]/gi, '')
+    .toUpperCase();
   const activeCode =
-    initialRoomCode || room?.code || space?.activeRoomCode || null;
+    initialRoomCode ||
+    routeRoomCode ||
+    room?.code ||
+    space?.activeRoomCode ||
+    null;
 
   const refreshRoom = useCallback(async () => {
     if (!activeCode || !user) {
@@ -74,10 +84,8 @@ export function ActiveRoomProvider({
   }, [activeCode, user]);
 
   useEffect(() => {
-    if (initialRoomCode) {
-      void refreshRoom();
-    }
-  }, [initialRoomCode, refreshRoom]);
+    if (activeCode && user) void refreshRoom();
+  }, [activeCode, user, refreshRoom]);
 
   // Realtime subscription to room changes & member ready states
   useEffect(() => {
