@@ -240,6 +240,11 @@ export default function ProfilePage() {
     }
   }, [searchParams]);
 
+  useEffect(() => {
+    const requestedView = searchParams.get('view');
+    if (requestedView === 'profile' || requestedView === 'keepsakes' || requestedView === 'rituals' || requestedView === 'settings') setActiveTab(requestedView);
+  }, [searchParams]);
+
   const userLocalTime = useMemo(
     () => formatLocalTime(timezone || profile?.timezone, now),
     [timezone, profile?.timezone, now],
@@ -875,7 +880,7 @@ export default function ProfilePage() {
         )}
 
         {(activeTab === 'all' || activeTab === 'profile') && (
-          <section className={styles.profileDesk} aria-labelledby="my-profile-title">
+          <section id="my-profile" className={styles.profileDesk} aria-labelledby="my-profile-title">
             <div className={styles.profilePortraitPanel}>
               <div className={styles.profileKicker}>My Dearly Us profile</div>
               <div className={styles.profilePortrait}>

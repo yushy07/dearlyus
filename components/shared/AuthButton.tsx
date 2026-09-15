@@ -7,7 +7,7 @@ import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
 
 export function AuthButton() {
   const { user, loading: authLoading } = useSupabaseSession();
-  const { profile, space, partner, partnerConnected } = useCoupleSpace();
+  const { profile, space, partnerConnected } = useCoupleSpace();
 
   if (authLoading) {
     return (
@@ -57,9 +57,9 @@ export function AuthButton() {
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <Link
           className="btn btn-ghost"
-          href="/our-space"
+          href="/profile?view=profile#my-profile"
           style={{ fontSize: '13px', padding: '5px 11px 5px 6px', gap: '7px' }}
-          aria-label="Open My Space"
+          aria-label="Open My Profile"
         >
           <span
             style={{
@@ -85,7 +85,7 @@ export function AuthButton() {
               initials
             )}
           </span>
-          My Space
+          My Profile
         </Link>
         <Link
           href="/our-space"
@@ -112,9 +112,9 @@ export function AuthButton() {
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
       <Link
         className="btn btn-ghost"
-        href="/our-space"
+        href="/profile?view=profile#my-profile"
         style={{ fontSize: '13px', padding: '5px 11px 5px 6px', gap: '7px' }}
-        aria-label="Open Our Space"
+        aria-label="Open My Profile"
       >
         <span
           style={{
@@ -140,32 +140,7 @@ export function AuthButton() {
             initials
           )}
         </span>
-        <span>Our Space</span>
-        {partner && (
-          <span
-            style={{
-              fontSize: '11px',
-              padding: '2px 7px',
-              borderRadius: '999px',
-              background: 'rgba(16, 185, 129, 0.12)',
-              color: '#10B981',
-              fontWeight: 700,
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '4px',
-            }}
-          >
-            <span
-              style={{
-                width: 5,
-                height: 5,
-                borderRadius: '50%',
-                background: '#10B981',
-              }}
-            />
-            {partner.displayName}
-          </span>
-        )}
+        <span>My Profile</span>
       </Link>
     </div>
   );
