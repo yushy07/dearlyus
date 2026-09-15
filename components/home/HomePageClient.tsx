@@ -36,6 +36,10 @@ export default function HomePage() {
     cityB,
     timezoneA,
     timezoneB,
+    latitudeA,
+    longitudeA,
+    latitudeB,
+    longitudeB,
     avatarA,
     avatarB,
     roomCode: savedRoomCode,
@@ -97,6 +101,10 @@ export default function HomePage() {
             cityB={cityB || 'Jakarta'}
             timezoneA={timezoneA}
             timezoneB={timezoneB}
+            latitudeA={latitudeA}
+            longitudeA={longitudeA}
+            latitudeB={latitudeB}
+            longitudeB={longitudeB}
             avatarA={avatarA}
             avatarB={avatarB}
             roomCode={roomCode}

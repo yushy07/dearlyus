@@ -12,3 +12,7 @@ export function resolveCityCoordinates(city?:string,timezone?:string,fallback:Ge
   const normalized=(city||'').toLowerCase().replace(/[^a-z ]/g,' ').replace(/\s+/g,' ').trim();
   return CITIES[normalized] || Object.entries(CITIES).find(([name])=>normalized.includes(name))?.[1] || (timezone?TIMEZONES[timezone]:undefined) || fallback;
 }
+export function findCityCoordinates(city?:string):GeoPoint | null {
+  const normalized=(city||'').toLowerCase().replace(/[^a-z ]/g,' ').replace(/\s+/g,' ').trim();
+  return CITIES[normalized] || Object.entries(CITIES).find(([name])=>normalized.includes(name))?.[1] || null;
+}

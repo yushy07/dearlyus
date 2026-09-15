@@ -19,6 +19,10 @@ export interface CoupleProfile {
   cityB?: string;
   timezoneA?: string;
   timezoneB?: string;
+  latitudeA?: number | null;
+  longitudeA?: number | null;
+  latitudeB?: number | null;
+  longitudeB?: number | null;
   avatarA?: string | null;
   avatarB?: string | null;
   roomCode?: string;
@@ -161,6 +165,10 @@ export function useCoupleProfile() {
         : DEFAULT_COUPLE.cityB || 'Jakarta',
       timezoneA: hasSavedProfile ? profile!.timezone : 'America/Edmonton',
       timezoneB: hasSavedProfile ? partner?.timezone || '' : 'Asia/Jakarta',
+      latitudeA: hasSavedProfile ? profile!.latitude : null,
+      longitudeA: hasSavedProfile ? profile!.longitude : null,
+      latitudeB: hasSavedProfile ? partner?.latitude ?? null : null,
+      longitudeB: hasSavedProfile ? partner?.longitude ?? null : null,
       avatarA: hasSavedProfile ? profile!.avatarUrl : null,
       avatarB: hasSavedProfile ? partner?.avatarUrl || null : null,
       roomCode: space?.activeRoomCode || localProfile.roomCode || '',

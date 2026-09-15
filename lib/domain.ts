@@ -36,6 +36,8 @@ export interface AccountProfile {
   displayName: string;
   city: string;
   timezone: string;
+  latitude: number | null;
+  longitude: number | null;
   avatarUrl: string | null;
   onboardingCompleted: boolean;
   accountStatus: AccountLifecycleStatus;
@@ -46,6 +48,8 @@ export interface SpaceMember {
   displayName: string;
   city: string;
   timezone: string;
+  latitude: number | null;
+  longitude: number | null;
   avatarUrl: string | null;
   role: CoupleRole;
 }

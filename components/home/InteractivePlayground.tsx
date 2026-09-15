@@ -12,6 +12,10 @@ interface InteractivePlaygroundProps {
   cityB?: string;
   timezoneA?: string;
   timezoneB?: string;
+  latitudeA?: number | null;
+  longitudeA?: number | null;
+  latitudeB?: number | null;
+  longitudeB?: number | null;
   avatarA?: string | null;
   avatarB?: string | null;
   roomCode: string[];
@@ -24,6 +28,10 @@ export function InteractivePlayground({
   cityB = 'Jakarta',
   timezoneA,
   timezoneB,
+  latitudeA,
+  longitudeA,
+  latitudeB,
+  longitudeB,
   avatarA,
   avatarB,
   roomCode,
@@ -193,7 +201,7 @@ export function InteractivePlayground({
         {/* Hero 3D Globe Projection & Photobooth Machine */}
         <div className="stage">
           <div className="globe">
-            <HeroEarthGlobe cityA={cityA} cityB={cityB} timezoneA={timezoneA} timezoneB={timezoneB} />
+            <HeroEarthGlobe cityA={cityA} cityB={cityB} timezoneA={timezoneA} timezoneB={timezoneB} latitudeA={latitudeA} longitudeA={longitudeA} latitudeB={latitudeB} longitudeB={longitudeB} />
 
             {/* Partner A Node */}
             <figure className="gnode a">

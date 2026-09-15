@@ -20,6 +20,10 @@ interface HeroEarthGlobeProps {
   cityB?: string;
   timezoneA?: string;
   timezoneB?: string;
+  latitudeA?: number | null;
+  longitudeA?: number | null;
+  latitudeB?: number | null;
+  longitudeB?: number | null;
 }
 
 export function HeroEarthGlobe({
@@ -27,6 +31,10 @@ export function HeroEarthGlobe({
   cityB = 'Jakarta',
   timezoneA,
   timezoneB,
+  latitudeA,
+  longitudeA,
+  latitudeB,
+  longitudeB,
 }: HeroEarthGlobeProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
@@ -35,8 +43,12 @@ export function HeroEarthGlobe({
   const [isInteracting, setIsInteracting] = useState(false);
 
   // Calgary & Jakarta Geo Coordinates
-  const calgaryCoords = resolveCityCoordinates(cityA, timezoneA, { lat: 51.0447, lng: -114.0719 });
-  const jakartaCoords = resolveCityCoordinates(cityB, timezoneB, { lat: -6.2088, lng: 106.8456 });
+  const calgaryCoords = latitudeA != null && longitudeA != null
+    ? { lat: latitudeA, lng: longitudeA }
+    : resolveCityCoordinates(cityA, timezoneA, { lat: 51.0447, lng: -114.0719 });
+  const jakartaCoords = latitudeB != null && longitudeB != null
+    ? { lat: latitudeB, lng: longitudeB }
+    : resolveCityCoordinates(cityB, timezoneB, { lat: -6.2088, lng: 106.8456 });
 
   useEffect(() => {
     const container = containerRef.current;

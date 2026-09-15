@@ -10,6 +10,7 @@ import type {
   Keepsake,
   KeepsakeStatus,
 } from './domain';
+import { findCityCoordinates } from './city-coordinates';
 export type {
   AccountProfile,
   CoupleInvitation,
@@ -64,6 +65,8 @@ export function profileFromUser(user: User): AccountProfile {
     displayName: String(metadata.full_name || metadata.name || '').trim(),
     city: '',
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+    latitude: null,
+    longitude: null,
     avatarUrl: (metadata.avatar_url || metadata.picture || null) as
       | string
       | null,
@@ -82,8 +85,33 @@ export async function loadAccount(user: User) {
   if (!bootstrapData) throw new Error('Supabase returned no account state.');
 
   const bootstrap = bootstrapData as AccountBootstrap;
-  const profile = bootstrap.profile ?? profileFromUser(user);
-  const space = bootstrap.space;
+  let profile = bootstrap.profile ?? profileFromUser(user);
+  let space = bootstrap.space;
+
+  const profileIds = [user.id, ...(space?.members.map((member) => member.id) || [])];
+  const { data: locationProfiles } = await supabase
+    .from('profiles')
+    .select('id,latitude,longitude')
+    .in('id', [...new Set(profileIds)]);
+  if (locationProfiles?.length) {
+    const locations = new Map(locationProfiles.map((item) => [item.id, item]));
+    const ownLocation = locations.get(user.id);
+    profile = {
+      ...profile,
+      latitude: ownLocation?.latitude ?? null,
+      longitude: ownLocation?.longitude ?? null,
+    };
+    if (space) {
+      space = {
+        ...space,
+        members: space.members.map((member) => ({
+          ...member,
+          latitude: locations.get(member.id)?.latitude ?? null,
+          longitude: locations.get(member.id)?.longitude ?? null,
+        })),
+      };
+    }
+  }
 
   let keepsakes: Keepsake[] = [];
   if (space?.id) {
@@ -170,11 +198,14 @@ export async function saveAccountProfile(
   const avatarUrl = (user.user_metadata?.avatar_url ||
     user.user_metadata?.picture ||
     null) as string | null;
+  const coordinates = findCityCoordinates(input.city);
   const { data, error } = await supabase.rpc('save_my_profile', {
     profile_display_name: input.displayName.trim(),
     profile_city: input.city.trim(),
     profile_timezone: input.timezone.trim(),
     profile_avatar_url: avatarUrl,
+    profile_latitude: coordinates?.lat ?? null,
+    profile_longitude: coordinates?.lng ?? null,
   });
   if (error) throw error;
   if (!data) throw new Error('Supabase did not return the saved profile.');
@@ -187,12 +218,16 @@ export async function saveAccountProfile(
     avatar_url: string | null;
     onboarding_completed: boolean;
     account_status: string;
+    latitude: number | null;
+    longitude: number | null;
   };
   return {
     id: saved.id,
     displayName: saved.display_name,
     city: saved.city || '',
     timezone: saved.timezone,
+    latitude: saved.latitude,
+    longitude: saved.longitude,
     avatarUrl: saved.avatar_url,
     onboardingCompleted: saved.onboarding_completed,
     accountStatus: saved.account_status as AccountLifecycleStatus,
