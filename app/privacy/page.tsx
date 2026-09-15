@@ -244,8 +244,8 @@ export default function PrivacyPage() {
               </li>
               <li>
                 <b>Local Device Storage:</b> Your couple nicknames (e.g.
-                &ldquo;Mia &amp; Alex&rdquo;), custom passport stamps,
-                soundscape volume preferences, and saved custom quiz packs are
+                &ldquo;Mia &amp; Alex&rdquo;), soundscape volume preferences, and
+                saved custom quiz packs are
                 stored locally in your web browser&rsquo;s{' '}
                 <code>localStorage</code>. This data never leaves your device.
               </li>
@@ -261,6 +261,11 @@ export default function PrivacyPage() {
                 timezone, couple membership, private invite status, and saved
                 keepsake references are stored in Supabase so your space can
                 follow you across devices.
+              </li>
+              <li>
+                <b>Shared Passport and Home:</b> passport stamps, shared notes,
+                Cupidot home progress, rituals, and planning boards are stored
+                in the couple space so both partners recover the same state.
               </li>
               <li>
                 <b>Private Saves:</b> when you deliberately save a keepsake,

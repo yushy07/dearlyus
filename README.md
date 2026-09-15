@@ -205,6 +205,7 @@ The booth never requires a paid service. Camera streams stay peer-to-peer and in
 ### ⚡ 12. Pluggable Activity Runtime & Multiplayer Adapters (`lib/activity-adapters/`, `lib/runtime/`)
 
 - **Transport Abstraction**: Unified activity session runtime supporting real-time Supabase Broadcast/Presence channels with fallback to offline/mock adapters for rapid local development and automated testing.
+- **One Shared Source of Truth**: Signed-in activities restore the exact Supabase room and session from direct links. Revision-checked couple records back Passport, Cupidot, planning boards, and reunion details; browser storage is limited to solo drafts and device preferences.
 - **Modular Game Adapters**: Standardized lifecycle interfaces (`onConnect`, `onEvent`, `onStateChange`) powering `/draw`, `/quiz`, `/dare`, and multiplayer minigames.
 
 ### 🌿 13. Atmospheric Backdrops & Viewport Optimization (`components/home/SceneBackdrop.tsx`, `styles/home-editorial.css`)

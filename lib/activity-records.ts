@@ -95,7 +95,7 @@ export async function upsertActivityRecord<
     target_title: input.title.slice(0, 120),
     target_payload: input.payload,
     target_status: input.status || 'active',
-    target_at: input.targetAt || null,
+    target_timestamp: input.targetAt || null,
     expected_revision:
       input.expectedRevision ??
       revisionCache.get(revisionKey(input.coupleId, input.kind, input.key)) ??
