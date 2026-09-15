@@ -10,6 +10,10 @@ interface InteractivePlaygroundProps {
   partnerB: string;
   cityA?: string;
   cityB?: string;
+  timezoneA?: string;
+  timezoneB?: string;
+  avatarA?: string | null;
+  avatarB?: string | null;
   roomCode: string[];
 }
 
@@ -18,6 +22,10 @@ export function InteractivePlayground({
   partnerB,
   cityA = 'Calgary',
   cityB = 'Jakarta',
+  timezoneA,
+  timezoneB,
+  avatarA,
+  avatarB,
   roomCode,
 }: InteractivePlaygroundProps) {
   // Photobooth machine simulator state
@@ -185,7 +193,7 @@ export function InteractivePlayground({
         {/* Hero 3D Globe Projection & Photobooth Machine */}
         <div className="stage">
           <div className="globe">
-            <HeroEarthGlobe cityA={cityA} cityB={cityB} />
+            <HeroEarthGlobe cityA={cityA} cityB={cityB} timezoneA={timezoneA} timezoneB={timezoneB} />
 
             {/* Partner A Node */}
             <figure className="gnode a">
@@ -193,7 +201,7 @@ export function InteractivePlayground({
               <span className="gring" aria-hidden="true"></span>
               <img
                 className="gface"
-                src="/photos/face-calgary.webp"
+                src={avatarA || '/photos/face-calgary.webp'}
                 width="92"
                 height="92"
                 alt={`One half of the couple in ${cityA}`}
@@ -210,7 +218,7 @@ export function InteractivePlayground({
               <span className="gring" aria-hidden="true"></span>
               <img
                 className="gface"
-                src="/photos/face-jakarta.webp"
+                src={avatarB || '/photos/face-jakarta.webp'}
                 width="92"
                 height="92"
                 alt={`Other half of the couple in ${cityB}`}

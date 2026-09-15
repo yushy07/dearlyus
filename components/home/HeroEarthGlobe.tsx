@@ -13,15 +13,20 @@ import {
   createSceneVisibilityController,
   disposeThreeObject,
 } from '@/lib/three-scene-lifecycle';
+import { resolveCityCoordinates } from '@/lib/city-coordinates';
 
 interface HeroEarthGlobeProps {
   cityA?: string;
   cityB?: string;
+  timezoneA?: string;
+  timezoneB?: string;
 }
 
 export function HeroEarthGlobe({
   cityA = 'Calgary',
   cityB = 'Jakarta',
+  timezoneA,
+  timezoneB,
 }: HeroEarthGlobeProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
@@ -30,8 +35,8 @@ export function HeroEarthGlobe({
   const [isInteracting, setIsInteracting] = useState(false);
 
   // Calgary & Jakarta Geo Coordinates
-  const calgaryCoords = { lat: 51.0447, lng: -114.0719 };
-  const jakartaCoords = { lat: -6.2088, lng: 106.8456 };
+  const calgaryCoords = resolveCityCoordinates(cityA, timezoneA, { lat: 51.0447, lng: -114.0719 });
+  const jakartaCoords = resolveCityCoordinates(cityB, timezoneB, { lat: -6.2088, lng: 106.8456 });
 
   useEffect(() => {
     const container = containerRef.current;

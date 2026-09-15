@@ -19,6 +19,8 @@ export interface CoupleProfile {
   cityB?: string;
   timezoneA?: string;
   timezoneB?: string;
+  avatarA?: string | null;
+  avatarB?: string | null;
   roomCode?: string;
 }
 
@@ -159,6 +161,8 @@ export function useCoupleProfile() {
         : DEFAULT_COUPLE.cityB || 'Jakarta',
       timezoneA: hasSavedProfile ? profile!.timezone : 'America/Edmonton',
       timezoneB: hasSavedProfile ? partner?.timezone || '' : 'Asia/Jakarta',
+      avatarA: hasSavedProfile ? profile!.avatarUrl : null,
+      avatarB: hasSavedProfile ? partner?.avatarUrl || null : null,
       roomCode: space?.activeRoomCode || localProfile.roomCode || '',
       updateProfile,
       isPersonalized: hasSavedProfile,

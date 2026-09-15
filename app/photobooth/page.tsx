@@ -50,6 +50,7 @@ import {
   undoCutoutEdit,
 } from '@/lib/booth/cutout';
 import { pointsToBezierPath } from '@/lib/photobooth-bezier';
+import { useCoupleProfile } from '@/lib/couple';
 export { pointsToBezierPath } from '@/lib/photobooth-bezier';
 
 const steps = ['Join', 'Get ready', 'Shoot', 'Decorate', 'Keep'];
@@ -67,6 +68,9 @@ const STICKERS = [
 ];
 export default function PhotoboothPage() {
   const booth = useBoothStudio();
+  const { partnerA, partnerB } = useCoupleProfile();
+  const myName = booth.side === 'left' ? partnerA : partnerB;
+  const otherName = booth.side === 'left' ? partnerB : partnerA;
   const { saveKeepsake, saving, canSaveKeepsake } = useKeepsakeWriter();
   const [step, setStep] = useState(0),
     [code, setCode] = useState(''),
@@ -503,7 +507,7 @@ export default function PhotoboothPage() {
                 {booth.solo
                   ? 'Solo session'
                   : booth.online
-                    ? 'Partner in the booth'
+                    ? `${otherName} is in the booth`
                     : 'Waiting for your person'}
               </span>
             </nav>
@@ -537,8 +541,8 @@ export default function PhotoboothPage() {
                         {booth.solo
                           ? 'Solo booth'
                           : booth.online
-                            ? 'Partner present'
-                            : 'Partner waiting'}
+                            ? `${otherName} is present`
+                            : `Waiting for ${otherName}`}
                       </span>
                       <span
                         className={
@@ -613,7 +617,7 @@ export default function PhotoboothPage() {
                             </button>
                           </div>
                         )}
-                        <span>You · {booth.side}</span>
+                        <span>{myName} · {booth.side}</span>
                       </div>
                       {!booth.solo && (
                         <div className="studio-feed">
@@ -623,7 +627,7 @@ export default function PhotoboothPage() {
                               <Heart size={34} strokeWidth={1} />
                               <h3>
                                 {booth.online
-                                  ? 'Your person is here'
+                                  ? `${otherName} is here`
                                   : 'A space for your person'}
                               </h3>
                               <p>
@@ -634,7 +638,7 @@ export default function PhotoboothPage() {
                             </div>
                           )}
                           <span>
-                            Your person ·{' '}
+                            {otherName} ·{' '}
                             {booth.side === 'left' ? 'right' : 'left'}
                           </span>
                         </div>
@@ -695,7 +699,7 @@ export default function PhotoboothPage() {
                           {!booth.solo && (
                             <span>
                               {booth.partnerReady
-                                ? 'Your person is ready too ♡'
+                                ? `${otherName} is ready too ♡`
                                 : 'Waiting for your person to get ready'}
                             </span>
                           )}

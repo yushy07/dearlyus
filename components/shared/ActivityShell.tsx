@@ -19,6 +19,9 @@ import {
   ActivityLifecyclePhase,
 } from './CupidotActivityGuidance';
 import styles from './ActivityShell.module.css';
+import { useActiveRoom } from '@/contexts/ActiveRoomContext';
+import { useActivitySession } from '@/contexts/ActivitySessionContext';
+import { useSupabaseSession } from '@/contexts/SupabaseSessionContext';
 
 export type ActivityStage = 'invite' | 'ready' | 'play' | 'remember';
 
@@ -110,6 +113,10 @@ export function ActivityShell({
 }: ActivityShellProps) {
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [showCupidot, setShowCupidot] = useState(false);
+  const activeRoom = useActiveRoom();
+  const sharedSession = useActivitySession();
+  const { user } = useSupabaseSession();
+  const effectiveSoloDemo = isSoloDemo || !user || !activeRoom.room || !sharedSession.sessionId;
 
   const title = titleProp || activityTitle || 'Dearly Us Activity';
   const subtitle = subtitleProp || activitySubtitle;
@@ -177,7 +184,7 @@ export function ActivityShell({
         return `${partnerName} is here`;
       case 'offline':
       default:
-        return isSoloDemo ? 'Solo demo' : `${partnerName} waiting`;
+        return effectiveSoloDemo ? 'Solo preview' : `${partnerName} waiting`;
     }
   };
 
@@ -220,12 +227,12 @@ export function ActivityShell({
         </div>
 
         <div className={styles.controlsArea}>
-          {isSoloDemo ? (
+          {effectiveSoloDemo ? (
             <span
               className={styles.demoPill}
               title="Playing in local test mode. Invite your partner to synchronize!"
             >
-              Solo Sandbox
+              {user ? 'Solo preview · open a room to sync' : 'Solo preview'}
             </span>
           ) : (
             <div className={styles.partnerBadge}>

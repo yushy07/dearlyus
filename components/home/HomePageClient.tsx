@@ -34,6 +34,10 @@ export default function HomePage() {
     partnerB,
     cityA,
     cityB,
+    timezoneA,
+    timezoneB,
+    avatarA,
+    avatarB,
     roomCode: savedRoomCode,
   } = useCoupleProfile();
 
@@ -91,6 +95,10 @@ export default function HomePage() {
             partnerB={partnerName || 'Love'}
             cityA={cityA || 'Calgary'}
             cityB={cityB || 'Jakarta'}
+            timezoneA={timezoneA}
+            timezoneB={timezoneB}
+            avatarA={avatarA}
+            avatarB={avatarB}
             roomCode={roomCode}
           />
         </div>

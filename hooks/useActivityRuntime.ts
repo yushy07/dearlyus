@@ -60,6 +60,18 @@ export function useActivityRuntime<
       ? rawSessionId!
       : null;
   const hasRealRoom = Boolean(resolvedRoomId && resolvedSessionId);
+  const startingSessionRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const roomCode = activeRoom.room?.code;
+    if (!enabled || !user || !roomCode || resolvedSessionId) return;
+    const key = `${roomCode}:${activityType}`;
+    if (startingSessionRef.current === key) return;
+    startingSessionRef.current = key;
+    void sharedSession.startActivity(activityType, initialOptionsRef.current).catch(() => {
+      startingSessionRef.current = null;
+    });
+  }, [enabled, user, activeRoom.room?.code, resolvedSessionId, activityType, sharedSession.startActivity]);
   const sessionId = resolvedSessionId || rawSessionId || `local-${activityType}`;
   // Activity setup is intentionally captured once. Pages pass inline option objects,
   // and treating those as a runtime dependency would reset a live local session on
