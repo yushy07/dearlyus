@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { ActivityShell } from '@/components/shared';
 import { sounds } from '@/lib/sound';
 import { useCoupleProfile } from '@/lib/couple';
-import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
 import { generateBucketDate, GeneratedBucketIdea } from '@/lib/cupidot';
 import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
@@ -87,10 +86,6 @@ export default function BucketListPage() {
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   const { saveKeepsake, isSaving } = useKeepsakeWriter();
-  const runtime = useActivityRuntime({
-    activityType: 'bucket',
-    transportMode: 'auto',
-  });
   const [sharedLoaded, setSharedLoaded] = useState(false);
 
   useEffect(() => {
@@ -131,10 +126,6 @@ export default function BucketListPage() {
         return d;
       }),
     );
-    runtime.dispatch({
-      type: 'bucket_status_change',
-      payload: { id, isCompleted: true },
-    });
   };
 
   const togglePlanned = (id: string, e: React.MouseEvent) => {
@@ -158,10 +149,6 @@ export default function BucketListPage() {
     setDates((prev) =>
       prev.map((d) => (d.id === id ? { ...d, isRevealed: true } : d)),
     );
-    runtime.dispatch({
-      type: 'bucket_scratch_reveal',
-      payload: { id },
-    });
   };
 
   const handleAskCupidot = () => {
@@ -231,9 +218,6 @@ export default function BucketListPage() {
       activityTitle="100 Dates Bucket List"
       activitySubtitle={`Dream, shortlist, and scratch off dates for ${partnerA} & ${partnerB}`}
       currentStage={currentStage}
-      partnerPresence={runtime.partnerPresence}
-      roomCode={runtime.roomId}
-      isHost={runtime.isHost}
       stageIndicator="Discover → Scratch & Plan → Fulfill → Passport Keepsake"
       guidancePhase="browsing"
       guidancePrivacyNote="Your bucket list and completed dates are synced privately between you two."

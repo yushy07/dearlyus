@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useCoupleProfile } from '@/lib/couple';
 import { CoupleNameBar, ActivityShell } from '@/components/shared';
 import { sounds } from '@/lib/sound';
-import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
 import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
 import { loadActivityRecords, upsertActivityRecord } from '@/lib/activity-records';
@@ -42,7 +41,7 @@ const PRESET_ELEMENTS: Omit<VisionItem, 'stage'>[] = [
 ];
 
 export default function FuturePage() {
-  const { partnerA, partnerB, roomCode } = useCoupleProfile();
+  const { partnerA, partnerB } = useCoupleProfile();
   const { space } = useCoupleSpace();
   const sharedRecordsVersion = useSharedRecordsVersion();
   const { saveKeepsake, saving: keepsakeSaving } = useKeepsakeWriter();
@@ -59,14 +58,6 @@ export default function FuturePage() {
   const [customCategory, setCustomCategory] = useState('Dream');
   const [customEmoji, setCustomEmoji] = useState('✨');
   const [keepsakeSaved, setKeepsakeSaved] = useState(false);
-
-  const runtime = useActivityRuntime({
-    sessionId: roomCode ? `room-${roomCode}-future` : 'local-future',
-    activityType: 'future',
-    roomId: roomCode || 'local',
-    transportMode: 'auto',
-    initialOptions: { totalItems: items.length },
-  });
 
   useEffect(() => {
     if (space?.id) {
@@ -96,22 +87,6 @@ export default function FuturePage() {
     } catch {}
   }, [space?.id, sharedRecordsVersion]);
 
-  useEffect(() => {
-    const snapshot = runtime.snapshot as { dreams?: Array<Record<string, unknown>> };
-    if (!snapshot.dreams?.length) return;
-    setItems((current) => snapshot.dreams!.map((dream) => {
-      const local = current.find((item) => item.id === String(dream.id));
-      return {
-        id: String(dream.id),
-        title: String(dream.title || local?.title || 'Shared dream'),
-        category: String(dream.category || local?.category || 'Dream'),
-        emoji: String(dream.emoji || local?.emoji || '✨'),
-        stage: (dream.column || dream.stage || local?.stage || 'someday') as BoardStage,
-        proposedBy: String(dream.proposedBy || local?.proposedBy || 'Both'),
-      };
-    }));
-  }, [runtime.snapshot]);
-
   const persistItems = (newItems: VisionItem[]) => {
     setItems(newItems);
     if (space?.id) {
@@ -133,7 +108,6 @@ export default function FuturePage() {
     sounds.playPop();
     const updated = items.map((it) => (it.id === id ? { ...it, stage: newStage } : it));
     persistItems(updated);
-    void runtime.sendEvent('future_dream_move', { id, column: newStage });
   };
 
   const handleAddPreset = (el: Omit<VisionItem, 'stage'>) => {
@@ -147,7 +121,6 @@ export default function FuturePage() {
     };
     const updated = [...items, newItem];
     persistItems(updated);
-    void runtime.sendEvent('future_dream_add', { dream: newItem });
   };
 
   const handleAddCustom = (e: React.FormEvent) => {
@@ -164,7 +137,6 @@ export default function FuturePage() {
     };
     const updated = [...items, newItem];
     persistItems(updated);
-    void runtime.sendEvent('future_dream_add', { dream: newItem });
     setCustomGoal('');
   };
 
@@ -172,7 +144,6 @@ export default function FuturePage() {
     sounds.playPop();
     const updated = items.filter((it) => it.id !== id);
     persistItems(updated);
-    void runtime.sendEvent('future_dream_archive', { id });
   };
 
   const handleSaveBoardKeepsake = async () => {
