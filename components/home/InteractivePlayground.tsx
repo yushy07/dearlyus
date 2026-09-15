@@ -202,6 +202,7 @@ export function InteractivePlayground({
         <div className="stage">
           <div className="globe">
             <HeroEarthGlobe cityA={cityA} cityB={cityB} timezoneA={timezoneA} timezoneB={timezoneB} latitudeA={latitudeA} longitudeA={longitudeA} latitudeB={latitudeB} longitudeB={longitudeB} />
+            <a className="globe-map-credit" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">Location data © OpenStreetMap contributors</a>
 
             {/* Partner A Node */}
             <figure className="gnode a">

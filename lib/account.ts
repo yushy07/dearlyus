@@ -198,7 +198,19 @@ export async function saveAccountProfile(
   const avatarUrl = (user.user_metadata?.avatar_url ||
     user.user_metadata?.picture ||
     null) as string | null;
-  const coordinates = findCityCoordinates(input.city);
+  let coordinates = findCityCoordinates(input.city);
+  if (!coordinates) {
+    const { data: geocoded } = await supabase.functions.invoke(
+      'geocode-profile-city',
+      { body: { city: input.city.trim() } },
+    );
+    if (
+      Number.isFinite(geocoded?.latitude) &&
+      Number.isFinite(geocoded?.longitude)
+    ) {
+      coordinates = { lat: geocoded.latitude, lng: geocoded.longitude };
+    }
+  }
   const { data, error } = await supabase.rpc('save_my_profile', {
     profile_display_name: input.displayName.trim(),
     profile_city: input.city.trim(),

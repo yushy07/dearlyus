@@ -192,6 +192,22 @@
 .home-editorial .home-landscape .globe {
   filter: none;
 }
+
+.home-editorial .globe-map-credit {
+  position: absolute;
+  right: 12px;
+  bottom: 5px;
+  z-index: 8;
+  color: rgba(255, 249, 239, 0.68);
+  font-size: 9px;
+  text-decoration: none;
+}
+
+.home-editorial .globe-map-credit:hover,
+.home-editorial .globe-map-credit:focus-visible {
+  color: #fff9ef;
+  text-decoration: underline;
+}
 .home-editorial .home-landscape .strip {
   --paper-raised: #fffaf3;
   --ink: #463537;
