@@ -205,6 +205,20 @@ export function CoupleSpaceProvider({
           void refresh();
         },
       )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'plans_and_milestones',
+          filter: `couple_id=eq.${spaceId}`,
+        },
+        () => {
+          window.dispatchEvent(
+            new CustomEvent('dearly_shared_records_changed'),
+          );
+        },
+      )
       .subscribe();
 
     return () => {

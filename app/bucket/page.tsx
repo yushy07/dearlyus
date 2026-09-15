@@ -10,6 +10,7 @@ import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
 import { generateBucketDate, GeneratedBucketIdea } from '@/lib/cupidot';
 import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
 import { loadActivityRecords, upsertActivityRecord } from '@/lib/activity-records';
+import { useSharedRecordsVersion } from '@/hooks/useSharedRecordsVersion';
 
 export interface BucketDateItem {
   id: string;
@@ -75,6 +76,7 @@ const INITIAL_100_DATES: BucketDateItem[] = [
 export default function BucketListPage() {
   const { partnerA, partnerB } = useCoupleProfile();
   const { space } = useCoupleSpace();
+  const sharedRecordsVersion = useSharedRecordsVersion();
   const [dates, setDates] = useState<BucketDateItem[]>(INITIAL_100_DATES);
   const [selectedFilter, setSelectedFilter] = useState<string>('All');
   const [currentStage, setCurrentStage] = useState<'ready' | 'play' | 'remember'>('play');
@@ -100,7 +102,7 @@ export default function BucketListPage() {
       })
       .catch((error) => console.error('Failed to restore shared bucket list:', error))
       .finally(() => setSharedLoaded(true));
-  }, [space?.id]);
+  }, [space?.id, sharedRecordsVersion]);
 
   useEffect(() => {
     if (!space?.id || !sharedLoaded) return;

@@ -9,6 +9,7 @@ import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
 import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
 import { loadActivityRecords, upsertActivityRecord } from '@/lib/activity-records';
+import { useSharedRecordsVersion } from '@/hooks/useSharedRecordsVersion';
 
 export type BoardStage = 'someday' | 'exploring' | 'planning' | 'done';
 
@@ -43,6 +44,7 @@ const PRESET_ELEMENTS: Omit<VisionItem, 'stage'>[] = [
 export default function FuturePage() {
   const { partnerA, partnerB, roomCode } = useCoupleProfile();
   const { space } = useCoupleSpace();
+  const sharedRecordsVersion = useSharedRecordsVersion();
   const { saveKeepsake, saving: keepsakeSaving } = useKeepsakeWriter();
 
   const [items, setItems] = useState<VisionItem[]>([
@@ -69,9 +71,16 @@ export default function FuturePage() {
   useEffect(() => {
     if (space?.id) {
       void loadActivityRecords<{ items?: VisionItem[] }>(space.id, 'future_plan')
-        .then((records) => {
+        .then(async (records) => {
           const shared = records.find((record) => record.key === 'main-board');
-          if (shared?.payload.items?.length) setItems(shared.payload.items);
+          if (shared?.payload.items?.length) { setItems(shared.payload.items); return; }
+          const localRaw = localStorage.getItem('dearly_future_vision_board');
+          const localItems = localRaw ? JSON.parse(localRaw) : null;
+          if (Array.isArray(localItems) && localItems.length) {
+            await upsertActivityRecord({ coupleId: space.id, kind: 'future_plan', key: 'main-board', title: 'Our Future Board', payload: { items: localItems } });
+            setItems(localItems);
+            localStorage.removeItem('dearly_future_vision_board');
+          }
         })
         .catch((error) => console.error('Failed to restore shared future board:', error));
       return;
@@ -85,7 +94,7 @@ export default function FuturePage() {
         }
       }
     } catch {}
-  }, [space?.id]);
+  }, [space?.id, sharedRecordsVersion]);
 
   useEffect(() => {
     const snapshot = runtime.snapshot as { dreams?: Array<Record<string, unknown>> };

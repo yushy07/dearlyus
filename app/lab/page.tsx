@@ -9,6 +9,7 @@ import { useActivityRuntime } from '@/hooks/useActivityRuntime';
 import { useKeepsakeWriter } from '@/hooks/useKeepsakeWriter';
 import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
 import { loadActivityRecords, upsertActivityRecord } from '@/lib/activity-records';
+import { useSharedRecordsVersion } from '@/hooks/useSharedRecordsVersion';
 
 type PresetType = '25/5' | '45/10' | '60/15';
 
@@ -28,6 +29,7 @@ const PRESET_CONFIGS: Record<PresetType, PresetConfig> = {
 export default function LabPage() {
   const { partnerA, partnerB, cityA, cityB } = useCoupleProfile();
   const { space } = useCoupleSpace();
+  const sharedRecordsVersion = useSharedRecordsVersion();
   const [currentStage, setCurrentStage] = useState<'ready' | 'play' | 'remember'>('ready');
   const [selectedPreset, setSelectedPreset] = useState<PresetType>('25/5');
   const [isBreak, setIsBreak] = useState(false);
@@ -63,7 +65,7 @@ export default function LabPage() {
       }).catch((error) => console.error('Failed to restore study setup:', error));
   // Restore once when a couple space becomes available.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [space?.id]);
+  }, [space?.id, sharedRecordsVersion]);
 
   // Timer Tick
   useEffect(() => {

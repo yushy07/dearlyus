@@ -28,6 +28,10 @@ import {
 import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
 import { useRoomPresence } from '@/contexts/PresenceContext';
 import { sounds } from '@/lib/sound';
+import {
+  loadActivityRecords,
+  upsertActivityRecord,
+} from '@/lib/activity-records';
 
 export function useCupidotPet() {
   const { space, partner, milestones, keepsakes, preferences } =
@@ -43,6 +47,7 @@ export function useCupidotPet() {
   const seenActionKeysRef = useRef<Set<string>>(new Set());
   const decorUndoStackRef = useRef<string[][]>([]);
   const reactionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sharedStateLoadedRef = useRef(false);
 
   const clearReactionTimer = useCallback(() => {
     if (reactionTimerRef.current !== null) {
@@ -60,14 +65,53 @@ export function useCupidotPet() {
 
   // Reload state if couple space changes
   useEffect(() => {
+    let active = true;
     seenActionKeysRef.current.clear();
     decorUndoStackRef.current = [];
-    setHomeState(loadStoredCupidotHome(coupleId));
+    sharedStateLoadedRef.current = false;
+    if (!coupleId) {
+      setHomeState(loadStoredCupidotHome());
+      sharedStateLoadedRef.current = true;
+      return;
+    }
+    const loadSharedState = () =>
+      void loadActivityRecords<CupidotHomeState>(coupleId, 'cupidot_home')
+        .then((records) => {
+          if (!active) return;
+          const saved = records.find((record) => record.key === 'main');
+        setHomeState(saved?.payload || loadStoredCupidotHome());
+        })
+        .finally(() => {
+          sharedStateLoadedRef.current = true;
+        });
+    loadSharedState();
+    window.addEventListener('dearly_shared_records_changed', loadSharedState);
+    return () => {
+      active = false;
+      window.removeEventListener(
+        'dearly_shared_records_changed',
+        loadSharedState,
+      );
+    };
   }, [coupleId]);
 
   // Persist state whenever it changes
   useEffect(() => {
-    saveStoredCupidotHome(homeState, coupleId);
+    if (!coupleId) {
+      saveStoredCupidotHome(homeState);
+      return;
+    }
+    if (!sharedStateLoadedRef.current) return;
+    const timer = window.setTimeout(() => {
+      void upsertActivityRecord({
+        coupleId,
+        kind: 'cupidot_home',
+        key: 'main',
+        title: 'Cupidot Home',
+        payload: homeState as unknown as Record<string, unknown>,
+      });
+    }, 500);
+    return () => window.clearTimeout(timer);
   }, [homeState, coupleId]);
 
   // Derive chapter progress
@@ -239,7 +283,12 @@ export function useCupidotPet() {
 
       return result;
     },
-    [homeState.growthSparks, homeState.sparksThisSession, partner, clearReactionTimer],
+    [
+      homeState.growthSparks,
+      homeState.sparksThisSession,
+      partner,
+      clearReactionTimer,
+    ],
   );
 
   // Decor placement with undo support

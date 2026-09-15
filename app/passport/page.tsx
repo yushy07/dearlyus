@@ -52,10 +52,8 @@ export default function PassportPage() {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const { roomCode: savedRoomCode } = useCoupleProfile();
   const runtime = useActivityRuntime({
-    sessionId: `mock-passport-${savedRoomCode || 'local'}`,
     activityType: 'passport',
-    roomId: savedRoomCode || 'local',
-    transportMode: 'mock',
+    transportMode: 'auto',
   });
   const [roomCode, setRoomCode] = useState('');
   const [copiedLink, setCopiedLink] = useState(false);

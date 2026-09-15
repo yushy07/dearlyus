@@ -12,6 +12,7 @@ import {
   loadActivityRecords,
   upsertActivityRecord,
 } from '@/lib/activity-records';
+import { useSharedRecordsVersion } from '@/hooks/useSharedRecordsVersion';
 import './timezone.css';
 
 const COMMON_TIMEZONES = [
@@ -75,6 +76,7 @@ export default function TimezoneHubPage() {
   const { partnerA, partnerB, cityA, cityB, timezoneA, timezoneB } =
     useCoupleProfile();
   const { space } = useCoupleSpace();
+  const sharedRecordsVersion = useSharedRecordsVersion();
   const [city1, setCity1] = useState(cityA || 'Calgary');
   const [city2, setCity2] = useState(cityB || 'Jakarta');
   const [tz1, setTz1] = useState(timezoneA || 'America/Edmonton');
@@ -271,7 +273,7 @@ export default function TimezoneHubPage() {
       })
       .catch((error) => console.error('Failed to restore reunion plan:', error))
       .finally(() => setSharedLoaded(true));
-  }, [space?.id]);
+  }, [space?.id, sharedRecordsVersion]);
 
   useEffect(() => {
     if (!space?.id || !sharedLoaded) return;

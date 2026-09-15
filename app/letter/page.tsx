@@ -101,7 +101,23 @@ export default function LetterPage() {
 
   useEffect(() => {
     if (space?.id) {
-      void loadSealedLetters(space.id).then(setVault).catch((error) => console.error('Failed to restore letter vault:', error));
+      void loadSealedLetters(space.id)
+        .then(async (sharedLetters) => {
+          const raw = localStorage.getItem('dearly_sealed_vault');
+          const localLetters = raw ? JSON.parse(raw) : [];
+          if (!Array.isArray(localLetters) || localLetters.length === 0) {
+            setVault(sharedLetters);
+            return;
+          }
+          const imported: SealedCapsule[] = [];
+          for (const item of localLetters) {
+            if (!item?.title || !item?.content || !item?.unlockDate) continue;
+            imported.push(await sealLetter({ coupleId: space.id, title: String(item.title), author: String(item.author || partnerA), unlockDate: String(item.unlockDate), content: String(item.content), stamp: String(item.stamp || '💌'), waxColor: String(item.waxColor || '#E11D48'), voiceDurationSec: typeof item.voiceDurationSec === 'number' ? item.voiceDurationSec : undefined }));
+          }
+          localStorage.removeItem('dearly_sealed_vault');
+          setVault([...sharedLetters, ...imported]);
+        })
+        .catch((error) => console.error('Failed to restore or import letter vault:', error));
       return;
     }
     try {
@@ -127,7 +143,7 @@ export default function LetterPage() {
         }
       }
     } catch {}
-  }, [space?.id]);
+  }, [space?.id, partnerA]);
 
   const saveVault = (capsules: SealedCapsule[]) => {
     if (space?.id) return;

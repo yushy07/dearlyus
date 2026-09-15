@@ -2,6 +2,10 @@
 
 import { getSupabase } from './supabase';
 
+const revisionCache = new Map<string, number>();
+const revisionKey = (coupleId: string, kind: string, key: string) =>
+  `${coupleId}:${kind}:${key}`;
+
 export type ActivityRecordKind =
   | 'future_plan'
   | 'reunion'
@@ -30,7 +34,7 @@ export interface CoupleActivityRecord<T = Record<string, unknown>> {
 }
 
 function mapRecord<T>(row: any): CoupleActivityRecord<T> {
-  return {
+  const record = {
     id: row.id,
     coupleId: row.couple_id,
     kind: row.record_kind,
@@ -42,6 +46,11 @@ function mapRecord<T>(row: any): CoupleActivityRecord<T> {
     updatedAt: row.updated_at,
     revision: Number(row.revision ?? 1),
   };
+  revisionCache.set(
+    revisionKey(record.coupleId, record.kind, record.key),
+    record.revision,
+  );
+  return record;
 }
 
 export async function loadActivityRecords<T>(
@@ -87,7 +96,10 @@ export async function upsertActivityRecord<
     target_payload: input.payload,
     target_status: input.status || 'active',
     target_at: input.targetAt || null,
-    expected_revision: input.expectedRevision ?? null,
+    expected_revision:
+      input.expectedRevision ??
+      revisionCache.get(revisionKey(input.coupleId, input.kind, input.key)) ??
+      0,
   });
   if (error) throw error;
   return mapRecord<T>(data);
