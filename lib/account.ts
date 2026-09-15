@@ -67,6 +67,9 @@ export function profileFromUser(user: User): AccountProfile {
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
     latitude: null,
     longitude: null,
+    pronouns: '',
+    birthday: null,
+    personalNote: '',
     avatarUrl: (metadata.avatar_url || metadata.picture || null) as
       | string
       | null,
@@ -91,7 +94,7 @@ export async function loadAccount(user: User) {
   const profileIds = [user.id, ...(space?.members.map((member) => member.id) || [])];
   const { data: locationProfiles } = await supabase
     .from('profiles')
-    .select('id,latitude,longitude')
+    .select('id,latitude,longitude,pronouns,birthday,personal_note')
     .in('id', [...new Set(profileIds)]);
   if (locationProfiles?.length) {
     const locations = new Map(locationProfiles.map((item) => [item.id, item]));
@@ -100,6 +103,9 @@ export async function loadAccount(user: User) {
       ...profile,
       latitude: ownLocation?.latitude ?? null,
       longitude: ownLocation?.longitude ?? null,
+      pronouns: ownLocation?.pronouns ?? '',
+      birthday: ownLocation?.birthday ?? null,
+      personalNote: ownLocation?.personal_note ?? '',
     };
     if (space) {
       space = {
@@ -191,7 +197,8 @@ export async function loadAccount(user: User) {
 
 export async function saveAccountProfile(
   user: User,
-  input: Pick<AccountProfile, 'displayName' | 'city' | 'timezone'>,
+  input: Pick<AccountProfile, 'displayName' | 'city' | 'timezone'> &
+    Partial<Pick<AccountProfile, 'pronouns' | 'birthday' | 'personalNote'>>,
 ) {
   const supabase = getSupabase();
   if (!supabase) throw new Error('Supabase is not configured.');
@@ -218,6 +225,9 @@ export async function saveAccountProfile(
     profile_avatar_url: avatarUrl,
     profile_latitude: coordinates?.lat ?? null,
     profile_longitude: coordinates?.lng ?? null,
+    profile_pronouns: input.pronouns?.trim() || null,
+    profile_birthday: input.birthday || null,
+    profile_personal_note: input.personalNote?.trim() || null,
   });
   if (error) throw error;
   if (!data) throw new Error('Supabase did not return the saved profile.');
@@ -232,6 +242,9 @@ export async function saveAccountProfile(
     account_status: string;
     latitude: number | null;
     longitude: number | null;
+    pronouns: string | null;
+    birthday: string | null;
+    personal_note: string | null;
   };
   return {
     id: saved.id,
@@ -240,6 +253,9 @@ export async function saveAccountProfile(
     timezone: saved.timezone,
     latitude: saved.latitude,
     longitude: saved.longitude,
+    pronouns: saved.pronouns || '',
+    birthday: saved.birthday,
+    personalNote: saved.personal_note || '',
     avatarUrl: saved.avatar_url,
     onboardingCompleted: saved.onboarding_completed,
     accountStatus: saved.account_status as AccountLifecycleStatus,

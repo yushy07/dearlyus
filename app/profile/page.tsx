@@ -93,6 +93,9 @@ export default function ProfilePage() {
   const [displayName, setDisplayName] = useState('');
   const [city, setCity] = useState('');
   const [timezone, setTimezone] = useState('');
+  const [pronouns, setPronouns] = useState('');
+  const [birthday, setBirthday] = useState('');
+  const [personalNote, setPersonalNote] = useState('');
   const [spaceName, setSpaceName] = useState('Our Space');
   const [inviteCode, setInviteCode] = useState(
     searchParams
@@ -114,7 +117,7 @@ export default function ProfilePage() {
   const [dismissedResumePrompt, setDismissedResumePrompt] = useState(false);
   const [now, setNow] = useState(() => new Date());
   const [activeTab, setActiveTab] = useState<
-    'all' | 'keepsakes' | 'rituals' | 'settings'
+    'all' | 'profile' | 'keepsakes' | 'rituals' | 'settings'
   >('all');
   const [flutterActive, setFlutterActive] = useState(false);
   const [profileAttempted, setProfileAttempted] = useState(false);
@@ -186,6 +189,9 @@ export default function ProfilePage() {
       setTimezone(
         profile.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
       );
+      setPronouns(profile.pronouns || '');
+      setBirthday(profile.birthday || '');
+      setPersonalNote(profile.personalNote || '');
     }
   }, [profile]);
 
@@ -235,7 +241,14 @@ export default function ProfilePage() {
     setBusy('profile');
     setNotice(null);
     try {
-      await saveProfile({ displayName, city, timezone });
+      await saveProfile({
+        displayName,
+        city,
+        timezone,
+        pronouns,
+        birthday: birthday || null,
+        personalNote,
+      });
       setEditing(false);
       setNotice({ kind: 'success', text: 'Your side is up to date.' });
     } catch (error) {
@@ -736,6 +749,13 @@ export default function ProfilePage() {
       <nav className={styles.filterBar} aria-label="Sanctuary sections">
         <button
           type="button"
+          className={`${styles.tabButton} ${activeTab === 'profile' ? styles.tabButtonActive : ''}`}
+          onClick={() => setActiveTab('profile')}
+        >
+          ♡ My Profile
+        </button>
+        <button
+          type="button"
           className={`${styles.tabButton} ${activeTab === 'all' ? styles.tabButtonActive : ''}`}
           onClick={() => setActiveTab('all')}
         >
@@ -846,82 +866,81 @@ export default function ProfilePage() {
           </section>
         )}
 
-        {/* User Account Bar */}
-        <section className={`${styles.card} ${styles.accountCard}`}>
-          <div className={styles.avatarWrap}>
-            <div className={styles.avatar}>
-              <Avatar url={profile.avatarUrl} name={profile.displayName} />
+        {(activeTab === 'all' || activeTab === 'profile') && (
+          <section className={styles.profileDesk} aria-labelledby="my-profile-title">
+            <div className={styles.profilePortraitPanel}>
+              <div className={styles.profileKicker}>My Dearly Us profile</div>
+              <div className={styles.profilePortrait}>
+                <Avatar url={profile.avatarUrl} name={profile.displayName} />
+              </div>
+              <h2 id="my-profile-title">{profile.displayName}</h2>
+              {profile.pronouns && <p className={styles.profilePronouns}>{profile.pronouns}</p>}
+              <p className={styles.profilePlace}>{profile.city} · {userLocalTime}</p>
+              {profile.personalNote && <blockquote>“{profile.personalNote}”</blockquote>}
+              <div className={styles.profileSeal}>Google verified · Synced privately</div>
             </div>
-          </div>
-          <div className={styles.accountMain}>
-            <h2>{profile.displayName}</h2>
-            <div className={styles.email}>{user.email}</div>
-            <div className={styles.verified}>✦ Signed in with Google</div>
-          </div>
-          <div className={styles.actions}>
-            <button
-              className="btn btn-ghost"
-              onClick={() => setEditing((v) => !v)}
-            >
-              {editing ? 'Close editor' : 'Edit profile'}
-            </button>
-            <button className="btn btn-ghost" onClick={handleSignOut}>
-              Sign out
-            </button>
-          </div>
-        </section>
 
-        {/* Edit Profile Panel */}
-        {editing && (
-          <section className={styles.card}>
-            <div className={styles.sectionHead}>
-              <div>
-                <h2>Edit your side</h2>
-                <p>This follows your Google account across all devices.</p>
+            <div className={styles.profileDetailsPanel}>
+              <div className={styles.profileDetailsHead}>
+                <div>
+                  <span>Your side of the story</span>
+                  <h3>{editing ? 'Update your details' : 'About you'}</h3>
+                  <p>Your person sees the personal details you choose to share here.</p>
+                </div>
+                <button className={styles.profileEditButton} onClick={() => setEditing((value) => !value)}>
+                  {editing ? 'Close editor' : 'Edit profile'}
+                </button>
               </div>
-            </div>
-            <div className={styles.formGrid}>
-              <div className={styles.field}>
-                <label>Display name</label>
-                <input
-                  className={styles.input}
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  maxLength={60}
-                />
-              </div>
-              <div className={styles.field}>
-                <label>City</label>
-                <input
-                  className={styles.input}
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  maxLength={80}
-                />
-              </div>
-              <div className={styles.field} style={{ gridColumn: '1/-1' }}>
-                <label>Timezone</label>
-                <input
-                  className={styles.input}
-                  value={timezone}
-                  onChange={(e) => setTimezone(e.target.value)}
-                />
-              </div>
-            </div>
-            <div className={styles.formActions}>
-              <button
-                className="btn btn-primary"
-                onClick={handleSaveProfile}
-                disabled={busy === 'profile'}
-              >
-                {busy === 'profile' ? 'Saving…' : 'Save changes'}
-              </button>
+
+              {editing ? (
+                <div className={styles.profileForm}>
+                  <div className={styles.field}>
+                    <label htmlFor="my-profile-name">Display name</label>
+                    <input id="my-profile-name" className={styles.input} value={displayName} onChange={(e) => setDisplayName(e.target.value)} maxLength={60} />
+                  </div>
+                  <div className={styles.field}>
+                    <label htmlFor="my-profile-pronouns">Pronouns <small>optional</small></label>
+                    <input id="my-profile-pronouns" className={styles.input} value={pronouns} onChange={(e) => setPronouns(e.target.value)} maxLength={40} placeholder="How should we refer to you?" />
+                  </div>
+                  <div className={styles.field}>
+                    <label htmlFor="my-profile-city">City</label>
+                    <input id="my-profile-city" className={styles.input} value={city} onChange={(e) => setCity(e.target.value)} maxLength={80} />
+                  </div>
+                  <div className={styles.field}>
+                    <label htmlFor="my-profile-timezone">Timezone</label>
+                    <input id="my-profile-timezone" className={styles.input} value={timezone} onChange={(e) => setTimezone(e.target.value)} maxLength={80} />
+                  </div>
+                  <div className={styles.field}>
+                    <label htmlFor="my-profile-birthday">Birthday <small>optional</small></label>
+                    <input id="my-profile-birthday" className={styles.input} type="date" value={birthday} onChange={(e) => setBirthday(e.target.value)} />
+                  </div>
+                  <div className={`${styles.field} ${styles.profileNoteField}`}>
+                    <label htmlFor="my-profile-note">A little note about you <small>{personalNote.length}/180</small></label>
+                    <textarea id="my-profile-note" className={styles.profileTextarea} value={personalNote} onChange={(e) => setPersonalNote(e.target.value)} maxLength={180} placeholder="A small detail you want your person to see…" />
+                  </div>
+                  <div className={styles.profileSaveRow}>
+                    <span>City coordinates update automatically when you save.</span>
+                    <button className={styles.profileSaveButton} onClick={handleSaveProfile} disabled={busy === 'profile'}>
+                      {busy === 'profile' ? 'Saving your profile…' : 'Save my profile'}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <dl className={styles.profileFacts}>
+                  <div><dt>Google account</dt><dd>{user.email}</dd></div>
+                  <div><dt>Current city</dt><dd>{profile.city || 'Not added'}</dd></div>
+                  <div><dt>Timezone</dt><dd>{profile.timezone || 'Not added'}</dd></div>
+                  <div><dt>Birthday</dt><dd>{profile.birthday ? new Date(`${profile.birthday}T00:00:00`).toLocaleDateString(undefined, { month: 'long', day: 'numeric' }) : 'Not shared'}</dd></div>
+                  <div><dt>Location pin</dt><dd>{profile.latitude != null && profile.longitude != null ? 'Ready for your shared globe' : 'Updates when city is saved'}</dd></div>
+                  <div><dt>Account</dt><dd>{profile.accountStatus === 'active' ? 'Active and protected' : profile.accountStatus}</dd></div>
+                </dl>
+              )}
             </div>
           </section>
         )}
 
         {/* Two Halves: Your Side & Partner/Our Space */}
-        <div className={styles.gridTwo}>
+        {activeTab === 'all' && <div className={styles.gridTwo}>
           {/* Your Side Card with Live Local Clock */}
           <section className={`${styles.card} ${styles.sideCard}`}>
             <div className={styles.miniLabel}>Your side 🌸</div>
@@ -1145,10 +1164,10 @@ export default function ProfilePage() {
               </div>
             )}
           </section>
-        </div>
+        </div>}
 
         {/* Shared Room Status & Continue Date Night Action */}
-        <section className={`${styles.card} ${styles.roomCard}`}>
+        {activeTab === 'all' && <section className={`${styles.card} ${styles.roomCard}`}>
           <div>
             <div className={styles.miniLabel}>
               Shared room · tonight&apos;s session
@@ -1201,7 +1220,7 @@ export default function ProfilePage() {
               </button>
             )}
           </div>
-        </section>
+        </section>}
 
         {/* Timezone Bridge */}
         {(activeTab === 'all' || activeTab === 'rituals') && (

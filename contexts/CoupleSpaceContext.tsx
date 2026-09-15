@@ -42,7 +42,8 @@ export interface CoupleSpaceContextValue {
   partnerConnected: boolean;
   refresh: () => Promise<void>;
   saveProfile: (
-    input: Pick<AccountProfile, 'displayName' | 'city' | 'timezone'>,
+    input: Pick<AccountProfile, 'displayName' | 'city' | 'timezone'> &
+      Partial<Pick<AccountProfile, 'pronouns' | 'birthday' | 'personalNote'>>,
   ) => Promise<void>;
   createSpace: (name: string) => Promise<CoupleSpace>;
   joinSpace: (code: string) => Promise<CoupleSpace>;
@@ -239,7 +240,8 @@ export function CoupleSpaceProvider({
   }, [supabase, space?.id, user, refresh]);
 
   const saveProfileHandler = async (
-    input: Pick<AccountProfile, 'displayName' | 'city' | 'timezone'>,
+    input: Pick<AccountProfile, 'displayName' | 'city' | 'timezone'> &
+      Partial<Pick<AccountProfile, 'pronouns' | 'birthday' | 'personalNote'>>,
   ) => {
     if (!user) throw new Error('You must be signed in.');
     const savedProfile = await saveAccountProfile(user, input);

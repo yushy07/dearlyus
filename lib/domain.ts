@@ -38,6 +38,9 @@ export interface AccountProfile {
   timezone: string;
   latitude: number | null;
   longitude: number | null;
+  pronouns: string;
+  birthday: string | null;
+  personalNote: string;
   avatarUrl: string | null;
   onboardingCompleted: boolean;
   accountStatus: AccountLifecycleStatus;
