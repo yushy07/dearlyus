@@ -99,7 +99,7 @@ export async function upsertActivityRecord<
     expected_revision:
       input.expectedRevision ??
       revisionCache.get(revisionKey(input.coupleId, input.kind, input.key)) ??
-      0,
+      null,
   });
   if (error) throw error;
   return mapRecord<T>(data);
