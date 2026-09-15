@@ -27,7 +27,7 @@ import {
   type BoothDesign,
 } from '@/lib/booth/model';
 
-export function useBoothStudio() {
+export function useBoothStudio(activeDateRoomId?: string | null) {
   const [room, setRoom] = useState<BoothRoom | null>(null);
   const [solo, setSolo] = useState(false),
     [side, setSide] = useState<Side>('left');
@@ -273,7 +273,7 @@ export function useBoothStudio() {
     setRoom(null);
     const gen = generation.current;
     try {
-      const session = await openBoothRoom(code);
+      const session = await openBoothRoom(code, activeDateRoomId);
       if (gen !== generation.current) return;
       const role = session.room.hostId === session.userId ? 'left' : 'right';
       setSide(role);
@@ -324,7 +324,7 @@ export function useBoothStudio() {
         return;
       }
       const url = new URL(window.location.href);
-      url.searchParams.set('room', session.room.code);
+      url.searchParams.set('booth', session.room.code);
       window.history.replaceState(null, '', url);
       touchTimer.current = setInterval(
         () => {
@@ -897,7 +897,7 @@ export function useBoothStudio() {
       setSolo(false);
       setShots([]);
       const url = new URL(window.location.href);
-      url.searchParams.delete('room');
+      url.searchParams.delete('booth');
       window.history.replaceState(null, '', url);
     },
   };

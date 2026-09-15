@@ -51,6 +51,7 @@ import {
 } from '@/lib/booth/cutout';
 import { pointsToBezierPath } from '@/lib/photobooth-bezier';
 import { useCoupleProfile } from '@/lib/couple';
+import { useActiveRoom } from '@/contexts/ActiveRoomContext';
 export { pointsToBezierPath } from '@/lib/photobooth-bezier';
 
 const steps = ['Join', 'Get ready', 'Shoot', 'Decorate', 'Keep'];
@@ -67,7 +68,8 @@ const STICKERS = [
   'best day',
 ];
 export default function PhotoboothPage() {
-  const booth = useBoothStudio();
+  const activeRoom = useActiveRoom();
+  const booth = useBoothStudio(activeRoom.room?.id);
   const { partnerA, partnerB } = useCoupleProfile();
   const myName = booth.side === 'left' ? partnerA : partnerB;
   const otherName = booth.side === 'left' ? partnerB : partnerA;
@@ -120,7 +122,7 @@ export default function PhotoboothPage() {
   const sticker = booth.design.stickers.find((s) => s.id === stickerId);
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    setCode(params.get('room') ?? '');
+    setCode(params.get('booth') ?? '');
   }, []);
   useEffect(() => {
     if (booth.room || booth.solo) setStep(1);

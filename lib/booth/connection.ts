@@ -5,6 +5,7 @@ export type BoothRoom = {
   code: string;
   hostId: string;
   expiresAt: string;
+  dateRoomId?: string | null;
 };
 export type BoothMessage = { type: string; [key: string]: unknown };
 export type PhotoTransferStatus = {
@@ -83,6 +84,7 @@ export async function closeBoothRoom(roomId: string) {
 }
 export async function openBoothRoom(
   code?: string,
+  dateRoomId?: string | null,
 ): Promise<{ room: BoothRoom; userId: string }> {
   const sb = getSupabase();
   if (!sb)
@@ -96,9 +98,18 @@ export async function openBoothRoom(
     throw new Error(
       'Sign in to create or join a private booth. Your invitation will be kept.',
     );
+  const useDateRoom = !code && Boolean(dateRoomId);
   const { data, error } = await sb.rpc(
-    code ? 'join_photobooth_room' : 'create_photobooth_room',
-    code ? { invite_code: code.trim().toUpperCase() } : {},
+    useDateRoom
+      ? 'open_photobooth_for_date_room'
+      : code
+        ? 'join_photobooth_room'
+        : 'create_photobooth_room',
+    useDateRoom
+      ? { target_date_room: dateRoomId }
+      : code
+        ? { invite_code: code.trim().toUpperCase() }
+        : {},
   );
   if (error) throw new Error(boothError(error.message));
   return { room: data as BoothRoom, userId: user.id };
