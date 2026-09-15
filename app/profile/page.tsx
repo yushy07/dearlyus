@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Navbar, AiConsentToggle } from '@/components/shared';
 import { DomeGallery, ScrollStack, ScrollStackItem } from '@/components/motion';
+import { FoldText } from '@/components/ui';
 import { QRCodeSVG } from '@/lib/qrcode';
 import { sounds } from '@/lib/sound';
 import { useSupabaseSession } from '@/contexts/SupabaseSessionContext';
@@ -638,9 +639,7 @@ export default function ProfilePage() {
       <header className={styles.hero}>
         <div className={styles.heroInner}>
           <div className={styles.eyebrow}>Your private corner for two</div>
-          <h1 className={styles.heroTitle}>
-            Welcome to <span>{space?.name || 'Our Space'}</span>
-          </h1>
+          <h1 className={styles.heroTitle}><FoldText text={`Welcome to\n${space?.name || 'Our Space'}`} splitBy="line" hinge="top" trigger="mount" duration={0.66} stagger={0.1} /></h1>
           <p className={styles.heroCopy}>
             Your account, your person, and every little date-night keepsake—held
             together in one warm, private place.

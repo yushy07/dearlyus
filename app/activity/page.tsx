@@ -19,6 +19,7 @@ import './activity-collection.css';
 import { ActivityIllustration } from './ActivityIllustration';
 import { listRecoverableActivitySessions } from '@/lib/activity-session';
 import { ScrollStack, ScrollStackItem } from '@/components/motion';
+import { FoldText } from '@/components/ui';
 
 type Category = 'all' | 'play' | 'talk' | 'make' | 'distance';
 type FilterTag =
@@ -526,10 +527,7 @@ export default function ActivityPage() {
             <span className="collection-kicker">
               <span /> THE DEARLY US DATE COLLECTION
             </span>
-            <h1 id="collection-title">
-              A little time.
-              <br />A little closer<span className="collection-period">.</span>
-            </h1>
+            <h1 id="collection-title"><FoldText text={'A little time.\nA little closer.'} splitBy="line" hinge="top" trigger="mount" duration={0.68} stagger={0.1} /></h1>
             <p>
               For the silly nights, the deep talks, and the
               <br className="collection-desktop-break" /> moments that become{' '}

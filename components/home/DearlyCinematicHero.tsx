@@ -1,9 +1,9 @@
 'use client';
 
-import { BrandLogo } from '@/components/shared/BrandLogo';
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { AuthButton } from '@/components/shared/AuthButton';
+import { Navbar } from '@/components/shared/Navbar';
+import { FoldText } from '@/components/ui';
 import { ShinyText } from '@/components/ui';
 import { sounds } from '@/lib/sound';
 import styles from './DearlyCinematicHero.module.css';
@@ -146,18 +146,6 @@ export function DearlyCinematicHero({
     };
   }, []);
 
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  // Track window scroll to ensure dock is high-contrast when scrolling over white sections
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 40);
-    };
-    handleScroll();
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   const handleStartExploring = () => {
     sounds.playPop();
     if (onExplore) {
@@ -174,76 +162,7 @@ export function DearlyCinematicHero({
 
   return (
     <>
-      {/* ========================================================================= */}
-      {/* 1. SINGLE, UNIFIED FLOATING GLASSMORPHIC NAVBAR FOR THE ENTIRE WEBSITE    */}
-      {/* ========================================================================= */}
-      <header
-        className={`${styles.navFloatingGlass} ${isScrolled ? styles.navFloatingGlassScrolled : ''}`}
-        role="banner"
-      >
-        {/* Left Brand Emblem & Animated Pulse Dots */}
-        <Link href="/" className={styles.brandLink} aria-label="Dearly Us Home">
-          <BrandLogo tone="light" />
-        </Link>
-
-        {/* Center Navigation Links */}
-        <nav className={styles.navLinksGroup} aria-label="Main Navigation">
-          <Link href="/activity" className={styles.navLink}>
-            Activities
-          </Link>
-          <Link href="/photobooth" className={styles.navLink}>
-            Photobooth
-          </Link>
-          <Link href="/passport" className={styles.navPassportBadge}>
-            <span>💮</span>
-            <span>Passport</span>
-          </Link>
-          <Link href="/our-space" className={styles.navLink}>
-            Our Space
-          </Link>
-          <Link href="/blog" className={styles.navLink}>
-            Blog
-          </Link>
-          <a href="#faq" className={styles.navLink}>
-            FAQ
-          </a>
-          <Link
-            href="/shop"
-            className={styles.navShopBtn}
-            aria-label="Print shop"
-            title="Print shop"
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              aria-hidden="true"
-            >
-              <path
-                d="M5 8h14l-1.2 12.1a1.5 1.5 0 0 1-1.5 1.4H7.7a1.5 1.5 0 0 1-1.5-1.4L5 8Z"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M8.5 10V6.5a3.5 3.5 0 0 1 7 0V10"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
-          </Link>
-        </nav>
-
-        {/* Right Action Controls */}
-        <div className={styles.navActionsGroup}>
-          <AuthButton />
-          <Link className={styles.ctaNavGrad} href="/activity">
-            Browse activities ▷
-          </Link>
-        </div>
-      </header>
+      <Navbar variant="hero" />
 
       {/* ========================================================================= */}
       {/* 2. CINEMATIC HERO VIEWPORT (SLIDE 1)                                      */}
@@ -335,14 +254,7 @@ export function DearlyCinematicHero({
             {/* Headline and Narrative Copy */}
             <div className={styles.headlineRow}>
               <h1 ref={headlineRef} className={styles.headline}>
-                <RevealMask active={active} delay={550}>
-                  Moments That
-                </RevealMask>
-                <RevealMask active={active} delay={680}>
-                  Belong to{' '}
-                  <span className={styles.headlineItalicPink}>You</span>{' '}
-                  <span className={styles.headlineItalicBlue}>Two.</span>
-                </RevealMask>
+                <FoldText text={'Moments that\nbelong to you two.'} splitBy="line" trigger="mount" hinge="top" duration={0.72} stagger={0.12} perspective={850} creaseShading={0.38} />
               </h1>
 
               <p className={styles.narrativeCopy}>

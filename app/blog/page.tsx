@@ -5,6 +5,7 @@ import { ArrowUpRight, BookOpen, Camera, Clock3, Heart, Sparkles } from 'lucide-
 import { getAllPosts } from '@/data';
 import { Navbar, Ribbon } from '@/components/shared';
 import { ScrollStack, ScrollStackItem } from '@/components/motion';
+import { FoldText } from '@/components/ui';
 import styles from './blog.module.css';
 
 export default function BlogPage() {
@@ -17,7 +18,7 @@ export default function BlogPage() {
         <header className={styles.hero}>
           <div className={styles.heroCopy}>
             <span className={styles.kicker}><Heart size={14} /> FIELD NOTES FOR TWO</span>
-            <h1>A quieter corner for<br /><em>long-distance love.</em></h1>
+            <h1><FoldText text={'A quieter corner for\nlong-distance love.'} splitBy="line" hinge="top" trigger="mount" duration={0.7} stagger={0.11} /></h1>
             <p>Thoughtful guides, honest stories and date ideas written for the ordinary work of staying close when you cannot share the same room.</p>
             <div className={styles.heroDetails}>
               <span><BookOpen size={15} /> Practical, personal reading</span>

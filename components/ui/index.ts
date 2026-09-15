@@ -3,6 +3,7 @@ export * from './ShinyText';
 export * from './TiltedCard';
 export * from './AuroraBackground';
 export * from './ScrollProgress';
+export * from './FoldText';
 export * from './ScrollReveal';
 export * from './GlowBadge';
 export * from './SwipeDeck';
