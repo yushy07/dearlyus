@@ -7,6 +7,7 @@ import { Navbar } from '@/components/shared';
 import { useSupabaseSession } from '@/contexts/SupabaseSessionContext';
 import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
 import { createDateRoom } from '@/lib/account';
+import { LocationSelector, type ProfileLocation } from '@/components/profile/LocationSelector';
 import styles from './our-space.module.css';
 
 const activityPicks = [
@@ -32,6 +33,12 @@ export default function OurSpacePage() {
   const { status, profile, space, partner, ownMember, keepsakes, loading, error, refresh, saveProfile, createSpace, joinSpace, regenerateInvite } = useCoupleSpace();
   const [name, setName] = useState('');
   const [city, setCity] = useState('');
+  const [country, setCountry] = useState('');
+  const [countryCode, setCountryCode] = useState('');
+  const [stateRegion, setStateRegion] = useState('');
+  const [stateCode, setStateCode] = useState('');
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
   const [timezone, setTimezone] = useState('');
   const [spaceName, setSpaceName] = useState('Our Space');
   const [inviteCode, setInviteCode] = useState('');
@@ -44,7 +51,8 @@ export default function OurSpacePage() {
   }, [authLoading, router, user]);
   useEffect(() => {
     if (!profile) return;
-    setName(profile.displayName); setCity(profile.city);
+    setName(profile.displayName); setCity(profile.city); setCountry(profile.country || ''); setCountryCode(profile.countryCode || '');
+    setStateRegion(profile.state || ''); setStateCode(profile.stateCode || ''); setLatitude(profile.latitude); setLongitude(profile.longitude);
     setTimezone(profile.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone);
   }, [profile]);
   useEffect(() => {
@@ -52,6 +60,9 @@ export default function OurSpacePage() {
     if (!incoming) return;
     setInviteCode(incoming.replace(/[^a-z0-9]/gi, '').toUpperCase()); setConnectionMode('join');
   }, [searchParams]);
+
+  const selectedLocation: ProfileLocation = { country, countryCode, state: stateRegion, stateCode, city, latitude, longitude };
+  const updateLocation = (next: ProfileLocation) => { setCountry(next.country); setCountryCode(next.countryCode); setStateRegion(next.state); setStateCode(next.stateCode); setCity(next.city); setLatitude(next.latitude); setLongitude(next.longitude); };
 
   const inviteUrl = useMemo(() => !space?.invite || typeof window === 'undefined' ? '' : `${window.location.origin}/invite/${space.invite.code}`, [space?.invite]);
   const run = async (key: string, task: () => Promise<unknown>, success: string) => {
@@ -68,7 +79,7 @@ export default function OurSpacePage() {
 
   if (!profile?.onboardingCompleted) return <main className={styles.page}><Navbar /><section className={styles.arrival}>
     <div className={styles.arrivalStory}><span className={styles.kicker}>01 · Your place in the story</span><h1>Before it becomes <em>ours</em>, make it yours.</h1><p>Three small details help your person recognize you and keep both of your clocks honest.</p><ol><li className={styles.activeStep}>Your place</li><li>Your person</li><li>Our space</li></ol></div>
-    <div className={styles.paperForm}><div className={styles.portrait}>{profile?.avatarUrl ? <img src={profile.avatarUrl} alt="Your Google profile" /> : initials(name)}</div><label>Your name<input value={name} onChange={(e) => setName(e.target.value)} maxLength={60} /></label><label>Your city<input value={city} onChange={(e) => setCity(e.target.value)} maxLength={80} placeholder="Where are you tonight?" /></label><label>Your timezone<input value={timezone} onChange={(e) => setTimezone(e.target.value)} maxLength={80} /></label>{notice && <p className={styles.notice}>{notice}</p>}<button className={styles.primary} onClick={() => void run('profile', () => saveProfile({ displayName: name, city, timezone }), 'Your place is saved.')} disabled={busy !== '' || !name.trim() || !city.trim() || !timezone.trim()}>{busy === 'profile' ? 'Saving your place…' : 'Save and continue'} <span>→</span></button></div>
+    <div className={styles.paperForm}><div className={styles.portrait}>{profile?.avatarUrl ? <img src={profile.avatarUrl} alt="Your Google profile" /> : initials(name)}</div><label>Your name<input value={name} onChange={(e) => setName(e.target.value)} maxLength={60} /></label><LocationSelector value={selectedLocation} onChange={updateLocation} idPrefix="our-space-profile" /><label>Your timezone<input value={timezone} onChange={(e) => setTimezone(e.target.value)} maxLength={80} /></label>{notice && <p className={styles.notice}>{notice}</p>}<button className={styles.primary} onClick={() => void run('profile', () => saveProfile({ displayName: name, city, timezone, country, countryCode, state: stateRegion, stateCode, latitude, longitude }), 'Your place is saved.')} disabled={busy !== '' || !name.trim() || !countryCode || !city.trim() || !timezone.trim()}>{busy === 'profile' ? 'Saving your place…' : 'Save and continue'} <span>→</span></button></div>
   </section></main>;
 
   if (!space) return <main className={styles.page}><Navbar /><section className={styles.connectShell}>

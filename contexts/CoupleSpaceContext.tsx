@@ -43,7 +43,7 @@ export interface CoupleSpaceContextValue {
   refresh: () => Promise<void>;
   saveProfile: (
     input: Pick<AccountProfile, 'displayName' | 'city' | 'timezone'> &
-      Partial<Pick<AccountProfile, 'pronouns' | 'birthday' | 'personalNote'>>,
+      Partial<Pick<AccountProfile, 'country' | 'countryCode' | 'state' | 'stateCode' | 'latitude' | 'longitude' | 'pronouns' | 'birthday' | 'personalNote'>>,
   ) => Promise<void>;
   createSpace: (name: string) => Promise<CoupleSpace>;
   joinSpace: (code: string) => Promise<CoupleSpace>;

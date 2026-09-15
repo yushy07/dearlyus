@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Navbar, AiConsentToggle } from '@/components/shared';
 import { DomeGallery, ScrollStack, ScrollStackItem } from '@/components/motion';
 import { FoldText } from '@/components/ui';
+import { LocationSelector, type ProfileLocation } from '@/components/profile/LocationSelector';
 import { QRCodeSVG } from '@/lib/qrcode';
 import { sounds } from '@/lib/sound';
 import { useSupabaseSession } from '@/contexts/SupabaseSessionContext';
@@ -93,6 +94,12 @@ export default function ProfilePage() {
 
   const [displayName, setDisplayName] = useState('');
   const [city, setCity] = useState('');
+  const [country, setCountry] = useState('');
+  const [countryCode, setCountryCode] = useState('');
+  const [stateRegion, setStateRegion] = useState('');
+  const [stateCode, setStateCode] = useState('');
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
   const [timezone, setTimezone] = useState('');
   const [pronouns, setPronouns] = useState('');
   const [birthday, setBirthday] = useState('');
@@ -187,6 +194,12 @@ export default function ProfilePage() {
     if (profile) {
       setDisplayName(profile.displayName);
       setCity(profile.city);
+      setCountry(profile.country || '');
+      setCountryCode(profile.countryCode || '');
+      setStateRegion(profile.state || '');
+      setStateCode(profile.stateCode || '');
+      setLatitude(profile.latitude);
+      setLongitude(profile.longitude);
       setTimezone(
         profile.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
       );
@@ -195,6 +208,12 @@ export default function ProfilePage() {
       setPersonalNote(profile.personalNote || '');
     }
   }, [profile]);
+
+  const selectedLocation: ProfileLocation = { country, countryCode, state: stateRegion, stateCode, city, latitude, longitude };
+  const updateLocation = (next: ProfileLocation) => {
+    setCountry(next.country); setCountryCode(next.countryCode); setStateRegion(next.state); setStateCode(next.stateCode);
+    setCity(next.city); setLatitude(next.latitude); setLongitude(next.longitude);
+  };
 
   useEffect(() => {
     if (preferences) {
@@ -232,10 +251,10 @@ export default function ProfilePage() {
 
   const handleSaveProfile = async () => {
     setProfileAttempted(true);
-    if (!displayName.trim() || !city.trim()) {
+    if (!displayName.trim() || !countryCode || !city.trim()) {
       setNotice({
         kind: 'error',
-        text: 'Please add your display name and city.',
+        text: 'Please choose your country, state or region, and city.',
       });
       return;
     }
@@ -246,6 +265,12 @@ export default function ProfilePage() {
         displayName,
         city,
         timezone,
+        country,
+        countryCode,
+        state: stateRegion,
+        stateCode,
+        latitude,
+        longitude,
         pronouns,
         birthday: birthday || null,
         personalNote,
@@ -572,25 +597,9 @@ export default function ProfilePage() {
                       </small>
                     )}
                   </div>
-                  <div className={styles.field}>
-                    <label htmlFor="profile-city">Your city</label>
-                    <input
-                      id="profile-city"
-                      className={styles.input}
-                      value={city}
-                      onChange={(e) => setCity(e.target.value)}
-                      placeholder="Where are you tonight?"
-                      maxLength={80}
-                      autoComplete="address-level2"
-                      aria-invalid={profileAttempted && !city.trim()}
-                    />
-                    {profileAttempted && !city.trim() && (
-                      <small className={styles.fieldError}>
-                        Add your city so your clocks feel personal.
-                      </small>
-                    )}
-                  </div>
                 </div>
+                <LocationSelector value={selectedLocation} onChange={updateLocation} idPrefix="setup-profile" className={styles.onboardingLocation} />
+                {profileAttempted && (!countryCode || !city.trim()) && <small className={styles.fieldError}>Choose your country, state or region, and city.</small>}
                 <div className={styles.field}>
                   <label htmlFor="profile-timezone">Your timezone</label>
                   <input
@@ -901,10 +910,7 @@ export default function ProfilePage() {
                     <label htmlFor="my-profile-pronouns">Pronouns <small>optional</small></label>
                     <input id="my-profile-pronouns" className={styles.input} value={pronouns} onChange={(e) => setPronouns(e.target.value)} maxLength={40} placeholder="How should we refer to you?" />
                   </div>
-                  <div className={styles.field}>
-                    <label htmlFor="my-profile-city">City</label>
-                    <input id="my-profile-city" className={styles.input} value={city} onChange={(e) => setCity(e.target.value)} maxLength={80} />
-                  </div>
+                  <LocationSelector value={selectedLocation} onChange={updateLocation} idPrefix="my-profile" className={styles.profileLocationFields} />
                   <div className={styles.field}>
                     <label htmlFor="my-profile-timezone">Timezone</label>
                     <input id="my-profile-timezone" className={styles.input} value={timezone} onChange={(e) => setTimezone(e.target.value)} maxLength={80} />
@@ -927,6 +933,8 @@ export default function ProfilePage() {
               ) : (
                 <dl className={styles.profileFacts}>
                   <div><dt>Google account</dt><dd>{user.email}</dd></div>
+                  <div><dt>Country</dt><dd>{profile.country || 'Not added'}</dd></div>
+                  <div><dt>State or region</dt><dd>{profile.state || 'Not added'}</dd></div>
                   <div><dt>Current city</dt><dd>{profile.city || 'Not added'}</dd></div>
                   <div><dt>Timezone</dt><dd>{profile.timezone || 'Not added'}</dd></div>
                   <div><dt>Birthday</dt><dd>{profile.birthday ? new Date(`${profile.birthday}T00:00:00`).toLocaleDateString(undefined, { month: 'long', day: 'numeric' }) : 'Not shared'}</dd></div>

@@ -35,6 +35,10 @@ export interface AccountProfile {
   id: string;
   displayName: string;
   city: string;
+  country: string;
+  countryCode: string;
+  state: string;
+  stateCode: string;
   timezone: string;
   latitude: number | null;
   longitude: number | null;

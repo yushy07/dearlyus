@@ -64,6 +64,10 @@ export function profileFromUser(user: User): AccountProfile {
     id: user.id,
     displayName: String(metadata.full_name || metadata.name || '').trim(),
     city: '',
+    country: '',
+    countryCode: '',
+    state: '',
+    stateCode: '',
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
     latitude: null,
     longitude: null,
@@ -94,7 +98,7 @@ export async function loadAccount(user: User) {
   const profileIds = [user.id, ...(space?.members.map((member) => member.id) || [])];
   const { data: locationProfiles } = await supabase
     .from('profiles')
-    .select('id,latitude,longitude,pronouns,birthday,personal_note')
+    .select('id,latitude,longitude,pronouns,birthday,personal_note,country,country_code,state_region,state_code')
     .in('id', [...new Set(profileIds)]);
   if (locationProfiles?.length) {
     const locations = new Map(locationProfiles.map((item) => [item.id, item]));
@@ -106,6 +110,10 @@ export async function loadAccount(user: User) {
       pronouns: ownLocation?.pronouns ?? '',
       birthday: ownLocation?.birthday ?? null,
       personalNote: ownLocation?.personal_note ?? '',
+      country: ownLocation?.country ?? '',
+      countryCode: ownLocation?.country_code ?? '',
+      state: ownLocation?.state_region ?? '',
+      stateCode: ownLocation?.state_code ?? '',
     };
     if (space) {
       space = {
@@ -198,14 +206,14 @@ export async function loadAccount(user: User) {
 export async function saveAccountProfile(
   user: User,
   input: Pick<AccountProfile, 'displayName' | 'city' | 'timezone'> &
-    Partial<Pick<AccountProfile, 'pronouns' | 'birthday' | 'personalNote'>>,
+    Partial<Pick<AccountProfile, 'country' | 'countryCode' | 'state' | 'stateCode' | 'latitude' | 'longitude' | 'pronouns' | 'birthday' | 'personalNote'>>,
 ) {
   const supabase = getSupabase();
   if (!supabase) throw new Error('Supabase is not configured.');
   const avatarUrl = (user.user_metadata?.avatar_url ||
     user.user_metadata?.picture ||
     null) as string | null;
-  let coordinates = findCityCoordinates(input.city);
+  let coordinates = input.latitude != null && input.longitude != null ? { lat: input.latitude, lng: input.longitude } : findCityCoordinates(input.city);
   if (!coordinates) {
     const { data: geocoded } = await supabase.functions.invoke(
       'geocode-profile-city',
@@ -228,6 +236,10 @@ export async function saveAccountProfile(
     profile_pronouns: input.pronouns?.trim() || null,
     profile_birthday: input.birthday || null,
     profile_personal_note: input.personalNote?.trim() || null,
+    profile_country: input.country?.trim() || null,
+    profile_country_code: input.countryCode?.trim() || null,
+    profile_state_region: input.state?.trim() || null,
+    profile_state_code: input.stateCode?.trim() || null,
   });
   if (error) throw error;
   if (!data) throw new Error('Supabase did not return the saved profile.');
@@ -245,6 +257,10 @@ export async function saveAccountProfile(
     pronouns: string | null;
     birthday: string | null;
     personal_note: string | null;
+    country: string | null;
+    country_code: string | null;
+    state_region: string | null;
+    state_code: string | null;
   };
   return {
     id: saved.id,
@@ -256,6 +272,10 @@ export async function saveAccountProfile(
     pronouns: saved.pronouns || '',
     birthday: saved.birthday,
     personalNote: saved.personal_note || '',
+    country: saved.country || '',
+    countryCode: saved.country_code || '',
+    state: saved.state_region || '',
+    stateCode: saved.state_code || '',
     avatarUrl: saved.avatar_url,
     onboardingCompleted: saved.onboarding_completed,
     accountStatus: saved.account_status as AccountLifecycleStatus,

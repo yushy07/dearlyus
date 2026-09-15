@@ -286,6 +286,7 @@
 .profileFacts dd { margin: 0; overflow-wrap: anywhere; color: #443137; font-size: 14px; font-weight: 650; }
 
 .profileForm { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; padding-top: 24px; }
+.profileLocationFields,.onboardingLocation { grid-column: 1 / -1; }
 .profileForm label small { float: right; color: #a08186; font-weight: 500; text-transform: none; }
 .profileNoteField { grid-column: 1 / -1; }
 .profileTextarea { width: 100%; min-height: 92px; resize: vertical; border: 1px solid #d9c1b8; border-radius: 14px; background: #fffdf8; padding: 13px 14px; color: #443137; font: inherit; line-height: 1.5; }

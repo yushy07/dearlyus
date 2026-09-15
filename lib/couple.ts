@@ -141,6 +141,15 @@ export function useCoupleProfile() {
         displayName: updates.partnerA.trim(),
         city: profile.city,
         timezone: profile.timezone,
+        country: profile.country,
+        countryCode: profile.countryCode,
+        state: profile.state,
+        stateCode: profile.stateCode,
+        latitude: profile.latitude,
+        longitude: profile.longitude,
+        pronouns: profile.pronouns,
+        birthday: profile.birthday,
+        personalNote: profile.personalNote,
       });
     }
   };
