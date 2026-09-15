@@ -36,7 +36,14 @@ export function Navbar({ roomCode, activityName, rightAction, onLeaveRoom, varia
             <Link href="/shop" className={styles.shop} aria-label="Keepsake shop"><ShoppingBag size={15} /><span>Shop</span></Link>
           </nav>}
         <div className={styles.actions}>
-          {rightAction || (isInsideRoom ? <><Link className={styles.quietAction} href={`/room/${roomCode}`}>Lobby</Link><button className={styles.leaveAction} onClick={leave}>Leave</button></> : <><AuthButton /><Link className={styles.primaryAction} href={user && partnerConnected && space?.activeRoomCode ? `/room/${space.activeRoomCode}` : '/activity'}>{user && partnerConnected ? 'Continue tonight' : 'Choose a date'} <span>↗</span></Link></>)}
+          {isInsideRoom ? (
+            rightAction || <><Link className={styles.quietAction} href={`/room/${roomCode}`}>Lobby</Link><button className={styles.leaveAction} onClick={leave}>Leave</button></>
+          ) : (
+            <>
+              <AuthButton />
+              {rightAction || <Link className={styles.primaryAction} href={user && partnerConnected && space?.activeRoomCode ? `/room/${space.activeRoomCode}` : '/activity'}>{user && partnerConnected ? 'Continue tonight' : 'Choose a date'} <span>↗</span></Link>}
+            </>
+          )}
         </div>
       </div>
     </header>

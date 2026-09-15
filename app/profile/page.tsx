@@ -123,7 +123,7 @@ export default function ProfilePage() {
   );
   const [capsuleModalOpen, setCapsuleModalOpen] = useState(false);
   const [dismissedResumePrompt, setDismissedResumePrompt] = useState(false);
-  const [now, setNow] = useState(() => new Date());
+  const [now, setNow] = useState<Date | null>(null);
   const [activeTab, setActiveTab] = useState<
     'all' | 'profile' | 'keepsakes' | 'rituals' | 'settings'
   >('all');
@@ -226,6 +226,7 @@ export default function ProfilePage() {
 
   // Dual clock interval
   useEffect(() => {
+    setNow(new Date());
     const timer = window.setInterval(() => setNow(new Date()), 25000);
     return () => window.clearInterval(timer);
   }, []);
@@ -246,11 +247,11 @@ export default function ProfilePage() {
   }, [searchParams]);
 
   const userLocalTime = useMemo(
-    () => formatLocalTime(timezone || profile?.timezone, now),
+    () => now ? formatLocalTime(timezone || profile?.timezone, now) : 'Loading local time…',
     [timezone, profile?.timezone, now],
   );
   const partnerLocalTime = useMemo(
-    () => (partner?.timezone ? formatLocalTime(partner.timezone, now) : null),
+    () => (partner?.timezone && now ? formatLocalTime(partner.timezone, now) : null),
     [partner?.timezone, now],
   );
 
@@ -446,7 +447,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.replace(`/login?next=${encodeURIComponent('/our-space')}`);
+      router.replace(`/login?next=${encodeURIComponent('/profile?view=profile')}`);
     }
   }, [loading, user, router]);
 
@@ -648,7 +649,7 @@ export default function ProfilePage() {
 
   return (
     <div className={styles.page}>
-      <Navbar roomCode={space?.activeRoomCode || undefined} />
+      <Navbar />
 
       <header className={styles.hero}>
         <div className={styles.heroInner}>
@@ -666,7 +667,7 @@ export default function ProfilePage() {
               <div>
                 <div className={styles.statValue}>
                   {space?.createdAt
-                    ? `${Math.max(1, Math.floor((Date.now() - new Date(space.createdAt).getTime()) / 86400000))}d`
+                    ? now ? `${Math.max(1, Math.floor((now.getTime() - new Date(space.createdAt).getTime()) / 86400000))}d` : '—'
                     : '1d'}
                 </div>
                 <div className={styles.statLabel}>Days in sanctuary</div>

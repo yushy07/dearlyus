@@ -45,6 +45,7 @@ export default function OurSpacePage() {
   const [connectionMode, setConnectionMode] = useState<'create' | 'join'>('create');
   const [busy, setBusy] = useState('');
   const [notice, setNotice] = useState('');
+  const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) router.replace(`/login?next=${encodeURIComponent('/our-space')}`);
@@ -60,6 +61,11 @@ export default function OurSpacePage() {
     if (!incoming) return;
     setInviteCode(incoming.replace(/[^a-z0-9]/gi, '').toUpperCase()); setConnectionMode('join');
   }, [searchParams]);
+  useEffect(() => {
+    setNow(new Date());
+    const timer = window.setInterval(() => setNow(new Date()), 30_000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   const selectedLocation: ProfileLocation = { country, countryCode, state: stateRegion, stateCode, city, latitude, longitude };
   const updateLocation = (next: ProfileLocation) => { setCountry(next.country); setCountryCode(next.countryCode); setStateRegion(next.state); setStateCode(next.stateCode); setCity(next.city); setLatitude(next.latitude); setLongitude(next.longitude); };
@@ -90,12 +96,12 @@ export default function OurSpacePage() {
 
   if (!partner) return <main className={styles.page}><Navbar /><section className={styles.waitingRoom}>
     <header><span className={styles.kicker}>Your invitation lounge</span><h1>Your side is ready.<br /><em>Save their seat.</em></h1><p>Send one private invitation. This page will welcome them automatically when they arrive.</p></header>
-    <div className={styles.twoSeats}><article className={styles.personCard}><div className={styles.avatar}>{profile.avatarUrl ? <img src={profile.avatarUrl} alt="" /> : initials(profile.displayName)}</div><span>You’re here</span><h2>{profile.displayName}</h2><p>{profile.city} · {localTime(profile.timezone)}</p></article><div className={styles.heartLine}><span>♡</span></div><article className={`${styles.personCard} ${styles.emptySeat}`}><div className={styles.avatar}>?</div><span>Seat saved</span><h2>Your person</h2><p>Waiting for their arrival</p></article></div>
+    <div className={styles.twoSeats}><article className={styles.personCard}><div className={styles.avatar}>{profile.avatarUrl ? <img src={profile.avatarUrl} alt="" /> : initials(profile.displayName)}</div><span>You’re here</span><h2>{profile.displayName}</h2><p>{profile.city} · {now ? localTime(profile.timezone) : 'Loading local time…'}</p></article><div className={styles.heartLine}><span>♡</span></div><article className={`${styles.personCard} ${styles.emptySeat}`}><div className={styles.avatar}>?</div><span>Seat saved</span><h2>Your person</h2><p>Waiting for their arrival</p></article></div>
     <section className={styles.inviteTicket}><div><span>Private invitation · one person</span><strong>{space.invite?.code || 'No active code'}</strong><small>{space.invite ? `Available until ${new Date(space.invite.expiresAt).toLocaleString()}` : 'Create a fresh invitation to continue.'}</small></div><div className={styles.ticketActions}><button className={styles.primary} onClick={copyInvite} disabled={!inviteUrl}>Copy invitation</button><button onClick={() => void run('invite', regenerateInvite, 'A fresh invitation is ready.')} disabled={busy !== ''}>{busy === 'invite' ? 'Preparing…' : 'Make a fresh code'}</button></div></section>{notice && <p className={styles.notice}>{notice}</p>}
   </section></main>;
 
-  return <main className={styles.page}><Navbar roomCode={space.activeRoomCode || undefined} /><section className={styles.dashboard}>
-    <header className={styles.dashboardHero}><div><span className={styles.kicker}>Your private corner for two</span><h1>Welcome back to<br /><em>{space.name}</em></h1><p>Pick up tonight exactly where the two of you left it.</p><button className={styles.primary} onClick={startDate} disabled={busy !== ''}>{busy === 'room' ? 'Opening your room…' : 'Start or continue tonight'} <span>→</span></button></div><div className={styles.connectedPortraits}>{[ownMember || profile, partner].map((person, index) => <article key={person.id}><div className={styles.avatar}>{person.avatarUrl ? <img src={person.avatarUrl} alt="" /> : initials(person.displayName)}</div><span>{index === 0 ? 'You' : 'Your person'}</span><h2>{person.displayName}</h2><p>{person.city} · {localTime(person.timezone)}</p></article>)}<i>♡</i></div></header>
+  return <main className={styles.page}><Navbar /><section className={styles.dashboard}>
+    <header className={styles.dashboardHero}><div><span className={styles.kicker}>Your private corner for two</span><h1>Welcome back to<br /><em>{space.name}</em></h1><p>Pick up tonight exactly where the two of you left it.</p><button className={styles.primary} onClick={startDate} disabled={busy !== ''}>{busy === 'room' ? 'Opening your room…' : 'Start or continue tonight'} <span>→</span></button></div><div className={styles.connectedPortraits}>{[ownMember || profile, partner].map((person, index) => <article key={person.id}><div className={styles.avatar}>{person.avatarUrl ? <img src={person.avatarUrl} alt="" /> : initials(person.displayName)}</div><span>{index === 0 ? 'You' : 'Your person'}</span><h2>{person.displayName}</h2><p>{person.city} · {now ? localTime(person.timezone) : 'Loading local time…'}</p></article>)}<i>♡</i></div></header>
     <section className={styles.resumeBand}><div><span>Tonight’s room</span><h2>Both of you are here. What feels right?</h2></div><Link href="/activity">See every activity →</Link></section>
     <section className={styles.activityRow}>{activityPicks.map((item, index) => <Link href={item.href} key={item.href}><span>{String(index + 1).padStart(2, '0')}</span><i>{item.icon}</i><h3>{item.title}</h3><p>{item.note}</p><b>Open →</b></Link>)}</section>
     <section className={styles.memories}><div className={styles.sectionHeading}><div><span className={styles.kicker}>Kept between you</span><h2>Your recent little proofs.</h2></div><Link href="/profile">Settings and profile →</Link></div>{keepsakes.length ? <div className={styles.memoryGrid}>{keepsakes.slice(0, 6).map((item) => <article key={item.id}>{item.previewUrl ? <img src={item.previewUrl} alt={item.title} /> : <div>♡</div>}<span>{item.kind}</span><h3>{item.title}</h3></article>)}</div> : <div className={styles.emptyMemories}><span>♡</span><h3>Your shelf is waiting for its first memory.</h3><p>A photostrip, a letter, or a finished activity will appear here safely.</p><Link href="/photobooth">Make your first keepsake →</Link></div>}</section>

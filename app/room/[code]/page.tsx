@@ -108,7 +108,7 @@ function RoomLobbyInner({ code }: { code: string }) {
   const [copied, setCopied] = useState(false);
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
-  const [now, setNow] = useState(() => new Date());
+  const [now, setNow] = useState<Date | null>(null);
 
   // Synchronized countdown state
   const [countdown, setCountdown] = useState<number | null>(null);
@@ -117,6 +117,7 @@ function RoomLobbyInner({ code }: { code: string }) {
 
   // Keep dual clocks updated
   useEffect(() => {
+    setNow(new Date());
     const timer = window.setInterval(() => setNow(new Date()), 20000);
     return () => window.clearInterval(timer);
   }, []);
@@ -140,12 +141,12 @@ function RoomLobbyInner({ code }: { code: string }) {
   }, [room, user]);
 
   const userLocalTime = useMemo(() => {
-    return formatLocalTime(profile?.timezone, now);
+    return now ? formatLocalTime(profile?.timezone, now) : 'Loading local time…';
   }, [profile?.timezone, now]);
 
   const partnerLocalTime = useMemo(() => {
     const partnerTz = partner?.timezone;
-    return partnerTz ? formatLocalTime(partnerTz, now) : undefined;
+    return partnerTz && now ? formatLocalTime(partnerTz, now) : undefined;
   }, [partner?.timezone, now]);
 
   const readyCount = room?.members.filter((m) => m.ready).length || 0;
