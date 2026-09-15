@@ -150,20 +150,8 @@ export function CoupleSpaceProvider({
         {
           event: 'UPDATE',
           schema: 'public',
-          table: 'profiles',
-          filter: `id=eq.${user.id}`,
-        },
-        () => {
-          void refresh();
-        },
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'profiles',
-          filter: `id=eq.${space.members.find((member) => member.id !== user.id)?.id || user.id}`,
+          table: 'couples',
+          filter: `id=eq.${spaceId}`,
         },
         () => {
           void refresh();
