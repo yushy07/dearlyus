@@ -10,6 +10,7 @@ import { CustomRitualModal } from './CustomRitualModal';
 import { YourRoomYourRulesModal } from './YourRoomYourRulesModal';
 import { Keepsake } from '@/types';
 import { sounds } from '@/lib/sound';
+import { useSharedRoomRules } from '@/hooks/useSharedRoomRules';
 
 export interface CupidotHomeAreaProps {
   partnerA?: string;
@@ -69,6 +70,7 @@ export function CupidotHomeArea({
     rescheduleRitual,
     completeRitual,
   } = useCupidotPet();
+  const { rules: sharedRoomRules } = useSharedRoomRules();
 
   // Modals state
   const [togethernessModalOpen, setTogethernessModalOpen] = useState(false);
@@ -642,20 +644,11 @@ export function CupidotHomeArea({
         </div>
 
         {/* Resurfaced Keepsakes Shelf (M15, M16) */}
-        {typeof window !== 'undefined' &&
-          localStorage.getItem('dearly_resurfacing_enabled') !== 'false' &&
+        {sharedRoomRules.resurfacingEnabled &&
           keepsakes.filter((k) => {
             if (k.status !== 'finalized') return false;
-            try {
-              const archived = JSON.parse(
-                localStorage.getItem('dearly_archived_keepsakes') || '[]',
-              );
-              if (archived.includes(k.id)) return false;
-            } catch {}
-            return (
-              localStorage.getItem(`dearly_keepsake_resurface_${k.id}`) !==
-              'false'
-            );
+            return !sharedRoomRules.archivedKeepsakeIds.includes(k.id) &&
+              !sharedRoomRules.resurfacingDisabledKeepsakeIds.includes(k.id);
           }).length > 0 && (
             <div
               style={{
@@ -707,18 +700,8 @@ export function CupidotHomeArea({
                 {keepsakes
                   .filter((k) => {
                     if (k.status !== 'finalized') return false;
-                    try {
-                      const archived = JSON.parse(
-                        localStorage.getItem('dearly_archived_keepsakes') ||
-                          '[]',
-                      );
-                      if (archived.includes(k.id)) return false;
-                    } catch {}
-                    return (
-                      localStorage.getItem(
-                        `dearly_keepsake_resurface_${k.id}`,
-                      ) !== 'false'
-                    );
+                    return !sharedRoomRules.archivedKeepsakeIds.includes(k.id) &&
+                      !sharedRoomRules.resurfacingDisabledKeepsakeIds.includes(k.id);
                   })
                   .slice(0, 4)
                   .map((k) => (
@@ -788,11 +771,7 @@ export function CupidotHomeArea({
         onStartRoom={onStartRoom}
         partnerName={partnerB}
         upcomingRitualTitle={homeState.upcomingRitual?.title}
-        cameraAllowed={
-          typeof window !== 'undefined'
-            ? localStorage.getItem('dearly_allow_camera_surprise') !== 'false'
-            : true
-        }
+        cameraAllowed={sharedRoomRules.allowCameraSurprise}
         onProposeKeepsake={(title: string, caption: string) => {
           proposeMemorySeed({
             coupleId: 'shared-couple',

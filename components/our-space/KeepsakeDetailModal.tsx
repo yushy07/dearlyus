@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import type { Keepsake } from '@/lib/account';
 import { sounds } from '@/lib/sound';
+import { useSharedRoomRules } from '@/hooks/useSharedRoomRules';
 
 export interface KeepsakeDetailModalProps {
   keepsake: Keepsake | null;
@@ -40,17 +41,18 @@ export function KeepsakeDetailModal({
   const [captionText, setCaptionText] = useState(keepsake?.caption || '');
   const [isEditingCaption, setIsEditingCaption] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const { rules, updateRules } = useSharedRoomRules();
 
   useEffect(() => {
     setConfirmDelete(false);
     setIsDeleting(false);
-    setIsArchived(false);
-    setResurfacingEnabled(true);
-    setAiReuseAllowed(true);
+    setIsArchived(Boolean(keepsake && rules.archivedKeepsakeIds.includes(keepsake.id)));
+    setResurfacingEnabled(Boolean(keepsake && !rules.resurfacingDisabledKeepsakeIds.includes(keepsake.id)));
+    setAiReuseAllowed(Boolean(keepsake && !rules.aiReuseDisabledKeepsakeIds.includes(keepsake.id)));
     setCaptionText(keepsake?.caption || '');
     setIsEditingCaption(false);
     setNotice(null);
-  }, [keepsake]);
+  }, [keepsake, rules]);
 
   // Handle Escape key
   useEffect(() => {
@@ -345,6 +347,11 @@ export function KeepsakeDetailModal({
                 onChange={(e) => {
                   sounds.playPop();
                   setIsArchived(e.target.checked);
+                  void updateRules({
+                    archivedKeepsakeIds: e.target.checked
+                      ? [...rules.archivedKeepsakeIds, keepsake.id]
+                      : rules.archivedKeepsakeIds.filter((id) => id !== keepsake.id),
+                  });
                   setNotice(
                     e.target.checked
                       ? 'Archived: Hidden from living shelf without permanent deletion.'
@@ -374,6 +381,11 @@ export function KeepsakeDetailModal({
                 onChange={(e) => {
                   sounds.playPop();
                   setResurfacingEnabled(e.target.checked);
+                  void updateRules({
+                    resurfacingDisabledKeepsakeIds: e.target.checked
+                      ? rules.resurfacingDisabledKeepsakeIds.filter((id) => id !== keepsake.id)
+                      : [...rules.resurfacingDisabledKeepsakeIds, keepsake.id],
+                  });
                   setNotice(
                     e.target.checked
                       ? 'Resurfacing enabled for anniversary and nostalgic moments.'
@@ -403,6 +415,11 @@ export function KeepsakeDetailModal({
                 onChange={(e) => {
                   sounds.playPop();
                   setAiReuseAllowed(e.target.checked);
+                  void updateRules({
+                    aiReuseDisabledKeepsakeIds: e.target.checked
+                      ? rules.aiReuseDisabledKeepsakeIds.filter((id) => id !== keepsake.id)
+                      : [...rules.aiReuseDisabledKeepsakeIds, keepsake.id],
+                  });
                   setNotice(
                     e.target.checked
                       ? 'AI theme reuse allowed.'

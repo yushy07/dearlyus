@@ -18,7 +18,8 @@ export type ActivityRecordKind =
   | 'date_night_capsule'
   | 'birthday_gift'
   | 'passport'
-  | 'cupidot_home';
+  | 'cupidot_home'
+  | 'room_rules';
 
 export interface CoupleActivityRecord<T = Record<string, unknown>> {
   id: string;
@@ -71,9 +72,7 @@ export async function loadActivityRecords<T>(
   return (data || []).map(mapRecord<T>);
 }
 
-export async function upsertActivityRecord<
-  T extends Record<string, unknown>,
->(input: {
+export async function upsertActivityRecord<T extends object>(input: {
   coupleId: string;
   kind: ActivityRecordKind;
   key: string;

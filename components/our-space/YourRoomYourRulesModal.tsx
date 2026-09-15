@@ -14,6 +14,7 @@ import {
   getQuietHoursWindow,
   setQuietHoursWindow,
 } from '@/lib/voice';
+import { useSharedRoomRules } from '@/hooks/useSharedRoomRules';
 
 export interface YourRoomYourRulesModalProps {
   isOpen: boolean;
@@ -45,6 +46,7 @@ export function YourRoomYourRulesModal({
   const [softenNotice, setSoftenNotice] = useState<string | null>(null);
   const [pendingOptInLevel, setPendingOptInLevel] =
     useState<RomanceLevel | null>(null);
+  const { rules, error: sharedRulesError, updateRules } = useSharedRoomRules();
 
   const [quietHoursActive, setQuietHoursActive] = useState(() =>
     getQuietHoursEnabled(),
@@ -54,49 +56,13 @@ export function YourRoomYourRulesModal({
   );
   const [quietEnd, setQuietEnd] = useState(() => getQuietHoursWindow().end);
 
-  // Surprise Us Allow-List (M08, R06)
-  const [allowCameraSurprise, setAllowCameraSurprise] = useState(() => {
-    if (typeof window === 'undefined') return true;
-    try {
-      return localStorage.getItem('dearly_allow_camera_surprise') !== 'false';
-    } catch {
-      return true;
-    }
-  });
-  const [allowDeepSurprise, setAllowDeepSurprise] = useState(() => {
-    if (typeof window === 'undefined') return true;
-    try {
-      return localStorage.getItem('dearly_allow_deep_surprise') !== 'false';
-    } catch {
-      return true;
-    }
-  });
-  const [allowGamesSurprise, setAllowGamesSurprise] = useState(() => {
-    if (typeof window === 'undefined') return true;
-    try {
-      return localStorage.getItem('dearly_allow_games_surprise') !== 'false';
-    } catch {
-      return true;
-    }
-  });
-  const [allowCreativeSurprise, setAllowCreativeSurprise] = useState(() => {
-    if (typeof window === 'undefined') return true;
-    try {
-      return localStorage.getItem('dearly_allow_creative_surprise') !== 'false';
-    } catch {
-      return true;
-    }
-  });
-
-  // Keepsake Resurfacing (M08, M15)
-  const [resurfacingEnabled, setResurfacingEnabled] = useState(() => {
-    if (typeof window === 'undefined') return true;
-    try {
-      return localStorage.getItem('dearly_resurfacing_enabled') !== 'false';
-    } catch {
-      return true;
-    }
-  });
+  const {
+    allowCameraSurprise,
+    allowDeepSurprise,
+    allowGamesSurprise,
+    allowCreativeSurprise,
+    resurfacingEnabled,
+  } = rules;
 
   // Keyboard accessibility (M13): Escape key dismiss
   React.useEffect(() => {
@@ -111,28 +77,16 @@ export function YourRoomYourRulesModal({
   }, [isOpen, onClose]);
 
   const handleToggleSurprisePref = (
-    key: string,
+    key: keyof Pick<typeof rules, 'allowCameraSurprise' | 'allowDeepSurprise' | 'allowGamesSurprise' | 'allowCreativeSurprise'>,
     currentVal: boolean,
-    setter: (v: boolean) => void,
   ) => {
     sounds.playPop();
-    const next = !currentVal;
-    setter(next);
-    try {
-      localStorage.setItem(key, next ? 'true' : 'false');
-    } catch {}
+    void updateRules({ [key]: !currentVal });
   };
 
   const handleToggleResurfacing = () => {
     sounds.playPop();
-    const next = !resurfacingEnabled;
-    setResurfacingEnabled(next);
-    try {
-      localStorage.setItem(
-        'dearly_resurfacing_enabled',
-        next ? 'true' : 'false',
-      );
-    } catch {}
+    void updateRules({ resurfacingEnabled: !resurfacingEnabled });
   };
 
   const handleQuietStartChange = (val: string) => {
@@ -675,9 +629,8 @@ export function YourRoomYourRulesModal({
                 checked={allowCameraSurprise}
                 onChange={() =>
                   handleToggleSurprisePref(
-                    'dearly_allow_camera_surprise',
+                    'allowCameraSurprise',
                     allowCameraSurprise,
-                    setAllowCameraSurprise,
                   )
                 }
               />
@@ -698,9 +651,8 @@ export function YourRoomYourRulesModal({
                 checked={allowDeepSurprise}
                 onChange={() =>
                   handleToggleSurprisePref(
-                    'dearly_allow_deep_surprise',
+                    'allowDeepSurprise',
                     allowDeepSurprise,
-                    setAllowDeepSurprise,
                   )
                 }
               />
@@ -721,9 +673,8 @@ export function YourRoomYourRulesModal({
                 checked={allowGamesSurprise}
                 onChange={() =>
                   handleToggleSurprisePref(
-                    'dearly_allow_games_surprise',
+                    'allowGamesSurprise',
                     allowGamesSurprise,
-                    setAllowGamesSurprise,
                   )
                 }
               />
@@ -744,9 +695,8 @@ export function YourRoomYourRulesModal({
                 checked={allowCreativeSurprise}
                 onChange={() =>
                   handleToggleSurprisePref(
-                    'dearly_allow_creative_surprise',
+                    'allowCreativeSurprise',
                     allowCreativeSurprise,
-                    setAllowCreativeSurprise,
                   )
                 }
               />
