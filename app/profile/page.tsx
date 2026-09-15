@@ -1587,21 +1587,17 @@ export default function ProfilePage() {
               </div>
             )}
 
-            {/* Privacy & Account Deletion */}
+            {/* Privacy and sign-in */}
             <div className={styles.settingsRow}>
               <div className={styles.settingsCopy}>
-                <strong>Privacy &amp; Account lifecycle</strong>
+                <strong>Privacy &amp; sign-in</strong>
                 <p>
-                  Read what is stored locally vs in Supabase, or request
-                  permanent deletion of your account.
+                  Review how your data is handled or sign out of this device.
                 </p>
               </div>
               <div className={styles.actions}>
                 <Link className="btn btn-ghost" href="/privacy">
                   Privacy policy
-                </Link>
-                <Link className="btn btn-ghost" href="/privacy">
-                  Account lifecycle
                 </Link>
                 <button className="btn btn-ghost" onClick={handleSignOut}>
                   Sign out

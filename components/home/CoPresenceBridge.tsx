@@ -27,7 +27,7 @@ export function CoPresenceBridge({ onExploreStage }: CoPresenceBridgeProps) {
     { text: '인생네컷 Life4Cuts Photobooth', highlight: 'pink', icon: '📸' },
     { text: 'Interactive 3D Shared Earth', highlight: 'blue', icon: '🌍' },
     {
-      text: '35+ Realtime Couple Duels & Games',
+      text: '24 Couple Activities & Keepsakes',
       highlight: 'pink',
       icon: '🎮',
     },
@@ -143,13 +143,13 @@ export function CoPresenceBridge({ onExploreStage }: CoPresenceBridgeProps) {
           </a>
           </article>
 
-          {/* Card 3: 35+ Couple Duels */}
+          {/* Card 3: activity collection */}
           <article className={styles.stackItem}>
           <Link
             href="/activity"
             className={styles.spotlightCardLink}
             onClick={() => sounds.playPop()}
-            aria-label="Browse 35+ Couple Activities"
+            aria-label="Browse 24 couple activities"
           >
             <div className={`${styles.card} ${styles.cardPurple}`}>
               <div className={styles.cardHeader}>
@@ -157,7 +157,7 @@ export function CoPresenceBridge({ onExploreStage }: CoPresenceBridgeProps) {
                   🎮
                 </div>
                 <span className={`${styles.cardBadge} ${styles.badgePurple}`}>
-                  35+ Activities
+                  24 Activities
                 </span>
               </div>
               <h3 className={styles.cardTitle}>Play & Draw Together</h3>

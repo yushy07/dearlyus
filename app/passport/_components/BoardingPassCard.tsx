@@ -53,7 +53,7 @@ export function BoardingPassCard({
               DEARLY US AIRLINES · FIRST CLASS TICKET
             </div>
             <div style={{ fontSize: '18px', fontWeight: 900 }}>
-              Non-Stop Flight to Each Other’s Arms
+              A Direct Date to Each Other’s Hearts
             </div>
           </div>
         </div>

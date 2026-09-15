@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.SITE_URL ?? 'http://localhost:3000'),
   title: 'Dearly Us ♡ — Made for the moments that belong to you two.',
   description:
-    'Dearly Us is the realtime date night sanctuary and photobooth studio for couples separated by distance. 35+ interactive games, authentic Korean 인생네컷 photostrips, 3D memory vaults, and intimate keepsakes.',
+    'Dearly Us is the realtime date night sanctuary and photobooth studio for couples separated by distance. Explore 24 interactive activities, authentic Korean 인생네컷 photostrips, 3D memory vaults, and intimate keepsakes.',
   keywords: [
     'dearly us',
     'fun dates for long distance relationships',
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Dearly Us ♡ — Made for the moments that belong to you two.',
     description:
-      'A realtime date sanctuary for couples — authentic Korean Life4Cuts photostrips, 3D memory vaults, interactive duels, and 35+ activities for two screens across any distance.',
+      'A realtime date sanctuary for couples — authentic Korean Life4Cuts photostrips, 3D memory vaults, interactive duels, and 24 activities for two screens across any distance.',
     url: '/',
     siteName: 'Dearly Us',
     images: [

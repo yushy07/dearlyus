@@ -22,7 +22,7 @@ const RIDDLES: RiddleItem[] = [
     id: 1,
     category: 'Long Distance Geographies',
     question: 'I have cities, but no houses. I have mountains, but no trees. I have water, but no fish. What am I?',
-    hint: 'Couples across time zones stare at me often to trace the flight paths between them.',
+    hint: 'Couples across time zones look at me to imagine the distance between them.',
     answer: 'A map',
     explanation: 'A map depicts geography, borders, and oceans without physical people or structures!',
   },

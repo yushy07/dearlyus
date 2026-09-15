@@ -144,7 +144,7 @@ export default function PassportPage() {
     ctx.font = '900 48px Pretendard, sans-serif';
     ctx.fillText(`${profile.partner1} & ${profile.partner2}`, 600, 155);
 
-    // Flight Route & Date
+    // Shared route and date
     ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
     ctx.font = 'bold 20px monospace';
     ctx.fillText(
@@ -342,7 +342,7 @@ export default function PassportPage() {
                 padding: '6px 12px',
               }}
             >
-              Browse 35 Dates ▷
+              Browse 24 Activities ▷
             </Link>
             <Link
               href="/photobooth"
@@ -432,7 +432,7 @@ export default function PassportPage() {
             partnerName={profile.partner2 || 'Partner'}
             isDemoMode={true}
             demoNotice="Keepsake creator preview. Finalized visa stamps can be proposed to your shared Our Space shelf."
-            privacyNote="Passport stamps and travel tickets are shared keepsakes celebrating every flight, date, and milestone reached together."
+            privacyNote="Passport stamps and date tickets are shared keepsakes celebrating every date and milestone reached together."
           />
 
           {/* Romantic First Class Boarding Pass Ticket Stub */}

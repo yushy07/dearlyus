@@ -25,7 +25,7 @@ interface VisionItem {
 const STAGE_COLUMNS: { id: BoardStage; label: string; icon: string; desc: string }[] = [
   { id: 'someday', label: 'Someday Dreams', icon: '💭', desc: 'Wishes, quiet fantasies & long-term hopes' },
   { id: 'exploring', label: 'Exploring Options', icon: '🗺️', desc: 'Researching cities, bookings & floorplans' },
-  { id: 'planning', label: 'In Action / Planning', icon: '📌', desc: 'Dates locked, flight alerts & active preparations' },
+  { id: 'planning', label: 'In Action / Planning', icon: '📌', desc: 'Dates chosen, plans forming & active preparations' },
   { id: 'done', label: 'Realized & Cherished', icon: '✨', desc: 'Milestones we accomplished together' },
 ];
 
@@ -35,7 +35,7 @@ const PRESET_ELEMENTS: Omit<VisionItem, 'stage'>[] = [
   { id: 'p3', category: 'Adventure', title: 'Kyoto Cherry Blossom Spring Roadtrip', emoji: '🌸' },
   { id: 'p4', category: 'Milestone', title: 'Intimate Sunset Beach Vows', emoji: '💍' },
   { id: 'p5', category: 'Daily Ritual', title: 'Sunday French Press & Slow Vinyls', emoji: '☕' },
-  { id: 'p6', category: 'Distance', title: 'Official One-Way Flight & Permanent Reunion', emoji: '✈️' },
+  { id: 'p6', category: 'Distance', title: 'Close the Distance & Begin Our Next Chapter', emoji: '🏡' },
   { id: 'p7', category: 'Home', title: 'Balcony Fairy Lights & Herb Garden', emoji: '🌿' },
   { id: 'p8', category: 'Adventure', title: 'Scandinavian Aurora Train Journey', emoji: '🚆' },
 ];

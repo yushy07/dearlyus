@@ -85,7 +85,7 @@ export function Footer({
               <span style={{ color: 'var(--blue)', fontWeight: 700 }}>
                 Made for the moments that belong to you two.
               </span>{' '}
-              Zero lag, shared photobooth strips, interactive duels, and memory
+              Shared photobooth strips, interactive duels, and memory
               keepsakes across any timezone.
             </p>
           </div>
@@ -123,7 +123,7 @@ export function Footer({
                   display: 'inline-block',
                 }}
               />
-              <span>15 Realtime Servers Online</span>
+              <span>Private spaces for two</span>
             </div>
 
             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
@@ -152,7 +152,7 @@ export function Footer({
                   textDecoration: 'none',
                 }}
               >
-                Browse 35 Dates ▷
+                Browse 24 Activities ▷
               </Link>
             </div>
           </div>

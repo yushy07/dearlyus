@@ -240,7 +240,7 @@ export function DearlyCinematicHero({
             <div className={styles.eyebrowRow}>
               <RevealMask active={active} delay={400}>
                 <span className={styles.eyebrowBadge}>
-                  MADE FOR TWO · <ShinyText text="17 REALTIME ACTIVITIES" />
+                  MADE FOR TWO · <ShinyText text="24 COUPLE ACTIVITIES" />
                 </span>
               </RevealMask>
 
@@ -259,7 +259,7 @@ export function DearlyCinematicHero({
 
               <p className={styles.narrativeCopy}>
                 <RevealMask active={active} delay={850}>
-                  A realtime sanctuary for couples bridging distance with 35+
+                  A realtime sanctuary for couples bridging distance with 24
                   interactive games, authentic Korean Life4Cuts photostrips, 3D
                   memory vaults, and intimate keepsakes.
                 </RevealMask>

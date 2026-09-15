@@ -618,12 +618,11 @@ export default function DateNightPlannerPage() {
               {/* Action Buttons for Active Step */}
               <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
                 <Link
-                  href={`${itinerary[activeStepIdx]?.path}?roomId=${runtime.roomId || 'room'}`}
-                  target="_blank"
+                  href={itinerary[activeStepIdx]?.path || '/activity'}
                   className="btn btn-primary"
                   style={{ padding: '12px 24px', fontSize: '14px', textDecoration: 'none' }}
                 >
-                  Open Activity in New Tab ↗
+                  Open this activity →
                 </Link>
                 <button
                   onClick={() => markStepDone(activeStepIdx)}

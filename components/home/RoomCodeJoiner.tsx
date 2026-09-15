@@ -190,7 +190,7 @@ export function RoomCodeJoiner({ roomCode, setRoomCode }: RoomCodeJoinerProps) {
         <div className="wrap">
           <div className="statgrid">
             <div className="stat">
-              <div className="n">35+</div>
+              <div className="n">24</div>
               <div className="l">activities built for two</div>
             </div>
             <div className="stat">
