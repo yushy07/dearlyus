@@ -260,7 +260,7 @@ export function DearlyCinematicHero({
               <p className={styles.narrativeCopy}>
                 <RevealMask active={active} delay={850}>
                   A realtime sanctuary for couples bridging distance with 24
-                  interactive games, authentic Korean Life4Cuts photostrips, 3D
+                  shared activities, authentic Korean Life4Cuts photostrips, 3D
                   memory vaults, and intimate keepsakes.
                 </RevealMask>
               </p>
@@ -282,7 +282,7 @@ export function DearlyCinematicHero({
 
               <RevealMask active={active} delay={1050} fade>
                 <Link href="/activity" className={styles.glassBtnPink}>
-                  Browse 17 Activities ▷
+                  Browse 24 Activities ▷
                 </Link>
               </RevealMask>
 

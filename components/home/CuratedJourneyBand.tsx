@@ -67,7 +67,7 @@ export function CuratedJourneyBand() {
                 Begin Tonight’s Journey <span className="arr">▷</span>
               </span>
               <span className="when">
-                two screens · instant connection · zero sign-up
+                preview freely · sign in to sync across two screens
               </span>
             </span>
           </span>
