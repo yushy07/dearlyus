@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   ArrowLeft,
   ArrowRight,
@@ -68,6 +69,7 @@ const STICKERS = [
   'best day',
 ];
 export default function PhotoboothPage() {
+  const router = useRouter();
   const activeRoom = useActiveRoom();
   const booth = useBoothStudio(activeRoom.room?.id);
   const { partnerA, partnerB } = useCoupleProfile();
@@ -106,6 +108,12 @@ export default function PhotoboothPage() {
     uploadInput = useRef<HTMLInputElement | null>(null),
     refineCanvas = useRef<HTMLCanvasElement | null>(null),
     refineStroke = useRef<DrawPoint[]>([]);
+  const leaveFor = async (path: string) => {
+    if (booth.shots.some((shot) => shot.left || shot.right) &&
+        !window.confirm('Leave this booth? Unsaved photos on this device will be lost.')) return;
+    if (step > 0) await booth.leave();
+    router.push(path);
+  };
   const allDone =
     booth.shots.length === 4 &&
     booth.shots.every((s) => completeShot(s, booth.solo));
@@ -368,11 +376,11 @@ export default function PhotoboothPage() {
   return (
     <div className="photo-studio">
       <header className="studio-header">
-        <Link href="/" aria-label="Dearly Us home">
+        <Link href="/" aria-label="Dearly Us home" onClick={(event) => { event.preventDefault(); void leaveFor('/'); }}>
           <BrandLogo />
         </Link>
         <span>THE LONG-DISTANCE PHOTO CLUB</span>
-        <Link href="/activity">
+        <Link href="/activity" onClick={(event) => { event.preventDefault(); void leaveFor('/activity'); }}>
           <ArrowLeft size={15} /> All activities
         </Link>
       </header>

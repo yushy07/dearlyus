@@ -1,14 +1,15 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { BookOpenText, Camera, Heart, ShoppingBag, Sparkles } from 'lucide-react';
+import { BookOpenText, Camera, Heart, Menu, ShoppingBag, Sparkles, X } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
 import { AuthButton } from './AuthButton';
 import { useCoupleSpace } from '@/contexts/CoupleSpaceContext';
 import { useSupabaseSession } from '@/contexts/SupabaseSessionContext';
 import styles from './Navbar.module.css';
+import menuStyles from './NavbarCompactMenu.module.css';
 
 interface NavbarProps { roomCode?: string; activityName?: string; rightAction?: React.ReactNode; onLeaveRoom?: () => void; variant?: 'default' | 'hero'; }
 
@@ -24,6 +25,8 @@ export function Navbar({ roomCode, activityName, rightAction, onLeaveRoom, varia
   const router = useRouter();
   const { user } = useSupabaseSession();
   const { space, partnerConnected } = useCoupleSpace();
+  const [menuOpen, setMenuOpen] = useState(false);
+  useEffect(() => setMenuOpen(false), [pathname]);
   const isInsideRoom = Boolean(roomCode);
   const leave = () => onLeaveRoom ? onLeaveRoom() : router.push('/our-space');
   return (
@@ -42,10 +45,16 @@ export function Navbar({ roomCode, activityName, rightAction, onLeaveRoom, varia
             <>
               <AuthButton />
               {rightAction || <Link className={styles.primaryAction} href={user && partnerConnected && space?.activeRoomCode ? `/room/${space.activeRoomCode}` : '/activity'}>{user && partnerConnected ? 'Continue tonight' : 'Choose a date'} <span>↗</span></Link>}
+              <button className={menuStyles.toggle} type="button" aria-label={menuOpen ? 'Close menu' : 'Open menu'} aria-expanded={menuOpen} aria-controls="site-menu" onClick={() => setMenuOpen((open) => !open)}>{menuOpen ? <X size={18} /> : <Menu size={18} />}</button>
             </>
           )}
         </div>
       </div>
+      {!isInsideRoom && menuOpen && <nav id="site-menu" className={menuStyles.panel} aria-label="More pages">
+        {links.map(({ href, label, icon: Icon }) => <Link key={href} href={href} onClick={() => setMenuOpen(false)}><Icon size={16} />{label}</Link>)}
+        <Link href="/shop" onClick={() => setMenuOpen(false)}><ShoppingBag size={16} />Keepsake shop</Link>
+        {user && <Link href="/profile?view=profile#my-profile" onClick={() => setMenuOpen(false)}>♡ My Profile</Link>}
+      </nav>}
     </header>
   );
 }

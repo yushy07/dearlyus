@@ -27,11 +27,15 @@ export function RoomCodeJoiner({ roomCode, setRoomCode }: RoomCodeJoinerProps) {
         .split(''),
     );
 
-  const copyCode = () => {
-    if (!code) return;
-    navigator.clipboard.writeText(code);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const copyCode = async () => {
+    if (!room?.code || room.code !== code) return;
+    try {
+      await navigator.clipboard.writeText(room.code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setError('Could not copy the room code. Select it and copy it manually.');
+    }
   };
 
   const openNewRoom = async () => {
@@ -129,7 +133,7 @@ export function RoomCodeJoiner({ roomCode, setRoomCode }: RoomCodeJoinerProps) {
                 </button>
                 <button
                   onClick={copyCode}
-                  disabled={!code}
+                  disabled={!room?.code || room.code !== code}
                   style={{
                     border: '1px solid var(--line)',
                     background: 'var(--paper-raised)',

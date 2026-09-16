@@ -77,7 +77,11 @@ export default function OurSpacePage() {
     catch (cause) { setNotice(cause instanceof Error ? cause.message.replace(/^\[[^\]]+\]\s*/, '') : 'Something interrupted the connection. Please try again.'); }
     finally { setBusy(''); }
   };
-  const copyInvite = async () => { if (inviteUrl) { await navigator.clipboard.writeText(inviteUrl); setNotice('Invitation copied. Send it to your person.'); } };
+  const copyInvite = async () => {
+    if (!inviteUrl) return;
+    try { await navigator.clipboard.writeText(inviteUrl); setNotice('Invitation copied. Send it to your person.'); }
+    catch { setNotice('Could not copy automatically. Select and share the invitation code shown below.'); }
+  };
   const startDate = () => run('room', async () => { const room = await createDateRoom(); router.push(`/room/${room.code}`); }, 'Opening your date…');
 
   if (authLoading || loading || !user) return <main className={styles.loading}><span>♡</span><h1>Opening your place…</h1><p>Finding the last page you shared.</p></main>;

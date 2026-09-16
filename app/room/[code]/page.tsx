@@ -81,7 +81,7 @@ function initials(name: string) {
 
 function RoomLobbyInner({ code }: { code: string }) {
   const router = useRouter();
-  const { user } = useSupabaseSession();
+  const { user, loading: authLoading } = useSupabaseSession();
   const { profile, partner, preferences, savePreferences } = useCoupleSpace();
   const {
     room,
@@ -90,6 +90,7 @@ function RoomLobbyInner({ code }: { code: string }) {
     error: roomError,
     setReady,
     leaveRoom,
+    refreshRoom,
   } = useActiveRoom();
   const {
     connectionState,
@@ -108,6 +109,11 @@ function RoomLobbyInner({ code }: { code: string }) {
   const [copied, setCopied] = useState(false);
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace(`/login?next=${encodeURIComponent(`/room/${code}`)}`);
+    }
+  }, [authLoading, user, router, code]);
   const [now, setNow] = useState<Date | null>(null);
 
   // Synchronized countdown state
@@ -254,10 +260,13 @@ function RoomLobbyInner({ code }: { code: string }) {
 
   const handleLeave = async () => {
     setBusy('leave');
+    setError('');
     try {
       await leaveRoom();
-    } finally {
       router.replace('/our-space');
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not leave the room. Please try again.');
+      setBusy('');
     }
   };
 
@@ -289,7 +298,7 @@ function RoomLobbyInner({ code }: { code: string }) {
     partnerInteraction,
   ]);
 
-  if (roomLoading) {
+  if (authLoading || !user || roomLoading || (!room && !roomError)) {
     return (
       <main className={styles.loading}>
         <div
@@ -324,6 +333,9 @@ function RoomLobbyInner({ code }: { code: string }) {
           <Link className="btn btn-primary" href="/our-space">
             Return to Our Space
           </Link>
+          <button className="btn btn-ghost" onClick={() => void refreshRoom()}>
+            Try room again
+          </button>
         </div>
       </main>
     );
@@ -628,6 +640,8 @@ export default function RoomLobbyPage() {
   const code = String(params?.code || '')
     .replace(/[^a-z0-9]/gi, '')
     .toUpperCase();
+
+  if (!code) return <main className={styles.loading}><div><h1>Room link incomplete</h1><p>Check the link your person sent, or open your shared space to start again.</p><Link className="btn btn-primary" href="/our-space">Open Our Space</Link></div></main>;
 
   return (
     <ActiveRoomProvider initialRoomCode={code}>

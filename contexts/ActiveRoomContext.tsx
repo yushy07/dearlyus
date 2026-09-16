@@ -67,6 +67,7 @@ export function ActiveRoomProvider({
       return null;
     }
 
+    setLoading(true);
     try {
       setError(null);
       // STRICT JOIN: Never falls back to creating a room if joining fails!
@@ -161,11 +162,8 @@ export function ActiveRoomProvider({
 
   const leaveRoomHandler = async () => {
     if (!room) return;
-    try {
-      await rpcLeaveDateRoom(room.code);
-    } finally {
-      setRoom(null);
-    }
+    await rpcLeaveDateRoom(room.code);
+    setRoom(null);
   };
 
   const rotateRoomCodeHandler = async () => {

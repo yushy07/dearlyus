@@ -322,8 +322,8 @@ export function ActivityShell({
       {isRecoveryError && (
         <div className={`${styles.alertBanner} ${styles.alertWarning}`} data-motion-status="error" role="alert">
           <span>
-            Connection interrupted. Authoritative snapshot restored, but some
-            live events may need a refresh.
+            Connection interrupted. Some shared changes may be missing. Reconnect
+            to restore the latest room state.
           </span>
           {onRetryRecovery && (
             <button
@@ -395,8 +395,8 @@ export function ActivityShell({
                     margin: 0,
                   }}
                 >
-                  Take a breath, grab some tea, or talk things through. Your
-                  progress is safely sealed on both screens.
+                  Take a breath, grab some tea, or talk things through. Your{' '}
+                  {effectiveSoloDemo ? 'solo preview will stay on this device.' : 'shared progress will be here when you return.'}
                 </p>
                 {onResume && (
                   <button

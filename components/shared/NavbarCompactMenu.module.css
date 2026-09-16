@@ -1,0 +1,8 @@
+.toggle { display: none; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid rgba(255,249,239,.25); border-radius: 10px; color: #fff9ef; background: transparent; }
+.panel { display: none; }
+@media (max-width: 1060px) {
+  .toggle { display: inline-flex; }
+  .panel { display: grid; gap: 3px; position: absolute; z-index: 1001; top: calc(100% + 8px); right: 0; width: min(320px, 100%); padding: 10px; border: 1px solid #c4aab0; border-radius: 16px; background: #33262d; box-shadow: 0 18px 35px rgba(38,25,31,.24); }
+  .panel a { display: flex; align-items: center; gap: 10px; min-height: 42px; padding: 8px 12px; border-radius: 9px; color: #fff9ef; font-size: 13px; font-weight: 700; text-decoration: none; }
+  .panel a:hover, .panel a:focus-visible { background: rgba(255,249,239,.12); outline-color: #e4b5bb; }
+}

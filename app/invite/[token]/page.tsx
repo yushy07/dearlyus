@@ -143,7 +143,7 @@ export default function InvitePage() {
             <h1>This link needs a little help.</h1>
             <p className={styles.error}>{error}</p>
             <Link className="btn btn-ghost" href="/our-space">
-              Return to My Space
+              Go to Our Space
             </Link>
           </>
         ) : preview && inviteState === 'pending' ? (
@@ -190,7 +190,7 @@ export default function InvitePage() {
             </p>
             <div className={styles.code}>{preview.code}</div>
             <Link className="btn btn-primary" href="/our-space">
-              Open Our Space →
+              {inviteState === 'accepted' || inviteState === 'already_connected' ? 'Open Our Space →' : 'Go to my space →'}
             </Link>
           </>
         ) : null}
