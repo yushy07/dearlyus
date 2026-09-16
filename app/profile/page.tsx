@@ -916,9 +916,9 @@ export default function ProfilePage() {
                     <label htmlFor="my-profile-pronouns">Pronouns <small>optional</small></label>
                     <input id="my-profile-pronouns" className={styles.input} value={pronouns} onChange={(e) => setPronouns(e.target.value)} maxLength={40} placeholder="How should we refer to you?" />
                   </div>
-                  <LocationSelector value={selectedLocation} onChange={updateLocation} idPrefix="my-profile" className={styles.profileLocationFields} />
+                  <LocationSelector value={selectedLocation} onChange={updateLocation} onTimezoneChange={setTimezone} idPrefix="my-profile" className={styles.profileLocationFields} />
                   <div className={styles.field}>
-                    <label htmlFor="my-profile-timezone">Timezone</label>
+                    <label htmlFor="my-profile-timezone">Timezone <small>set from your country</small></label>
                     <input id="my-profile-timezone" className={styles.input} value={timezone} onChange={(e) => setTimezone(e.target.value)} maxLength={80} />
                   </div>
                   <div className={styles.field}>

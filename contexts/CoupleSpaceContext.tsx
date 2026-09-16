@@ -241,7 +241,7 @@ export function CoupleSpaceProvider({
 
   const saveProfileHandler = async (
     input: Pick<AccountProfile, 'displayName' | 'city' | 'timezone'> &
-      Partial<Pick<AccountProfile, 'pronouns' | 'birthday' | 'personalNote'>>,
+      Partial<Pick<AccountProfile, 'country' | 'countryCode' | 'state' | 'stateCode' | 'latitude' | 'longitude' | 'pronouns' | 'birthday' | 'personalNote'>>,
   ) => {
     if (!user) throw new Error('You must be signed in.');
     const savedProfile = await saveAccountProfile(user, input);
