@@ -240,7 +240,7 @@ export function DearlyCinematicHero({
             <div className={styles.eyebrowRow}>
               <RevealMask active={active} delay={400}>
                 <span className={styles.eyebrowBadge}>
-                  MADE FOR TWO · <ShinyText text="24 COUPLE ACTIVITIES" />
+                  MADE FOR TWO · <ShinyText text="24 COUPLE ACTIVITIES" disabled />
                 </span>
               </RevealMask>
 

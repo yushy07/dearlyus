@@ -341,24 +341,37 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.8);
+  color: #ffffff;
+  background: rgba(18, 24, 35, 0.62);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.28);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+}
+
+.eyebrowBadge :global(.shiny-text) {
+  color: #ffffff;
+  font-weight: 900;
 }
 
 .presencePill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 3px 12px;
+  padding: 6px 12px;
   border-radius: 9999px;
   font-size: 11px;
-  font-weight: 600;
-  color: #f472b6;
-  background: rgba(244, 114, 182, 0.14);
-  border: 1px solid rgba(244, 114, 182, 0.3);
+  font-weight: 750;
+  color: #ffe7f0;
+  background: rgba(84, 35, 58, 0.82);
+  border: 1px solid rgba(255, 164, 198, 0.72);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.24);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
 }
 
 /* Headline and narrative copy row */
